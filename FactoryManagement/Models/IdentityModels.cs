@@ -34,7 +34,6 @@ namespace FactoryManagement.Models
             return new FactoryManagementEntities();
         }
 
-
         public virtual DbSet<AccNameAssignedWithUser> AccNameAssignedWithUsers { get; set; }
         public virtual DbSet<AccountName> AccountNames { get; set; }
         public virtual DbSet<AccountType> AccountTypes { get; set; }
