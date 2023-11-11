@@ -446,7 +446,6 @@
     <Content Include="Content\MultipleImgUpload\css\component.css" />
     <Content Include="Content\MultipleImgUpload\js\custom-file-input.js" />
     <Content Include="Content\Twitter\bootstrap.css" />
-    <Content Include="DailyRawCottonXML\04-58-17_RawCottonReport.xml" />
     <Content Include="DailyRawCottonXML\28-44-17_RawCottonReport.xml" />
     <Content Include="Fixed_Layout.html" />
     <Content Include="Images\Client\ClientUserImage\Original\11043inf_qstullah.jpg" />
@@ -708,6 +707,7 @@
     </Compile>
     <Compile Include="Infrastructure\Helpers\EnumExtensions.cs" />
     <Compile Include="Infrastructure\Helpers\HtmlHelpers.cs" />
+    <Compile Include="Infrastructure\Helpers\SeedData.cs" />
     <Compile Include="Infrastructure\Helpers\StringExtensions.cs" />
     <Compile Include="Infrastructure\Identity\ApplicationRole.cs" />
     <Compile Include="Infrastructure\Identity\ClaimedActionsProvider.cs" />
@@ -1143,37 +1143,6 @@
     <Content Include="Views\Acquisition\_RequisitonList.cshtml" />
     <Content Include="Views\Acquisition\_ShowAcquisitionOrderList.cshtml" />
     <Content Include="Views\Acquisition\_ShowAllIndentVoucher.cshtml" />
-    <Content Include="XMLfile\04-58-17_1_Finished_Report.xml" />
-    <Content Include="XMLfile\04-58-17_2_Finished_Report.xml" />
-    <Content Include="XMLfile\04-58-17_3_Finished_Report.xml" />
-    <Content Include="XMLfile\04-58-17_4_Finished_Report.xml" />
-    <Content Include="XMLfile\11-58-17_1_Finished_Report.xml" />
-    <Content Include="XMLfile\11-58-17_2_Finished_Report.xml" />
-    <Content Include="XMLfile\11-58-17_3_Finished_Report.xml" />
-    <Content Include="XMLfile\11-58-17_4_Finished_Report.xml" />
-    <Content Include="XMLfile\12-00-17_1_Finished_Report.xml" />
-    <Content Include="XMLfile\12-00-17_2_Finished_Report.xml" />
-    <Content Include="XMLfile\12-00-17_3_Finished_Report.xml" />
-    <Content Include="XMLfile\12-00-17_4_Finished_Report.xml" />
-    <Content Include="XMLfile\13-01-17_1_Finished_Report.xml" />
-    <Content Include="XMLfile\13-01-17_2_Finished_Report.xml" />
-    <Content Include="XMLfile\13-01-17_3_Finished_Report.xml" />
-    <Content Include="XMLfile\13-01-17_4_Finished_Report.xml" />
-    <Content Include="XMLfile\14-02-17_1_Finished_Report.xml" />
-    <Content Include="XMLfile\14-02-17_2_Finished_Report.xml" />
-    <Content Include="XMLfile\14-02-17_3_Finished_Report.xml" />
-    <Content Include="XMLfile\14-02-17_4_Finished_Report.xml" />
-    <Content Include="XMLfile\15-02-17_1_Finished_Report.xml" />
-    <Content Include="XMLfile\15-02-17_2_Finished_Report.xml" />
-    <Content Include="XMLfile\15-02-17_3_Finished_Report.xml" />
-    <Content Include="XMLfile\15-02-17_4_Finished_Report.xml" />
-    <Content Include="XMLfile\16-02-17_1_Finished_Report.xml" />
-    <Content Include="XMLfile\16-02-17_2_Finished_Report.xml" />
-    <Content Include="XMLfile\16-02-17_3_Finished_Report.xml" />
-    <Content Include="XMLfile\16-02-17_4_Finished_Report.xml" />
-    <Content Include="XMLfile\28-07-17_1_Finished_Report.xml" />
-    <Content Include="XMLfile\28-07-17_2_Finished_Report.xml" />
-    <Content Include="XMLfile\28-07-17_3_Finished_Report.xml" />
     <Content Include="XMLfile\28-07-17_4_Finished_Report.xml" />
   </ItemGroup>
   <ItemGroup>
@@ -4309,7 +4278,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="AllUploadedFile\BusinessOrderFiles\FileForSpecification\" />
-    <Folder Include="Data\" />
     <Folder Include="Images\Inventory\Acquisition\Original\" />
     <Folder Include="Images\Inventory\Acquisition\Resize\" />
     <Folder Include="Images\Inventory\Store\Original\" />

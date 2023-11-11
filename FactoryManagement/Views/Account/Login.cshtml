@@ -1,22 +1,18 @@
-﻿
-
-
-
-@model FactoryManagement.ModelView.Auth.UserLoginModelView
+﻿@model FactoryManagement.ModelView.Auth.UserLoginModelView
 @{
     ViewBag.Title = "Login";
     Layout = "~/Views/Shared/_LayoutTest.cshtml";
 }
 
 <div class="content">
-    <div class="lock-head"><img src="~/Content/Icon/gsml_Logo_big.png" style="max-width:145px!important;" /></div>
+    @*<div class="lock-head"><img src="~/Content/Icon/gsml_Logo_big.png" style="max-width:145px!important;" /></div>*@
     <form class="login-form" action="/Account/Login" method="post" style="margin: 35px;">
         <div class="form-group">
             <label class="control-label visible-ie8 visible-ie9">Username</label>
             <div class="input-icon">
                 <i class="fa fa-user"></i>
-                <input class="form-control placeholder-no-fix" 
-                       type="text" autocomplete="off" placeholder="Username" 
+                <input class="form-control placeholder-no-fix"
+                       type="text" autocomplete="off" placeholder="Username"
                        data-val="true" data-val-required="Please enter user name"
                        id="UserName" name="UserName">
             </div>
@@ -26,7 +22,7 @@
             <label class="control-label visible-ie8 visible-ie9">Password</label>
             <div class="input-icon">
                 <i class="fa fa-lock"></i>
-                <input class="form-control placeholder-no-fix" type="Password" autocomplete="off" 
+                <input class="form-control placeholder-no-fix" type="Password" autocomplete="off"
                        placeholder="Password" data-val="true" data-val-required="Please enter password"
                        id="Password" name="Password">
             </div>
@@ -38,8 +34,11 @@
             <a href="/Account/PasswordRecovery" id="forget-password" class="forget-password">Forgot Password?</a>
         </div>
     </form>
+    <p>
+        @Html.ActionLink("Register as a new user", "Register")
+    </p>
     <div class="lock-bottom">
-        <p style="color:#fff;">Powered By <span><a href="http://www.spicybinary.com/">ZS-Soft Tech</a></span></p>
+        <p style="color:#fff;">Powered By <span><a href="http://www.zssofttech.com/">ZS-Soft Tech</a></span></p>
     </div>
 </div>
 <script>
