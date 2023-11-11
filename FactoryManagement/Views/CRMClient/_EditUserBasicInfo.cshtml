@@ -1,0 +1,287 @@
+﻿@model FactoryManagement.ModelView.CRM.Client_User_ListsModelView
+
+@Html.HiddenFor(m => m.ClientId)
+@Html.HiddenFor(m => m.UserId)
+ 
+<div id="Div_EditUserBasicInfo">  
+    <span class="fa fa-pencil btnEditUserBasicInfo" id="btnEditUserBasicInfo" style="cursor:pointer;float:right;"></span>
+    <div class="k-edit-form-container" id="DivForUserBasicInformationDisplay">
+        <div class="editor-label"><label for="UserName">Name</label></div>
+        <div class="editor-field" style="padding-top:6px">
+                @Html.DisplayFor(model => model.UserName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        </div>
+        @if (Model.Designation != null)
+        {
+        <div class="editor-label"><label for="Designation">Designation</label></div>
+        <div class="editor-field" style="padding-top:6px">
+            @Html.DisplayFor(model => model.Designation, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        </div>
+        }
+        @if (Model.Address != null)
+        {
+         <div class="editor-label"><label for="Address">Address</label></div>
+         <div class="editor-field" style="padding-top:6px">
+            @Html.DisplayFor(model => model.Address, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        </div>
+        }
+        @if (Model.AddressLine1 != null)
+        {
+        <div class="editor-label"><label for="AddressLine1">Address Line1</label></div>
+        <div class="editor-field" style="padding-top:6px">
+          @Html.DisplayFor(model => model.AddressLine1, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        </div>
+        }
+        @if (Model.Country != null)
+        {
+        <div class="editor-label"><label for="Country">Country</label></div>
+        <div class="editor-field" style="padding-top:6px">
+          @Html.DisplayFor(model => model.CountryName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        </div>
+        }
+        @if (Model.DivisionName != null)
+        {
+         <div id="DivForDivision">
+             <div class="editor-label"><label for="DivisionId">Division</label></div>
+             <div class="editor-field" style="padding-top:6px">
+                  @Html.DisplayFor(model => model.DivisionName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+             </div>
+         </div>
+        }
+
+        @if (Model.State != null)
+        {
+        <div id="DivForState" class=".DivForState" style="display:none;">
+          <div class="editor-label"><label for="State">State</label></div>
+          <div class="editor-field" style="padding-top:6px">
+             @Html.DisplayFor(model => model.State, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+           </div>
+        </div>
+        }
+
+        @if (Model.City != null)
+        {
+        <div class="editor-label"><label for="City">City</label></div>
+        <div class="editor-field" style="padding-top:6px">
+            @Html.DisplayFor(model => model.City, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        </div>
+        }
+
+        @if (Model.PostalCode != null && Model.PostalCode != "")
+        {
+        <div class="editor-label"><label for="PostalCode">Postal Code</label></div>
+        <div class="editor-field" style="padding-top:6px">
+           @Html.DisplayFor(model => model.PostalCode, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        </div>
+        }
+        @if (Model.Email != null)
+        {
+         <div class="editor-label"><label for="Email">Email</label></div>
+         <div class="editor-field" style="padding-top:6px">
+            @Html.DisplayFor(model => model.Email, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        </div>
+        }
+        @if (Model.Fax != null)
+        {
+        <div class="editor-label"><label for="Fax">Fax</label></div>
+        <div class="editor-field" style="padding-top:6px">
+            @Html.DisplayFor(model => model.Fax, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        </div>
+        }
+       </div>
+        <div class="form-horizontal" id="DivForUserInfoEdit" style="display:none;">
+        <div class="editor-label"><label for="UserName">Name</label></div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.UserName, new { htmlAttributes = new { @class = "k-textbox", style = "width:100%" } })
+            @Html.ValidationMessageFor(model => model.UserName, "", new { @class = "text-danger" })
+        </div>
+        <div class="editor-label"><label for="Designation">Designation</label></div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.Designation, new { htmlAttributes = new { @class = "k-textbox", style = "width:100%" } })
+            @Html.ValidationMessageFor(model => model.Designation, "", new { @class = "text-danger" })
+        </div>
+        <div class="editor-label"><label for="Address">Address</label></div>
+        <div class="editor-field">
+            @Html.EditorFor(m => m.Address, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.Address, "", new { @class = "text-danger" })
+        </div>
+        <div class="editor-label"><label for="AddressLine1">Address Line1</label></div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.AddressLine1, new { htmlAttributes = new { @class = "k-textbox", style = "width:100%" } })
+            @Html.ValidationMessageFor(model => model.AddressLine1, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="editor-label"><label for="Country">Country</label></div>
+        <div class="editor-field">
+             @(Html.Kendo().DropDownListFor(model => model.Country)                    
+                      .OptionLabel("--Select Type--")
+                      .BindTo(ViewBag.CountryId)
+                      .HtmlAttributes(new { style = "width: 100%" })
+             )
+            @Html.ValidationMessageFor(model => model.Country, "", new { @class = "text-danger" })
+        </div>
+        <div id="DivForUserDivision">
+            <div class="editor-label"><label for="DivisionId">Division</label></div>
+            <div class="editor-field">
+                    @(Html.Kendo().DropDownListFor(model=>model.DivisionId)                        
+                          .OptionLabel("--Select Type--")
+                          .BindTo(ViewBag.DivisionList)
+                          .HtmlAttributes(new { style = "width: 100%" })
+                    )
+                    @Html.ValidationMessageFor(model => model.DivisionId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div id="DivForUserState" class="DivForState" style="display:none;">
+            <div class="editor-label" ><label for="State">State</label></div>
+            <div class="editor-field">
+                    @Html.EditorFor(model => model.State, new { htmlAttributes = new { @class = "k-textbox", style = "width:100%" } })
+                    @Html.ValidationMessageFor(model => model.State, "", new { @class = "text-danger" })
+            </div>
+        </div>
+       
+        <div class="editor-label"><label for="City">City</label></div>
+        <div class="editor-field">
+                @Html.EditorFor(model => model.City, new { htmlAttributes = new { @class = "k-textbox", style = "width:100%" } })
+                @Html.ValidationMessageFor(model => model.City, "", new { @class = "text-danger" })
+        </div>
+        <div class="editor-label"><label for="PostalCode">Postal Code</label></div>
+        <div class="editor-field" >
+                @Html.EditorFor(model => model.PostalCode, new { htmlAttributes = new { @class = "k-textbox", style = "width:100%" } })
+                @Html.ValidationMessageFor(model => model.PostalCode, "", new { @class = "text-danger" })
+        </div>
+        <div class="editor-label" ><label for="Email">Email</label></div>
+        <div class="editor-field">
+                @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "k-textbox", style = "width:100%" } })
+                @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+        </div>
+        <div class="editor-label"><label for="Fax">Fax</label></div>
+        <div class="editor-field">
+                @Html.EditorFor(model => model.Fax, new { htmlAttributes = new { @class = "k-textbox", style = "width:100%" } })
+                @Html.ValidationMessageFor(model => model.Fax, "", new { @class = "text-danger" })
+        </div>
+    <div class="k-edit-buttons k-state-default col-xs-11">
+     <div class=" col-md-8  col-sm-6">
+         <button type="button" class="k-button k-button-icontext k-primary k-grid-update btnUserDetailsUpdate" id="btnUserDetailsUpdate"><span class="k-icon k-update"></span>Update</button>
+         <button type="reset" class="k-button k-button-icontext k-grid-cancel btnUserBasicInfoReset" id="btnUserBasicInfoReset"><span class="k-icon k-i-refresh"></span>Refresh</button>
+         <button type="button" class="k-button k-button-icontext k-grid-cancel btnUserBasicInfoCancel" id="btnUserBasicInfoCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+     </div>
+     </div>
+ </div>
+</div>
+
+<script>
+   
+    if ('@Model.Country' != 'BD') {
+        $("#DivForUserDivision").hide();
+    }
+    $(".btnEditUserBasicInfo").click(function () {
+        $("#DivForUserBasicInformationDisplay").hide();
+        $("#DivForUserInfoEdit").show();
+        $("#btnEditUserBasicInfo").hide();
+    });
+    var userEditValidation = $("#DivForUserInfoEdit").kendoValidator({
+        rules: {
+            UserName: function (input) {
+                if (input.is("[name=UserName]") && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Designation: function (input) {
+                if (input.is("[name=Designation]") && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Address: function (input) {
+                if (input.is("[name=Address]") && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Country: function (input) {
+                if (input.is("[name=Country]") && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            City: function (input) {
+                if (input.is("[name=City]") && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            PostalCode: function (input) {
+                if (input.is("[name=PostalCode]") && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        },
+        messages: {
+            UserName: "Please enter user name",
+            Designation: "Please enter designation",
+            Address: "Please enter address",
+            Country: "Please select country",
+            City: "Please enter City",
+            PostalCode: "Please enter postal code"
+        }
+    }).data("kendoValidator");
+
+    $("#btnUserDetailsUpdate").click(function () {
+        if (userEditValidation.validate()) {           
+            notification.show({ message: "User basic inforamtion updating...", showTime: startTime() }, "upload-progress");
+            var dataSend = {
+                UserId: $("#UserId").val(),
+                UserName: $("#UserName").val(),
+                ClientId: '@Model.ClientId',
+                Designation: $("#Designation").val(),
+                Address: $("#Address").val(),
+                AddressLine1: $("#AddressLine1").val(),
+                Country: $("#Country").val(),
+                DivisionId: $("#DivisionId").val(),
+                State: $("#State").val(),
+                City: $("#City").val(),
+                PostalCode: $("#PostalCode").val(),
+                Fax: $("#Fax").val(),
+                Id: $("#Id").val(),
+                Contact: $("#Contact").val(),
+                ContactTypeId: $("#ContactTypeId").val(),
+                ContactTypeName: $("#ContactTypeName").val(),
+                Comments: $("#Comments").val(),
+                Email: $("#Email").val(),
+                CreatedBy: loginUserId
+            };
+            $.ajax({
+                url: '@Url.Action("UpdateUserBasicInfo", "CRMClient")',
+                type: 'Post',
+                data: dataSend,
+                success: function (nId) {
+                    notification.hide();
+                    notification.setOptions({autoHideAfter: 2000});
+                    if (nId != '') {
+                        notification.show({ message: "User info successfully updated", showTime: startTime()},"upload-success");
+                    }
+                    else {notification.show({message: "Update unsuccessful", showTime: startTime()}, "upload-error");
+                    }
+                    $("#DivForUserBasicInformation").empty();
+                    $("#DivForUserBasicInformation").load('@Url.Action("_EditUserBasicInfo", "CRMClient")?UserId=' +'@Model.UserId');
+                    $("#DivForUserBasicInformation").show();
+                    $("#btnEditUserBasicInfo").hide();
+
+                }
+            });
+        }
+    });
+
+$("#DivForUserBasicInformation").on("click", ".btnUserBasicInfoReset", function () {
+      $("#DivForUserBasicInformation").empty();
+      $("#DivForUserBasicInformation").load('@Url.Action("_EditUserBasicInfo", "CRMClient")?UserId=' + '@Model.UserId');
+      $("#btnEditUserBasicInfo").hide();
+ });
+</script> 

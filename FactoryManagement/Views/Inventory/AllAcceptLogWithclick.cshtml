@@ -1,0 +1,61 @@
+﻿
+
+@{
+    ViewBag.Title = "AllAcceptLog";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Inventory/DisItemReturnFromMachine"> All Accept Log</a>
+        </li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">All Accept Log</span>
+                </div>
+                <div class="actions">
+                    <div class="btn-group btn-group-devided" data-toggle="buttons" id="Div_Upper_Portion" style="display:none;">
+                        @*<label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_acceptLog" data-toggle="tooltip" title="All Accept Log" data-container="body">
+                            <input type="radio" name="options" class="toggle">Accept Log
+                        </label>
+
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm active" id="btn_All" data-toggle="tooltip" title="All History" data-container="body">
+                            <input type="radio" name="options" class="toggle">All
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_today" data-toggle="tooltip" title="Today History" data-container="body">
+                            <span><input type="radio" name="options" class="toggle">Today</span>
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_seven" data-toggle="tooltip" title="Last 7 days History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 7 Days
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_thirty" data-toggle="tooltip" title="Last 30 day History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 30 Days
+                        </label>*@
+                    </div>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div id="All_accpt_his"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $("#All_accpt_his").empty();
+        $("#All_accpt_his").append('<div class="loading_partial"></div>');
+        $("#All_accpt_his").load('@Url.Action("_AllAcceptLogWithclick", "Inventory")');
+    });
+</script>

@@ -1,0 +1,54 @@
+﻿@******************************** Created By Mabia (Date:10.08.2016) *********************************@
+@using FactoryManagement.Helpers;
+@{
+    var count = 0;
+    int roleid = Convert.ToInt32(Request.Cookies["CookieAdminInfo"].Values["roleid"].ToString());
+}
+
+<tr>
+    <th>#</th>
+    <th>Name</th>
+    <th>Type</th>
+    <th>Created By</th>
+    <th>Created Date</th>
+    @*<th></th>*@
+</tr>
+
+@foreach (var item in ViewBag.SparePartsList as IEnumerable<FactoryManagement.Models.View_All_InventoryList>)
+{
+    count++;
+    <tr>
+        <th scope="row">@count.</th>
+        <td>@*@Html.DisplayFor(modelItem => item.ProductName)*@
+           
+            @Html.EncodedActionLink(item.ProductName, "StoreProductDetails", "StoreProduct", new { id = item.InventoryId }, null)
+        </td>
+        <td>@Html.DisplayFor(modelItem => item.ProductType)</td>
+        <td>
+            @if (item.CreatedBy == 0)
+            {<img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" /><span>Super admin</span>}
+            else
+            {
+                if (roleid == 1 || roleid == 4)
+                {
+                    <a href="@Html.EncodedParam("DisplayEmployeeDetails","HumanResource",new { UserId=item.CreatedBy,isDisplay=true},null)">
+                        <img src="~/Images/UserPicture/thumb/@item.PictureName" class="img-circle" /> @item.UserName
+                    </a>
+                }
+                else
+                {
+                    <img src="~/Images/UserPicture/thumb/@item.PictureName" class="img-circle" /> @item.UserName
+                }
+            }
+        </td>
+        <td>@Convert.ToDateTime(item.CreatedDate).ToString("MMM dd,yyyy")</td>
+        @*<td>
+            <a href="/Inventory/SparePartsCreated?id=@item.InventoryId"><span class="btn btn-success"><i class="fa fa-pencil"></i></span></a>
+            <span data-id="@item.InventoryId" class="btn btn-danger btnPartsDelete"><i class="fa fa-trash"></i></span>
+        </td>*@
+    </tr>
+}
+<script>
+    totalCount = '@(ViewBag.TotalCount)';
+    showCount = '@count';
+</script>

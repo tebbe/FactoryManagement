@@ -1,0 +1,50 @@
+﻿
+
+
+
+@model FactoryManagement.ModelView.Auth.UserLoginModelView
+@{
+    ViewBag.Title = "Login";
+    Layout = "~/Views/Shared/_LayoutTest.cshtml";
+}
+
+<div class="content">
+    <div class="lock-head"><img src="~/Content/Icon/gsml_Logo_big.png" style="max-width:145px!important;" /></div>
+    <form class="login-form" action="/Account/Login" method="post" style="margin: 35px;">
+        <div class="form-group">
+            <label class="control-label visible-ie8 visible-ie9">Username</label>
+            <div class="input-icon">
+                <i class="fa fa-user"></i>
+                <input class="form-control placeholder-no-fix" 
+                       type="text" autocomplete="off" placeholder="Username" 
+                       data-val="true" data-val-required="Please enter user name"
+                       id="UserName" name="UserName">
+            </div>
+            <span class="field-validation-valid text-danger" data-valmsg-for="UserName" data-valmsg-replace="true"></span>
+        </div>
+        <div class="form-group">
+            <label class="control-label visible-ie8 visible-ie9">Password</label>
+            <div class="input-icon">
+                <i class="fa fa-lock"></i>
+                <input class="form-control placeholder-no-fix" type="Password" autocomplete="off" 
+                       placeholder="Password" data-val="true" data-val-required="Please enter password"
+                       id="Password" name="Password">
+            </div>
+            <span class="field-validation-valid text-danger" data-valmsg-for="Password" data-valmsg-replace="true"></span>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn green-haze">Login <i class="m-icon-swapright m-icon-white"></i></button>
+            <label class="rememberme check"><input type="checkbox" name="remember" value="1" />Remember</label>
+            <a href="/Account/PasswordRecovery" id="forget-password" class="forget-password">Forgot Password?</a>
+        </div>
+    </form>
+    <div class="lock-bottom">
+        <p style="color:#fff;">Powered By <span><a href="http://www.spicybinary.com/">ZS-Soft Tech</a></span></p>
+    </div>
+</div>
+<script>
+    $("form").kendoValidator();
+    $("#btnRefresh").click(function () {
+        location.reload();
+    });
+</script>

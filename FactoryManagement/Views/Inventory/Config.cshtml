@@ -1,0 +1,42 @@
+﻿
+
+
+@*************************** Created By Jerin Jahan Date(26.11.2016) *******************************************@
+@{
+    ViewBag.Title = "Configuration";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+
+<h2>Configuration</h2>
+<div>
+    <span class="btn btn-info" id="btn_SpareList"><i class="fa fa-list-ul"></i> All Spare Parts Lists</span>
+    <span class="btn btn-info" id="btn_AddSpare"><i class="fa fa-plus"></i> Add New Spare Parts</span>
+    <span class="btn btn-info" id="btn_MachineTypeNameList"><i class="fa fa-list-ul"></i> All Machine Type Name</span>
+    <span class="btn btn-info" id="btn_MachineList"><i class="fa fa-list-ul"></i> All Machine Lists</span>
+    <span class="btn btn-info" id="btn_AddMachine"><i class="fa fa-plus"></i> Add New Machine</span>
+    <span class="btn btn-info" id="btn_EquipList"><i class="fa fa-list-ul"></i> All Equipment Lists</span>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+    });
+    $("#btn_SpareList").click(function () {
+        location.href = '@Url.Action("AllPartsList","Inventory")';
+    });
+    $("#btn_AddSpare").click(function () {
+        location.href = '@Url.Action("SparePartsCreated", "Inventory")';
+    });
+    $("#btn_MachineTypeNameList").click(function () {
+        location.href = '@Url.Action("MachineTypeName", "Inventory")';
+    });
+    $("#btn_MachineList").click(function () {
+        location.href = '@Url.Action("AllMachineList", "Inventory")';
+    });
+    $("#btn_AddMachine").click(function () {
+        location.href = '@Url.Action("MachineTypeCreate", "Inventory")';
+    });
+    $("#btn_EquipList").click(function () {
+        location.href = '@Url.Action("AllEquipmentList", "Inventory")';
+    });
+</script>

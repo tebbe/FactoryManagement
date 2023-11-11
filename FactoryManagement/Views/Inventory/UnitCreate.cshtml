@@ -1,0 +1,135 @@
+﻿@*----------------------Created By (Mabia Mishu) Date(09/09/2016)-----------------*@
+
+@model FactoryManagement.ModelView.Inventory.Product.UnitListViewModel
+
+@using (Html.BeginForm("UnitCreateSave", "Inventory", FormMethod.Post))
+{
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(m => m.UnitId)
+    @Html.HiddenFor(m => m.HasParent)
+    @Html.HiddenFor(m => m.ParentId)
+    @Html.HiddenFor(m => m.ParentName)
+    @Html.HiddenFor(m => m.CreatedBy)
+
+    <br />
+    <div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" id="divForUnitCreate" style="margin-bottom:4%;margin-top:2%;">
+        <div class="editor-label">
+            <label for="UnitName">Unit Name</label>
+        </div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.UnitName, new { htmlattributes = new { @class = "k-textbox", @style = "width:100%" } })
+            @Html.ValidationMessageFor(model => model.UnitName, "", new { @class = "text-Danger" })
+        </div>
+        <br />
+        <div class="k-edit-buttons k-state-default">
+            @if (Model.UnitId != 0)
+            {
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnCreate"><span class="k-icon k-update"></span>Update</button>
+            }
+            else
+            {
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnCreate"><span class="k-icon k-update"></span>Create</button>
+            }
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+    <br />
+}
+
+<script>
+    var validation = $("#divForUnitCreate").kendoValidator({
+        rules: {
+            remote: function (input) {
+                var remoteAttr = input.attr("data-val-remote-url");
+                if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                    return true;
+                }
+                var isInvalid;
+                var data = {};
+                var UnitId = $("#UnitId").val();
+                var UnitName = $.trim($("#UnitName").val());
+                $("#UnitName").val(UnitName);
+                if (input.attr('name') === "UnitName") {
+                    data = { UnitId: UnitId, UnitName: UnitName };
+                }
+                $.ajax({
+                    url: remoteAttr,
+                    mode: "abort",
+                    port: "validate" + input.attr('name'),
+                    dataType: "json",
+                    type: input.attr("data-val-remote-type"),
+                    data: data,
+                    async: false,
+                    success: function (response) {
+                        isInvalid = response;
+                        if (isInvalid == true) {
+                            isInvalid = true;
+                        }
+                        else {
+                            isInvalid = false;
+                        }
+                    }
+                });
+                return isInvalid;
+            }
+        },
+        messages: {
+            remote: function (input) {
+                return input.data('val-remote');
+            }
+        }
+    }).data("kendoValidator");
+    $("#btnCreate").click(function () {
+        var msg = "";
+        if (validation.validate()) {
+            var sendData = {
+                UnitId: $("#UnitId").val(), UnitName: $("#UnitName").val(),
+                HasParent: $("#HasParent").val(), ParentId: $("#ParentId").val(), ParentName: $("#ParentName").val(), CreatedBy: userId
+            };
+            msg = ($("#UnitId").val() > 0) ? "Updating unit information" : "Creating new unit";
+            notification.show({
+                message: msg,
+                showTime: startTime(),
+            }, "upload-progress");
+            $.ajax({
+                url: '@Url.Action("UnitCreateSave", "Inventory")',
+                type: 'Post',
+                data: sendData,
+                success: function (response) {
+                   
+                    notification.hide();
+                    notification.setOptions({
+                        autoHideAfter: 2000
+                    });
+                    if (response === "Success") {
+                        if ($("#UnitId").val() > 0) {
+                            msg = "Unit information successfully updated";
+                        } else {
+                            msg = ($("#HasParent").val() == 'True') ? "Unit successfully added" : "Unit successfully created";
+                        }
+                        notification.show({
+                            message: msg, showTime: startTime(),
+                        }, "upload-success");
+
+                        $("#divForAll_Unit").empty();
+                        $("#divForAll_Unit").append('<div class="loading_partial"></div>');
+                        $("#divForAll_Unit").load('@Url.Action("_ShowAllUnitList", "Inventory")');
+                    }
+                    else {
+                        msg = ($("#HasParent").val() == 'True') ? "Add sub unit attempt unsuccessful" : "Unit create attempt unsuccessful";
+                        notification.show({
+                            message: msg, showTime: startTime()
+                        }, "upload-error");
+                    }
+                    $("#divForUnitCreate").empty();
+                    $("#btnCreate").closest(".k-window-content").data("kendoWindow").close();
+                }
+            });
+        }
+    });
+    $("#btnCancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>
+
+

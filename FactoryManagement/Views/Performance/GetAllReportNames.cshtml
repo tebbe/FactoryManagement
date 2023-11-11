@@ -1,0 +1,19 @@
+﻿@************************************** Added by Kaikubad on 09-03-2017********************************************@
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="comment_report_types">
+    <div style="width:70%;margin:0 auto">
+        <fieldset id="group2">
+            @foreach (var report in ViewBag.ReportComment)
+            {
+                <div class="row" style="margin-top:10px"><input type="radio" class="report_Checkbox" value="@report.ReportId" name="group2">@report.ReportName</div>
+            }
+        </fieldset>
+    </div>
+    <div class="col-sm-11 col-xs-11" style="margin-top:5px;float:right">
+        <div class="k-edit-buttons k-state-default">
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" data-id="@ViewBag.commentId" id="cancel_report"><span class="k-icon k-cancel"></span>Cancel</button>
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" data-id="@ViewBag.commentId" id="confirm_report"><span class="k-icon k-update"></span>Report</button>
+        </div>
+    </div>
+</div>
+
+

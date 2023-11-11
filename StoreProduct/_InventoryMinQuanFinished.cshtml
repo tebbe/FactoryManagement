@@ -1,0 +1,37 @@
+﻿
+
+@model IEnumerable<FactoryManagement.Models.View_Inventory_Finish_Item_List>
+
+@{
+    int count = 0;
+    int roleid = Convert.ToInt32(Request.Cookies["CookieAdminInfo"].Values["roleid"].ToString());
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    long loginusrid = Convert.ToInt64(Request.Cookies["CookieAdminInfo"].Values["userid"].ToString());
+}
+
+<table class="table table-bordered table-striped table-condensed table-hover" id="tbl_manu_indent_list">
+    <tr>
+        <th width="5%">#</th>
+        <th width="25%">Product Name</th>
+        <th width="10%">Total Quantity</th>
+        <th width="15%">Avaialable Quantity</th>
+        <th width="15%">Minimum Qty</th>
+        <th width="20">Minimum Qty Set Date</th>
+        <th width="15%">Finished Date</th>
+    </tr>
+    @foreach (var item in Model)
+    {
+        count++;
+        <tr>
+            <th scope="row">@count.</th>
+            <td><span class="txtManuProName" data-id="@item.InventoryId" style="color:#357ebd;cursor:pointer;">@item.ProductName</span></td>
+            <td><span class="txtManuQuantity" data-id="@item.InventoryId" style="color:#357ebd;cursor:pointer;">@item.Total_Quan @item.UnitName</span></td>
+            <td>@item.AvailableQuan @item.UnitName</td>
+            <td>@item.MinimunQuan @item.UnitName</td>
+            <td>@Convert.ToDateTime(item.InsertedDate).ToString("MMM dd, yyyy")</td>
+            <td>@item.FinishedDateFormate</td>
+        </tr>
+    }
+</table>
+
+

@@ -1,0 +1,122 @@
+﻿
+
+@************************************** Created By Jerin Jahan (Date:12.01.2017)  ***************************************@
+
+@model FactoryManagement.Models.Leave_Application_List
+
+@using (Html.BeginForm())
+{
+    <input id="DateValidation" name="DateValidation" type="hidden">
+    <div class="editor-label"><label>Employee Name</label></div>
+    <div class="editor-field">
+        @(Html.Kendo().AutoComplete()
+                    .Name("ApplicationUser")
+                    .DataTextField("UserName")
+                    .Filter("contains")
+                    .MinLength(3)
+                    .HtmlAttributes(new { style = "width:100%" })
+                    .Events(e => e.Select("UserNameSelect"))
+                    .DataSource(source =>
+                      {
+                          source.Read(read =>
+                          {
+                              read.Action("EmployeeeNameSearching", "LeaveManagement").Data("onAdditionalData");
+                          })
+                          .ServerFiltering(true);
+                      })
+        )
+        <span class="field-validation-valid text-danger" data-valmsg-for="ApplicationUser" data-valmsg-replace="true"></span>
+    </div>
+
+    <div class="editor-label"><label>Start Date</label></div>
+    <div class="editor-field">
+        <div style="width:40%!important;float:left;">
+            @(Html.Kendo().DatePicker().Name("StartDate").Min(DateTime.Now).HtmlAttributes(new { style = "width: 100%" }))
+            <span class="field-validation-valid text-danger" data-valmsg-for="StartDate" data-valmsg-replace="true"></span>
+            <span class="field-validation-valid text-danger" data-valmsg-for="DateValidation" data-valmsg-replace="true"></span>
+        </div>
+        <label style="width:5%!important;float:left;padding-left:10px;padding-right:10px;">To</label>
+        <div style="width:40%!important;float:left;">
+            @(Html.Kendo().DatePicker().Name("EndDate").Min(DateTime.Now).HtmlAttributes(new { style = "width: 100%" }))
+            <span class="field-validation-valid text-danger" data-valmsg-for="EndDate" data-valmsg-replace="true"></span>
+        </div>
+    </div>
+
+    <div class="editor-label"><label>Reason</label></div>
+    <div class="editor-field">
+        <textarea class="form-control k-textbox" cols="65" id="Reason" name="Reason" rows="5">@Model.Reason</textarea>
+        <span class="field-validation-valid text-danger" data-valmsg-for="Reason" data-valmsg-replace="true"></span>
+    </div>
+
+}
+<script>
+    var App_userId = 0;
+    if ('@(Model.ApplicationUserId)' > 0) {
+        $("#ApplicationUser").data("kendoAutoComplete").value('@(ViewBag.Empname)');
+        document.getElementById('ApplicationUser').readOnly = true;
+    }
+    $("#btn_leave_edit_Cancle").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $('#btn_leave_edit_Refresh').click(function () {
+        var sendData = { id: '@(Model.LeaveId)', v: "p" };
+        $("#div_leave_edit_partial").empty();
+        $("#div_leave_edit_partial").append('<div class="win_loading_half"></div>');
+        $("#div_leave_edit_partial").load('@Url.Action("LeaveApplication", "LeaveManagement")', sendData);
+    });
+    $("#btn_leave_edit_save").click(function () {
+        var validatable = $("#div_leave_edit_partial").kendoValidator({
+            rules: {
+                dateValidate: function (input) {
+                    if (input.is("[name=DateValidation]")) {
+                        var StartDate = $("#StartDate").val();
+                        var EndDate = $("#EndDate").val();
+                        if (new Date(StartDate) > new Date(EndDate)) {
+                            return false;
+                        }
+                        else {
+                            return true;
+                        }
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                dateValidate: "Start date can not be greater than end date"
+            }
+        }).data("kendoValidator");
+        if (validatable.validate()) {
+            notification.show({ message: "Leave application is updating...", showTime: startTime() }, "upload-progress");
+            var sendData = {
+                LeaveId: '@(Model.LeaveId)',
+                ApplicationUserId: '@(Model.ApplicationUserId)',
+                StartDate: $("#StartDate").val(),
+                EndDate: $("#EndDate").val(),
+                UpdatedBy: userId,
+                Reason: $("#Reason").val()
+            };
+            $.ajax({
+                url: '@Url.Action("LeaveAppEdit", "LeaveManagement")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    if (data != null) {
+                        if (data === 'Success') {
+                            notification.show({ message: "Leave approve has been successfully updated.", showTime: startTime() }, "upload-success");
+                            location.reload();
+                        }
+                        else {
+                            notification.show({ message: "Leave update was unsuccessful.", showTime: startTime() }, "upload-error");
+                        }
+                    }
+                },
+                error: function (error) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Unsuccessful", showTime: startTime() }, "upload-error");
+                }
+            });
+        }
+    });
+</script>

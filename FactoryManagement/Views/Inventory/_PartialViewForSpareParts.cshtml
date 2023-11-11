@@ -1,0 +1,13 @@
+﻿
+
+@(Html.Kendo().MultiSelect()
+    .Name("SpareParts")
+    .DataTextField("Name")
+    .DataValueField("PartsId")
+    .HtmlAttributes(new { style = "width:100%" })
+    .Events(e => e.Change("onSparePartsChange").Select("onSparePartsSelect"))
+    .BindTo(ViewBag.allPartsList)
+    .AutoClose(false)
+    .Placeholder("-- Select One --"))
+
+<span class="field-validation-valid text-danger" data-valmsg-for="SpareParts" data-valmsg-replace="true"></span>

@@ -1,0 +1,67 @@
+﻿
+
+
+
+
+@************************************** Created By Jerin Jahan (Date:21.08.2016)  ***************************************@
+@{
+    var count = 1;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    double total = 0;
+    double total_mon = 0;
+    var currencySym = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+<h4>Already Added Account Lists</h4>
+<hr />
+<div class="form-group">
+    <div class="col-md-offset-1 col-md-10 col-sm-offset-1 col-sm-10" style="padding-top:7px;">
+        @foreach (var list in ViewBag.allAccName as IEnumerable<FactoryManagement.ModelView.SalaryConfig.SalaryAccAddModelView>)
+        {
+            double BaseSalary = ViewBag.baseAmount;
+            double amount; double amount_mon;
+            <p id="acc_type_@list.Id">
+                @count . @list.Name
+                @if(list.AccountType == 2){
+                    amount = BaseSalary * Convert.ToDouble(list.Percentage) / 100;
+                    <span style="margin-left:10px;">
+                        @currencySym @amount  (@list.Percentage % of @currencySym @BaseSalary )
+                    </span>
+                }
+                else{
+                    amount = Convert.ToDouble(list.Amount);
+                    <span style="margin-left:10px;">@currencySym @list.Amount</span>
+                }
+                <span class="k-icon k-i-pencil btn_pack_Acc_Edit" data-id="@list.Id" data-packageid="@list.PackageId"></span>
+                <span class="k-icon k-i-close btn_pack_Acc_Delete" data-id="@list.Id" data-packageid="@list.PackageId"></span>
+            </p>
+            count++;
+            amount_mon = amount;
+            if (list.AccPayType == 3)
+            {
+                amount = 12 * amount;
+            }
+            else
+            {
+                int monthCount = db.Salary_Acc_Pay_MonthList.Where(m => m.Salary_Pck_Acc_Id == list.Id).Count();
+                amount = monthCount * amount;
+            }
+
+            if (list.IsAddition)
+            {
+                total = total + Convert.ToDouble(amount);
+                total_mon = total_mon + Convert.ToDouble(amount_mon);
+            }
+            else
+            {
+                total = total - Convert.ToDouble(amount);
+                total_mon = total_mon - Convert.ToDouble(amount_mon);
+            }
+
+        }
+    </div>
+</div>
+<div class="form-group">
+    <div class="col-md-offset-1 col-md-11 col-sm-offset-1 col-sm-11" style="padding-top:7px;">
+      Total = @currencySym @total_mon (Monthly) @currencySym @total (Annual)
+    </div>
+</div>

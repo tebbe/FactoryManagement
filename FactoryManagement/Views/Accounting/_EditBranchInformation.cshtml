@@ -1,0 +1,15 @@
+﻿
+<div id="div_for_edit_branch_info"></div>
+<script>
+    $(document).ready(function () {
+        $("#div_for_edit_branch_info").append('<div class="win_loading_half"></div>');
+        $("#div_for_edit_branch_info").load('@Url.Action("_EditBankList", "Accounting")?BranchId=' + '@ViewBag.BranchId');
+    });
+    $("#div_for_edit_branch_info").on("click", "#btnBranchRefresh", function (e) {
+        e.preventDefault();
+        $("#div_for_edit_branch_info").empty();
+        $("#div_for_edit_branch_info").append('<div class="partial_loading_half"></div>');
+        $("#div_for_edit_branch_info").load('@Url.Action("_EditBankList", "Accounting")?BranchId=' + '@ViewBag.BranchId');
+        $("#div_for_edit_branch_info").show();
+    });
+</script>

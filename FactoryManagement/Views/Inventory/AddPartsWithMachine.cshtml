@@ -1,0 +1,118 @@
+﻿
+
+
+<div class="k-edit-form-container col-md-10 col-sm-10 col-xs-10" id="Div_Indent_Edit" style="margin-bottom:4%;">
+    <div class="editor-label"><label>Select Spare Parts</label></div>
+    <div class="editor-field" id="DivForSpareParts">
+        @(Html.Kendo().MultiSelect()
+        .Name("SpareParts")
+        .DataTextField("Name")
+        .DataValueField("PartsId")
+        .HtmlAttributes(new { style = "width:100%" })
+        .Events(e => e.Change("onSparePartsChange").Select("onSparePartsSelect"))
+        .BindTo(ViewBag.allPartsList)
+        .AutoClose(false)
+        .Placeholder("-- Select One --"))
+    </div>
+
+    <table id="tblForAddedPart" class="table" style="display:none;">
+        <tr><th width="40">Parts Name</th><th width="20">Replaceable Date</th><th width="20">Quantity</th><th width="20">Unit</th></tr>
+    </table>
+      
+    <div class="col-sm-11 col-xs-11">
+        <div class="k-edit-buttons k-state-default">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnPartsAdd"><span class="k-icon k-update"></span>Add</button>
+            <button type="button" class="k-button k-button-icontext k-grid-update" id="btnPartsAddRefresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnPartsAddCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#btnPartsAdd").prop('disabled', true);
+    });
+    $("#btnPartsAddCancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+        $("#btn_Parts_Add").show();
+    });
+    @***************************************  Add New Spare Parts With Machine   ***************@
+    $("#btnPartsAdd").click(function(){
+        var validation = $("#tblForAddedPart").kendoValidator().data("kendoValidator");
+        if (validation.validate()) {
+            notification.show({message: "Adding new spare parts.... ",showTime: startTime()}, "upload-progress");
+            var allPartsQuan = [], allPartsRepDate = [];
+            var AllId = [],AllUnit=[],AllSpareId=[];
+            $(".spanForRep").each(function () {
+                var id = $(this).data('id');
+                var breakable = $(this).data('break');
+                var touup = $(this).data('touup');
+                var uid = $(this).data('uid'); allPartsQuan
+                allPartsRepDate.push($("#txtRepDate-" + id).val());
+                allPartsQuan.push($("#txtQuan-" + id).val());
+                AllId.push(touup);
+                AllSpareId.push(id);
+                if (breakable) {
+                    AllUnit.push($("#txtSpareUnitId-" + id).val());
+                } else {
+                    AllUnit.push(uid);
+                }
+            });
+
+            var allQaun =[];var allRepDate =[];
+            $(".txtNewAddqan").each(function(){
+                allQaun.push($(this).val());
+            });
+            $(".txtNewAddRepDate").each(function(){
+                allRepDate.push($(this).val());
+            });
+            var sendData = {
+                MachineId: MachineId,machineName:machineName,
+                AllPartsSame: $("#AllPartsSame").val(),
+                AllSpareId: current, allPartsQuan: allPartsQuan,
+                allPartsRepDate: allPartsRepDate, AllUnit: AllUnit, AllId: AllId,
+                CreatedBy: userId};
+            $.ajax({
+                url: '@Url.Action("AddPartsWithExsistingMachine", "Inventory")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide();notification.setOptions({autoHideAfter: 5000});
+
+                    if(data === "Error"){
+                        notification.show({ message: "Spare parts addition unsuccessful", showTime: startTime()}, "upload-error");
+                    }
+                    else{
+                        notification.show({message: "Spare parts successfully added", showTime: startTime()}, "upload-success");
+                        $("#DivForMaintanence").hide();
+                        $("#DivForMaintanence").empty();
+                        $("#divForSelectedParts").hide();
+                        $("#DivForPartsList").load('@Url.Action("MachinePartsList", "Inventory")?machineId=' + MachineId);
+                        $("#btn_Parts_Add").show();
+                    }
+                }
+            });
+        }
+    });
+
+    $("#btnPartsAddRefresh").click(function () {
+        $("#Win_Add_Parts").empty();
+        $("#Win_Add_Parts").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '40%',
+            title: 'Add New Spare Parts',
+            close: onWindowClose
+        });
+        $("#Win_Add_Parts").html('<div class="win_loading_half"></div>');
+        var Win_Add_Parts = $("#Win_Add_Parts").data("kendoWindow");
+        Win_Add_Parts.refresh({ url: "/Inventory/AddPartsWithMachine?machineId=" + MachineId });
+        Win_Add_Parts.center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+        $("#btn_Parts_Add").hide();
+    });
+</script>

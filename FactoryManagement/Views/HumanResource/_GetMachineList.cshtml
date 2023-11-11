@@ -1,0 +1,39 @@
+﻿@if (ViewBag.pageType == "win")
+{
+    <div class="editor-label"><label for="LineId">Machine</label></div>
+    <div class="editor-field">
+        @(Html.Kendo().DropDownList()
+                                 .Name("Partial_MachineId")
+                                 .DataTextField("MachineName")
+                                  .DataValueField("MachineId")
+                                 .OptionLabel("--Select Line--")
+                                 .BindTo(ViewBag.machine)
+                                 .HtmlAttributes(new { style = "width:100%" })
+        )
+        <span class="field-validation-valid text-danger" data-valmsg-for="Partial_MachineId" data-valmsg-replace="true"></span>
+        <script>
+            var MachineType = $("#Partial_MachineId").data("kendoDropDownList");
+            MachineType.value('@(ViewBag.seletedMachineId)');
+        </script>
+    </div>
+}
+else
+{
+    <div class="form-group">
+        @Html.Label("Machine", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+        <div class="col-md-6 col-sm-7 col-xs-8">
+            @(Html.Kendo().DropDownList()
+                                 .Name("MachineId")
+                         .DataTextField("MachineName")
+                          .DataValueField("MachineId")
+                                 .OptionLabel("--Select Line--")
+                                 .BindTo(ViewBag.machine)
+                                 .HtmlAttributes(new { style = "width:100%" })
+            )
+        </div>
+        <span class="field-validation-valid text-danger" data-valmsg-for="MachineId" data-valmsg-replace="true"></span>
+    </div>
+}
+
+
+

@@ -1,0 +1,99 @@
+﻿.image-uploader {
+        width: 100%;
+        height: 160px;
+        display: block;
+        text-align: center;
+    }
+.imgPreview {
+        background-color: #e8e4d0;
+        margin-bottom: 20px;
+        position: relative;
+        width: 100%;
+        height: 160px;
+        border: 1px solid #808080;
+        display: none;
+        overflow: hidden;
+    }
+.imgPreview img {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+.lblForPics {
+        text-align: center;
+        max-width: 100%;
+        width: 100%;
+        height: 160px;
+        vertical-align: middle;
+        border: 1px dashed blue;
+        cursor: pointer;
+    }
+.lblForPics span {color: #083bb5 !important;}
+.previewImgClose {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        float: right;
+        right: -1.8em;
+        bottom: -1.8em;
+        z-index: 9999;
+        margin-top: -3em;
+    }
+
+    
+/************************** For Product Details Edit Page ************************************/
+    #Div_For_Pro_Edit .image-uploader {
+        width: 100%;
+        height: 160px;
+        display: none;
+        text-align: center;
+    }
+    #Div_For_Pro_Edit .imgPreview {
+        background-color: #e8e4d0;
+        margin-bottom: 20px;
+        position: relative;
+        width: 100%;
+        height: 160px;
+        border: 1px solid #808080;
+        display: block;
+        overflow: hidden;
+    }
+    #Div_For_Pro_Edit .imgPreview img {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+    #Div_For_Pro_Edit .lblForPics {
+        text-align: center;
+        max-width: 100%;
+        width: 100%;
+        height: 160px;
+        vertical-align: middle;
+        border: 1px dashed blue;
+        cursor: pointer;
+    }
+    #Div_For_Pro_Edit .lblForPics span {color: #083bb5 !important;}
+    #Div_For_Pro_Edit .previewImgClose {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        float: right;
+        right: -1.8em;
+        bottom: -1.8em;
+        z-index: 9999;
+        margin-top: -3em;
+    }

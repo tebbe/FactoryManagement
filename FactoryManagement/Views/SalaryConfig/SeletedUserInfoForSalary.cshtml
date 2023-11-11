@@ -1,0 +1,46 @@
+﻿
+
+
+
+
+@************************************** Created By Jerin Jahan (Date:24.08.2016)  ***************************************@
+@model FactoryManagement.Models.View_UserLists
+
+<div class="row">
+    <dl class="col-md-2 col-sm-2">
+        <dt><img src="~/Images/UserPicture/thumb/@Model.Picture" /></dt>
+    </dl>
+    <dl class="dl-horizontal col-md-9 col-sm-10" >
+        <dt>User Name</dt>
+        <dd> @Html.DisplayFor(model => model.UserName)</dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.EmpId)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.EmpId)
+        </dd>
+
+        <dt>Unit</dt>
+        <dd>@Html.DisplayFor(model => model.SiteName)</dd>
+
+        @if (Model.MachineId != null)
+        {
+            <dt>
+                @Html.DisplayNameFor(model => model.MachineId)
+            </dt>
+            <dd>@Html.DisplayFor(model => model.MachineId)</dd>
+        }
+
+
+        <dt>Join Date</dt>
+        <dd>@Convert.ToDateTime(Model.JoinDate).ToString("MMMM dd,yyyy")</dd>
+
+        <dt>Email</dt>
+        <dd>@Model.EmailAddress</dd>
+
+        <dt>Contact No.</dt>
+        <dd>@Model.Phone</dd>
+        <dd>@Model.MobileNo</dd>
+
+    </dl>
+</div>

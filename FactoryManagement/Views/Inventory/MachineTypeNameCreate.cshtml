@@ -1,0 +1,118 @@
+﻿
+
+
+@************************************** Created By Jerin Jahan (Date:22.11.2016)  ***************************************@
+@model FactoryManagement.ModelView.Inventory.Mahinaries.MachineTypeNameModelView
+<style>.k-edit-form-container .editor-label{width:35%!important;} </style>
+
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(m => m.MachineId)
+    <br />
+    <div class="k-edit-form-container" id="divForMachineTypeCreate">
+        <div class="editor-label"><label for="MachineTypeName1">Machine Type Name</label></div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.MachineTypeName1, new { htmlattributes = new { @class = "k-textbox" } })
+            @Html.ValidationMessageFor(model => model.MachineTypeName1, "", new { @class = "text-Danger" })
+        </div>
+        <div class="k-edit-buttons k-state-default">
+            @if (Model.MachineId != 0)
+            {
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnMachineCreate"><span class="k-icon k-update"></span>Update</button>
+            }
+            else
+            {
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnMachineCreate"><span class="k-icon k-update"></span>Create</button>
+            }
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnMachineCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+    <br />
+
+<script>
+    var msg = "";
+    var validation = $("#divForMachineTypeCreate").kendoValidator({
+        rules: {
+            remote: function (input) {
+                var errormessage;
+                var remoteAttr = input.attr("data-val-remote-url");
+                if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                    return true;
+                }
+                var isInvalid;
+                var data = {};
+                var MachineId = $("#MachineId").val(); 
+                var MachineTypeName1 = $.trim($("#MachineTypeName1").val());
+                data = { MachineId: MachineId, MachineTypeName1: MachineTypeName1 };
+                $.ajax({
+                    url: remoteAttr,
+                    mode: "abort",
+                    port: "validate" + input.attr('name'),
+                    dataType: "json",
+                    type: input.attr("data-val-remote-type"),
+                    data: data,
+                    async: false,
+                    success: function (response) {
+                        isInvalid = response;
+                        if (isInvalid === true) {
+                            isInvalid = true;
+                        }
+                        else {
+                            isInvalid = false;
+                        }
+                    }
+                });
+
+                return isInvalid;
+            }
+        },
+        messages: {
+            remote: function (input) {
+                return input.data('val-remote');
+            }
+        }
+    }).data("kendoValidator");
+
+
+    $("#btnMachineCreate").click(function () {
+        if (validation.validate()) {
+            var sendData = {
+                MachineId: $("#MachineId").val(), MachineTypeName1: $("#MachineTypeName1").val(), CreatedBy: userId
+            };
+            msg = ($("#MachineId").val() > 0) ? "Updating machine type name information..." : "Adding new machine type name...";
+            notification.show({ message: msg, showTime: startTime()}, "upload-progress");
+
+            $.ajax({
+                url: '@Url.Action("MachineTypeNameSave", "Inventory")',
+                type: 'Post',
+                data: sendData,
+                success: function (response) {
+                    if ($("#MachineId").val() > 0) {
+                        $("#Win_Edit_Machine").data("kendoWindow").close();
+
+                    } else {
+                        $("#Win_Add_Machine").data("kendoWindow").close();
+                    }
+                    
+                    if (response === "Success") {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+
+                        msg = ($("#MachineId").val() > 0) ? "Machine type name successfully updated." : "New machine type name successfully created.";
+                        notification.show({ message: msg, showTime: startTime() }, "upload-success");
+                        $("#Div_All_Machine").empty();
+                        $("#Div_All_Machine").append('<div class="loading_partial"></div>');
+                        $("#Div_All_Machine").load('@Url.Action("_AllMachineTypeName", "Inventory")');
+                    }
+                    else {
+                        msg = ($("#MachineId").val() > 0) ? "Machine type name update unsuccessful." : "New machine type name add unsuccessful.";
+                        notification.show({ message: msg, showTime: startTime() }, "upload-error");
+                    }
+                }
+            });
+
+        }
+    });
+    $("#btnMachineCancel").click(function () {       
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+        $("#divForMachineTypeCreate").empty();
+    });
+</script>

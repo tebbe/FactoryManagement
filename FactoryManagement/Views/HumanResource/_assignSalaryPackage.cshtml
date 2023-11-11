@@ -1,0 +1,52 @@
+﻿@******************** Created By Kaikubad(Date:07.02.2017) **************************@
+@if (ViewBag.View == "win")
+{
+    <div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">Salary Package</label></div>
+    <div class="editor-field" style="float:left;">
+        @(Html.Kendo().DropDownList().Name("Salary_PackageId")
+                     .OptionLabel("--Select One Package--")
+                     .BindTo(ViewBag.SalaryPackages as SelectList)
+                     .Events(e => e.Change("salaryPackageChange"))
+                     .HtmlAttributes(new { style = "width:100%" })
+        )
+        <span class="field-validation-valid text-danger" data-valmsg-for="PackageId" data-valmsg-replace="true"></span>
+    </div>
+    <div id="Selected_Salary_Pack_details"></div>
+}
+else
+{
+    <div>
+        <div class="row">
+            <div class="col-xs-2 col-sm-2 col-md-2"></div>
+            <label class="control-label" style="margin-bottom:10px">No Salary package assigned yet</label>
+        </div>
+        <div class="form-group row">
+            <label class="control-label col-md-3 col-sm-3">Salary Package</label>
+            <div class="col-md-3 col-sm-4">
+                @(Html.Kendo().DropDownList().Name("Salary_PackageId")
+                     .OptionLabel("--Select One Package--")
+                     .BindTo(ViewBag.SalaryPackages as SelectList)
+                     .Events(e => e.Change("salaryPackageChange"))
+                     .HtmlAttributes(new { style = "width:100%" })
+                )
+                <span class="field-validation-valid text-danger" data-valmsg-for="PackageId" data-valmsg-replace="true"></span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div id="Selected_Salary_Pack_details"></div>
+        </div>
+    </div>
+}
+<script>
+    var initialSalaryPack;
+    $(document).ready(function () {
+        salaryPackview = '@ViewBag.View';
+        if (salaryPackview == 'win') {
+            $("#Salary_PackageId").data('kendoDropDownList').value(assignedsalaryPackageId);
+            var sendData = { UserId: EmpId, UserType: empUserType, PackageId: assignedsalaryPackageId, option: 'win' };
+            $("#Selected_Salary_Pack_details").empty();
+            $("#Selected_Salary_Pack_details").load('@Url.Action("ShowSalaryPackageDetails", "HumanResource")', sendData);
+        }
+        initialSalaryPack = $("#Salary_PackageId").data("kendoDropDownList").text();
+    });
+</script>

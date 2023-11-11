@@ -1,0 +1,59 @@
+﻿
+
+
+@************************************** Created By Jerin Jahan (Date:29.01.2017)  ***************************************@
+@model IEnumerable<FactoryManagement.Models.View_Inven_Item_Loc_Details>
+@{
+    ViewBag.Title = "All Goods List";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var offset = Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["localTime"]);
+    DateTime today = DateTime.UtcNow.AddMinutes(offset);
+    int count = 0;
+}
+<style>
+    .table-bordered {border:1px dashed #000000!important;}
+    table th{border:1px dashed #000000!important;text-align:center;vertical-align:central!important;}
+    table tr th{vertical-align:middle!important;border-bottom-width: 1px!important;}
+    table tr{border:1px dashed #000000!important;}
+    table tr td{border:1px dashed #000000!important;text-align:center;}
+    h4{margin-bottom:0px!important;}
+</style>
+<center>
+    <h4>@ViewBag.catname</h4>
+    <p>@ViewBag.storename</p>
+</center>
+<div>
+    <span style="float:right;font-size:16px;">
+        <p style="text-align:right;margin:0px!important;">Print Dt.  @today.ToString("dd-MMM-yy")</p>
+        @*<p style="text-align:right;">Genegrated By: System</p>*@
+    </span>
+</div>
+@if (Model.Count() > 0)
+{
+    <table class="table table-bordered">
+        <tbody>
+            <tr>
+                <th width="8%">SL. NO</th>
+                <th width="70%">NAME OF THE GOODS</th>
+                <th width="10%">CLOSING BALANCE</th>
+                <th width="12%">LOCATION</th>
+            </tr>
+            @foreach (var item in Model)
+            {
+                //char c = item.ProductName.FirstOrDefault();
+                count++;
+                <tr>
+                    <td style="text-transform:uppercase;">@count. </td>
+                    <td style="text-align:left;">@item.ProductName</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.Description</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>There is no record to display...</p>
+}
+

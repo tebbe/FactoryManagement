@@ -1,0 +1,37 @@
+﻿@if (ViewBag.pageType == "win")
+{
+    <div class="editor-label"><label for="LineId">Line</label></div>
+    <div class="editor-field">
+        @(Html.Kendo().DropDownList()
+                                 .Name("Partial_LineId")
+                                 .OptionLabel("--Select Line--")
+                                 .Events(e => e.Change("onLinechange"))
+                                 .BindTo(ViewBag.Line)
+                                 .HtmlAttributes(new { style = "width:100%" })
+        )
+        <span class="field-validation-valid text-danger" data-valmsg-for="Partial_LineId" data-valmsg-replace="true"></span>
+    </div>
+    <script>
+        var MachineType = $("#Partial_LineId").data("kendoDropDownList");
+        MachineType.value('@(ViewBag.seletedLineId)');
+    </script>
+}
+else
+{
+    <div class="form-group">
+        @Html.Label("Line", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+        <div class="col-md-6 col-sm-7 col-xs-8">
+            @(Html.Kendo().DropDownList()
+                                 .Name("LineId")
+                                 .OptionLabel("--Select Line--")
+                                 .Events(e => e.Change("onLinechange"))
+                                 .BindTo(ViewBag.Line)
+                                 .HtmlAttributes(new { style = "width:100%" })
+            )
+            <span class="field-validation-valid text-danger" data-valmsg-for="LineId" data-valmsg-replace="true"></span>
+        </div>
+    </div>
+}
+
+
+

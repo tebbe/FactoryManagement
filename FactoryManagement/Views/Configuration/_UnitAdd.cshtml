@@ -1,0 +1,241 @@
+﻿
+@************************************** Created By Jerin Jahan (Date:26.12.2016)  ***************************************@
+<style>
+    .k-textbox{
+        width: 100%!important;
+    }
+</style>
+
+
+@model FactoryManagement.Models.Site_Unit_Lists
+@using (Html.BeginForm())
+{
+    @Html.HiddenFor(m => m.SiteId)
+    @Html.HiddenFor(m => m.UnitId)
+
+        <div id="dyn_din_unit" style="overflow-x:hidden">
+            <div id="divUnit_1" class="row">
+
+                <div class="col-sm-1" style="text-align:right;">
+                    <label>Name</label>
+                </div>
+                <div class="col-sm-3">
+                    <input class="k-textbox txtUnitName"
+                           data-val-length="Invalid" data-val-length-max="40"
+                           data-val-length-min="1" data-val-remote="Unit name already exsits"
+                           data-val-remote-additionalfields="*.UnitName,*.SiteId,*.UnitId"
+                           data-val-remote-type="Post" data-val-remote-url="/RemoteValidation/SiteUnitNameExist"
+                           data-val-required="Please enter unit name"
+                           id="UnitName_1" name="UnitName_1"
+                           type="text" value="" />
+                    <span class="field-validation-valid text-danger" data-valmsg-for="UnitName_1" data-valmsg-replace="true"></span>
+                </div>
+                <div class="col-sm-1" style="text-align:right;"><label>Acryonm</label></div>
+                <div class="col-sm-3">
+                    <input class="k-textbox txtUnitAcryonm"
+                           data-val-length="Invalid" data-val-length-max="40"
+                           data-val-length-min="1" data-val-remote="Unit acryonm already exsits"
+                           data-val-remote-additionalfields="*.SiteId,*.UnitAcryonm,*.UnitId"
+                           data-val-remote-type="Post" data-val-remote-url="/RemoteValidation/SiteUnitAcryonmExist"
+                           data-val-required="Please enter unit acryonm"
+                           id="UnitAcryonm_1" name="UnitAcryonm_1"
+                           type="text" value="" />
+                    <span class="field-validation-valid text-danger" data-valmsg-for="UnitAcryonm_1" data-valmsg-replace="true"></span>
+                </div>
+                <div class="col-sm-1" id="DivForDynBtn_1">
+                    <span class="k-icon k-i-plus" id="btnAdd"></span>
+                </div>
+            </div>
+        </div>
+   
+}
+<script>
+    console.log('test');
+    var Count_unit = 1;
+    $("#btn_Add_Unit_Cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+
+    //******************************* Dynamically Add Unit ************************************
+    $("#dyn_din_unit").on("click", "#btnAdd", function () {
+        if (prevalidate.validate()) {
+            $("#DivForDynBtn_" + Count_unit).hide();
+            Count_unit++;
+            $("#dyn_din_unit").append('<div id="divUnit_'+Count_unit+'" class="row" style="margin-top:5px">'+
+                '<div class="col-sm-1" style="text-align:right;"><label>Name</label></div>'+
+                '<div class="col-sm-3">'+
+                    '<input class="k-textbox txtUnitName"'+
+                        'data-val-length="Invalid" data-val-length-max="40"'+
+                        'data-val-length-min="1" data-val-remote="Unit name already exsits"' +
+                        'data-val-remote-additionalfields="*.UnitName,*.SiteId" '+
+                        'data-val-remote-type="Post" data-val-remote-url="/RemoteValidation/SiteUnitNameExist" '+
+                        'data-val-required="Please enter unit name"'+
+                        'id="UnitName_' + Count_unit + '" name="UnitName_' + Count_unit + '"' +
+                        'type="text" value="">'+
+                 '<span class="field-validation-valid text-danger" data-valmsg-for="UnitName_' + Count_unit + '" data-valmsg-replace="true"></span>' +
+             '</div>'+
+                '<div class="col-sm-1" style="text-align:right;"><label>Acryonm</label></div>' +
+                '<div class="col-sm-3">' +
+                '<input class="k-textbox txtUnitAcryonm"' +
+                'data-val-length="Invalid" data-val-length-max="40"' +
+                'data-val-length-min="1" data-val-remote="Unit acryonm already exsits"' +
+                'data-val-remote-additionalfields="*.UnitAcryonm,*.UnitId" ' +
+                'data-val-remote-type="Post" data-val-remote-url="/RemoteValidation/SiteUnitAcryonmExist" ' +
+                'data-val-required="Please enter unit acryonm"' +
+                'id="UnitAcryonm_' + Count_unit + '" name="UnitAcryonm_' + Count_unit + '"' +
+                'type="text" value="">' +
+                '<span class="field-validation-valid text-danger" data-valmsg-for="UnitAcryonm_' + Count_unit + '" data-valmsg-replace="true"></span>' +
+                '</div>' +
+                '<div class="col-sm-1" id="DivForDynBtn_' + Count_unit + '">' +
+                '<span class="k-icon k-i-plus" style="margin-right: .3rem;" id="btnAdd"></span>' +
+                '<span class="k-icon k-i-close" style="margin-right: .3rem;" id="btnRemove"></span>' +
+                '</div>' +
+
+            '</div>');
+        }
+    });
+    //******************************* Dynamically Remove Unit *********************************
+    $("#dyn_din_unit").on("click", "#btnRemove", function () {
+        if (Count_unit > 1) {
+            $("#divUnit_" + Count_unit).remove();
+            Count_unit--;
+            $("#DivForDynBtn_" + Count_unit).show();
+        }
+    });
+
+    //******************************* Dynamically Remove Unit *********************************
+    $("#btn_Add_Unit_Create").click(function () {
+        var validation = $("#dyn_din_unit").kendoValidator().data("kendoValidator");
+        if (prevalidate.validate() && validation.validate()) {
+            notification.show({ message: "Creating new unit to site...", showTime: startTime() }, "upload-progress");
+            var allUnitName = [];
+            var allUnitAcryonm=[];
+            $(".txtUnitName").each(function () {
+                if ($(this).val() !== '') {
+                    allUnitName.push($(this).val());
+                }
+                $(".txtUnitAcryonm").each(function () {
+                    if ($(this).val() != '') {
+                        allUnitAcryonm.push($(this).val());
+                    }
+                });
+            });
+
+            var senddata = { SiteId: siteId, allUnitName: allUnitName, allUnitAcryonm: allUnitAcryonm, CreatedBy: userId};
+            $.ajax({
+                url: '@Url.Action("AddMoreUnit", "Configuration")',
+                type: 'Post',
+                data: senddata,
+                success: function (data) {
+                    notification.hide();notification.setOptions({autoHideAfter: 5000});
+                    if (data !== "Error") {
+                        notification.show({ message: "New Unit has been successfully created.", showTime: startTime() }, "upload-success");
+
+                        $("#Span_UnitCount").text(parseInt($("#Span_UnitCount").text())+allUnitName.length);
+
+                        var passDa = { siteId: siteId, SiteName: SiteName };
+                        $("#divForAll_Dept_List").empty();
+                        $("#divForAll_Dept_List").append('<div class="loading_half"></div>');
+                        $("#divForAll_Dept_List").load('@Url.Action("_ShowAllDeptListBySite", "Configuration")', passDa);
+
+                    } else {
+                        notification.show({ message: "New Unit create was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                    $("#btn_Add_Unit_Create").closest(".k-window-content").data("kendoWindow").close();
+                },
+                error: function (err) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                }
+
+            });
+        }
+    });
+     var prevalidate = $("#dyn_din_unit").kendoValidator({
+            rules: {
+                remote: function (input) {
+                    if (input.is("[name=UnitName_" + Count_unit + "]")) {
+                        var senddata = { SiteId: siteId, Unitname: $("#UnitName_" + Count_unit).val(), UnitId: '' };
+                        var isInvalid;
+                        $.ajax({
+                            url: '@Url.Action("SiteUnitNameExist", "RemoteValidation")',
+                            type: 'Post',
+                            data: senddata,
+                            port: "validate" + input.attr('name'),
+                            dataType: "json",
+                            type: input.attr("data-val-remote-type"),
+                            mode: "abort",
+                            async: false,
+                            success: function (data) {
+                                isInvalid = data;
+                            }
+                        });
+                        return isInvalid;
+                    } else {
+                        return true;
+                    }
+                },
+                remote_Acryonm: function (input) {
+                    if (input.is("[name=UnitAcryonm_" + Count_unit + "]")) {
+                         var senddata = { SiteId: siteId, UnitAcryonm: $("#UnitAcryonm_" + Count_unit).val(), UnitId: '' };
+                    var isInvalid;
+                    $.ajax({
+                        url: '@Url.Action("SiteUnitAcryonmExist", "RemoteValidation")',
+                        type: 'Post',
+                        data: senddata,
+                        port: "validate" + input.attr('name'),
+                        dataType: "json",
+                        mode: "abort",
+                        async: false,
+                        type: input.attr("data-val-remote-type"),
+                        success: function (data) {
+                            isInvalid = data;
+                        }
+                    });
+                    return isInvalid;
+                    } else {
+                        return true;
+                    }
+                },
+                duplicate_UnitName: function (input) {
+                    if (input.is("[name=UnitName_" + Count_unit + "]") && Count_unit > 1) {
+                        var x;
+                        for (var i = 1; i < Count_unit; i++) {
+                            if ($("#UnitName_" + Count_unit).val() == $("#UnitName_" + i).val()) {
+                                return false;
+                            } else {
+                                x = true;
+                            }
+                        }
+                        if (x) {
+                            return x;
+                        }
+                    } else {
+                        return true;
+                    }
+                },
+                duplicate_UnitAcronym: function (input) {
+                    if (input.is("[name=UnitAcryonm_" + Count_unit + "]") && Count_unit > 1) {
+                        var x;
+                        for (var i = 1; i < Count_unit; i++) {
+                            if ($("#UnitAcryonm_" + Count_unit).val() == $("#UnitAcryonm_" + i).val()) {
+                                return false;
+                            }
+                            else {
+                                x = true;
+                            }
+                        }
+                        if (x) { return x;}
+                    } else {
+                        return true;
+                    }
+                }
+            },
+            messages: {
+                remote: "Unit name already exists!!!",
+                remote_Acryonm: "Unit acryonm already exists!!!",
+                duplicate_UnitName: "You have already typed this name!!!",
+                duplicate_UnitAcronym: "You have already typed this acronym!!!",
+            }
+        }).data("kendoValidator");
+</script>

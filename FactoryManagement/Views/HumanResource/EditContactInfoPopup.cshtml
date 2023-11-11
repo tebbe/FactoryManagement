@@ -1,0 +1,26 @@
+﻿
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="divForContactInfoedit">
+    <div id="show_contact_info"></div>
+    <div class="k-edit-buttons k-state-default">
+        @*<button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_EditCardInfo"><span class="k-icon k-update"></span>Update</button>*@
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_ContactInfoEdit"><span class="k-icon k-update"></span>Update</button>
+        <button type="reset" class="k-button k-button-icontext k-grid-update" id="btn_RefreshContactInfo"><span class="k-icon k-i-refresh"></span>Refresh</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_CancelContactInfo"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#show_contact_info").empty();
+        $("#show_contact_info").append('<div class="partial_loading_half"></div>')
+        $("#show_contact_info").load('@Url.Action("EditContactInfo", "HumanResource")?UserId=' + '@ViewBag.UserId');
+     });
+    $("#btn_RefreshContactInfo").click(function () {
+        $("#show_contact_info").empty();
+        $("#show_contact_info").append('<div class="partial_loading_half"></div>');
+        $("#show_contact_info").load('@Url.Action("EditContactInfo", "HumanResource")?UserId=' + '@ViewBag.UserId');
+        $("#show_contact_info").show();
+    });
+  
+</script>

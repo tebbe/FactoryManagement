@@ -1,0 +1,1017 @@
+﻿@************************************** Created By Kaikubad (Date:24.01.2017)  ***************************************@
+<style>
+    #Div_Working_Schedule_Create tbody tr td {
+        border: none !important;
+        float: left;
+    }
+
+    #Div_Working_Schedule_Create tbody tr {
+        height: 40px;
+    }
+
+    .startEndtime {
+        margin-top: -15px;
+    }
+</style>
+@model FactoryManagement.ModelView.HR.WorkingScheduleListModelView
+<div id="Div_Working_Schedule_Create">
+    @Html.HiddenFor(m => m.ChkWorkingDays)
+    @Html.HiddenFor(m => m.WorkingScheduleId)
+    @Html.HiddenFor(m => m.BreakTimeType)
+    <div class="editor-label"><label for="SchedulName">Schedule Name</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.SchedulName, new { htmlAttributes = new { @class = "k-textbox" } })
+        @Html.ValidationMessageFor(model => model.SchedulName, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="Workingdays">Select Working Days</label></div>
+    <div style="float:left;margin-left:15px;width:75%!important">
+        <div style="width:100%!important;">
+            <table id="working_day_option" class="table" style="border:none!important">
+                <tr>
+                    <td colspan="2">
+                        <input type="checkbox" id="same_start_end_time" onchange="showhidestartEndtime()" checked /><span>Same Start time End Time</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" id="select_all_days" onchange="checkUncheckAll()" /><span>All</span></td>
+                </tr>
+                <tr>
+                    <td style="width:15%;">
+                        <input type="checkbox" id="Saturday" data-id="sat" value="Saturday" class="chkWorkingdays" />
+                        <span> Saturday</span>
+                    </td>
+                    <td id="satStarttd" style="display:none;width:14%" class="startEndtime">
+                        <label>Start Time</label><br />
+                        @(Html.Kendo().TimePicker().Name("satStart")
+                            .Interval(15).Events(e => e.Change("satStartChange"))
+                            .HtmlAttributes(new { @style = "width:100%" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="satStart" data-valmsg-replace="true"></span>
+                    </td>
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Allowance</label><br />
+                        @(Html.Kendo().TextBox().Name("satStartAllowance").HtmlAttributes(new { @style = "width:100%", @maxlength = "5" }))
+                        @*<span class="field-validation-valid text-danger" data-valmsg-for="satStartAllowance" data-valmsg-replace="true"></span>*@
+                    </td>
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Break</label><br />
+                        @(Html.Kendo().TextBox().Name("satBreakTime").HtmlAttributes(new { @style = "width:100%", @maxlength = "5" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="satBreakTime" data-valmsg-replace="true"></span>
+                    </td>
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Unit</label><br />
+                        @(Html.Kendo().DropDownList().Name("satBreakTimeUnit")
+            .OptionLabel("Select ...")
+                    .BindTo(new List<SelectListItem>() {
+              new SelectListItem() {
+                  Text = "Minute/s",
+                  Value = "1"
+              },
+              new SelectListItem() {
+                  Text = "Hour/s",
+                  Value = "2"
+              }
+          }).Events(e => e.Change("onBreakTimeTypeChange")).HtmlAttributes(new { @style = "width:100%" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="satBreakTimeUnit" data-valmsg-replace="true"></span>
+                    </td>
+                    <td id="satEndtd" style="display:none;width:14%" class="startEndtime">
+                        <label for="DeptName">End Time</label><br />
+                        @(Html.Kendo().TimePicker().Name("satEnd")
+                            .Interval(15)
+                            .HtmlAttributes(new { @style = "width:100%" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="satEnd" data-valmsg-replace="true"></span>
+                    </td>
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Allowance</label><br />
+                        @(Html.Kendo().TextBox().Name("satEndAllowance").HtmlAttributes(new { @style = "width:100%", @maxlength = "5" }))
+                        @*<span class="field-validation-valid text-danger" data-valmsg-for="satEndAllowance" data-valmsg-replace="true"></span>*@
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width:15%">
+                        <input type="checkbox" data-id="sun" id="Sunday" value="Sunday" class="chkWorkingdays" />
+                        <span> Sunday</span>
+                    </td>
+                    <td id="sunStarttd" style="display:none;width:14%;" class="startEndtime">
+                        <label>Start Time</label> <br />  @(Html.Kendo().TimePicker().Name("sunStart").Interval(15).Events(e => e.Change("sunStartChange")).HtmlAttributes(new { @style = "width:100%" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="sunStart" data-valmsg-replace="true"></span>
+                    </td>
+
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Allowance</label><br />
+                        @(Html.Kendo().TextBox().Name("sunStartAllowance").HtmlAttributes(new { @style = "width:100%", @maxlength = "5" }))
+                        @*<span class="field-validation-valid text-danger" data-valmsg-for="sunStartAllowance" data-valmsg-replace="true"></span>*@
+                    </td>
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Break</label><br />
+                        @(Html.Kendo().TextBox().Name("sunBreakTime").HtmlAttributes(new { @style = "width:100%", @maxlength = "5" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="sunBreakTime" data-valmsg-replace="true"></span>
+                    </td>
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Unit</label><br />
+                        @(Html.Kendo().DropDownList().Name("sunBreakTimeUnit")
+            .OptionLabel("Select ...")
+                    .BindTo(new List<SelectListItem>() {
+              new SelectListItem() {
+                  Text = "Minute/s",
+                  Value = "1"
+              },
+              new SelectListItem() {
+                  Text = "Hour/s",
+                  Value = "2"
+              }
+          }).Events(e => e.Change("onBreakTimeTypeChange")).HtmlAttributes(new { @style = "width:100%" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="sunBreakTimeUnit" data-valmsg-replace="true"></span>
+                    </td>
+
+                    <td id="sunEndtd" style="display:none;width:14%" class="startEndtime">
+                        <label for="DeptName">End Time</label> <br />  @(Html.Kendo().TimePicker().Name("sunEnd").Interval(15).HtmlAttributes(new { @style = "width:100%" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="sunEnd" data-valmsg-replace="true"></span>
+                    </td>
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Allowance</label><br />
+                        @(Html.Kendo().TextBox().Name("sunEndAllowance").HtmlAttributes(new { @style = "width:100%", @maxlength = "5" }))
+                        @*<span class="field-validation-valid text-danger" data-valmsg-for="sunEndAllowance" data-valmsg-replace="true"></span>*@
+                    </td>
+                </tr>
+                <tr>
+                    <td width="15%">
+                        <input type="checkbox" id="Monday" data-id="mon" value="Monday" class="chkWorkingdays" />
+                        <span> Monday</span>
+                    </td>
+                    <td id="monStarttd" style="display:none;width:14%;" class="startEndtime">
+                        <label>Start Time</label> <br />  @(Html.Kendo().TimePicker().Name("monStart").Interval(15).Events(e => e.Change("monStartChange")).HtmlAttributes(new { @style = "width:100%" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="monStart" data-valmsg-replace="true"></span>
+                    </td>
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Allowance</label><br />
+                        @(Html.Kendo().TextBox().Name("monStartAllowance").HtmlAttributes(new { @style = "width:100%", @maxlength = "5" }))
+                        @*<span class="field-validation-valid text-danger" data-valmsg-for="monStartAllowance" data-valmsg-replace="true"></span>*@
+                    </td>
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Break</label><br />
+                        @(Html.Kendo().TextBox().Name("monBreakTime").HtmlAttributes(new { @style = "width:100%", @maxlength = "5" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="monBreakTimes" data-valmsg-replace="true"></span>
+                    </td>
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Unit</label><br />
+                        @(Html.Kendo().DropDownList().Name("monBreakTimeUnit")
+            .OptionLabel("Select ...")
+                    .BindTo(new List<SelectListItem>() {
+              new SelectListItem() {
+                  Text = "Minute/s",
+                  Value = "1"
+              },
+              new SelectListItem() {
+                  Text = "Hour/s",
+                  Value = "2"
+              }
+          }).Events(e => e.Change("onBreakTimeTypeChange")).HtmlAttributes(new { @style = "width:100%" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="monBreakTimeUnit" data-valmsg-replace="true"></span>
+                    </td>
+                    <td id="monEndtd" style="display:none;width:14%;" class="startEndtime">
+                        <label for="DeptName">End Time</label>  <br /> @(Html.Kendo().TimePicker().Name("monEnd").Interval(15).HtmlAttributes(new { @style = "width:100%" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="monEnd" data-valmsg-replace="true"></span>
+                    </td>
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Allowance</label><br />
+                        @(Html.Kendo().TextBox().Name("monEndAllowance").HtmlAttributes(new { @style = "width:100%", @maxlength = "5" }))
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width:15%">
+                        <input type="checkbox" id="Tuesday" data-id="tue" value="Tuesday" class="chkWorkingdays" />
+                        <span> Tuesday</span>
+                    </td>
+                    <td id="tueStarttd" style="display:none;width:14%" class="startEndtime">
+                        <label for="DeptName">Start Time</label> <br />  @(Html.Kendo().TimePicker().Name("tueStart").Interval(15).Events(e => e.Change("tueStartChange")).HtmlAttributes(new { @style = "width:100%" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="tueStart" data-valmsg-replace="true"></span>
+                    </td>
+
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Allowance</label><br />
+                        @(Html.Kendo().TextBox().Name("tueStartAllowance").HtmlAttributes(new { @style = "width:100%", @maxlength = "5" }))
+                        @*<span class="field-validation-valid text-danger" data-valmsg-for="tueStartAllowance" data-valmsg-replace="true"></span>*@
+                    </td>
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Break</label><br />
+                        @(Html.Kendo().TextBox().Name("tueBreakTime").HtmlAttributes(new { @style = "width:100%", @maxlength = "5" }))
+
+                        <span class="field-validation-valid text-danger" data-valmsg-for="tueBreakTime" data-valmsg-replace="true"></span>
+                    </td>
+                    <td style="display:none;width:10%;" class="startEndtime">
+                        <label>Unit</label><br />
+                        @(Html.Kendo().DropDownList().Name("tueBreakTimeUnit")
+            .OptionLabel("Select ...")
+                    .BindTo(new List<SelectListItem>() {
+              new SelectListItem() {
+                  Text = "Minute/s",
+                  Value = "1"
+              },
+              new SelectListItem() {
+                  Text = "Hour/s",
+                  Value = "2"
+              }
+          }).Events(e => e.Change("onBreakTimeTypeChange")).HtmlAttributes(new { @style = "width:100%" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="tueBreakTimeUnit" data-valmsg-replace="true"></span>
+                    </td>
+                    <td id="tueEndtd" style="display:none;width:14%" class="startEndtime">
+                        <label for="DeptName">End Time</label> <br />  @(Html.Kendo().TimePicker().Name("tueEnd").Interval(15).HtmlAttributes(new { @style = "width:100%" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="tueEnd" data-valmsg-replace="true"></span>
+                    </td>
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Allowance</label><br />
+                        @(Html.Kendo().TextBox().Name("tueEndAllowance").HtmlAttributes(new { @style = "width:100%", @maxlength = "5" }))
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width:15%">
+                        <input type="checkbox" id="Wednesday" data-id="wed" value="Wednesday" class="chkWorkingdays" />
+                        <span> Wednesday</span>
+                    </td>
+                    <td id="wedStarttd" style="display:none;width:14%" class="startEndtime">
+                        <label for="DeptName">Start Time</label> <br />  @(Html.Kendo().TimePicker().Name("wedStart").Interval(15).Events(e => e.Change("wedStartChange")).HtmlAttributes(new { @style = "width:100%" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="wedStart" data-valmsg-replace="true"></span>
+                    </td>
+
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Allowance</label><br />
+                        @(Html.Kendo().TextBox().Name("wedStartAllowance").HtmlAttributes(new { @style = "width:100%", @maxlength = "5" }))
+                        @*<span class="field-validation-valid text-danger" data-valmsg-for="wedStartAllowance" data-valmsg-replace="true"></span>*@
+                    </td>
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Break</label><br />
+                        @(Html.Kendo().TextBox().Name("wedBreakTime").HtmlAttributes(new { @styles = "width:100%", @maxlength = "5" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="wedBreakTime" data-valmsg-replace="true"></span>
+                    </td>
+                    <td style="display:none;width:10%;" class="startEndtime">
+                        <label>Unit</label><br />
+                        @(Html.Kendo().DropDownList().Name("wedBreakTimeUnit")
+            .OptionLabel("Select ...")
+                    .BindTo(new List<SelectListItem>() {
+              new SelectListItem() {
+                  Text = "Minute/s",
+                  Value = "1"
+              },
+              new SelectListItem() {
+                  Text = "Hour/s",
+                  Value = "2"
+              }
+          }).Events(e => e.Change("onBreakTimeTypeChange")).HtmlAttributes(new { @style = "width:100%" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="wedBreakTimeUnit" data-valmsg-replace="true"></span>
+                    </td>
+
+                    <td id="wedEndtd" style="display:none;width:14%;" class="startEndtime">
+                        <label>End Time</label> <br /> @(Html.Kendo().TimePicker().Name("wedEnd").Interval(15).HtmlAttributes(new { @style = "width:100%" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="wedEnd" data-valmsg-replace="true"></span>
+                    </td>
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Allowance</label><br />
+                        @(Html.Kendo().TextBox().Name("wedEndAllowance").HtmlAttributes(new { @style = "width:100%", @maxlength = "5" }))
+                    </td>
+                </tr>
+                <tr>
+                    <td width="15%">
+                        <input type="checkbox" id="Thursday" data-id="thu" value="Thursday" class="chkWorkingdays" />
+                        <span> Thusday</span>
+                    </td>
+                    <td id="thuStarttd" style="display:none;width:14%" class="startEndtime">
+                        <label>Start Time</label><br /> @(Html.Kendo().TimePicker().Name("thuStart").Interval(15).Events(e => e.Change("thuStartChange")).HtmlAttributes(new { @style = "width:100%" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="thuStart" data-valmsg-replace="true"></span>
+                    </td>
+
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Allowance</label><br />
+                        @(Html.Kendo().TextBox().Name("thuStartAllowance").HtmlAttributes(new { @style = "width:100%", @maxlength = "5" }))
+                        @*<span class="field-validation-valid text-danger" data-valmsg-for="thuStartAllowance" data-valmsg-replace="true"></span>*@
+                    </td>
+                    <td style="display:none;width:10%;" class="startEndtime">
+                        <label>Break</label><br />
+                        @(Html.Kendo().TextBox().Name("thuBreakTime").HtmlAttributes(new { @style = "width:100%", @maxlength = "5" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="thuBreakTime" data-valmsg-replace="true"></span>
+                    </td>
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Unit</label><br />
+                        @(Html.Kendo().DropDownList().Name("thuBreakTimeUnit")
+            .OptionLabel("Select ...")
+                    .BindTo(new List<SelectListItem>() {
+              new SelectListItem() {
+                  Text = "Minute/s",
+                  Value = "1"
+              },
+              new SelectListItem() {
+                  Text = "Hour/s",
+                  Value = "2"
+              }
+          }).Events(e => e.Change("onBreakTimeTypeChange")).HtmlAttributes(new { @style = "width:100%" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="thuBreakTimeUnit" data-valmsg-replace="true"></span>
+                    </td>
+
+
+                    <td id="thuEndtd" style="display:none;width:14%" class="startEndtime">
+                        <label>End Time</label><br />   @(Html.Kendo().TimePicker().Name("thuEnd").Interval(15).HtmlAttributes(new { @style = "width:100%" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="thuEnd" data-valmsg-replace="true"></span>
+                    </td>
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Allowance</label><br />
+                        @(Html.Kendo().TextBox().Name("thuEndAllowance").HtmlAttributes(new { @style = "width:100%", @maxlength = "5" }))
+                    </td>
+                </tr>
+                <tr>
+                    <td width="15%">
+                        <input type="checkbox" id="Friday" data-id="fri" value="Friday" class="chkWorkingdays" />
+                        <span> Friday</span>
+                    </td>
+                    <td id="friStarttd" style="display:none;width:14%" class="startEndtime">
+                        <label>Start Time</label><br />   @(Html.Kendo().TimePicker().Name("friStart").Interval(15).Events(e => e.Change("friStartChange")).HtmlAttributes(new { @style = "width:100%" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="friStart" data-valmsg-replace="true"></span>
+                    </td>
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Allowance</label><br />
+                        @(Html.Kendo().TextBox().Name("friStartAllowance").HtmlAttributes(new { @style = "width:100%", @maxlength = "5" }))
+                        @*<span class="field-validation-valid text-danger" data-valmsg-for="friStartAllowance" data-valmsg-replace="true"></span>*@
+                    </td>
+                    <td style="display:none;width:10%;" class="startEndtime">
+                        <label>Break</label><br />
+                        @(Html.Kendo().TextBox().Name("friBreakTime").HtmlAttributes(new { @style = "width:100%", @maxlength = "5" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="friBreakTime" data-valmsg-replace="true"></span>
+                    </td>
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Unit</label><br />
+                        @(Html.Kendo().DropDownList().Name("friBreakTimeUnit")
+            .OptionLabel("Select ...")
+                    .BindTo(new List<SelectListItem>() {
+              new SelectListItem() {
+                  Text = "Minute/s",
+                  Value = "1"
+              },
+              new SelectListItem() {
+                  Text = "Hour/s",
+                  Value = "2"
+              }
+          }).Events(e => e.Change("onBreakTimeTypeChange")).HtmlAttributes(new { @style = "width:100%" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="friBreakTimeUnit" data-valmsg-replace="true"></span>
+                    </td>
+                    <td id="friEndtd" style="display:none;width:14%" class="startEndtime">
+                        <label>End Time</label><br />   @(Html.Kendo().TimePicker().Name("friEnd").Interval(15).HtmlAttributes(new { @style = "width:100%" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="friEnd" data-valmsg-replace="true"></span>
+                    </td>
+                    <td style="display:none;width:10%" class="startEndtime">
+                        <label>Allowance</label><br />
+                        @(Html.Kendo().TextBox().Name("friEndAllowance").HtmlAttributes(new { @style = "width:100%", @maxlength = "5" }))
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <span class="field-validation-valid text-danger" data-valmsg-for="ChkWorkingDays" data-valmsg-replace="true"></span>
+    </div>
+    <div class="editor-label sameStarttime"><label>Start Time</label></div>
+    <div style="width:75%!important;float:left;margin-left:15px;height:53px" class="sameStarttime">
+        <table class="table">
+            <tbody>
+                <tr style="height:40px">
+                    <td style="border:none;width:30%">
+                        @(Html.Kendo().TimePicker().Name("StartTime").Events(e => e.Change("startChange")).Interval(15).HtmlAttributes(new { @style = "width:100%" }))
+
+                        <span class="field-validation-valid text-danger" data-valmsg-for="StartTime" data-valmsg-replace="true"></span>
+                    </td>
+                    <td style="border:none;width:10%"><label style="float:right">Allowance</label></td>
+                    <td style="border:none;width:50%;float:left">
+                        @(Html.Kendo().TextBox().Name("StartTimeAllowance").HtmlAttributes(new { @style = "width:30%", @maxlength = "5" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="StartTimeAllowance" data-valmsg-replace="true"></span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="editor-label sameStarttime"><label>Break Time</label></div>
+    <div style="width:75%!important;float:left;margin-left:15px;height:53px;margin-bottom:5px" class="sameStarttime">
+        <table class="table">
+            <tbody>
+                <tr style="height:40px">
+                    <td style="border:none;width:30%">
+                        @Html.EditorFor(m => m.BreakTime, "", new { htmlAttributes = new { @class = "k-textbox", @style = "width:100%", @maxlength = "5" } })
+                        <span class="field-validation-valid text-danger" data-valmsg-for="BreakTime" data-valmsg-replace="true"></span>
+                    </td>
+                    <td style="border:none;width:10%"><label style="float:right">Unit</label></td>
+                    <td style="border:none;width:20%;float:left">
+                        @(Html.Kendo().DropDownList().Name("BreakTimeUnit")
+            .OptionLabel("Select ...")
+                    .BindTo(new List<SelectListItem>() {
+              new SelectListItem() {
+                  Text = "Minute/s",
+                  Value = "1"
+              },
+              new SelectListItem() {
+                  Text = "Hour/s",
+                  Value = "2"
+              }
+          }).Events(e => e.Change("onBreakTimeTypeChange")).HtmlAttributes(new { @style = "width:76%" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="BreakTimeUnit" data-valmsg-replace="true"><br /></span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="editor-label sameStarttime"><label>End Time</label></div>
+    <div style="width:75%!important;float:left;margin-left:15px;height:53px" class="sameStarttime">
+        <table class="table">
+            <tbody>
+                <tr style="height:40px">
+                    <td style="border:none;width:30%">
+                        @(Html.Kendo().TimePicker().Name("EndTime").Interval(15).HtmlAttributes(new { @style = "width:100%" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="EndTime" data-valmsg-replace="true"></span>
+                    </td>
+                    <td style="border:none;width:10%"><label style="float:right">Allowance</label></td>
+                    <td style="border:none;width:50%;float:left">
+                        @(Html.Kendo().TextBox().Name("EndTimeAllowance").HtmlAttributes(new { @style = "width:30%", @maxlength = "5" }))
+                        <span class="field-validation-valid text-danger" data-valmsg-for="EndTimeAllowance" data-valmsg-replace="true"></span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+    var alldayList, sameWorkHour;
+    $(document).ready(function () {
+        sameWorkHour = '@Model.SameWorkHour';
+        var workingScheduleId = parseInt('@Model.WorkingScheduleId');
+        if (workingScheduleId > 0) {
+            if ('@Model.BreakTime' <= 0) {
+                $("#BreakTime").val(null);
+            }
+            if ('@Model.BreakTimeType' > 0) {
+                $("#BreakTimeUnit").data('kendoDropDownList').value(@Model.BreakTimeType);
+            }
+            $("#StartTimeAllowance").val('@Model.Start_Allowance');
+            $("#EndTimeAllowance").val('@Model.End_Allowance');
+            $.ajax({
+                url: "/HumanResource/getWorkingDayListData?id=" + workingScheduleId,
+                type: 'GET',
+                dataType: 'json',
+                success: function (res) {
+                    alldayList = res;
+                    if (res.length == 7) {
+                        $("#select_all_days").prop("checked", true);
+                    }
+                    if (sameWorkHour == 'True') {
+                        $(".sameStarttime").each(function () {
+                            $(this).show();
+                        });
+                        $("#StartTime").val(alldayList[0].StartTime);
+                        $("#EndTime").val(alldayList[0].EndTime);
+                    } else {
+                        $(".sameStarttime").each(function () {
+                            $(this).hide();
+                        });
+                        $(".startEndtime").each(function () {
+                            $(this).show();
+                        });
+                        $("#same_start_end_time").prop('checked', false);
+                    }
+                    for (var i = 0; i < alldayList.length; i++) {
+                        $(".chkWorkingdays").each(function () {
+                            if ($(this).val() == alldayList[i].Day) {
+                                $(this).prop('checked', true);
+                                if (sameWorkHour != 'True') {
+                                    var data_id = $(this).data("id");
+                                    $("#" + data_id + "Start").val(res[i].StartTime);
+                                    $("#" + data_id + "End").val(res[i].EndTime);
+                                    $("#" + data_id + "BreakTime").val(res[i].BreakTime);
+                                    $("#" + data_id + "BreakTimeUnit").data('kendoDropDownList').value(res[i].Break_Type);
+                                    $("#" + data_id + "EndAllowance").val(res[i].End_Allowance);
+                                    $("#" + data_id + "StartAllowance").val(res[i].Start_Allowance);
+                                }
+                                else {
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        } else {
+            $("#BreakTime").val(null);
+        }
+
+    });
+
+    function loadWorkingDays() {
+        var daysdata = '@ViewBag.workingdays';
+        var days = daysdata.split(',');
+        for (var i = 0; i < days.length - 1; i++) {
+            $("#" + days[i]).prop('checked', true);
+        }
+    }
+    var validation = $("#Div_Working_Schedule_Create").kendoValidator({
+        rules: {
+            remote: function (input) {
+                var errormessage;
+                var remoteAttr = input.attr("data-val-remote-url");
+                if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                    return true;
+                }
+                var isInvalid;
+                var data = {};
+
+                var WorkingScheduleId = $("#WorkingScheduleId").val();
+                var SchedulName = $.trim($("#SchedulName").val());
+
+                data = { WorkingScheduleId: WorkingScheduleId, SchedulName: SchedulName };
+                $.ajax({
+                    url: remoteAttr,
+                    mode: "abort",
+                    port: "validate" + input.attr('name'),
+                    dataType: "json",
+                    type: input.attr("data-val-remote-type"),
+                    data: data,
+                    async: false,
+                    success: function (response) {
+                        isInvalid = response;
+                        if (isInvalid === true) {
+                            isInvalid = true;
+                        }
+                        else {
+                            isInvalid = false;
+                        }
+                    }
+                });
+                return isInvalid;
+            },
+            SchedulName: function (input) {
+                if (input.is("[name=SchedulName]") && $("#SchedulName").val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            EndTime: function (input) {
+                if (input.is("[name=EndTime]") && $("#EndTime").val() === "" && $("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            StartTime: function (input) {
+                if (input.is("[name=StartTime]") && $("#StartTime").val() === "" && $("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Start_Time_Exp: function (input) {
+                if (input.is("[name=StartTime]") && !$("#StartTime").val().match(/^(0?[1-9]|1[012])(:[0-5]\d) [APap][mM]$/) && $("#StartTime").val() !== "" && $("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            End_Time_Exp: function (input) {
+                if (input.is("[name=EndTime]") && !$("#EndTime").val().match(/^(0?[1-9]|1[012])(:[0-5]\d) [APap][mM]$/) && $("#EndTime").val() !== "" && $("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Sta_StartTime: function (input) {
+                if (input.is("[name=satStart]") && $("#satStart").val() === "" && $("#Saturday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Sat_Start_Exp: function (input) {
+                if (input.is("[name=satStart]") && !$("#satStart").val().match(/^(0?[1-9]|1[012])(:[0-5]\d) [APap][mM]$/) && ($("#satStart").val() !== "" && $("#satStart").val() != null) && $("#Saturday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Sta_endTime: function (input) {
+                if (input.is("[name=satEnd]") && $("#satEnd").val() === "" && $("#Saturday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Sat_End_Exp: function (input) {
+                if (input.is("[name=satEnd]") && !$("#satEnd").val().match(/^(0?[1-9]|1[012])(:[0-5]\d) [APap][mM]$/) && ($("#satEnd").val() !== "" && $("#satEnd").val() != null) && $("#Saturday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+
+            sun_StartTime: function (input) {
+                if (input.is("[name=sunStart]") && $("#sunStart").val() === "" && $("#Sunday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Sun_Start_Exp: function (input) {
+                if (input.is("[name=sunStart]") && !$("#sunStart").val().match(/^(0?[1-9]|1[012])(:[0-5]\d) [APap][mM]$/) && ($("#sunStart").val() !== "" && $("#sunStart").val() != null) && $("#Sunday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+
+            sun_endTime: function (input) {
+                if (input.is("[name=sunEnd]") && $("#sunEnd").val() === "" && $("#Sunday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Sun_End_Exp: function (input) {
+                if (input.is("[name=sunEnd]") && !$("#sunEnd").val().match(/^(0?[1-9]|1[012])(:[0-5]\d) [APap][mM]$/) && ($("#sunEnd").val() !== "" && $("#sunEnd").val() != null) && $("#Sunday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            mon_StartTime: function (input) {
+                if (input.is("[name=monStart]") && $("#monStart").val() === "" && $("#Monday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Mon_Start_Exp: function (input) {
+                if (input.is("[name=monStart]") && !$("#monStart").val().match(/^(0?[1-9]|1[012])(:[0-5]\d) [APap][mM]$/) && ($("#monStart").val() !== "" && $("#monStart").val() != null) && $("#Monday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            mon_endTime: function (input) {
+                if (input.is("[name=monEnd]") && $("#monEnd").val() === "" && $("#Monday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Mon_End_Exp: function (input) {
+                if (input.is("[name=monEnd]") && !$("#monEnd").val().match(/^(0?[1-9]|1[012])(:[0-5]\d) [APap][mM]$/) && ($("#monEnd").val() !== "" && $("#monEnd").val() != null) && $("#Monday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+
+            tue_StartTime: function (input) {
+                if (input.is("[name=tueStart]") && $("#tueStart").val() === "" && $("#Tuesday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Tue_Start_Exp: function (input) {
+                if (input.is("[name=tueStart]") && !$("#tueStart").val().match(/^(0?[1-9]|1[012])(:[0-5]\d) [APap][mM]$/) && ($("#tueStart").val() !== "" && $("#tueStart").val() != null) && $("#Tuesday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            tue_endTime: function (input) {
+                if (input.is("[name=tueEnd]") && $("#tueEnd").val() === "" && $("#Tuesday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Tue_End_Exp: function (input) {
+                if (input.is("[name=tueEnd]") && !$("#tueEnd").val().match(/^(0?[1-9]|1[012])(:[0-5]\d) [APap][mM]$/) && ($("#tueEnd").val() !== "" && $("#tueEnd").val() != null) && $("#Tuesday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+
+            wed_StartTime: function (input) {
+                if (input.is("[name=wedStart]") && $("#wedStart").val() === "" && $("#Wednesday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+
+            Wed_Start_Exp: function (input) {
+                if (input.is("[name=wedStart]") && !$("#wedStart").val().match(/^(0?[1-9]|1[012])(:[0-5]\d) [APap][mM]$/) && ($("#wedStart").val() !== "" && $("#wedStart").val() != null) && $("#Wednesday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+
+            wed_endTime: function (input) {
+                if (input.is("[name=wedEnd]") && $("#wedEnd").val() === "" && $("#Wednesday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+           Wed_End_Exp: function (input) {
+                if (input.is("[name=wedEnd]") && !$("#wedEnd").val().match(/^(0?[1-9]|1[012])(:[0-5]\d) [APap][mM]$/) && ($("#wedEnd").val() !== "" && $("#wedEnd").val() != null) && $("#Wednesday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+
+            thu_StartTime: function (input) {
+                if (input.is("[name=thuStart]") && $("#thuStart").val() === "" && $("#Thursday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+
+            Thu_Start_Exp: function (input) {
+                if (input.is("[name=thuStart]") && !$("#thuStart").val().match(/^(0?[1-9]|1[012])(:[0-5]\d) [APap][mM]$/) && ($("#thuStart").val() !== "" && $("#thuStart").val() != null) && $("#Thursday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+
+            thu_endTime: function (input) {
+                if (input.is("[name=thuEnd]") && $("#thuEnd").val() === "" && $("#Thursday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Thu_End_Exp: function (input) {
+                if (input.is("[name=thuEnd]") && !$("#thuEnd").val().match(/^(0?[1-9]|1[012])(:[0-5]\d) [APap][mM]$/) && ($("#thuEnd").val() !== "" && $("#thuEnd").val() != null) && $("#Thursday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            fri_StartTime: function (input) {
+                if (input.is("[name=friStart]") && $("#friStart").val() === "" && $("#Friday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Fri_Start_Exp: function (input) {
+                if (input.is("[name=friStart]") && !$("#friStart").val().match(/^(0?[1-9]|1[012])(:[0-5]\d) [APap][mM]$/) && ($("#friStart").val() !== "" && $("#friStart").val() != null) && $("#Friday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+
+            fri_endTime: function (input) {
+                if (input.is("[name=friEnd]") && $("#friEnd").val() === "" && $("#Friday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Fri_End_Exp: function (input) {
+                if (input.is("[name=friEnd]") && !$("#friEnd").val().match(/^(0?[1-9]|1[012])(:[0-5]\d) [APap][mM]$/) && ($("#friEnd").val() !== "" && $("#friEnd").val() != null) && $("#Friday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+
+            BreakTimeUnits: function (input) {
+                if (input.is("[name=BreakTimeUnit]") && ($("#BreakTimeUnit").val() == 0 || $("#BreakTimeUnit").val() == null || $("#BreakTimeUnit").val() == "") && $("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            BreakTime: function (input) {
+                if (input.is("[name=BreakTime]") && $("#BreakTime").val() == "" && $("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+
+            Saturday_BreakTime: function (input) {
+                if (input.is("[name=satBreakTime]") && ($("#satBreakTime").val() === "" || $("#satBreakTime").val() == null) && $("#Saturday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Sunday_BreakTime: function (input) {
+                if (input.is("[name=sunBreakTime]") && ($("#sunBreakTime").val() === "" || $("#sunBreakTime").val() == null) && $("#Sunday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+
+            Monday_BreakTime: function (input) {
+                if (input.is("[name=monBreakTime]") && ($("#monBreakTime").val() === "" || $("#monBreakTime").val() == null) && $("#Monday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Tuesday_BreakTime: function (input) {
+                if (input.is("[name=tueBreakTime]") && ($("#tueBreakTime").val() === "" || $("#tueBreakTime").val() == null) && $("#Tuesday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+
+            Wednesday_BreakTime: function (input) {
+                if (input.is("[name=wedBreakTime]") && ($("#wedBreakTime").val() === "" || $("#wedBreakTime").val() == null) && $("#Wednesday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Thursday_BreakTime: function (input) {
+                if (input.is("[name=thuBreakTime]") && ($("#thuBreakTime").val() === "" || $("#thuBreakTime").val() == null) && $("#Thursday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+
+            Friday_BreakTime: function (input) {
+                if (input.is("[name=friBreakTime]") && ($("#friBreakTime").val() === "" || $("#friBreakTime").val() == null) && $("#Friday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Sat_Break_TimeUnit: function (input) {
+                if (input.is("[name=satBreakTimeUnit]") && ($("#satBreakTimeUnit").val() === "" || $("#satBreakTimeUnit").val() == null) && $("#Saturday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+
+            Sun_Break_TimeUnit: function (input) {
+                if (input.is("[name=sunBreakTimeUnit]") && ($("#sunBreakTimeUnit").val() === "" || $("#sunBreakTimeUnit").val() == null) && $("#Sunday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Mon_Break_TimeUnit: function (input) {
+                if (input.is("[name=monBreakTimeUnit]") && ($("#monBreakTimeUnit").val() === "" || $("#monBreakTimeUnit").val() == null) && $("#Monday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+
+            Tue_Break_TimeUnit: function (input) {
+                if (input.is("[name=tueBreakTimeUnit]") && ($("#tueBreakTimeUnit").val() === "" || $("#tueBreakTimeUnit").val() == null) && $("#Tuesday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Wed_Break_TimeUnit: function (input) {
+                if (input.is("[name=wedBreakTimeUnit]") && ($("#wedBreakTimeUnit").val() === "" || $("#wedBreakTimeUnit").val() == null) && $("#Wednesday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+
+            Thu_Break_TimeUnit: function (input) {
+                if (input.is("[name=thuBreakTimeUnit]") && ($("#thuBreakTimeUnit").val() === "" || $("#thuBreakTimeUnit").val() == null) && $("#Thursday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Fri_Break_TimeUnit: function (input) {
+                if (input.is("[name=friBreakTimeUnit]") && ($("#friBreakTimeUnit").val() === "" || $("#friBreakTimeUnit").val() == null) && $("#Friday").is(":checked") && !$("#same_start_end_time").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+
+            checkbox: function (input) {
+                if (input.is("[name=ChkWorkingDays]")) {
+                    var isAnyChk = false;
+                    $(".chkWorkingdays").each(function () {
+                        if ($(this).is(":checked")) {
+                            isAnyChk = true;
+                        }
+                    });
+                    return isAnyChk;
+                } else {
+                    return true;
+                }
+            },
+
+
+        },
+        messages: {
+            remote: function (input) { return input.data('val-remote'); },
+            SchedulName: "Please Enter Schedule Name",
+            StartTime: "Please enter start time",
+            Start_Time_Exp: "HH:MM AM/PM",
+            End_Time_Exp:"HH:MM AM/PM",
+            EndTime: "Please enter end time",
+            checkbox: "Please select alteast one day",
+            Sta_StartTime: "*",
+            Sat_Start_Exp: "HH:MM AM/PM",
+            Sta_endTime: "*",
+            Sat_End_Exp: "HH:MM AM/PM",
+
+            sun_StartTime: "*",
+            Sun_Start_Exp: "HH:MM AM/PM",
+            sun_endTime: "*",
+            Sun_End_Exp: "HH:MM AM/PM",
+
+            mon_StartTime: "*",
+            Mon_Start_Exp: "HH:MM AM/PM",
+            mon_endTime: "*",
+            Mon_End_Exp: "HH:MM AM/PM",
+
+            tue_StartTime: "*",
+            Tue_Start_Exp: "HH:MM AM/PM",
+            tue_endTime: "*",
+            Tue_End_Exp: "HH:MM AM/PM",
+
+            wed_StartTime: "*",
+            Wed_Start_Exp: "HH:MM AM/PM",
+            wed_endTime: "*",
+            Wed_End_Exp: "HH:MM AM/PM",
+
+            thu_StartTime: "*",
+            Thu_Start_Exp: "HH:MM AM/PM",
+            thu_endTime: "*",
+           Thu_End_Exp: "HH:MM AM/PM",
+
+            fri_StartTime: "*",
+            Fri_Start_Exp: "HH:MM AM/PM",
+            fri_endTime: "*",
+            Fri_End_Exp: "HH:MM AM/PM",
+
+            BreakTimeUnits: "Select an unit",
+            BreakTime: "Please enter break time",
+
+            Saturday_BreakTime: "*",
+            Sunday_BreakTime: "*",
+            Monday_BreakTime: "*",
+            Tuesday_BreakTime: "*",
+            Wednesday_BreakTime: "*",
+            Thursday_BreakTime: "*",
+            Friday_BreakTime: "*",
+        }
+    }).data("kendoValidator");
+    function uncheckAll() {
+        $("#Saturday").prop('checked', false);
+        $("#Sunday").prop('checked', false);
+        $("#Monday").prop('checked', false);
+        $("#Tuesday").prop('checked', false);
+        $("#Wednesdayday").prop('checked', false);
+        $("#Thursday").prop('checked', false);
+        $("#Friday").prop('checked', false);
+    }
+    $("#btn_Wrk_Schl_Refresh").click(function () {
+        $("#Div_Working_Schedule_Create_Refresh").append('<div class="loading_half"></div>');
+        $("#Div_Working_Schedule_Create_Refresh").load('@Url.Action("_WorkingScheduleCreate","HumanResource")?id=' + $("#WorkingScheduleId").val());
+    })
+    $("#BreakTime").change(function () {
+        if ($(this).val() == null || $(this).val() == "") {
+            $("#BreakTimeUnit").data('kendoDropDownList').value(null);
+            $("#BreakTimeType").val(0);
+
+        }
+    });
+    $('#BreakTime,#friBreakTime,#thuBreakTime,#wedBreakTime,#tueBreakTime,#monBreakTime,#sunBreakTime,#satBreakTime,#satStartAllowance,#satEndAllowance,#sunStartAllowance,#sunEndAllowance,#monStartAllowance,#monEndAllowance,#tueStartAllowance,#tueEndAllowance,#wedStartAllowance,#wedEndAllowance,#thuStartAllowance,#thuEndAllowance,#friStartAllowance,#friEndAllowance,#StartTimeAllowance,#EndTimeAllowance').keypress(function (event) {
+        var $this = $(this);
+        if ((event.which != 46 || $this.val().indexOf('.') != -1) &&
+           ((event.which < 48 || event.which > 57) &&
+           (event.which != 0 && event.which != 8))) {
+            event.preventDefault();
+        }
+
+        var text = $(this).val();
+        if ((event.which == 46) && (text.indexOf('.') == -1)) {
+            setTimeout(function () {
+                if ($this.val().substring($this.val().indexOf('.')).length > 3) {
+                    $this.val($this.val().substring(0, $this.val().indexOf('.') + 3));
+                }
+            }, 1);
+        }
+        if ((text.indexOf('.') != -1) &&
+            (text.substring(text.indexOf('.')).length > 2) &&
+            (event.which != 0 && event.which != 8) &&
+            ($(this)[0].selectionStart >= text.length - 2)) {
+            event.preventDefault();
+        }
+    });
+</script>
+

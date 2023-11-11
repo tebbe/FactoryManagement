@@ -1,0 +1,304 @@
+﻿
+
+@******************************** Created By Jerin Jahan (Date:25.10.2016) *********************************@
+@model FactoryManagement.ModelView.Accounting.AccountGroupModelView
+
+<div class="k-edit-form-container col-xs-12" style="margin-bottom:4%;" id="Div_For_Acc_Grp_Add">
+    @using (Html.BeginForm())
+    {
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        @Html.HiddenFor(m => m.AccId)
+        @Html.HiddenFor(m => m.CreatedBy)
+        @Html.HiddenFor(m => m.Acc_CashType)
+        
+        
+        <div class="col-xs-12" style="float:left;">
+            <div class="editor-label"><label for="AccountName">Account Name</label></div>
+            <div class="editor-field">
+                @Html.EditorFor(model => model.AccountName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                @Html.ValidationMessageFor(model => model.AccountName, "", new { @class = "text-danger" })
+            </div>
+        </div>        
+        <div class="col-xs-12" style="float:left;">
+            <div class="editor-label"><label for="AccountName">Account Type</label></div>
+            <div class="editor-field">
+                <div style="width:100%!important;">
+                    <input type="radio" name="cash_type" value="Payable" id="Payable"> Debit
+                    <input type="radio" name="cash_type" value="Receivable" id="Receivable"> Credit
+                    <input type="radio" name="cash_type" value="Both" id="Both"> Both
+                </div>
+                <span class="field-validation-valid text-danger" data-valmsg-for="Acc_CashType" data-valmsg-replace="true"></span>
+            </div>
+
+        </div>       
+        <div id="Div_ForPay" style="display:none;">
+            <div class="col-xs-12" style="float:left;">
+                <div class="editor-label"><label for="Acc_Type">Account Catagory</label></div>
+                <div class="editor-field">
+                    @(Html.Kendo().DropDownListFor(model => model.Acc_Type)
+                    .OptionLabel("--Select One Type--")
+                    .BindTo(ViewBag.Acc_Type as SelectList)
+                    .Events(e => e.Select("onAccountType"))
+                    .HtmlAttributes(new { style = "width:100%" })
+                    )
+                    @Html.ValidationMessageFor(model => model.Acc_Type, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div id="Div_Appn_Site"></div>
+            <div class="col-xs-12" style="float:left;">
+                <div class="editor-label"><label for="WorkingBalance" id="lbl_balance">Working Balance</label></div>
+                <div class="editor-field">
+                    <input class="form-control k-textbox"
+                           id="WorkingBalance" name="WorkingBalance" type="text"
+                           min="0"
+                           value="" data-class="Amount"
+                           placeholder="Amount"
+                           data-val-regex="Invalid amount"
+                           data-val-regex-pattern="\d+(\.\d{1,2})?"
+                           data-val-length="Invalid number.please enter correct amount"
+                           data-val-length-max="14">
+                    @Html.ValidationMessageFor(model => model.WorkingBalance, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-xs-12" style="float:left;">
+                <div class="editor-label"><label for="TransactionHigestAmount">Transaction Highest Amount(Per Month)</label></div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.TransactionHigestAmount, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                    @Html.ValidationMessageFor(model => model.TransactionHigestAmount, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-xs-12" style="float:left;">
+                <div class="editor-label"><label for="NoOfTranPerMonth">No.Of Transaction(Per Month)</label></div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.NoOfTranPerMonth, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                    @Html.ValidationMessageFor(model => model.NoOfTranPerMonth, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12" style="float:left;" id="Div_ForRcv">
+            <div class="editor-label"><label for="Balance">Current Balance</label></div>
+            <div class="editor-field">
+                <input class="form-control k-textbox"
+                       id="Balance" name="Balance" type="text"
+                       min="0"
+                       value="" data-class="Amount"
+                       placeholder="Amount"
+                       data-val-regex="Invalid amount"
+                       data-val-regex-pattern="\d+(\.\d{1,2})?"
+                       data-val-length="Invalid number.please enter correct amount"
+                       data-val-length-max="14">
+                @Html.ValidationMessageFor(model => model.Balance, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div id="Div_Appn_Revenue" style="display:none;"></div>
+        <div class="col-xs-12" style="float:left;">
+            <div class="editor-label"><label for="User">User</label></div>
+            <div class="editor-field">
+                <input id="customers" name="customers" style="width:100%;" />
+                <span class="field-validation-valid text-danger" data-valmsg-for="customers" data-valmsg-replace="true"></span>
+            </div>
+        </div>
+        <script>
+            $("#customers").kendoMultiSelect({
+                placeholder: "Select users...",
+                dataTextField: "Username",
+                dataValueField: "UserId",
+                headerTemplate: '<div class="dropdown-header k-widget k-header"><span>Photo</span><span>User info</span></div>',
+                itemTemplate: '<span class="k-state-default" style="background-image: url(\'/Images/UserPicture/thumb/#: data.Picture #\')"></span>' +
+                          '<span class="k-state-default"><h3>#: data.Username #</h3><p>#: data.UserEmpId #      #:data.UserType#</p></span>',
+                tagTemplate: '<span class="selected-value" style="background-image: url(\'/Images/UserPicture/thumb/#: data.Picture #\')"></span><span>#:data.Username#</span>',
+
+                dataSource: { transport: { read: { url: "@Url.Action("AllUserList", "Accounting")?SiteId=0", type: "GET" } } }
+            });
+        </script>
+
+        <div class="col-xs-12" style="float:left;">
+            <div class="editor-label"><label for="Description">Description</label></div>
+            <div class="editor-field">
+                <textarea class="form-control k-textbox valid k-valid" cols="65" id="Description" name="Description" rows="5"></textarea>
+            </div>
+        </div>
+        <div class="k-edit-buttons k-state-default col-xs-11">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_AccGrp_Save"><span class="k-icon k-update"></span>Save</button>
+            <button type="reset" class="k-button k-button-icontext k-grid-cancel" id="btn_AccGrp_Cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    }
+</div>
+<script>
+    $("#Payable").click(function () {
+        if ($("#Payable").is(":checked")) {
+            $("#Div_ForRcv").hide();
+            $("#Div_ForPay").show();
+            $("#Div_Appn_Revenue").hide();
+            $("#Div_Appn_Revenue").empty();
+        } else {
+            $("#Div_ForPay").hide();
+            $("#Div_ForRcv").show();
+        }
+    });
+    $("#Receivable").click(function () {
+        if ($("#Receivable").is(":checked")) {
+            $("#Div_Appn_Revenue").empty();
+            $("#Div_ForPay").hide();
+            $("#Div_ForRcv").show();
+        } else {
+            $("#IsReceivable").val("False");
+        }
+    });
+    $("#Both").click(function () {
+            if ($("#Both").is(":checked")) {
+                $("#Div_Appn_Revenue").hide();
+                $("#Div_Appn_Revenue").empty();
+                $("#Div_ForPay").show();
+                $("#Div_ForRcv").hide();
+                $("#lbl_balance").text('Working Balance');
+        } else {
+                $("#IsReceivable").val("False");
+            }
+        });
+
+    var validation = $("#Div_For_Acc_Grp_Add").kendoValidator({
+        rules: {
+            AccType: function (input) {
+                if (input.is("[name=Acc_Type]") && $("#Acc_Type").val() === "" && ($("#Payable").is(":checked") || $("#Both").is(":checked"))) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Acc_CashType: function (input) {
+                if (input.is("[name=Acc_CashType]") && !$("#Payable").is(":checked") && !$("#Receivable").is(":checked") && !$("#Both").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            WorkingBalance: function (input) {
+                if (input.is("[name=WorkingBalance]") && $("#WorkingBalance").val() === "" && ($("#Payable").is(":checked") || $("#Both").is(":checked"))) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            HighestAmnt: function (input) {
+                if (input.is("[name=TransactionHigestAmount]") && $("#TransactionHigestAmount").val() === "" && ($("#Payable").is(":checked") || $("#Both").is(":checked"))) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            NoOfTranPerMonth: function (input) {
+                if (input.is("[name=NoOfTranPerMonth]") && $("#NoOfTranPerMonth").val() === "" && ($("#Payable").is(":checked") || $("#Both").is(":checked"))) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            HigestAmount: function (input) {
+                if (input.is("[name=TransactionHigestAmount]") && ($("#Payable").is(":checked") || $("#Both").is(":checked")) && $("#TransactionHigestAmount").val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            NoOfTranPerMonth: function (input) {
+                if (input.is("[name=NoOfTranPerMonth]") &&  $("#NoOfTranPerMonth").val() === ""  && ($("#Payable").is(":checked") || $("#Both").is(":checked"))) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Balance: function (input) {
+                if (input.is("[name=Balance]") && $("#Balance").val() === "" && $("#Receivable").is(":checked")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            user: function (input) {
+                if (input.is("[name=customers]")) {
+                    var ms = input.data("kendoMultiSelect");
+                    if (ms.value().length === 0) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        },
+        messages: {
+            AccType: "Please select one type",
+            Acc_CashType: "Please select one type",
+            WorkingBalance: "Please enter balance",
+            HighestAmnt: "Please enter balance",
+            HigestAmount: "Please enter amount",
+            NoOfTranPerMonth: "Please enter per month transaction number",
+            Balance: "Please enter balance",
+            user:"Please select at least one user"
+        }
+    }).data("kendoValidator");
+
+    $("#btn_AccGrp_Save").click(function () {
+        if (validation.validate()) {
+            notification.show({ message: "Adding new account group...", showTime: startTime() }, "upload-progress");
+            var senddata = "";
+            if ($("#Payable").is(":checked") || $("#Both").is(":checked")) {
+                senddata = {
+                    AccountName: $("#AccountName").val(),
+                    Acc_Type: $("#Acc_Type").val(),
+                    Acc_CashType: ($("#Payable").is(":checked"))?1:2,
+                    Balance: $("#WorkingBalance").val(),
+                    TotalCreditLimit: $("#WorkingBalance").val(),
+                    TransactionHigestAmount: $("#TransactionHigestAmount").val(),
+                    NoOfTranPerMonth: $("#NoOfTranPerMonth").val(),
+                    AllUserId: $("#customers").data("kendoMultiSelect").value().join(","),
+                    Description: $("#Description").val(),
+                    CreatedBy: userId
+                };
+            }
+            if ($("#Receivable").is(":checked")) {
+                senddata = {
+                    AccountName: $("#AccountName").val(),
+                    Acc_CashType: 2,
+                    Balance: $("#Balance").val(),
+                    TotalCreditLimit: $("#WorkingBalance").val(),
+                    AllUserId: $("#customers").data("kendoMultiSelect").value().join(","),
+                    Description: $("#Description").val(),
+                    CreatedBy: userId
+                };
+            }
+
+            $.ajax({
+                url: '@Url.Action("SaveAccGroup", "Accounting")',
+                type: 'Post',
+                data: senddata,
+                success: function (data) {
+                    $("#btn_AccGrp_Save").closest(".k-window-content").data("kendoWindow").close();
+                    var acname = senddata.AccountName;
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+
+                    if (data === "Error") {
+                        notification.show({ message: "New account '" + acname + "' addition was unsuccessful.", showTime: startTime() }, "upload-error");
+                    } else {
+                        notification.show({ message: "New account '" + acname + "' has been successfully created.", showTime: startTime() }, "upload-success");
+
+                        $("#Div_Acc_Group").empty();
+                        $("#Div_Acc_Group").append('<div class="loading_partial"></div>');
+                        $("#Div_Acc_Group").show();
+                        $("#Div_Acc_Group").load('@Url.Action("_ShowAllAcc_Group", "Accounting")');
+                    }
+                },
+                error: function () {
+                    $("#btn_AccGrp_Save").closest(".k-window-content").data("kendoWindow").close();
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occured' addition unsuccessful", showTime: startTime() }, "upload-waring");
+                }
+            });
+        }
+    });
+
+    $("#btn_AccGrp_Cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

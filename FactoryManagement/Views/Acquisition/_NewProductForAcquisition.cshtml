@@ -1,0 +1,530 @@
+﻿
+
+@*----------------------Created By (Mabia Mishu)(24/08/2016)-----------------*@
+
+@model FactoryManagement.ModelView.Acquisition.AcquisitionViewModel
+
+@using (Html.BeginForm("AcquisitionSave", "Acquisition", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.HiddenFor(m => m.AcquisitionOrderId)
+    @Html.HiddenFor(m => m.AcquisitionType)
+    @Html.HiddenFor(m => m.BusinessOrderId)
+    @Html.HiddenFor(m => m.AcquisitionId)
+    @Html.HiddenFor(m => m.InventoryId)
+    @Html.HiddenFor(m => m.ProductId)
+    @Html.HiddenFor(m => m.ProductTypeId)
+    @Html.HiddenFor(m => m.BrandId)
+    @Html.HiddenFor(m => m.UnitId)
+    @Html.HiddenFor(m => m.IsAsap)
+    @Html.HiddenFor(m => m.CreatedBy)
+    @Html.HiddenFor(m => m.AvailableQuantity)
+    @Html.HiddenFor(m => m.IsSubQuantity)
+
+    <div id="divForNewProduct" style="display:none;">
+        <div class="form-group">
+            @Html.LabelFor(model => model.ProductName, "Product Name", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4 col-xs-12" })
+            @if (Model.AcquisitionType == 3 && Model.PartsId > 0)
+            {
+                <div class="col-md-5 col-sm-6 col-xs-10" style="padding-top:7px;">
+                    @Model.ProductName
+                </div>
+            }
+            else
+            {
+                <div class="col-md-5 col-sm-6 col-xs-10" id="divForproName">
+                    @(Html.Kendo().AutoComplete()
+                    .Name("products")
+                    .DataTextField("ProductName")
+                    .Filter("contains")
+                    .MinLength(3)
+                    .HtmlAttributes(new { style = "width:100%" })
+                    .Events(e => e.Select("InventoryItemSelect"))
+                    .DataSource(source =>
+                      {
+                          source.Read(read =>
+                          {
+                              read.Action("ProductNameSearching", "Acquisition").Data("onAdditionalData");
+                          })
+                          .ServerFiltering(true);
+                      })
+                    )
+                    <span class="field-validation-valid text-danger" data-valmsg-for="products" data-valmsg-replace="true"></span>
+                </div>
+                <div class="col-md-5 col-sm-6 col-xs-10" style="display:none;padding-top:7px;" id="divForProductLbl">
+                    <label id="lblForProductName"></label>
+                    <span class="k-icon k-i-close" id="btnCloseForProduct" data-id="1"></span>
+                </div>
+            }
+        </div>
+        <div id="divFor_New_Acquisition">
+            <div id="divForProductCatagory">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ProductTypeId, "Product Type Name", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4 col-xs-12" })
+                    <div class="col-md-5 col-sm-6 col-xs-10" id="divForcat-1">
+                        @(Html.Kendo().DropDownList().Name("productCatType-1")
+                        .OptionLabel("--Select One Type--")
+                        .BindTo(ViewBag.ProductTypeId as SelectList)
+                        .Events(e => e.Change("onProductChange"))
+                        .HtmlAttributes(new { style = "width:100%" })
+                        )
+                        @Html.ValidationMessageFor(model => model.ProductTypeId, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-md-5 col-sm-6 col-xs-10" style="display:none;padding-top:7px;" id="divForCatLbl-1">
+                        <label id="lblForCatagoryName-1"></label>
+                        <span class="k-icon k-i-close" id="btnCloseForCat-1" data-id="1"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(model => model.Country, "Country", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4 col-xs-12" })
+                <div class="col-md-5 col-sm-6 col-xs-10">
+                    @(Html.Kendo().DropDownListFor(model => model.Country)
+                            .BindTo(ViewBag.Country)
+                            .OptionLabel("--Select One--").DataTextField("Text")
+                            .HtmlAttributes(new { style = "width:100%" })
+                    )
+                    @Html.ValidationMessageFor(model => model.Country, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div id="divForBrand">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.BrandId, "Brand Name", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4 col-xs-12" })
+                    <div class="col-md-5 col-sm-6 col-xs-10" id="divForbrand-1">
+                        @(Html.Kendo().DropDownList().Name("productBrand-1")
+                            .OptionLabel("--Select One Type--")
+                            .BindTo(ViewBag.BrandId as SelectList)
+                            .Events(e => e.Change("onBrandChange"))
+                            .HtmlAttributes(new { style = "width:100%" })
+                        )
+                        @Html.ValidationMessageFor(model => model.BrandId, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-md-5 col-sm-6 col-xs-10" style="display:none;padding-top:7px;" id="divForBrandLbl-1">
+                        <label id="lblForBrandName-1"></label>
+                        <span class="k-icon k-i-close" id="btnCloseForBrand-1" data-id="1"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(model => model.Model, "Model", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4 col-xs-12" })
+                <div class="col-md-5 col-sm-6 col-xs-10">
+                    @Html.EditorFor(model => model.Model, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+                <div class="col-md-5 col-sm-6 col-xs-10">
+                    @Html.ValidationMessageFor(model => model.Model, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(model => model.ProductImageName, "Sample Photo", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4 col-xs-12" })
+                <div class="col-md-8 col-sm-8 col-xs-12" style="padding-left:0px!important;" id="divForPic">
+                    <div class="col-md-5 col-sm-5 col-xs-5" id="divPic-0">
+                        <span id="divForpic-0"></span>
+                        <div id="imgPreview-0" class="imgPreview"></div>
+                        <div id="imgUpload-0" class="image-uploader">
+                            <input type="file" name="files" id="file-0" class="inputfile inputfile-4" data-count="0" />
+                            <label for="file-0" id="lbl-0" class="lblForPics">
+                                <span style="font-size: 25px;padding-top:1.8em;display:block;">+</span>
+                                <span style="font-size: 15px;font-weight:bold;">Add Photos</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(model => model.Comment, "Description", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4 col-xs-12" })
+                <div class="col-md-5 col-sm-6 col-xs-10">
+                    @Html.TextAreaFor(model => model.Comment, new { @class = "form-control k-textbox", rows = 5 })
+                </div>
+            </div>
+        </div>
+        <div class="loading_half" id="loading_Selected_In_Pro" style="display:none;"></div>
+        <div id="divFor_Display_Acquisition" style="display:none;"></div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.Quantity, "Quantity", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4 col-xs-12" })
+            <div class="col-md-5 col-sm-6 col-xs-10" id="div_quantity">
+                @Html.EditorFor(model => model.Quantity, new { htmlAttributes = new { @class = "form-control k-textbox", @type = "text", onkeypress = "return isNumber(event)" } })
+                @Html.ValidationMessageFor(model => model.Quantity, "", new { @class = "text-danger" })
+            </div>
+            <span class="col-md-1 col-sm-2 col-xs-2" id="Quantity_Unit" style="display:none;"></span>
+            <span class="col-md-4 col-sm-4 col-xs-6" id="Span_Available_Quantity" style="display:none;"></span>
+        </div>
+        <div class="form-group" id="div_SubUnit" style="display:none;">
+            <label class="control-label col-md-4 col-sm-4 col-xs-12">Unit</label>
+            <div class="col-md-5 col-sm-6 col-xs-10" id="div_quantity">
+                <input id="txt_sub_unit" name="txt_sub_unit" style="width: 100%;" />
+                <span class="field-validation-valid text-danger" data-valmsg-for="txt_sub_unit" data-valmsg-replace="true"></span>
+            </div>
+        </div>
+        <div id="divForUnitList">
+            <div class="form-group">
+                @Html.LabelFor(model => model.UnitId, "Unit", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4 col-xs-12" })
+                <div class="col-md-5 col-sm-6 col-xs-10" id="divForunit-1">
+                    @(Html.Kendo().DropDownList().Name("unitType-1")
+                        .OptionLabel("--Select One Type--")
+                        .BindTo(ViewBag.UnitId as SelectList)
+                        .Events(e => e.Change("onUnitChange"))
+                        .HtmlAttributes(new { style = "width:100%" })
+                    )
+                    @Html.ValidationMessageFor(model => model.UnitId, "", new { @class = "text-danger" })
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-8" style="display:none;padding-top:7px;" id="divForUnitLbl-1">
+                    <label id="lblForUnitName-1"></label>
+                    <span class="k-icon k-i-close" id="btnCloseForUnit-1" data-id="1"></span>
+                </div>
+            </div>
+        </div>                
+        <div class="form-group">
+            @Html.LabelFor(model => model.IsAsap, "Required", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4 col-xs-12" })
+            <div class="col-md-8 col-sm-8 col-xs-12" style="padding-top:7px;">
+                @Html.RadioButtonFor(model => model.IsAsap, "1", new { id = "ChkForIsAsap", @class = "typeOfRequirement" })
+                @Html.Label("ASAp", "As soon as possible")  &nbsp;&nbsp;
+                @Html.RadioButtonFor(model => model.IsAsap, "0", new { id = "ChkForIsNormal", @class = "typeOfRequirement" })
+                @Html.Label("Normal", "Normal")
+                @Html.ValidationMessageFor(model => model.IsAsap, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div id="DivForRequiredDate" style="display:none;">
+            <div class="form-group">
+                @Html.Label("Date", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4 col-xs-12" })
+                <div class="col-md-3 col-sm-4 col-xs-5">
+                    @(Html.Kendo().DatePicker()
+                            .Name("RequiredDate").Min(DateTime.Now)
+                            .Events(e => e.Change("onChangeRequiredDate"))
+                            .HtmlAttributes(new { @style = "width:100%" })
+                    )
+                    @Html.ValidationMessageFor(model => model.RequiredDate, "", new { @class = "text-danger" })
+                </div>
+                <div class="col-md-4 col-sm-4 col-xs-6" style="padding-left:0px!important;padding-right:0px!important;">
+                    @Html.Label("Time", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-6" })
+                    <div class="col-md-8 col-sm-8 col-xs-6" style="padding-right:0px;float:left">
+                        @(Html.Kendo().TimePicker().Name("RequiredTime").HtmlAttributes(new { @style = "width:95%" }))
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="DivForASAPDate" style="display:none;">
+            <div class="form-group">
+                @Html.Label("Time", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4 col-xs-12" })
+                <div class="col-md-3 col-sm-3 col-xs-5">
+                    <input class="form-control k-textbox text-box"
+                           id="ASPTime"
+                           name="ASPTime" value="" type="text"
+                           pattern="^(?=.*\d)\d*(?:\.\d\d)?$" title="Invalid">
+                    <span class="field-validation-valid text-danger" data-valmsg-for="ASPTime" data-valmsg-replace="true"></span>
+                </div>
+                <div class="col-md-1 col-sm-2 col-xs-3"><span>Hour/s</span></div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-4 col-md-8 col-sm-offset-4 col-sm-8 col-xs-12">
+                <input type="button" value="Save" class="k-button k-state-default" id="btnSave" />
+                <input type="Reset" value="Refresh" id="btnRefresh" class="k-button k-state-default" />
+                <input type="button" value="Cancel" id="btnCancel" class="k-button k-state-default" />
+            </div>
+        </div>
+    </div>
+}
+<script>
+    $("#ChkForIsNormal").click(function () {
+        $("#DivForRequiredDate").show();
+        $("#DivForASAPDate").hide();
+    });
+    $("#ChkForIsAsap").click(function () {
+        $("#DivForRequiredDate").hide();
+        $("#DivForASAPDate").show();
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        allMainFile = [];
+        allFileCount = [];
+        $("#Quantity").val('');
+        $('#RequiredDate').val('');
+        $("#divForNewProduct").show();
+    });
+
+    $("#divForProductCatagory").on("click", ".k-i-close", function (e) {
+        var id = $(this).data("id");
+        $("#productCatType-" + id).data("kendoDropDownList").value(null);
+        $("#divForCatLbl-" + id).hide();
+        $("#divForcat-" + id).show();
+        $("#ProductTypeId").val(0);
+        if (count > id) {
+            for (var i = id; i <= count; i++) {
+                $("#dynDivForProCat-" + (i + 1)).remove();
+                count--;
+            }
+        }
+    });
+    $("#divForBrand").on("click", ".k-i-close", function (e) {
+        var id = $(this).data("id");
+        $("#productBrand-" + id).data("kendoDropDownList").value(null);
+        $("#divForBrandLbl-" + id).hide();
+        $("#divForbrand-" + id).show();
+        $("#BrandId").val(0);
+        if (brandCount > id) {
+            for (var i = id; i <= brandCount; i++) {
+                $("#dynDivForProBrand-" + (i + 1)).remove();
+                brandCount--;
+            }
+        }
+    });
+    $("#divForUnitList").on("click", ".k-i-close", function (e) {
+        var id = $(this).data("id");
+        $("#unitType-" + id).data("kendoDropDownList").value(null);
+        $("#divForUnitLbl-" + id).hide();
+        $("#divForunit-" + id).show();
+        $("#UnitId").val(0);
+        if (unitCount > id) {
+            for (var i = id; i <= unitCount; i++) {
+                $("#dynDivForProUnit-" + (i + 1)).remove();
+                unitCount--;
+            }
+        }
+    });
+
+    //***************************************** Image click and change function **********************************
+
+    $("#divForPic").on('change', '.inputfile-4', function (e) {
+        var id = $(this).data("count");
+
+        var imgPath = $("#file-" + id)[0].value;
+        var extn = imgPath.substring(imgPath.lastIndexOf('.') + 1).toLowerCase();
+        var image_holder = $("#imgPreview-" + id);
+        var files = e.target.files;
+        image_holder.empty();
+        if (extn == "gif" || extn == "png" || extn == "jpg" || extn == "jpeg") {
+            if (typeof (FileReader) != "undefined") {
+                allFileCount.push(id);
+                allMainFile[id] = files[0];
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $("<img />", { "src": e.target.result }).appendTo(image_holder);
+                }
+                $("#divForpic-" + id).append('<img src="/Content/Icon/modal_close.png" class="previewImgClose" data-count="' + id + '" />');
+                $("#imgUpload-" + id).hide();
+                image_holder.show();
+                $("#file-" + id).hide();
+                $("#lblfile-" + id).hide();
+                $("#ProductImageName").val($("#file-" + id)[0].files[0]);
+                reader.readAsDataURL($("#file-" + id)[0].files[0]);
+
+                id++;
+                $("#divForPic").append('<div class="col-md-5 col-sm-5 col-xs-5" id="divPic-' + id + '">' +
+                    '<span id="divForpic-' + id + '"></span>' +
+                    '<div id="imgPreview-' + id + '" class="imgPreview"></div>' +
+                    '<div id="imgUpload-' + id + '" class="image-uploader">' +
+                        '<input type="file" name="files" id="file-' + id + '" class="inputfile inputfile-4" data-count="' + id + '" />' +
+                        '<label for="file-' + id + '" id="lbl-' + id + '" class="lblForPics">' +
+                            '<span style="font-size: 21px;padding-top:2em;display:block;">+</span>' +
+                            '<span style="font-size: 15px;font-weight:bold;">Add Photos</span>' +
+                        '</label>' +
+                    '</div>' +
+                '</div>');
+
+            } else {
+                alert("This browser does not support FileReader.");
+            }
+        } else {
+            alert("Pls select only images");
+        }
+    });
+    $("#divForPic").on('click', '.previewImgClose', function (e) {
+        var id = $(this).data("count");
+        $("#divPic-" + id).hide();
+        $("#divPic-" + id).empty();
+        for (var i = 0; i < allFileCount.length; i++) {
+            if (id == allFileCount[i]) {
+                allMainFile.splice(i, 1);
+                allFileCount.splice(i, 1);
+            }
+        }
+        if (allFileCount.length == 0) {
+            allMainFile = allFileCount = [];
+            closeUp = 1;
+        }
+    });
+
+    var newProValidation = $("#divForAcquisition").kendoValidator({
+        rules: {
+            proName: function (input) {
+                if (input.is("[name=products]")) {
+                    if ($("#products").val() === '') {
+                        return false;
+                    }
+                    return true;
+                } else
+                    return true;
+            },
+            productType: function (input) {
+                if (input.is("[name=ProductTypeId]") && $("#ProductTypeId").val() === "0") {
+                    return false;
+                }
+                return true;
+            },
+            unit: function (input) {
+                if (input.is("[name=UnitId]") && $("#UnitId").val() === "0") {
+                    return false;
+                }
+                return true;
+            },
+            unit: function (input) {
+                if (input.is("[name=UnitId]") && $("#UnitId").val() === "0") {
+                    return false;
+                }
+                return true;
+            },
+            ChkForIsAsap: function (input) {
+                if (input.is("[type=radio]") && input.is("[name=IsAsap]")) {
+                    return $("form").find("[name=" + input.attr("name") + "]").is(":checked");
+                }
+                return true;
+            },
+            chkDate: function (input) {
+                if (input.is("[name=RequiredDate]") && '@(Model.BusinessOrderId)' === '' && $("#ChkForIsNormal").is(":checked") && $("#RequiredDate").val() === '') {
+                    return false;
+                }
+                else
+                    return true;
+            },
+            chkTime: function (input) {
+                if (input.is("[name=ASPTime]") && '@(Model.BusinessOrderId)' === '' && $("#ChkForIsAsap").is(":checked") && $("#ASPTime").val() === '') {
+                    return false;
+                }
+                else
+                    return true;
+            },
+            breakable: function (input) {
+                if (input.is("[name=txt_sub_unit]")) {
+                    if ($("#txt_sub_unit").val() === "" && breakable) {
+                        return false;
+                    }
+                    return true;
+                }
+                return true;
+            }
+        },
+        messages: {
+            proName: "Please enter Product name",
+            productType: "Please select Product type",
+            unit: "Please select unit",
+            ChkForIsAsap: "Please select any one",
+            chkDate: "Date is required",
+            breakable: "*",
+            chkTime:"Please enter time"
+        }
+    }).data("kendoValidator");
+
+    function saveData() {
+        notification.show({ message: "Saving Acquisition", showTime: startTime() }, "upload-progress");
+        var sendData = new FormData();
+        sendData.append("CreatedBy", userId);
+        sendData.append("Name", $("#Name").val());
+        sendData.append("ProductId", $("#ProductId").val());
+        sendData.append("InventoryId", $("#InventoryId").val());
+        sendData.append("AcquisitionOrderId", $("#AcquisitionOrderId").val());
+        sendData.append("AcquisitionType", $("#AcquisitionType").val());
+        sendData.append("BusinessOrderId", $("#BusinessOrderId").val());
+        if ($("#AcquisitionType").val() === "3") {
+            if (PartsId > 0) {
+                sendData.append("ProductName", '@(Model.ProductName)');
+                sendData.append("PartsId", PartsId);
+            }
+            sendData.append("MachineId", MachineId);
+        } else {
+            sendData.append("ProductName", $("#products").val());
+        }
+
+        if ($("#AcquisitionType").val() === "2" && subUnitId) {
+            sendData.append("UnitId", $("#txt_sub_unit").val());
+        } else {
+            sendData.append("UnitId", $("#UnitId").val());
+        }
+        sendData.append("IsSubQuantity", $("#IsSubQuantity").val());
+        sendData.append("ProductTypeId", $("#ProductTypeId").val());
+        sendData.append("Country", $("#Country").val());
+        sendData.append("BrandId", $("#BrandId").val());
+        sendData.append("Model", $("#Model").val());
+        sendData.append("Comment", $("#Comment").val());
+        sendData.append("Quantity", $("#Quantity").val());
+        sendData.append("AvailableQuantity", $("#AvailableQuantity").val());
+        sendData.append("IsAsap", ($("#IsAsap").val() == 1) ? true : false);
+        if ($("#ChkForIsNormal").is(":checked")) {
+            sendData.append("RequiredDate", $("#RequiredDate").val());
+            sendData.append("RequiredTime", $("#RequiredTime").val());
+        } else {
+            sendData.append("ASPTime", $("#ASPTime").val());
+        }
+        for (var i = 0; i < allMainFile.length; i++) {
+            sendData.append("files[" + i + "]", allMainFile[i]);
+        }
+        $.ajax({
+            url: '@Url.Action("AcquisitionSave", "Acquisition")',
+            type: 'Post',
+            data: sendData,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                notification.hide();
+                notification.setOptions({ autoHideAfter: 2000 });
+                if (data != null) {
+                    if (data === 'Error') {
+                        notification.show({ message: "Unsuccessful", showTime: startTime() }, "upload-error");
+                    }
+                    else {
+                        notification.show({ message: "Acquisition order successfully saved", showTime: startTime() }, "upload-success");
+                        var acq_id = data.AcquisitionOrderId;
+                        if (AcquisitionOrderId === '0') {
+                            location.href = '@Url.Action("Acquisition", "Acquisition")?AcquisitionOrderId=' + acq_id;
+                        } else {
+                            var passData = { AcquisitionOrderId: AcquisitionOrderId, AcquisitionType: AcquisitionType, BusinessOrderId: BusinessOrderId, PartsName: PartsName };
+                            $("#divForNewAcquisition").hide();
+                            $("#divForNewAcquisition").empty();
+                            $("#divForNewAcquisition").append('<div class="loading_half" ></div>');
+                            $("#divForNewAcquisition").show();
+                            $("#divForNewAcquisition").load('@Url.Action("_NewProductForAcquisition", "Acquisition")', passData);
+
+                            $("#divForAcqOrder").hide();
+                            $("#divForAcqOrder").empty();
+                            $("#divForAcqOrder").append('<div class="loading_half" ></div>');
+                            $("#divForAcqOrder").show();
+                            $("#divForAcqOrder").load('@Url.Action("_AlreadyAddedAcqProductList", "Acquisition")?AcquisitionOrderId=' + AcquisitionOrderId);
+                        }
+                    }
+                }
+            },
+            error: function (error) {
+                notification.show({ message: "Unsuccessful", showTime: startTime() }, "upload-error");
+            }
+        });
+    }
+    $("#btnSave").click(function () {
+        if (newProValidation.validate()) {
+            if ((AcquisitionType === '2' || AcquisitionType === '3') && $("#ProductId").val() !== '') {
+                var available_quantity = $("#AvailableQuantity").val();
+                var type_quantity = $("#Quantity").val();
+                if ((parseFloat(type_quantity) > parseFloat(available_quantity)) && !subUnitId) {
+                    var kendoWindow = $("<div />").kendoWindow({
+                        actions: ["Close"],
+                        title: "Alert",
+                        resizable: false,
+                        width: "30%",
+                        modal: true
+                    });
+                    message = "Required quantity not available.Are you sure want to order?";
+                    var template = kendo.template($("#temp_for_alert").html());
+                    kendoWindow.data("kendoWindow").content(template).center().open();
+                    kendoWindow.find("#btn_confirm_cancel").click(function () {
+                        kendoWindow.data("kendoWindow").close();
+                    }).end();
+                    kendoWindow.find("#btn_confirm_ok").click(function () {
+                        kendoWindow.data("kendoWindow").close();
+                        saveData();
+                    }).end();
+                } else { saveData(); }
+            } else {
+                saveData();
+            }
+        }
+    });
+
+</script>

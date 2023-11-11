@@ -1,0 +1,145 @@
+﻿@************************************* Created by Jerin Jahan (Date: 24.06.2017) ******************************************@
+@{
+    ViewBag.Title = "All Spare Parts List";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var allUnitList = db.Site_Unit_Lists.Where(m => m.UnitStatus == 1).ToList();
+    int tabcount = 1, divcount = 1,uid = Convert.ToInt16(ViewBag.uId);
+}
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li><i class="icon-basket"></i><span> Inventory</span><i class="fa fa-angle-right"></i></li>
+        <li><i class="fa fa-th-list"></i><a href="/Home/EquipDash"> Equipment</a><i class="fa fa-angle-right"></i></li>
+        <li><i class="fa fa-th-list"></i><a href="/Inventory/SparePartsDisList"> Available Spare Parts Lists </a></li>
+    </ul>
+</div>
+@if (db.View_Dispacth_Item_Details.Where(m => m.AssignType == 1).Any())
+{
+    <div class="note note-success">
+        <p id="h4title">All Available Spare Parts Lists </p>
+    </div>
+}
+<div class="panel with-nav-tabs panel-default">
+    <div class="panel-heading">
+        <ul class="nav nav-tabs">
+            <li class="active" id="liForAll"><a href="#tabAll" data-toggle="tab">All</a></li>
+            @foreach (var u in allUnitList)
+            {
+                tabcount++;
+                <li class="liForUname" data-count="@tabcount" data-uid="@u.UnitId" data-uname="@u.UnitAcryonm" id="li_@u.UnitId"><a href="#tab_@tabcount" data-toggle="tab">@u.UnitAcryonm</a></li>
+            }
+        </ul>
+        @(Html.Kendo().MultiSelect()
+                              .Name("ProductSearch")
+                              .DataTextField("ProductName")
+                              .DataValueField("InventoryId")
+                              .Placeholder("Start typing product name")
+                              .Events(e => e.Change("onSearchChange"))
+                              .AutoClose(false)
+                              .DataSource(source =>
+                              {
+                                  source.Read(read =>
+                                  {
+                                      read.Action("AvailableSparePartsForSearch", "Inventory");
+
+                                  });
+                                  source.ServerFiltering(false);
+                              })
+        )
+    </div>
+    <div class="panel-body" style="border:none!important;" id="div_for_panel_body">
+        <div class="tab-content" id="spare_tab">
+            <div class="tab-pane fade in active" id="tabAll"></div>
+            @foreach (var u in allUnitList)
+            {
+                divcount++;
+                <div class="tab-pane fade tab_@u.UnitId" id="tab_@divcount" data-count="@divcount"></div>
+            }
+        </div>
+    </div>
+</div>
+<div id="win_partstomachine"></div>
+<script>
+    var days = 0, tab = 0, uid = 0, uname = "";
+    $(document).ready(function () {
+        if ('@(uid)' > 0) {
+            uid= @uid;
+            $("#liForAll").removeClass('active');
+            $("#li_"+@uid).addClass('active');
+            var tabcount = $("#li_"+@uid).data('count');
+            uname = $("#li_"+@uid).data('uname');
+            passdata = { uId: uid };
+            $("#tab_" + tabcount).addClass('active in');
+            $("#tab_" + tabcount).empty();
+            $("#tab_" + tabcount).append('<div class="loading_partial"></div>');
+            $("#h4title").text("Showing " + uname + "'s All Available Spare Parts List");
+            $("#tab_" + tabcount).load('@Url.Action("_SparePartsDisListDaysWise", "Inventory")', passdata);
+        }
+        else {
+            tab = 0
+            $("#tabAll").append('<div class="loading_partial"></div>');
+            $("#tabAll").load('@Url.Action("_SparePartsDisList", "Inventory")?v=all');
+        }
+    });
+    $("#liForAll").click(function () {
+        tab = 0, uid = 0;
+        $("#tabAll").empty();
+        $("#tabAll").append('<div class="loading_partial"></div>');
+        $("#h4title").text('All Available Spare Parts Lists');
+        $("#tabAll").load('@Url.Action("_SparePartsDisList", "Inventory")?v=all');
+    });
+    $(document).on("click",".porductstomachines",function(){
+        var inventoryId=$(this).data("inventoryid");
+        var proname=$(this).data("proname");
+        $("#win_partstomachine").empty();
+        $("#win_partstomachine").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '30%',
+            title: 'Parts assigned with machines',
+            close: onWindowClose
+        });
+        $("#win_partstomachine").html('<div class="partial_loading_half"></div>');
+        var Win_unit_Add = $("#win_partstomachine").data("kendoWindow");
+        Win_unit_Add.refresh({ url: "/Inventory/machineAssignedwithParts?partsId=" + inventoryId });
+        Win_unit_Add.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+    $(".liForUname").click(function () {
+        var count = $(this).data("count");
+        uid = $(this).data("uid");
+        uname = $(this).data("uname");
+        tab = count;
+        $("#tab_" + count).empty();
+        $("#tab_" + count).append('<div class="partial_loading_half"></div>');
+        $("#h4title").text("Showing " + uname + "'s All Available Spare Parts List");
+        $("#tab_" + count).load('@Url.Action("_SparePartsDisList", "Inventory")?uid=' + uid);
+    });
+    function reloadTab()
+    {
+        if (tab === 0) {
+            $("#tabAll").empty();
+            $("#tabAll").append('<div class="loading_partial"></div>');
+            $("#h4title").text('All Available Spare Parts Lists');
+            $("#tabAll").load('@Url.Action("_SparePartsDisList", "Inventory")?v=all');
+        } else {
+            $("#tab_" + tab).empty();
+            $("#tab_" + tab).append('<div class="partial_loading_half"></div>');
+            $("#h4title").text("Showing " + uname + "'s All Available Spare Parts List");
+            $("#tab_" + tab).load('@Url.Action("_SparePartsDisList", "Inventory")?uid=' + uid);
+        }
+    }
+    function onSearchChange(){
+        var current=this.value();
+        $("#spare_tab").find(".active").removeClass("active");
+        $("#tabAll").addClass("active");
+        $("#tabAll").empty();
+        $("#tabAll").append('<div class="loading_partial"></div>');
+        var sendData={v:'all',inventory:current}
+        $("#tabAll").load('@Url.Action("_SparePartsDisList", "Inventory")',sendData);
+    }
+</script>

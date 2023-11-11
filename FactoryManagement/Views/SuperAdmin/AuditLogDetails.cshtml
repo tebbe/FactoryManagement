@@ -1,0 +1,113 @@
+﻿@model FactoryManagement.Models.AuditInformation
+
+@{
+    ViewBag.Title = "AuditLogDetails";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+<h3 class="page-title">Audit Log Details</h3>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <a href="javascript:;">Inventory</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/SuperAdmin/AuditLog?IsOwn=true">Activity Log</a>
+        </li>
+        <li>
+            <i class="fa fa-info-circle"></i>
+            <span>Audit Log Details</span>
+        </li>
+    </ul>
+</div>
+<div class="portlet light bordered">
+    <div class="portlet-title">
+        <div class="caption font-green">
+            <i class="fa fa-plus font-green"></i>
+            <span class="caption-subject green bold uppercase">Audit Log Details</span>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <dl class="dl-horizontal">
+            <dt>Operation Name</dt>
+            <dd>@Html.DisplayFor(model => model.OperationName)</dd>
+
+            <dt>Message</dt>
+            <dd>@Html.DisplayFor(model => model.Message)</dd>
+
+            <dt>Module Name</dt>
+            <dd>@Html.DisplayFor(model => model.ModuleName)</dd>
+
+            <dt>Page Name</dt>
+            <dd>@Html.DisplayFor(model => model.PageName)</dd>
+
+            <dt>Database Table Name</dt>
+            <dd>@Html.DisplayFor(model => model.TableName)</dd>
+
+            <dt>Database ColumnId</dt>
+            <dd>@Html.DisplayFor(model => model.ColumnId)</dd>
+
+            <dt>Date</dt>
+            <dd>@Convert.ToDateTime(Model.Date).ToString("dddd,  dd MMMM yyyy  h:mm tt")</dd>
+
+            <dt>Operation Status</dt>
+            <dd>@if (Model.OperationStatus == 1)
+            { <span>Succeed</span>}
+            else
+            {<span>Failed</span>}</dd>
+
+            <dt>Operation Done By</dt>
+            <dd>
+                @if (Model.UserId > 0)
+                {
+                    long id = Convert.ToInt64(Model.UserId);
+                    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+                    var user = db.View_UserLists.Where(m => m.UserType == 1 && m.UserId == id).FirstOrDefault();
+                    <img src="~/Images/UserPicture/thumb/@user.Picture" class="user-photo" />
+                    <span>@user.UserName</span>
+
+                }
+                else
+                {
+                    <img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" /><span>Super Admin</span>
+                }
+            </dd>
+
+        </dl>
+
+
+        @*<h3>
+            @Model.Name
+            <span style="float:right;">
+                @if (Model.VoucherStatus == 0)
+                {
+                    <span class="btn green" data-toggle="tooltip" title="Approve Manual Indent" data-container="body" id="btn_app_indent_voucher"><i class="fa fa-check"></i></span>
+                }
+            </span>
+        </h3>
+        <p>
+            @if (Model.CreatedBy > 0)
+            {
+                <span>Created By : @db.View_UserLists.Where(m => m.UserId == Model.CreatedBy).Select(m => m.UserName).FirstOrDefault()</span>
+            }
+            else
+            {
+                <span>Created By : Super Admin</span>
+            }
+        </p>
+        <p>Created Date : @Convert.ToDateTime(Model.CreatedDate).ToString("MMM dd, yy")</p>
+        <p>
+            Status : @if (Model.VoucherStatus == 0)
+            { <span class="text-center text-warning">Pending Approval</span>}
+            else if (Model.VoucherStatus == 1)
+            { <span class="text-center text-info bold">Partial</span>}
+            else if (Model.VoucherStatus == 2)
+            {<span class="text-center text-success">Completed</span>}
+            else
+            {<span class="text-center text-danger">Deleted</span>}
+        </p>*@
+
+    </div>
+</div>

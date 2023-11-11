@@ -1,0 +1,429 @@
+﻿
+@* ******************************* Created By Kaikubad (Date: 25.01.2017) ****************************************************** *@
+@{
+    int id = ViewBag.ScheduleId;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var daylist = db.WorkingDayLists.Where(x => x.WorkingScheduleId == id).ToList();
+    var last = daylist.Last();
+}
+<style>
+    dt {
+        color: #5a7391 !important;
+        padding-left: 5px;
+        margin-bottom: 5px;
+    }
+
+    dd {
+        color: #93a3b5 !important;
+        padding-left: 10px;
+        margin-bottom: 5px;
+    }
+
+    #win_show_details td {
+        color: black !important;
+    }
+
+    #win_show_details thead th {
+        color: black !important;
+    }
+</style>
+@if (ViewBag.view == "partial")
+{
+    <div class="form-group">
+        <label class="control-label col-md-3 col-sm-3">Schedule Name</label>
+        <div class="col-md-4 col-sm-5" style="margin-top:5px">
+            <span class="dis_info">@Model.SchedulName</span>
+            @if (ViewBag.Reason == "edit")
+            {<span style="margin-left:5%;"><i class="fa fa-pencil" id="workingSchedulePackageChange"></i></span>
+            }
+        </div>
+    </div>
+    if (Model.SameWorkHour)
+    {
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3">Break Time</label>
+            <div class="col-md-4 col-sm-5" style="margin-top:7px">
+                <span class="dis_info">@Model.BreakTime</span>
+                @if (Model.BreakTimeType == 1)
+                {
+                    <span>Minute</span>
+                }
+                else
+                {
+                    <span>Hour</span>
+                }
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3">
+                Start Time
+            </label>
+            <div class="col-md-2 col-sm-3" style="margin-top:7px">
+                <span class="dis_info">@Model.StartTime</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3">
+                Start Allowance
+            </label>
+            <div class="col-md-4 col-sm-5" style="margin-top:7px">
+                @if (Convert.ToDecimal(Model.Start_Allowance) > 0)
+                {
+                    <span class="dis_info">@Model.Start_Allowance</span>
+                }
+                else
+                {
+                    <span class="dis_info">No Allowance</span>
+                }
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3">
+                End Time
+            </label>
+            <div class="col-md-4 col-sm-5" style="margin-top:7px">
+                <span class="dis_info">@Model.EndTime</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3">
+                End Allowance
+            </label>
+            <div class="col-md-4 col-sm-5" style="margin-top:7px">
+                @if (Convert.ToDecimal(Model.End_Allowance) > 0)
+                {
+                    <span class="dis_info">@Model.End_Allowance</span>
+                }
+                else
+                {
+                    <span class="dis_info">No Allowance</span>
+                }
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3">Working Days</label>
+            <div class="col-md-8 col-sm-8" style="margin-top:5px">
+                @foreach (var day in daylist)
+                {
+                    if (day == last)
+                    {
+                        <span class="dis_info">
+                            @day.Day
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="dis_info">
+                            @day.Day ,
+                        </span>
+                    }
+                }
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3">Same Working Hours</label>
+            <div class="col-md-4 col-sm-5" style="margin-top:5px">
+                <span class="dis_info">@Model.StartTime  to  @Model.EndTime</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3"></label>
+            <table class="table">
+                <thead>
+                <th>Day</th>
+                <th>Start Time</th>
+                <th>Start Allowance</th>
+                <th>Break Time</th>
+                <th>End Time</th>
+                <th>End Allowance</th>
+                </thead>
+                <tbody>
+                    @foreach (var day in daylist)
+                    {
+                        <tr>
+                            <td>@day.Day</td>
+                            <td>@day.StartTime</td>
+                            <td>
+                                @if (Convert.ToDecimal(day.Start_Allowance) > 0)
+                                {
+                                    @day.Start_Allowance
+                                }
+                                else
+                                {<span>No Allowance</span>}
+                            </td>
+                            <td>
+                                @day.BreakTime
+                                <span>
+                                    @if (day.Break_Type == 1)
+                                    {
+                                        <span>Minute/s</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Hour/s </span>
+                                    }
+                                </span>
+                            </td>
+                            <td>@day.EndTime</td>
+                            <td>
+                                @if (Convert.ToDecimal(day.End_Allowance) > 0)
+                                {
+                                    @day.End_Allowance
+                                }
+                                else
+                                {<span>No Allowance</span>}
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+else if (ViewBag.view == "win")
+{
+    <div class="editor-label"><label>Schedule Name</label></div>
+    <div class="editor-field" style="padding-top:6px!important;"><span>@Model.SchedulName</span></div>
+    if (Model.SameWorkHour)
+    {
+        <div class="editor-label"><label>Break Time</label></div>
+        <div class="editor-field" style="padding-top:6px!important;">
+            <span>@Model.BreakTime</span>
+            @if (Model.BreakTimeType == 1)
+            {
+                <span>Minute/s</span>
+            }
+            else
+            {
+                <span>Hour/s</span>
+            }
+        </div>
+        <div class="editor-label"><label>Working Days</label></div>
+        <div class="editor-field" style="padding-top:6px!important;">
+            @foreach (var day in daylist)
+            {
+                if (last == day)
+                {
+                    <span>@day.Day</span>
+                }
+                else
+                {
+                    <span>@day.Day ,</span>
+                }
+            }
+        </div>
+        <div class="editor-label"><label>Same Working Hours</label></div>
+        <div class="editor-field" style="padding-top:6px!important;"><span>@Model.StartTime  to  @Model.EndTime</span></div>
+        <div class="editor-label"><label>Start Allowance</label></div>
+        <div class="editor-field">
+            @Model.Start_Allowance
+        </div>
+        <div class="editor-label"><label>End Allowance</label></div>
+        <div class="editor-field">
+            @Model.End_Allowance
+        </div>
+    }
+    else
+    {
+        var c = 0;
+        <table class="table" id="win_show_details">
+            <thead>
+            <th>Day</th>
+            <th>Start Time</th>
+            <th>Start Allowance</th>
+            <th>Break Time</th>
+            <th>End Time</th>
+            <th>End Allowance</th>
+            </thead>
+            <tbody>
+                @foreach (var day in daylist)
+                {
+                    <tr>
+                        <td>@day.Day</td>
+                        <td>@day.StartTime</td>
+                        <td>
+                            @if (Convert.ToDecimal(day.Start_Allowance) > 0)
+                            {
+                                @day.Start_Allowance
+
+                            }
+                            else
+                            {
+                                <span>No Allowance</span>
+                            }
+                        </td>
+                        <td>
+                            @day.BreakTime
+                            <span>
+                                @if (day.Break_Type == 1)
+                                {
+                                    <span> Minute/s</span>
+                                }
+                                else
+                                {
+                                    <span>Hour/s</span>
+                                }
+                            </span>
+                        </td>
+                        <td>@day.EndTime</td>
+                        <td>
+                            @if (Convert.ToDecimal(day.End_Allowance) > 0)
+                            {
+                                @day.End_Allowance
+                            }
+                            else
+                            {
+                                <span>No Allowance</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+else
+{
+    <dl class="dl-horizontal col-sm-12" id="Div_Holiday">
+        <dt>Schedule Name</dt>
+        <dd>
+            <span>@Model.SchedulName</span>
+            @if (ViewBag.Reason == "edit")
+            {
+                <span style="margin-left:5%;"><i class="fa fa-pencil" data-id="@id" id="changeSchedule_btn"></i></span>
+            }
+        </dd>
+        @if (Model.SameWorkHour)
+        {
+            <dt>Break Time</dt>
+            <dd>
+                <span>@Model.BreakTime</span>
+                @if (Model.BreakTimeType == 1)
+                {
+                    <span>Minute</span>
+                }
+                else
+                {
+                    <span>Hour</span>
+                }
+            </dd>
+            <dt>Working Days</dt>
+            <dd>
+                @foreach (var day in daylist)
+                {
+                    if (day == last)
+                    {
+                        <span>@day.Day </span>
+                    }
+                    else
+                    {
+                        <span>@day.Day ,</span>
+                    }
+                }
+            </dd>
+            <dt>Same Working Hour</dt>
+            <dd>From <span>@Model.StartTime </span> to <span> @Model.EndTime</span></dd>
+            <dt>Start Allowance</dt>
+            <dd>
+                @if (Convert.ToDecimal(Model.Start_Allowance) > 0)
+                {
+                    @Model.Start_Allowance
+                }
+                else
+                {
+                    <span>No Allowance</span>
+                }
+            </dd>
+            <dt>End Allowance</dt>
+            <dd>
+                @if (Convert.ToDecimal(Model.End_Allowance) > 0)
+                {
+                    @Model.End_Allowance
+                }
+                else
+                {
+                    <span>No Allowance</span>
+                }
+            </dd>
+        }
+        else
+        {
+            <table class="table" style="margin-top:15px">
+                <thead>
+                <th>Day</th>
+                <th>Start Time</th>
+                <th>Start Allowance</th>
+                <th>Break Time</th>
+                <th>End Time</th>
+                <th>End Allowance</th>
+                </thead>
+                <tbody>
+                    @foreach (var day in daylist)
+                    {
+                        <tr>
+                            <td>@day.Day</td>
+                            <td>@day.StartTime</td>
+                            <td>
+                                @if (Convert.ToDecimal(day.Start_Allowance) > 0)
+                                {
+                                    @day.Start_Allowance
+                                }
+                                else
+                                {
+                                    <span>No Allowance</span>
+                                }
+                            </td>
+                            <td>
+                                @day.BreakTime
+                                <span>
+                                    @if (day.Break_Type == 1)
+                                    {
+                                        <span> Minute/s</span>
+                                    }
+                                    else
+                                    {
+                                        <span> Hour/s</span>
+                                    }
+                                </span>
+                            </td>
+                            <td>@day.EndTime</td>
+                            <td>
+                                @if (Convert.ToDecimal(day.End_Allowance) > 0)
+                                {
+                                    @day.End_Allowance
+                                }
+                                else
+                                {
+                                    <span>No Allowance</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </dl>
+}
+
+
+<script>
+    function workingSchedulePackageChange () {
+        $("#win_Work_Schedule_change").empty();
+        $("#win_Work_Schedule_change").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            position: { top: '20%' },
+            title: 'Change Working Schedule'
+        });
+        $("#win_Work_Schedule_change").html('<div class="win_loading_half"></div>');
+        var win_Work_Schedule_change = $("#win_Work_Schedule_change").data("kendoWindow");
+        win_Work_Schedule_change.refresh({ url: "/HumanResource/ChangeWorkingSchedule?id=" +@id});
+        win_Work_Schedule_change.center().open();
+    }
+</script>

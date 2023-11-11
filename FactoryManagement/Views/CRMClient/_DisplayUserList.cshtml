@@ -1,0 +1,32 @@
+﻿@model IEnumerable<FactoryManagement.ModelView.CRM.Client_User_ListsModelView>
+@{var count = 1;}
+<tr>
+    <th>#</th>
+    <th>User</th>
+    <th>Designation</th>
+    <th></th>
+</tr>
+@foreach (var item in ViewBag.UserList as IEnumerable<FactoryManagement.ModelView.CRM.Client_User_ListsModelView>)
+{
+    <tr>
+        <th scope="row">@count</th>
+        <td>
+            @if (item.PictureName != "")
+            {
+                <img class="user-photo" src="~/Images/Client/ClientUserImage/thumb/@item.PictureName" />
+            }
+            else
+            {
+                <img class="user-photo" src="~/Images/Icon/blank-person.jpg" />
+            }
+            @Html.DisplayFor(modelItem => item.UserName)
+        </td>
+
+        <td>@Html.DisplayFor(modelItem => item.Designation)</td>
+        <td>
+            <a href="#" id="userDetailsDisplay" class="userDetailsDisplay" data-userid="@item.UserId" data-clientid="@item.ClientId"><span class="fa fa-info-circle"></span></a>
+        </td>
+    </tr>
+  count++;
+}
+

@@ -1,0 +1,156 @@
+﻿
+
+@************************************** Created By Jerin Jahan (Date:12.01.2017)  ***************************************@
+
+@model FactoryManagement.Models.Leave_Application_List
+@{
+    ViewBag.Title = "LeaveApplication";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-users fa-fwt"></i>
+            <span>Leave Management</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-file-text" aria-hidden="true"></i>
+            <span>Leave Applicaion Form</span>
+        </li>
+    </ul>
+</div>
+@using (Html.BeginForm())
+{
+    <div class="row">
+        <div class="col-md-12">
+            <div class="portlet light portlet-fit bordered">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-file-text-o font-green" aria-hidden="true"></i>
+                        <span class="caption-subject font-green bold uppercase">Leave Application Form</span>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-horizontal" id="div_Leave_App">
+                                <input id="DateValidation" name="DateValidation" type="hidden">
+                                <div class="form-horizontal  col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                    <div class="form-group">
+                                        @Html.LabelFor(model => model.ApplicationUserId, "Start Date", htmlAttributes: new { @class = "control-label col-lg-2 col-md-2 col-sm-3 col-xs-12" })
+                                        <div class="col-lg-3 col-md-3 col-sm-4 col-xs-7">
+                                            @(Html.Kendo().DatePicker().Name("StartDate").Format("MMM dd,yyyy").Min(DateTime.Now).HtmlAttributes(new { style = "width: 100%" }))
+                                            <span class="field-validation-valid text-danger" data-valmsg-for="StartDate" data-valmsg-replace="true"></span>
+                                            <span class="field-validation-valid text-danger" data-valmsg-for="DateValidation" data-valmsg-replace="true"></span>
+                                        </div>
+                                        <label class="control-label col-lg-1 col-md-1 col-sm-3 col-xs-12">To</label>
+                                        <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7">
+                                            @(Html.Kendo().DatePicker().Name("EndDate").Format("MMM dd,yyyy").Min(DateTime.Now).HtmlAttributes(new { style = "width: 70%" }))
+                                            <span class="field-validation-valid text-danger" data-valmsg-for="EndDate" data-valmsg-replace="true"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        @Html.LabelFor(model => model.Reason, htmlAttributes: new { @class = "control-label col-lg-2 col-md-2 col-sm-3 col-xs-12" })
+                                        <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7">
+                                            <textarea class="form-control k-textbox" cols="65" id="Reason" name="Reason" rows="5"
+                                                      data-val-length-max="500" data-val-length="Reason cannot be longer than 500 characters."></textarea>
+                                            <span class="field-validation-valid text-danger" data-valmsg-for="Reason" data-valmsg-replace="true"></span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-offset-2 col-md-10 col-sm-offset-3 col-sm-9 col-xs-12">
+                                            <input type="button" value="Request" class="btn green" id="btn_leave_App_Save" data-toggle="tooltip" title="Request For Leave" data-placement="bottom" data-container="body"/>
+                                            <input type="button" value="Refresh" class="btn yellow" id="btn_leave_App_Refresh" data-toggle="tooltip" title="Reset Application Form" data-placement="bottom" data-container="body"/>
+                                            <input type="button" value="Cancel" class="btn red" id="btn_leave_App_Cancel" data-toggle="tooltip" title="Cancel Application" data-placement="bottom" data-container="body"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<script>
+    $("input[data-val-date]").removeAttr("data-val-date");
+    $(document).ready(function () {
+        $("#liForHR").addClass('active');
+        $("#StartDate").val("");
+        $("#EndDate").val("");
+    });
+    
+    $('#btn_leave_App_Cancel').click(function () {
+        window.history.back();
+    });
+    $('#btn_leave_App_Refresh').click(function () {
+        location.reload();
+    });
+    $("#btn_leave_App_Save").click(function () {
+        var validatable = $("#div_Leave_App").kendoValidator({
+            rules: {
+                Reason: function (input) {
+                    if (input.is("[name=Reason]") && $("#Reason").val() === '') {
+                        return false;
+                    }
+                    return true;
+                },
+                dateValidate: function (input) {
+                    if (input.is("[name=DateValidation]")) {
+                        var StartDate = $("#StartDate").val();
+                        var EndDate = $("#EndDate").val();
+                        if (new Date(StartDate) > new Date(EndDate)) {
+                            return false;
+                        }
+                        else {
+                            return true;
+                        }
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                Reason: "Please enter reason",
+                dateValidate:"Start date can not be greater than end date"
+            }
+        }).data("kendoValidator");
+        if (validatable.validate()) {
+            notification.show({ message: "Date is saving...", showTime: startTime() }, "upload-progress");
+            var sendData = {
+                ApplicationUserId: '@(Model.ApplicationUserId)',
+                StartDate: $("#StartDate").val(),
+                EndDate: $("#EndDate").val(),
+                ApproveStatus: 0,
+                Reason: $("#Reason").val(),
+                userId: userId
+            };
+            $.ajax({
+                url: '@Url.Action("LeaveAppRequestSave", "LeaveManagement")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({autoHideAfter: 5000});
+                    if (data != null) {
+                        if (data === 'Success') {
+                            notification.show({ message: "Leave appliation has been successfully saved.", showTime: startTime() }, "upload-success");
+                            location.reload();
+                        }
+                        else {
+                            notification.show({ message: "Leave appliation save was unsuccessful.", showTime: startTime() }, "upload-error");
+                        }
+                    }
+                },
+                error: function (error) {
+                    notification.hide();notification.setOptions({autoHideAfter: 5000});
+                    notification.show({ message: "Unsuccessful", showTime: startTime() }, "upload-error");
+                }
+            });
+        }
+    });
+</script>
+

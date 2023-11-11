@@ -1,0 +1,276 @@
+﻿
+
+
+
+@model FactoryManagement.ModelView.CRM.BusinessOrderListModelView
+@{
+    ViewBag.Title = "OrderDetailsPrint";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var fact_info = db.FactoryInformations.FirstOrDefault();
+    int offset = Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["localTime"]);
+    DateTime now = DateTime.UtcNow.AddMinutes(offset);
+}
+<link href="~/Content/BusiOrderDetails.css" rel="stylesheet" />
+<style>
+    body {
+        font-family: 'Bree Serif', serif;
+    }
+
+    .table {
+        font-size: 13px !important;
+    }
+
+    table tr td {
+        font-size: 13px !important;
+    }
+
+    .panel {
+        margin-bottom: 0px !important;
+    }
+
+    .panel-body {
+        padding-bottom: 0px !important;
+    }
+
+    .panel.panel-default .panel-heading {
+        background: #f5f5f5;
+    }
+
+    .panel .panel-heading h2, .panel .panel-heading h3 {
+        font-weight: 500;
+        line-height: .5;
+        margin-top: 8px;
+        margin-bottom: 8px;
+        font-size: 18px;
+        color: #333;
+    }
+    /*Styles for file */
+    .lblFileName {
+        width: 100% !important;
+        cursor: initial !important;
+        padding-left:5px!important;
+        white-space: normal!important;
+    }
+    img {
+        padding-left:2px!important;
+    }
+
+
+    .table-bordered > thead > tr > th, .table-bordered > tbody > tr > th, .table-bordered > tfoot > tr > th, .table-bordered > thead > tr > td, .table-bordered > tbody > tr > td, .table-bordered > tfoot > tr > td {
+        border: 1px solid #ddd !important;
+        line-height: normal !important;
+    }
+
+    .portlet.light.bordered {
+        border: 1px solid #e1e1e1 !important;
+    }
+
+    .portlet.light {
+        padding: 12px 20px 15px 20px;
+        background-color: #fff;
+    }
+
+    .portlet {
+        margin-top: 0px;
+        margin-bottom: 25px;
+        padding: 0px;
+    }
+
+        .portlet > .portlet-title > .caption {
+            float: left;
+            display: inline-block;
+            font-size: 18px;
+            line-height: 18px;
+            padding: 10px 0;
+        }
+
+    .font-green {
+        color: #26a69a !important;
+    }
+
+    .portlet > .portlet-title {
+        border-bottom: 1px solid #eee;
+        padding: 0;
+        margin-bottom: 10px;
+        min-height: 45px;
+    }
+
+    label {
+        font-weight: normal !important;
+    }
+
+    #tbl_manual_spec {
+        border: none !important;
+        font-size: .9em;
+    }
+    
+</style>
+
+<section class="content-header" style="text-align:center;">
+    <h3>Business Order Details</h3>
+    <p>@fact_info.Name</p>
+    <p>Fax : @fact_info.Fax</p>
+    <p>Email : @fact_info.Email</p>
+</section>
+<div class="row">
+    <div class="col-xs-offset-6 col-xs-6 text-right">
+        <p style="color:#999999!important;font-size:20px;">@Request.Cookies["CookieAdminInfo"].Values["fulname"].ToString()</p>
+        <p>
+            Generated Date : @now.ToString("MMM dd, yyyy hh:mm tt") <br>
+            @if(Convert.ToInt64(Request.Cookies["CookieAdminInfo"].Values["userid"]) > 0)
+            {
+                <span>Employee ID: </span>@Request.Cookies["CookieAdminInfo"].Values["empid"].ToString()<br>
+            }
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption font-green">
+                    <i class="fa fa-info-circle font-green"></i>
+                    <span class="caption-subject green bold uppercase"> Order Details</span>
+                </div>
+                <span style="float:right;font-size:16px;font-weight:bold;">
+                    Status : @if (Model.OrderStatus == 0)
+                    { <span class="text-center text-warning">Pending</span>}
+                    else if (Model.OrderStatus == 1)
+                    { <span class="text-center text-info bold">Approved</span>}
+                    else if (Model.OrderStatus == 3)
+                    {<span class="text-center text-success">Completed</span>}
+                </span>
+            </div>
+            <div class="portlet-body form">
+                <div class="row" style="font-size:13px !important;">
+                    <div class=" col-md-6 col-sm-6 col-xs-6">
+                        <div id="win_ForDeadLine"></div>
+                        <div id="div_order_Name_Status">
+                            <div id="div_order_deatis">
+                                <p>Order Name : @Model.OrderName</p>
+                                @if (Model.OrderType == 1)
+                                {
+                                    <p>Buyer Name : @Model.ClientName</p>
+                                }
+                                <p>
+                                    Order Status : @Model.OrderAprvStatus
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-sm-6 col-xs-6">
+                        <div id="div_order_main_file" style="display:none;font-size:13px !important;"></div>
+                        @if (db.View_BusinessOrder_File.Where(m => m.BusinessOrderId == Model.BusinessOrderId && m.IsMainFile == true).Any())
+                        {
+                            <script>
+                                $("#div_order_main_file").show();
+                                $("#div_order_main_file").load('@Url.Action("_OderMainFileList", "CRM")?BusinessOrderId=' + '@(Model.BusinessOrderId)' + '&IsPrint=' + true);
+                            </script>
+                        }
+                    </div>
+                </div>
+                <hr />
+            </div>
+        </div>
+    </div>
+</div>
+@if (Model.OrderStatus == 0)
+{
+    <div id="AllFileLists">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-12 col-sm-12 col-xs-12 mainDiv_File_Lists" style="padding: 0px !important; margin-bottom:20px!important;">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h2>Specification</h2></div>
+                        <div class="panel-body" style="min-height: 50px;">
+                            <div style="display:none;" id="Div_Spec_List">
+                                <div class="loading_30"></div>
+                            </div>
+                        </div>
+                    </div>
+                    @if (db.Business_Order_FileLists.Where(m => m.BusinessOrderId == Model.BusinessOrderId && m.FileType == 1).Any())
+                    {
+                        <script>
+                            $("#Div_Spec_List").show();
+                            $("#Div_Spec_List").load('@Url.Action("_OrderFileLists", "CRM")?BusinessOrderId=' + @Model.BusinessOrderId +'&FileType=1' + '&IsPrint=' + true);
+                        </script>
+                    }
+                </div><br /><br />
+                <div class="col-md-12 col-sm-12 col-xs-12 mainDiv_File_Lists" style="padding: 0px !important;margin-bottom:20px!important;">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h2>Negotiation</h2></div>
+                        <div class="panel-body" style="min-height: 50px;">
+                            <div style="display:none;" id="Div_Nego_List"></div>
+                        </div>
+                    </div>
+                    @if (db.Business_Order_FileLists.Where(m => m.BusinessOrderId == Model.BusinessOrderId && m.FileType == 2).Any())
+                    {
+                        <script>
+                            $("#Div_Nego_List").show();
+                            $("#Div_Nego_List").load('@Url.Action("_OrderFileLists", "CRM")?BusinessOrderId=' +@Model.BusinessOrderId +'&FileType=2' + '&IsPrint=' + true);
+                        </script>
+                    }
+                </div><br /><br />
+                <div class="col-md-12 col-sm-12 col-xs-12 mainDiv_File_Lists" style="padding: 0px !important;margin-bottom:20px!important;">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h2>Finance</h2></div>
+                        <div class="panel-body" style="min-height: 50px;">
+                            <div style="display:none;" id="Div_Finance_List"></div>
+                        </div>
+                    </div>
+                    @if (db.Business_Order_FileLists.Where(m => m.BusinessOrderId == Model.BusinessOrderId && m.FileType == 3).Any())
+                    {
+                        <script>
+                            $("#Div_Finance_List").show();
+                            $("#Div_Finance_List").load('@Url.Action("_OrderFileLists", "CRM")?BusinessOrderId=' +@Model.BusinessOrderId +'&FileType=3' + '&IsPrint=' + true);
+                        </script>
+                    }
+                </div><br /><br />
+                <script>
+
+                </script>
+            </div>
+        </div>
+    </div><br /><br />
+}
+@if (Model.OrderStatus == 1)
+{
+    <div class="row" id="div_Main_Manual_Spec" style="display:none;"></div>
+    <script>
+        $("#div_Main_Manual_Spec").show();
+        $("#div_Main_Manual_Spec").append('<div class="loading_partail"></div>');
+        $("#div_Main_Manual_Spec").load('@Url.Action("ManualSpecification", "CRM")?BusinessOrderId=' +@Model.BusinessOrderId + "&IsPrint=" + true);
+    </script>
+}
+
+<script>
+    function addExtensionFormaterial(extension) {
+        switch (extension) {
+            case '.jpg':
+            case '.jpeg':
+            case '.img':
+            case '.gif':
+                return "/Content/web/upload/jpg.png";
+            case '.png':
+                return "/Content/web/upload/png_converted.png";
+            case '.doc':
+            case '.docx':
+                return "/Content/web/upload/doc.png";
+            case '.ppt':
+            case '.pptx':
+                return "/Content/web/upload/ppt.png";
+            case '.xls':
+            case '.xlsx':
+                return "/Content/web/upload/xls.png";
+            case '.pdf':
+                return "/Content/web/upload/pdf.png";
+            case '.zip':
+            case '.rar':
+                return "/Content/web/upload/zip.png";
+            default:
+                return "/Content/web/upload/default.png";
+        }
+    }
+</script>

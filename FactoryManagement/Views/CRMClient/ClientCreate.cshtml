@@ -1,0 +1,432 @@
+﻿@model FactoryManagement.ModelView.CRM.ClientListModelView
+@{
+    ViewBag.Title = "ClientCreate";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+<link href="~/Scripts/intl-tel-input-master/build/css/intlTelInput.css" rel="stylesheet" />
+<h2>Client Create</h2><hr />
+<div class="row">
+    <div class="form-horizontal form-widget col-md-12 col-sm-12 " id="DivClient_Create">
+        @Html.HiddenFor(m => m.ClientType)
+        <div class="form-group">
+            @Html.LabelFor(model => model.ClientType, "Client Type", htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+            <div class="col-md-4 col-sm-5" style="padding-top:5px;">
+                @Html.EditorFor(model => model.IsBuyer) Buyer
+                @Html.EditorFor(model => model.IsSupplier) Supplier
+                @Html.EditorFor(model => model.IsOutSourcer) Outsourcer
+                @Html.EditorFor(model => model.IsLogistic) Logistic
+                <br />
+                @Html.ValidationMessageFor(model => model.ClientType, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+            <div class="col-md-4 col-sm-5">
+                @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.ClientCode, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+            <div class="col-md-4 col-sm-5">
+                @Html.EditorFor(model => model.ClientCode, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                @Html.ValidationMessageFor(model => model.ClientCode, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <h4>Address</h4>
+        <div class="form-group">
+            @Html.LabelFor(model => model.Address, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+            <div class="col-md-4 col-sm-5">
+                @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                @Html.ValidationMessageFor(model => model.Address, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.AddressLine1, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+            <div class="col-md-4 col-sm-5">
+                @Html.EditorFor(model => model.AddressLine1, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                @Html.ValidationMessageFor(model => model.AddressLine1, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.Country, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+            <div class="col-md-4 col-sm-5">
+                @(Html.Kendo().DropDownList()
+                      .Name("Country")
+                      .OptionLabel("--Select One Country--")
+                      .Events(e => e.Change("onChangeOfCountry"))
+                      .BindTo(ViewBag.CountryId)
+                      .HtmlAttributes(new { style = "width:100%" })
+                )
+                @Html.ValidationMessageFor(model => model.Country, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group" id="DivForDivision" style="display:none;">
+            @Html.LabelFor(model => model.DivisionId, "Division", htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+            <div class="col-md-4 col-sm-5">
+                @(Html.Kendo().DropDownList()
+                      .Name("DivisionId")
+                      .OptionLabel("--Select One Division--")
+                      .BindTo(ViewBag.DivisionList)
+                      .HtmlAttributes(new { style = "width:100%" })
+                )
+                @Html.ValidationMessageFor(model => model.DivisionId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group" id="DivForState">
+            @Html.LabelFor(model => model.State, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+            <div class="col-md-4 col-sm-5">
+                @Html.EditorFor(model => model.State, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                @Html.ValidationMessageFor(model => model.State, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.City, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+            <div class="col-md-4 col-sm-5">
+                @Html.EditorFor(model => model.City, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                @Html.ValidationMessageFor(model => model.City, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.PostalCode, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+            <div class="col-md-4 col-sm-5">
+                @Html.EditorFor(model => model.PostalCode, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                @Html.ValidationMessageFor(model => model.PostalCode, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.Email, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+            <div class="col-md-4 col-sm-5">
+                @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.Website, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+            <div class="col-md-4 col-sm-5">
+                @Html.EditorFor(model => model.Website, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                @Html.ValidationMessageFor(model => model.Website, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.Fax, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+            <div class="col-md-4 col-sm-5">
+                @Html.EditorFor(model => model.Fax, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                @Html.ValidationMessageFor(model => model.Fax, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <h4>Contact</h4>
+        <div id="DivForContact">
+            <div class="form-group">
+                <label class="control-label col-md-3 col-sm-4 col-xs-12" for="Contact">Contact No 1</label>
+                <div class="col-md-4 col-sm-5 col-xs-5">
+                    <input class="form-control k-textbox text-box single-line k-valid contact" id="txtContact-1" name="txtContact-1" type="text" value="" data-class="contact" data-val-required="Please enter valid contact number">
+                    <span class="field-validation-valid text-danger" data-valmsg-for="txtContact-1" data-valmsg-replace="true" style="display: none;"></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-3 col-sm-4 col-xs-12" for="Type">Type</label>
+                <div class="col-md-4 col-sm-5 col-xs-5">
+                    <input id="txtContactType-1" name="txtContactType-1" style="width: 100%;" />
+                    <span class="field-validation-valid text-danger" data-valmsg-for="txtContactType-1" data-valmsg-replace="true" style="display: none;"></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-3 col-sm-4 col-xs-12" for="Comment">Comments</label>
+                <div class="col-md-4 col-sm-5 col-xs-5">
+                    <textarea class="form-control k-textbox text-box single-line k-valid" rows="3" cols="40" name="txtComment-1" id="txtComment-1" value=" "></textarea>
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-2" id="DivForDynBtn-1">
+                    <span class="k-icon k-i-plus" style="margin-right: .3rem;" id="btnAdd"></span>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div class="col-md-offset-3 col-md-8 col-sm-offset-4 col-sm-8">
+                <input type="button" value="Next" class="k-button k-button-icontext k-primary k-grid-update" id="btnClientCreate" />
+                <input type="button" value="Refresh" class="k-button k-button-icontext k-grid-update" id="ClientCreateRefresh" />
+                <input type="button" value="Cancel" class="k-button k-button-icontext k-grid-cancel" id="btnClientCreateCancel" />
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/intl-tel-input-master/build/js/intlTelInput.min.js"></script>
+<script>
+    var count = 1, id = "";
+    $(document).ready(function () {
+        $("#liForCRM").addClass('active');
+        $("#liForClientCreate").addClass('sublistActive');
+        id = "txtContact-1";
+        dailingCode(id);
+
+        var data = [{ text: "Land", value: "1" }, { text: "Mobile", value: "2" }];
+        $("#txtContactType-1").kendoDropDownList({
+            dataTextField: "text",
+            dataValueField: "value",
+            dataSource: data,
+            optionLabel: "--Select--"
+        });
+    });
+
+//******************** Contact Validation *********************
+    function dailingCode(id) {
+        telInput = $("#" + id);
+        telInput.intlTelInput({
+            geoIpLookup: function (callback) {
+                $.get("http://ipinfo.io", function () { }, "jsonp").always(function (resp) {
+                    var countryCode = (resp && resp.country) ? resp.country : "";
+                    var countryList = $("#Country").data("kendoDropDownList");
+                    countryList.value(countryCode);
+                    $("#Country").val(countryCode);
+
+                    if (countryCode == "BD") {
+                        $("#DivForDivision").show();
+                        $("#DivForState").hide();
+                    }
+                    else {
+                        $("#DivForState").show();
+                        $("#DivForDivision").hide();
+                    }
+                    callback(countryCode);
+                });
+            },
+            initialCountry: "auto",
+            utilsScript: "../Scripts/intl-tel-input-master/build/js/utils.js"
+        });
+        var reset = function () {
+            telInput.removeClass("error");
+        };
+        telInput.on("keyup change", reset);
+    };
+//**********Dropdown Country Change************
+    function onChangeOfCountry() {
+        var Ccountry = $("#Country").val();
+        var Cdiv = $("#DivisionId").val();
+        var Csta = $("#State").val();
+        if (Ccountry == 'BD') {
+            $("#DivForDivision").show();
+            $("#DivForState").hide();
+            $("#State").val('');
+            $("#DivisionId").val(Cdiv);
+        }
+        else {
+            $("#DivForState").show();
+            $("#DivForDivision").hide();
+            $("#State").val(Csta);
+            $("#DivisionId").val('');
+        }
+    };
+//********************* Dynamically Add,Remove Contact *********************
+    $("#DivForContact").on("click", "#btnAdd", function () {
+        var contactValidate = $("#DivForContact").kendoValidator().data("kendoValidator");
+        if (contactValidate.validate()) {
+            var data = [{ text: "Land", value: "1" }, { text: "Mobile", value: "2" }];
+            $("#DivForDynBtn-" + count).empty();
+            $("#DivForDynBtn-" + count).hide();
+            count++;
+            $("#DivForContact").append('<div id="DynDivContact-' + count + '">' +
+             '<div class="form-group">' +
+                     '<label class="control-label col-md-3 col-sm-4 col-xs-12" >Contact No ' + count + '</label>' +
+                         '<div class="col-md-4 col-sm-5 col-xs-5">' +
+                            '<input class="form-control k-textbox text-box single-line k-valid" id="txtContact-' + count + '" name="txtContact-' + count + '"type="text" value="" data-val-required="Please enter valid contact number">' +
+                             '<span class="field-validation-valid text-danger" data-valmsg-for="txtContact-' + count + '" data-valmsg-replace="true"style="display: none;"></span>' +
+                          '</div>' +
+                '</div>' +
+                 '<div class="form-group">' +
+                      '<label class="control-label col-md-3 col-sm-4 col-xs-12" >Type</label>' +
+                          '<div class="col-md-4 col-sm-5 col-xs-5">' +
+                            '<input id="txtContactType-' + count + '" name="txtContactType-' + count + '" style="width: 100%;" />' +
+                            '<span class="field-validation-valid text-danger" data-valmsg-for="txtContactType-' + count + '" data-valmsg-replace="true"style="display: none;"></span>' +
+                          '</div>' +
+                  '</div>' +
+                  '<div class="form-group">' +
+                      '<label class="control-label col-md-3 col-sm-4 col-xs-12" >Comments</label>' +
+                        '<div class="col-md-4 col-sm-5 col-xs-5">' +
+                          '<textarea class="form-control k-textbox text-box single-line k-valid" rows="3" cols="40" name="txtComment-' + count + '"id="txtComment-' + count + '">' + '</textarea>' +
+                          '</div>' +
+               '<div class="col-md-2 col-sm-2 col-xs-2" id="DivForDynBtn-' + count + '">' +
+                    '<span class="k-icon k-i-plus" style="margin-right: .3rem;" id="btnAdd"></span>' +
+                        '<span class="k-icon k-i-close" style="margin-right: .3rem;" id="btnRemove"></span>' +
+                           '</div>' +
+                    '</div>' +
+                 '</div>');
+            $("#txtContactType-" + count).kendoDropDownList({
+                dataTextField: "text",
+                dataValueField: "value",
+                dataSource: data,
+                optionLabel: "--Select--"
+            });
+            id = "txtContact-" + count;
+            dailingCode(id);
+        }
+    });
+    $("#DivForContact").on('click', '#btnRemove', function () {
+        $("#DynDivContact-" + count).remove();
+        count--;
+        if (count > 1) {
+            $('#DivForDynBtn-' + count).append('<span class="k-icon k-i-plus" style="margin-right: .3rem;" id="btnAdd">' +
+                '</span><span class="k-icon k-i-close" style="margin-right: .3rem;" id="btnRemove"></span>');
+        } else {
+            $('#DivForDynBtn-' + count).append('<span class="k-icon k-i-plus" style="margin-right: .3rem;" id="btnAdd"></span>');
+        }
+        $('#DivForDynBtn-' + count).show();
+    });
+//************************form validate with save code**************************
+    var validation_1 = $("#DivClient_Create").kendoValidator({
+        rules: {
+            custom: function (input) {
+                var errormessage;
+                var remoteAttr = input.attr("data-val-remote-url");
+                if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                    return true;
+                }
+                var isInvalid;
+                var data = {};
+                var ClientId = $("#ClientId").val();
+                var Name = input.val();
+                data = { ClientId: ClientId, Name: Name };
+                $.ajax({
+                    url: remoteAttr,
+                    mode: "abort",
+                    port: "validate" + input.attr('name'),
+                    dataType: "json",
+                    type: input.attr("data-val-remote-type"),
+                    data: data,
+                    async: false,
+                    success: function (response) {
+                        isInvalid = response;
+                        if (isInvalid === true) {
+                            isInvalid = true;
+                        }
+                        else {
+                            isInvalid = false;
+                        }
+                    }
+                });
+                return isInvalid;
+            },
+            Division: function (input) {
+                if (input.is("[name=DivisionId]") && $("#Country").val() == "BD" && input.val() === "") {
+                    return false;
+                }
+                else {
+                    return true;
+                }
+            },
+            State: function (input) {
+                if (input.is("[name=State]") && $("#Country").val() != "BD" && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+
+            City: function (input) {
+                if (input.is("[name=City]") && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+
+            Contact: function (input) {
+                if (input.is("[name=txtContact-]" + count)) {
+                    if (telInput.intlTelInput("isValidNumber")) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+                return true;
+            },
+            ContactType: function (input) {
+                if (input.is("[name=txtContactType-]" + count) && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            ClientType: function (input) {
+                if (input.is("[name=ClientType]")) {
+                    if ($("#IsBuyer").is(":checked") === true || $("#IsSupplier").is(":checked") === true || $("#IsOutSourcer").is(":checked") === true || $("#IsLogistic").is(":checked") === true) {
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+        },
+        messages: {
+            custom: function (input) { return "Client Name Already Exist!"; },
+            Division: "Please select division",
+            State: "Please select state",
+            City: "Please enter city",
+            Contact: "Please enter valid contact number",
+            ContactType: "Please select contact type",
+            ContactLast: "Please enter valid contact number",
+            ClientType: "Please select one type",
+            ContactTypeLast: "Please select contact type"
+        }
+    }).data("kendoValidator");
+$("#btnClientCreate").click(function () {
+        if (validation_1.validate()) {
+            notification.show({ message: "Client info is saving...", showTime: startTime() }, "upload-progress");
+            var allCntactList = [];
+            for (var i = 1; i <= parseInt(count) ; i++) {
+                allCntactList.push($("#txtContact-" + i).intlTelInput("getNumber") + "|" + $("#txtContactType-" + i).val() + "|" + $("#txtComment-" + i).val());
+            }
+            var sendData = {
+                ClientId: '@(Model.ClientId)',
+                Name: $("#Name").val(),
+                ClientCode: $("#ClientCode").val(),
+                IsBuyer: $("#IsBuyer").is(":checked"),
+                IsSupplier: $("#IsSupplier").is(":checked"),
+                IsOutSourcer: $("#IsOutSourcer").is(":checked"),
+                IsLogistic: $("#IsLogistic").is(":checked"),
+                Address: $("#Address").val(),
+                AddressLine1: $("#AddressLine1").val(),
+                Country: $("#Country").val(), State: $("#State").val(),
+                DivisionId: $("#DivisionId").val(),
+                City: $("#City").val(), PostalCode: $("#PostalCode").val(), Email: $("#Email").val(),
+                Website: $("#Website").val(), Fax: $("#Fax").val(), AllContactList: allCntactList,
+                CreatedDate: '@(DateTime.Now)',
+                CreatedBy: userId
+            };
+            $.ajax({
+                url: '@Url.Action("AddNewClient", "CRMClient")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if (data != null) {
+                        if (data === 'Error') {
+                            notification.show({ message: "Client Info save was unsuccessful.", showTime: startTime() },"upload-error");
+                        }
+                        else {
+                            notification.show({ message: "Client info has been successfully created.", showTime: startTime()
+
+                            }, "upload-success");
+                            location.reload();
+                        }
+                    }
+                    location.href = '@Url.Action("AllClientList", "CRMClient")';
+                },
+                error: function (error) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred", showTime: startTime() }, "upload-warning");
+                }
+            });
+      }
+    });
+
+    $("#btnClientCreateCancel").click(function () {
+        location.href = '@Url.Action("AllClientList", "CRMClient")';
+    });
+    $("#ClientCreateRefresh").click(function () {
+        location.reload();
+    });
+</script>

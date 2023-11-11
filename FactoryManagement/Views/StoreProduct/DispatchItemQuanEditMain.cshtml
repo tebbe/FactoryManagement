@@ -1,0 +1,21 @@
+﻿
+
+
+@************************************** Created By Jerin Jahan (Date:26.01.2017)  ***************************************@
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="div_DisItem_edit">
+    <div id="div_item_edit_partial"><div class="win_loading_half"></div></div>
+    <div class="k-edit-buttons k-state-default col-xs-11">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_EditQuan_Save"><span class="k-icon k-update"></span>OK</button>
+        <button type="reset" class="k-button k-button-icontext k-grid-cancel" id="btn_EditQuan_Cancle"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+
+
+<script>
+    var id = '@(ViewBag.id)';
+    $("#div_item_edit_partial").load('@Url.Action("DispatchItemQuanEdit", "StoreProduct")?id=' + id);
+    $("#btn_EditQuan_Cancle").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

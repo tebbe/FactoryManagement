@@ -1,0 +1,49 @@
+﻿
+
+@************************* Created By Jerin Jahan (Date : 24.01.2017) ***************************************@
+
+@model IEnumerable<FactoryManagement.Models.View_Invoice_Service>
+@{
+    var count = 0;
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    decimal total_amnt = 0;
+}
+
+@if (Model.Count() > 0)
+{
+    <table class="table table-bordered" id="tbl_voucher_list">
+        <tr>
+            <th width="5%">SL.</th>
+            <th width="20%">Cost Sector</th>
+            <th width="10%">Voucher No.</th>
+            <th width="40%">Cost Description</th>
+            <th width="10%">Date</th>
+            <th width="15%">Amount</th>
+        </tr>
+        @foreach (var list in Model)
+        {
+            count++;
+            total_amnt = total_amnt + Convert.ToDecimal(list.Amount);
+            <tr>
+                <th>@count.</th>
+                <td><span style="color:#428bca;cursor:pointer;" class="tranname" data-id="@list.Id" data-name="@list.VoucherTitle">@list.VoucherTitle</span></td>
+                <td>@list.Number</td>
+                <td>@list.Name</td>
+                <td>@list.CreatedDateName</td>
+                <td>@currency @list.Amount</td>
+            </tr>
+        }
+        <tr id="td_total_count">
+            <td colspan="6" style="font-weight:bold;">Total Amount = @currency @total_amnt</td>
+        </tr>
+    </table>
+}
+else
+{
+    <h4>There is no record to display</h4>
+}
+<script>
+    totalCount = '@(ViewBag.Count)';
+    showCount = '@count';
+    total_amt = '@(total_amnt)';
+</script>

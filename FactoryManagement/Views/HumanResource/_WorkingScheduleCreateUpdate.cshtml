@@ -1,0 +1,217 @@
+﻿@************************************************** Added By kaikubad on 04-03-2017 **************************************************************@
+
+@model FactoryManagement.ModelView.HR.WorkingScheduleListModelView
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-top:1%;">
+    <div id="div_working_schedule"></div>
+    <div class="col-sm-11 col-xs-11">
+        <div class="k-edit-buttons k-state-default" style="margin-top:-15px">
+            <span>
+                @if (ViewBag.SelectedSchedule > 0)
+                {
+                    <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_Wrk_Schl_Update"><span class="k-icon k-update"></span>Update</button>
+                }
+                else
+                {
+                    <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_Wrk_Schl_Create"><span class="k-icon k-update"></span>Create</button>
+
+                }
+                <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_Wrk_Schl_Crt_Refresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+                <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_Wrk_Schl_Cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+            </span>
+        </div>
+    </div>
+</div>
+<script>
+    var selectedScheduleId = 0;
+    $(document).ready(function () {
+        console.log('_WorkingScheduleCreateUpdate.cshtml');
+        selectedScheduleId = parseInt('@(ViewBag.SelectedSchedule)');
+        $("#div_working_schedule").empty();
+        $("#div_working_schedule").append('<div class="loading_35em"></div>');
+        $("#div_working_schedule").load('@Url.Action("_WorkingScheduleCreate","HumanResource")?id=' + selectedScheduleId);
+    });
+    $("#btn_Wrk_Schl_Crt_Refresh").click(function () {
+        $("#div_working_schedule").empty();
+        $("#div_working_schedule").append('<div class="loading_35em"></div>');
+        $("#div_working_schedule").load('@Url.Action("_WorkingScheduleCreate","HumanResource")?id=' + selectedScheduleId);
+    });
+
+    function onBreakTimeTypeChange() {
+        if ($("#BreakTimeUnit").val() != null || $("BreakTimeUnit") != "") {
+            $("#BreakTimeType").val($("#BreakTimeUnit").val());
+        }
+    };
+
+    $("#btn_Wrk_Schl_Update").click(function () {
+        if (validation.validate()) {
+            var allWorkingDays = [];
+            var workingDayList = [];
+            $(".chkWorkingdays").each(function () {
+                if ($(this).is(":checked")) {
+                    if ($("#same_start_end_time").is(":checked")) {
+                        var dataId = $(this).data("id");
+                        var object = {
+                            startTime: $("#StartTime").val(),
+                            endTime: $("#EndTime").val(),
+                            day: $(this).val(),
+                            Start_Allowance: $("#StartTimeAllowance").val(),
+                            End_Allowance: $("#EndTimeAllowance").val(),
+                        };
+                        workingDayList.push(object);
+                    } else {
+                        var dataId = $(this).data("id");
+                        var object = {
+                            startTime: $("#" + dataId + "Start").val(),
+                            endTime: $("#" + dataId + "End").val(),
+                            day: $(this).val(),
+                            End_Allowance: $("#"+dataId+"EndAllowance").val(),
+                            Start_Allowance: $("#" + dataId + "StartAllowance").val(),
+                            BreakTime: $("#" + dataId + "BreakTime").val(),
+                            Break_Type: $("#" + dataId + "BreakTimeUnit").val()
+                        };
+                        workingDayList.push(object);
+                    }
+                }
+            });
+            var senddata = {
+                WorkingScheduleId:$("#WorkingScheduleId").val(),
+                SchedulName: $("#SchedulName").val(),
+                SameWorkHour: $("#same_start_end_time").is(":checked"),
+                BreakTime: $("#BreakTime").val(),
+                BreakTimeType: $("#BreakTimeUnit").val(),
+                StartTime: $("#StartTime").val(), EndTime: $("#EndTime").val(),
+                Start_Allowance: $("#StartTimeAllowance").val(),
+                End_Allowance: $("#EndTimeAllowance").val(),
+                CreatedBy: userId,
+                UpdatedBy:userId,
+                workingDayList: workingDayList
+            };
+            $.ajax({
+                url: '@Url.Action("WorkingScheduleUpdate", "HumanResource")',
+                type: 'Post',
+                data: senddata,
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if (data == "Success") {
+                        notification.show({ message: "Working Schedule '" + senddata.SchedulName + "' has been successfully updated.", showTime: startTime() }, "upload-success");
+                        $("#btn_Wrk_Schl_Update").closest(".k-window-content").data("kendoWindow").close();
+
+                        $("#Div_Working_Schedule_List").empty();
+                        $("#Div_Working_Schedule_List").append('<div class="loading_partial"></div>');
+                        $("#Div_Working_Schedule_List").load('@Url.Action("_WorkingSchedule", "HumanResource")');
+                    } else {
+                        notification.show({ message: "Holiday package '" + senddata.SchedulName + "' create was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                },
+                error: function (error) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    })
+    $("#btn_Wrk_Schl_Create").click(function () {
+        if (validation.validate()) {
+            notification.show({ message: "Creating new Working Schedule...", showTime: startTime() }, "upload-progress");
+            var allWorkingDays = [];
+            var workingDayList = [];
+            $(".chkWorkingdays").each(function () {
+                if ($(this).is(":checked")) {
+                    if ($("#same_start_end_time").is(":checked")) {
+                        var dataId = $(this).data("id");
+                        var object = {
+                            startTime: $("#StartTime").val(),
+                            endTime: $("#EndTime").val(),
+                            day: $(this).val(),
+                            Start_Allowance: $("#StartTimeAllowance").val(),
+                            End_Allowance: $("#EndTimeAllowance").val(),
+
+                        };
+                        workingDayList.push(object);
+                    } else {
+                        var dataId = $(this).data("id");
+                        var object = {
+                            startTime: $("#" + dataId + "Start").val(),
+                            endTime: $("#" + dataId + "End").val(),
+                            day: $(this).val(),
+                            start_Allowance: $("#"+dataId+"StartAllowance").val(),
+                            end_Allowance: $("#"+dataId+"EndAllowance").val(),
+                            breakTime: $("#" + dataId + "BreakTime").val(),
+                            break_Type: $("#" + dataId + "BreakTimeUnit").val()
+                        };
+                        workingDayList.push(object);
+                    }
+                }
+            });
+
+            var senddata = {
+                SchedulName: $("#SchedulName").val(),
+                SameWorkHour:$("#same_start_end_time").is(":checked"),
+                BreakTime: $("#BreakTime").val(),
+                BreakTimeType: $("#BreakTimeUnit").val(),
+                StartTime: $("#StartTime").val(), EndTime: $("#EndTime").val(),
+                CreatedBy: userId,
+                Start_Allowance: $("#StartTimeAllowance").val(),
+                End_Allowance: $("#EndTimeAllowance").val(),
+                workingDayList: workingDayList
+            };
+            $.ajax({
+                url: '@Url.Action("WorkingScheduleSave", "HumanResource")',
+                type: 'Post',
+                data: senddata,
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if (data == "Success") {
+                        notification.show({ message: "Working Schedule '" + senddata.SchedulName + "' has been successfully created.", showTime: startTime() }, "upload-success");
+                        $("#btn_Wrk_Schl_Create").closest(".k-window-content").data("kendoWindow").close();
+
+                        $("#Div_Working_Schedule_List").empty();
+                        $("#Div_Working_Schedule_List").append('<div class="loading_partial"></div>');
+                        $("#Div_Working_Schedule_List").load('@Url.Action("_WorkingSchedule", "HumanResource")');
+                    } else {
+                        notification.show({ message: "Holiday package '" + senddata.SchedulName + "' create was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                },
+                error: function (error) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+
+    $("#btn_Wrk_Schl_Cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>
+<script>
+
+    function showhidestartEndtime() {
+        if ($("#same_start_end_time").is(":checked")) {
+            $(".startEndtime").each(function () {
+                $(this).hide();
+            });
+            $(".sameStarttime").each(function () {
+                $(this).show();
+            });
+        } else {
+            $(".startEndtime").each(function () {
+                $(this).show();
+            });
+            $(".sameStarttime").each(function () {
+                $(this).hide();
+            });
+        }
+    }
+    function checkUncheckAll() {
+        if ($("#select_all_days").is(":checked")) {
+            $(".chkWorkingdays").each(function () {
+                $(this).prop('checked', true);
+            });
+        } else {
+            $(".chkWorkingdays").each(function () {
+                $(this).prop('checked', false);
+            });
+        }
+    }
+</script>

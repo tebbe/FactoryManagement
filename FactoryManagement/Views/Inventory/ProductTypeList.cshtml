@@ -1,0 +1,250 @@
+﻿@************************************** Created By Mabia Mishu (Date:01.09.2016)  ***************************************@
+
+@model IEnumerable<FactoryManagement.ModelView.Inventory.Product.ProductTypeViewModel>
+
+@{
+    ViewBag.Title = "All Product Type List";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-gears"></i>
+            <span>Configuration</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Inventory/ProductTypeList">  Product Type List</a>
+        </li>
+    </ul>
+</div>
+<p><span class="btn green" data-toggle="tooltip" title="Add New Product Type" id="btn_protype_create"><i class="fa fa-plus"></i> Add New Product Type</span></p>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">Product Type List</span>
+                </div>
+                
+            </div>
+            <div class="portlet-body">
+                <div id="divForAll_Pro_type">
+                    <div class="loading_partial"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="win_for_product_type_create"></div>
+<div id="win_for_product_type_child_add"></div>
+<div id="win_for_product_type_edit"></div>
+
+<script id="temp_win_site_edit" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px"> Are you sure want to delete this product type? </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_editSite_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_editSite_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $('#liForInvenConfig').addClass('open');
+        $('#liForInvenConfig .sub-menu').show();
+        $("#liForProductTypeList").addClass('sublistActive');
+        $("#divForAll_Pro_type").load('@Url.Action("_ShowAllProductTypeList", "Inventory")');
+    });
+    $("#divForAll_Pro_type").on("click", ".btn_expandProductType", function (e) {
+        e.preventDefault();
+        var typeId = $(this).data("id");
+        $(this).find('i').toggleClass('fa-plus-square-o fa-2 fa-minus-square-o fa-2');
+        if ($(this).data("isclick") == "0") {
+            $(this).data("isclick", "1");
+            $(this).attr("dataisclick", "1");
+            $.ajax({
+                url: '@Url.Action("GetAllProductTypeForList", "Inventory")',
+                type: 'Post',
+                data: { ParentId: typeId },
+                success: function (data) {
+                    if (data) {
+                        $(".trforchild_" + typeId).empty();
+                        $(".trforchild_" + typeId).show();
+                        var crntSpan = $("#spanForName_" + typeId);
+                        var getPadValue = parseInt(crntSpan.css('padding-left'));
+                        for (var i in data) {
+                            $('<tr id="tr_' + data[i].ProductTypeId + '" class="trforchild_' + typeId + '" data-proid="' + data[i].ProductTypeId + '" data-prochild="' + data[i].HasChild + '">' +
+                                '<td><span id="spanForName_' + data[i].ProductTypeId + '">' +
+                                ((data[i].HasChild == 'True') ? '<span class="btn_expandProductType" id="newtrForAp_' + data[i].ProductTypeId + '" data-id="' + data[i].ProductTypeId +
+                                '"data-isclick="0" style="margin-right:.5em;"><i class="fa fa-plus-square-o fa-2"></i></span>' : '') + data[i].ProductTypeName + ' </span></td>' +
+                                '<td><img class="img-circle" src="/Images/UserPicture/thumb/admin.jpg">' +
+                                ((data[i].CreatedBy == 0) ? '<span>Super admin</span>' :
+                                    '<a href="/HumanResource/DisplayEmployeeDetails?q='+getDataEncrypted("UserId=" + data[i].CreatedBy+"?isDisplay=true")+ '">' + ' ' + data[i].UserName + '</a>') +
+                                '</td>' +
+                                '<td>' + data[i].CreatedDateName  + '</td>' +
+                                '<td>' + ((data[i].UpdatedBy == null) ? '<span>' + data[i].UpdatedUserName + '</span>' : +(data[i].UpdatedBy > 0) ? '<img src="~/Images/UserPicture/thumb/ ' + data[i].UpdatedUserPic + '" class="user-photo" /><span> ' + data[i].UpdatedUserName + '</span>' : '<img src="~/Images/UserPicture/thumb/' + data[i].UpdatedUserPic + '" class="user-photo" /><a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].UpdatedBy +"?isDisplay=true")  + '">' + data[i].UpdatedUserName + '</a>') + '</td>' +
+                              '<td>' + data[i].UpdatedDateFormate + '</td>' +
+                              '<td>' +
+                                '<span data-toggle="tooltip" title="Update type info" class="btn green btn_pro_type_Edit" data-id="' + data[i].ProductTypeId + '"><i class="fa fa-pencil"></i></span> ' + ' ' +
+                                ((data[i].HasChild == 'False') ? '<span data-toggle="tooltip" title="Delete product Type" class="btn btn-danger btn_pro_type_Delete" data-id="' + data[i].ProductTypeId + '" data-name="' + data[i].ParentName + '"><i class="fa fa-trash"></i></span>' : '') + ' ' +
+                                    '<span data-toggle="tooltip" title="New sub type" class="btn blue fa-2 btn_protype_child_add" data-id="' + data[i].ProductTypeId + '" data-name="' + data[i].ProductTypeName + '"><i class="fa fa-plus-circle"></i></span>' +
+                                '</td>' +
+                              '</tr>').insertAfter("#tr_" + typeId);
+                            $("#spanForName_" + data[i].ProductTypeId).css("padding-left", (getPadValue + 15) + "%");
+                        }
+                        $('[data-toggle="tooltip"]').tooltip();
+                    }
+                }
+            });
+        }
+        else {
+            $(this).data("isclick", "0");
+            $(this).attr("dataisclick", "0");
+            $(".trforchild_" + typeId).each(function () {
+                var id = $(this).data("proid");
+                var haschild = $(this).data("prochild");
+                if (haschild == "True") {
+                    childremove(id);
+                }
+            });
+            $(".trforchild_" + typeId).remove();
+        }
+    });
+    function childremove(id) {
+        $(".trforchild_" + id).each(function () {
+            var nextChild = $(this).data("proid");
+            var haschild = $(this).data("prochild");
+            if (haschild == "True") { childremove(nextChild); }
+        });
+        $(".trforchild_" + id).remove();
+    }
+    $("#btn_protype_create").click(function () {
+        $("#win_for_product_type_create").empty();
+        $("#win_for_product_type_create").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '25%',
+            title: 'Create New Product Type',
+            close: onWindowClose
+        });
+        $("#win_for_product_type_create").html('<div class="tiny_loading"></div>');
+        var win_for_product_type_create = $("#win_for_product_type_create").data("kendoWindow");
+        win_for_product_type_create.refresh({ url: "/Inventory/ProductTypeCreate" });
+        win_for_product_type_create.center().open();
+
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+    $("#divForAll_Pro_type").on("click", ".btn_protype_child_add", function (e) {
+        e.preventDefault();
+        var parent = $(this).data("id");
+        var typeName = $(this).data("name");
+        $("#win_for_product_type_child_add").empty();
+        $("#win_for_product_type_child_add").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '25%',
+            title: 'Add New Sub Product Type',
+            close: onWindowClose
+        });
+        $("#win_for_product_type_child_add").html('<div class="tiny_loading"></div>');
+        var win_for_product_type_child_add = $("#win_for_product_type_child_add").data("kendoWindow");
+        win_for_product_type_child_add.refresh({ url: "/Inventory/ProductTypeCreate?ParentId=" + parent + '&ParentName=' + typeName });
+        win_for_product_type_child_add.center().open();
+
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+    $("#divForAll_Pro_type").on("click", ".btn_pro_type_Edit", function (e) {
+        e.preventDefault();
+        var typeId = $(this).data("id");
+        $("#win_for_product_type_edit").empty();
+        $("#win_for_product_type_edit").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '25%',
+            title: 'Update Product Type Information',
+            close: onWindowClose
+        });
+        $("#win_for_product_type_edit").html('<div class="tiny_loading"></div>');
+        var win_for_product_type_edit = $("#win_for_product_type_edit").data("kendoWindow");
+        win_for_product_type_edit.refresh({ url: "/Inventory/ProductTypeCreate?ProductTypeId=" + typeId });
+        win_for_product_type_edit.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+
+    function deleteProductType(typeId, parentName) {
+        notification.show({ message: "Deleting Product Type", showTime: startTime() }, "upload-progress");
+        $.ajax({
+            url: '@Url.Action("ProductTypeDestroy", "Inventory")',
+            type: 'Post',
+            data: { ProductTypeId: typeId, UserId: userId, ParentName: parentName },
+            success: function (data) {
+                notification.hide();
+                notification.setOptions({ autoHideAfter: 5000 });
+                if (data === "Success") {
+                    notification.show({ message: "Product type has been successfully deleted.", showTime: startTime() }, "upload-success");
+                    $("#divForAll_Pro_type").empty();
+                    $("#divForAll_Pro_type").append('<div class="loading_partial"></div>');
+                    $("#divForAll_Pro_type").load('@Url.Action("_ShowAllProductTypeList", "Inventory")');
+
+                    document.documentElement.style.overflow = 'auto';
+                    document.body.scroll = "yes";
+                }
+                else {
+                    var msg = (data === "Error") ? "Product type delete attempt unsuccessful." : "Product type delete attempt unsuccessful, " + data;
+                    notification.show({ message: msg, showTime: startTime() }, "upload-error");
+                }
+            }
+        });
+    }
+
+
+    $("#divForAll_Pro_type").on("click", ".btn_pro_type_Delete", function (e) {
+        var typeId = $(this).data("id");
+        var parentName = $(this).data("name");
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose
+        });
+        var template = kendo.template($("#temp_win_site_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        kendoWindow.find("#btn_editSite_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_editSite_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+            document.body.scroll = "no"; // ie only
+            deleteProductType(typeId, parentName);
+            
+        }).end();
+    });
+   
+</script>

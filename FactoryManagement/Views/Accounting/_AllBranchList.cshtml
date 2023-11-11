@@ -1,0 +1,93 @@
+﻿@************************************** Created By Tasnim Tuli (Date:22.08.2016)  ***************************************@
+@using FactoryManagement.Helpers
+@{
+    var count = 0;
+}
+
+<table class="table table-bordered tableForBankList" id="tbl_bank_list">
+    <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Created By</th>
+        <th>Created Date</th>
+        <th>Last Updated By</th>
+        <th>Last Updated Date</th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in ViewBag.BranchList as IEnumerable<FactoryManagement.ModelView.Accounting.Bank_BranchListModelView>)
+    {
+        count++;
+        <tr id="tr_bank_@item.BranchId">
+            <th scope="row">@count.</th>
+            <td>
+                <a href="@Html.EncodedParam("BankAccountDetails", "Accounting", new { Id = item.BranchId, forDisplay = 1 }, null)">@Html.DisplayFor(modelItem => item.BranchName)</a>                 
+            </td>
+
+            @if (item.CreatedBy > 0)
+            {
+                <td>
+                    <img class="user-photo" src="~/Images/UserPicture/thumb/@item.CreatedByPicture" />
+                    <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = item.CreatedBy , isDisplay = true }, null)">@Html.DisplayFor(modelItem => item.CreatedByName)</a>  
+                </td>
+            }
+            else
+            {
+                <td>
+                    <img class="user-photo" src="~/Images/UserPicture/thumb/@item.CreatedByPicture" />
+                    @Html.DisplayFor(modelItem => item.CreatedByName)
+                </td>
+            }
+            <td>@Convert.ToDateTime(item.CreatedDate).ToString("MMM dd,yyyy")</td>
+            @if (item.UpdatedBy != null)
+            {
+                if (item.UpdatedBy > 0)
+                {
+                 <td>
+                    <img class="user-photo" src="~/Images/UserPicture/thumb/@item.UpdatedByPicture" />
+                     <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = item.UpdatedBy,isDisplay = true }, null)">@Html.DisplayFor(modelItem => item.UpdatedByName) </a>  
+                </td>
+                }
+                else
+                {
+                    <td>
+                        <img class="user-photo" src="~/Images/UserPicture/thumb/@item.UpdatedByPicture" />
+                             @Html.DisplayFor(modelItem => item.UpdatedByName)
+                    </td>
+                }
+            }
+            else
+            {
+                <td>Not Yet Updated</td>
+            }
+            @if (item.UpdatedDate != null)
+            {
+                <td>@Convert.ToDateTime(item.UpdatedDate).ToString("MMM dd,yyyy")</td>
+            }
+            else
+            {
+                <td>Not Yet Updated</td>
+            }
+            @if (item.ForDisplay > 0)
+            {
+                <td>
+                    <a class="btn blue" data-toggle="tooltip" data-original-title="Branch Details" href="@Html.EncodedParam("BankAccountDetails", "Accounting", new { Id = item.BranchId, forDisplay = 1 }, null)"><i class="fa fa-info-circle"></i></a>         
+                </td>
+            }
+            else
+            {
+                <td>                   
+                    <a class="btn green" data-toggle="tooltip" data-original-title="Edit Branch" href="@Html.EncodedParam("BankAccountDetails", "Accounting", new { Id = item.BranchId, forDisplay = 0 }, null)"><i class="fa fa-pencil"></i></a>  
+                    <a class="btn btn-danger  deletebranch" id="deletebranch" data-toggle="tooltip" data-original-title="Delete Branch" data-id="@item.BranchId"><i class="fa fa-trash"></i></a>
+                </td>
+            }
+            
+        </tr>
+    }
+</table>
+
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+    totalCount = '@(ViewBag.TotalBranch)';
+    showCount = '@(count)';
+</script>

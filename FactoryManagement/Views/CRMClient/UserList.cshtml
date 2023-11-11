@@ -1,0 +1,133 @@
+﻿@model IEnumerable<FactoryManagement.ModelView.CRM.Client_User_ListsModelView>
+<div class="row">
+    <div class="loading" id="divForLoading"></div>
+    <div class="col-xs-12" style="display:none;" id="DivForUser">  
+ <div class="tableForUserList">
+         <div id="Div_User_Upper_Portion">
+             <div class="col-sm-12" style="margin-bottom:.5em;padding:0px!important;">
+                 <h3 id="headr_title" style="margin-top: 0px!important">Client User List</h3>
+                 <hr />
+                @if (@ViewBag.isDisplay==false){
+                 <a href="/ / " style="text-decoration: none !important;">
+                     <span class="btn btn-success addBtnId" style="cursor:pointer" id="userInfoEntry" data-toggle="tooltip" title="Add New User"><i class="fa fa-plus"></i> Add New User</span>
+                 </a>
+                }
+             </div>
+         </div>   
+         <table class="table" style="border:none">
+             <tbody></tbody>
+         </table>
+      </div>
+    </div>
+</div>
+<div id="loading" style="display:none"></div>
+<script id="temp_win_user_list" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">Are you sure to delete this user ? </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_editUnit_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_editUnit_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    var showCount = 20, inCallback = false;
+    var page = 0;  
+    var userId=0;
+    $(document).ready(function () {
+        $("#liForCRM").addClass('active');
+        $("#liForVendorList").addClass('sublistActive');
+        $("div.tableForUserList>table>tbody").load('@Url.Action("_UserList", "CRMClient")?isDisplay='+'@ViewBag.isDisplay');
+        $("#divForLoading").hide();
+        $("#DivForUser").show();
+        $('[data-toggle="tooltip"]').tooltip();            
+    });
+$(window).scroll(function () {
+        var totalCount = '@ViewBag.TotalUser';
+        if ($(window).scrollTop() >= $(document).height() - $(window).height() - 300) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    $("#loading").show();
+                    inCallback = true;
+                    page++;
+                    $.ajax({
+                        type: 'GET',
+                        url: '/CRMClient/GetUserList',
+                        data: { page: page },
+                        success: function (data) {
+                            var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                            if (data != '') {
+                                for (var i = 0; i < data.length; i++) {
+                                    var date = new Date(data[i].CreatedDate);
+                                    var getdate = (monthNames[date.getMonth()]) + " " + date.getDate() + "," + date.getFullYear();
+                                    $("table.tableForUserList > tbody").append('<tr id="tr_user_' + data[i].UserId + '"><th scope="row">' + parseInt(showCount + 1) + '</th><td>' +
+                                        '<a href="#" id="nameClickId">'+data[i].UserName + '</td>' +
+                                        '<td >' + data[i].Designation + '</td><td class="divUserList">' +
+                                        '<a href="#" id="userDetailsEdit" class="userDetailsEdit" data-userid="' + data[i].UserId + '">' +
+                                        '<span class="fa fa-pencil"></span>' + '</a>' + ' ' +
+                                        '<a class="fa fa-trash deleteUser" data-userid="' + data[i].UserId + '"></a>' + '</a></td></tr>');
+
+                                    if ('@ViewBag.isDisplay' === 'True') {
+                                        $(".divUserList").hide();
+                                    }
+                                }
+                                showCount = (page + 1) * 20;
+                            }
+                            else {page = -1;}
+                            inCallback = false;
+                            $("#loading").hide();
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {alert(error);}
+                    });
+
+                }
+            }
+       }
+});
+
+//****************************Delete user*********************************
+ $("div.tableForUserList>table>tbody").on("click", ".deleteUser", function (e) {
+        e.preventDefault();
+        userId = $(this).data('userid');
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        var template = kendo.template($("#temp_win_user_list").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+
+        kendoWindow.find("#btn_editUnit_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_editUnit_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            deleteUser();
+        }).end();
+});
+function deleteUser() {
+        notification.show({ message: " Deleting user inforamtion...", showTime: startTime() }, "upload-progress");
+        $.ajax({
+            url: '@Url.Action("DeleteUser", "CRMClient")',
+            type: 'Post',
+            data: { UserId: userId },
+            success: function (Id) {
+                notification.hide();
+                notification.setOptions({autoHideAfter:5000});
+                if (Id != '') {notification.show({message: "User successfully deleted", showTime: startTime()}, "upload-success");}
+                else 
+                {
+                    notification.show({ message: "Deletion unsuccessful", showTime: startTime()},"upload-error");
+                }          
+                $("#tr_user_" + userId).remove();
+                $("#div_ryt_panel").empty();
+                $("#div_ryt_panel").load('@Url.Action("UserList", "CRMClient")?Id='+Id+'&isDisplay='+ isDisplay);
+                $("#div_ryt_panel").show();
+            }
+     });
+};
+</script>
+
+

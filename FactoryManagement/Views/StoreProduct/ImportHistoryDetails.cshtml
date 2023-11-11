@@ -1,0 +1,45 @@
+﻿@model FactoryManagement.Models.View_Import_History_Details
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var importLocationList = db.View_Import_Item_Details.Where(m => m.ImportId == Model.ImportId).ToList();
+    var serial = 0;
+}
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-top:2%;">
+    <dl class="dl-horizontal row">
+        <dt>Voucher Name :</dt>
+        <dd>
+            @Model.VoucherName
+            <a id="imp_his_print" data-id="@Model.ImportId" style="float:right;margin-right:5%;font-size:14px">
+                <i class="fa fa-print"></i>Print
+            </a>
+        </dd>
+        <dt>L/C :</dt>
+        <dd>@Model.L_C</dd>
+        <dt>Product Name :</dt>
+        <dd>@Model.ProductName</dd>
+        <dt>Total Quantity :</dt>
+        <dd>@Model.Quantity @Model.UnitName</dd>
+        <dt>Imported Date :</dt>
+        <dd>@Model.InsertedDateFormat</dd>
+        <dt>Imported By :</dt>
+        <dd><img class="img-circle" src="/Images/UserPicture/thumb/@Model.InsertedUserPic">@Model.InsertedByUserName</dd>
+    </dl>
+    <h4>Item Lists</h4>
+    <table class="table table-bordered" id="tbl_all_item">
+        <tr>
+            <th>#</th>
+            <th>Quantity</th>
+            <th>Assigned Location</th>
+        </tr>
+        @foreach (var VIID in importLocationList)
+        {
+            serial++;
+            <tr>
+                <td>@serial.</td>
+                <td>@VIID.Quantity @Model.UnitName</td>
+                <td>@VIID.AssignLocation</td>
+            </tr>
+        }
+    </table>
+</div>
+

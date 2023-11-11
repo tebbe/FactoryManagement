@@ -1,0 +1,187 @@
+﻿
+
+
+
+
+@************************************** Created By Jerin Jahan(Date:08.10.2016)  ***************************************@
+<style>
+    #tbl_spec_add th{border:none!important;}
+    #tbl_spec_add td{border:none!important;}
+    .k-textbox{width:100%;}
+</style>
+@model FactoryManagement.ModelView.CRM.BusiOrder_ManualSpecModelView
+@using (Html.BeginForm())
+{
+    @Html.HiddenFor(m => m.BusOrdId)
+    <div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;" id="div_maual_spec_create">
+        <div class="col-sm-offset-1 col-sm-10">
+            <table class="table" id="tbl_spec_add">
+                <tr>
+                    <th width="2%">#</th>
+                    <th width="25%">Specification</th>
+                    <th width="10%">Quantity</th>
+                    <th width="20%">Unit</th>
+                    <th width="25%">Description</th>
+                    <th width="10%"></th>
+                </tr>
+                <tr id="tbl_tr_1">
+                    <th scope="row">1.</th>
+                    <td>
+                        <input class="k-textbox txt_spec" id="txt_spec_1" name="txt_spec_1" type="text" value=""
+                               data-val="true" data-val-length="Length exceed" data-val-length-max="100"
+                               data-val-length-min="1" data-val-required="*" >
+                    </td>
+                    <td>
+                        <input class="k-textbox txt_quan" id="txt_quan_1" name="txt_quan_1" type="text" value=""
+                               data-val="true" data-val-length="Length exceed" data-val-length-max="4"
+                               data-val-length-min="1" data-val-required="*" onkeypress="return isNumber(event)">
+                    </td>
+                    <td>
+                        <input id="UnitId_1" name="UnitId_1" style="width: 100%;" data-val="true" data-val-required="*" class="txt_unitid" />
+                        <span class="field-validation-valid text-danger" data-valmsg-for="UnitId_1" data-valmsg-replace="true"></span>
+                    </td>
+                    <td>
+                        <textarea class="form-control k-textbox k-valid txt_des_" cols="25" rows="5"
+                                  data-val="true"
+                                  data-val-length="length exceed"
+                                  data-val-length-max="200"
+                                  id="txt_des_1" name="txt_des_1"></textarea>
+                    </td>
+                    <td><span class="k-icon k-i-plus addSpec" data-count="1" id="btn_add_spec_1"></span></td>
+                </tr>
+            </table>
+        </div>
+        <div class="k-edit-buttons k-state-default col-xs-11">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_manual_spec_save"><span class="k-icon k-update"></span>Create</button>
+            <button type="reset" class="k-button k-button-icontext k-grid-update" id="btn_manual_spec_Refresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_manual_spec_cancel"><span class="k-icon k-i-cancel"></span>Cancel</button>
+        </div>
+    </div>
+}
+<script>
+    $(document).ready(function(){
+        $("#UnitId_1").kendoDropDownList({
+            dataTextField: "UnitName",
+            dataValueField: "UnitId",
+            optionLabel: "--Select One--",
+            dataSource: {
+                transport: {
+                    read: {
+                        url: "@Url.Action("GetUnitId", "CRM")",type: "GET"
+                    }
+                }
+            }
+        });
+    });
+    $("#btn_manual_spec_Refresh").click(function () {
+        $("#divForAddManualSpec").empty();
+        $("#divForAddManualSpec").append('<div class="win_loading_half"></div>');
+        $("#divForAddManualSpec").show();
+        $("#divForAddManualSpec").load('@Url.Action("BusManualSpecAdd", "CRM")?BusinessOrderId=' + '@(Model.BusOrdId)');
+    });
+    $("#btn_manual_spec_cancel").click(function () {
+        $("#div_win_manual_spec").data("kendoWindow").close();
+    });
+    $("#tbl_spec_add").on("click", ".addSpec", function () {
+        var validate_table = $("#tbl_spec_add").kendoValidator().data("kendoValidator");
+        if (validate_table.validate()) {
+            var count = $(this).data("count");
+            $("#btn_add_spec_" + count).hide();
+            $("#btn_add_rmv_" + count).hide();
+            count++;
+            $("#tbl_spec_add").append('<tr id="tbl_tr_' + count + '">' +
+                            '<th scope="row">' + count + '.</th>' +
+                            '<td><input class="k-textbox txt_spec" id="txt_spec_' + count + '" name="txt_spec_' + count + '" type="text" value="" ' +
+                            'data-val="true" data-val-length="Length exceed" data-val-length-max="100" data-val-length-min="1" data-val-required="*"></td>' +
+
+                            '<td><input class="k-textbox txt_quan" id="txt_quan_' + count + '" name="txt_quan_' + count + '" type="text" value="" '+
+                            'data-val="true" data-val-length="Length exceed" data-val-length-max="4" data-val-length-min="1" '+
+                            'data-val-required="*" onkeypress="return isNumber(event)"></td>'+
+
+                            '<td><input id="UnitId_' + count + '"  name="UnitId_' + count + '" style="width: 100%;" data-val="true" data-val-required="*" class="txt_unitid" /> '+
+                            '<span class="field-validation-valid text-danger" data-valmsg-for="UnitId_' + count + '" data-valmsg-replace="true"></span></td>'+
+
+                            '<td><textarea class="form-control k-textbox k-valid txt_des_" cols="20" rows="5" data-val="true" data-val-length="*" '+
+                            'data-val-length-max="100" data-val-length-min="1" id="txt_des_' + count + '" name="txt_des_' + count + '"></textarea></td>'+
+
+                            '<td><span class="k-icon k-i-plus addSpec"  data-count="' + count + '" id="btn_add_spec_' + count + '"></span>' +
+                            '<span class="k-icon k-i-close removeSpec"  data-count="' + count + '" id="btn_add_rmv_' + count + '"></span></td>' +
+                            '</tr>');
+
+            $("#UnitId_"+count).kendoDropDownList({
+                dataTextField: "UnitName",
+                dataValueField: "UnitId",
+                optionLabel: "--Select One--",
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "@Url.Action("GetUnitId", "CRM")",type: "GET"
+                        }
+                    }
+                }
+            });
+        }
+    });
+    $("#tbl_spec_add").on("click", ".removeSpec", function () {
+        var count = $(this).data("count");
+        $("#tbl_tr_" + count).remove();
+        count--;
+        $("#btn_add_spec_" + count).show();
+        $("#btn_add_rmv_" + count).show();
+    });
+    $("#btn_manual_spec_save").click(function () {
+        var validate_table = $("#tbl_spec_add").kendoValidator().data("kendoValidator");
+        if (validate_table.validate()) {
+            notification.show({ message: "Adding manual specification...", showTime: startTime() }, "upload-progress");
+            var lbl_Count= 0;
+            var allSpec_lbl = [];
+            var allspec_des = [];
+            var allSpec_quan = [];
+            var allspec_unitid = [];
+
+            $(".txt_spec").each(function () {
+                allSpec_lbl.push($(this).val());
+            });
+            $(".txt_quan").each(function () {
+                allSpec_quan.push($(this).val());
+            });
+            $(".txt_unitid .k-valid").each(function () {
+                allspec_unitid.push($(this).val());
+            });
+            $(".txt_des_").each(function () {
+                if($(this).val() === ''){
+                    allspec_des.push(",");
+                }else{
+                    allspec_des.push($(this).val());
+                }
+            });
+            var sendData = {
+                busId:@Model.BusOrdId,
+                lbl:allSpec_lbl,
+                quan:allSpec_quan,
+                unitId:allspec_unitid,
+                des:allspec_des,
+                UserId:userId
+            };
+            $.ajax({
+                url: '@Url.Action("SaveManualSpec", "CRM")',
+                type: 'Post',
+                data: sendData,
+                success: function (response) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000});
+                    if (response === 'Success') {
+                        $("#div_win_manual_spec").data("kendoWindow").close();
+                        notification.show({ message: "Manual specification successfully added.", showTime: startTime()}, "upload-success");
+                        $("#Div_all_manual_spec").empty();
+                        $("#Div_all_manual_spec").append('<div class="loading_partail"></div>');
+                        $("#Div_all_manual_spec").load('@Url.Action("AddedManualSpec", "CRM")?BusinessOrderId='+@Model.BusOrdId);
+                    }
+                    else {
+                        notification.show({ message: "Manual specification addition unsuccessful.", showTime: startTime()}, "upload-error");
+                    }
+                }
+            });
+        }
+    });
+</script>

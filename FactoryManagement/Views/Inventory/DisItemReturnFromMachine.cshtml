@@ -1,0 +1,409 @@
+﻿
+
+
+
+@*************************** Created By Jerin Jahan (Date:28.01.2017 ) ****************************@
+@{
+    ViewBag.Title = "Inventory Item return From Machine";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>      
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Inventory/DisItemReturnFromMachine"> All Return Parts List</a>
+        </li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">All Return Item From Machine</span>
+                </div>
+                <div class="actions">
+                    <div class="btn-group btn-group-devided" data-toggle="buttons" id="Div_Upper_Portion" style="display:none;">
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm active" id="btn_acceptLog" data-toggle="tooltip" title="All Accept Log" data-container="body">
+                            <input type="radio" name="options" class="toggle">Accept Log
+                        </label>
+
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm active" id="btn_All" data-toggle="tooltip" title="All History" data-container="body">
+                            <input type="radio" name="options" class="toggle">All
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_today" data-toggle="tooltip" title="Today History" data-container="body">
+                            <span><input type="radio" name="options" class="toggle">Today</span>
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_seven" data-toggle="tooltip" title="Last 7 days History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 7 Days
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_thirty" data-toggle="tooltip" title="Last 30 day History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 30 Days
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="portlet-body">
+
+                <div class="panel with-nav-tabs panel-default">
+                   
+                    <div class="panel-heading">
+                        <ul class="nav nav-tabs">
+                            <li class="active" id="liAllList"><a href="#Div_All_His" data-toggle="tab">Voucher Wise</a></li>
+                            <li id="liProductwiseList"><a href="#tab2productWise" data-toggle="tab">Product Wise</a></li>                
+                        </ul>
+                        @(Html.Kendo().MultiSelect()
+                              .Name("VoucherSeaarch")
+                              .DataTextField("VoucherName")
+                              .DataValueField("DispatchedId")
+                              .Placeholder("Start typing voucher name")
+                              .Events(e => e.Change("onSearchChange"))
+                              .AutoClose(false)
+                              .DataSource(source =>
+                              {
+                                  source.Read(read =>
+                                  {
+                                      read.Action("VoucherListForMultiSearch", "Inventory").Data("tabwisedata");
+
+                                  });
+                                  source.ServerFiltering(false);
+                              })
+                        )
+                    </div>
+                   
+                    <div class="panel-body" style="border:none!important;" id="div_for_panel_body">
+                        <div class="tab-content">
+                            <div class="tab-pane fade in active" id="Div_All_His">
+                                @if (db.View_DisItemReturnDetails.Any())
+                                {
+                                    <script>                        
+                                        $("#Div_All_His").show();
+                                        $("#Div_All_His").load("_DisItemReturnFromMachine", "Inventory");
+                                    </script>
+                                }
+                                else
+                                {
+                                    <h3>No records to display ...</h3>
+                                }
+                            </div>
+                            <div class="tab-pane fade" id="tab2productWise">
+
+                            </div>
+                       
+                        </div>
+                    </div>
+                </div>
+                <div id="Div_All_His" style="display:none;"><div class="loading_partial"></div></div>
+               
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="win_item_quan_info"></div>
+<div id="win_item_requan_info"></div>
+<div id="win_product_vouchers"></div>
+<div id="win_machine_details"></div>
+<script id="temp_win_acpt_quan" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">#=message#</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_return_acpt_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_return_acpt_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    var showCount = 0, totalCount = 0, page = 0, inCallback = false, isAccept=0;
+    var days = 0;
+    $(document).ready(function () {
+        $("#Div_Upper_Portion").show();
+        $("#liForInventory").addClass('active');
+        $("#liForInvenDisReturnList").addClass('sublistActive');
+    });
+    $("#liAllList").click(function () {
+        isAccept = 0;
+        $("#Div_All_His").empty();
+        $("#tab2productWise").empty();
+        $("#Div_All_His").append('<div class="loading_partial"></div>');
+        $("#Div_All_His").load('@Url.Action("_DisItemReturnFromMachine", "Inventory")');
+        $('#VoucherSeaarch').data('kendoMultiSelect').dataSource.read();
+    });
+    $("#liProductwiseList").click(function () {
+        isAccept = 1;
+        $("#Div_All_His").empty();
+        $("#tab2productWise").empty();
+        $("#tab2productWise").append('<div class="loading_partial"></div>');
+        $("#tab2productWise").load('@Url.Action("_DisItemReturnFromMachineProductwise", "Inventory")');
+        $('#VoucherSeaarch').data('kendoMultiSelect').dataSource.read();
+    });
+    $("#tab2productWise").on("click", ".show_vouchers", function () {
+        var inventoryId = $(this).data("inventoryid");
+        $("#win_product_vouchers").empty();
+        $("#win_product_vouchers").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '30%',
+            title: 'All vouchers',
+            close: onWindowClose
+        });
+        $("#win_product_vouchers").html('<div class="partial_loading_half"></div>');
+        var Win_unit_Add = $("#win_product_vouchers").data("kendoWindow");
+        Win_unit_Add.refresh({ url: "/Inventory/_AllReturnVoucherofProduct?inventoryId=" + inventoryId });
+        Win_unit_Add.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+    function onSitenameChange() {
+        if (this.value() === '') {
+            $("#Div_All_His").empty();
+            $("#Div_All_His").append('<div class="loading_partial"></div>');
+            $("#Div_All_His").load("_AllUserLists", "HumanResource");
+        } else {
+            $("#Div_All_His").empty();
+            $("#Div_All_His").append('<div class="loading_partial"></div>');
+            $("#Div_All_His").load('@Url.Action("_AllUserLists", "HumanResource")?siteId=' + this.value());
+        }
+    }
+    function tabwisedata() {
+        return { IsAccept:isAccept }
+    }
+    @******************************** OnScroll Bind Table Data *************************@
+    $(window).scroll(function () {
+        var countBytype, result;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/HumanResource/GeUserList',
+            data: { page: page },
+            success: function (data) {
+                var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        var date = new Date(data[i].JoinDateName);
+                        var getdate = (monthNames[date.getMonth()]) + " " + date.getDate() + "," + date.getFullYear();
+
+                        $("table#tbl_All_his > tbody").append('<tr><th scope="row">' + showCount + '.</th>' +
+                            '<td><img class="img-circle" src="/Images/UserPicture/thumb/' + data[i].Picture + '">' +
+                            '<a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].UserId +"?isDisplay=true")  + '">' +
+                             '' + data[i].UserName + '</a></td><td>' + data[i].UserTypeName + '</td><td>' + data[i].Designation + '</td><td>' + getdate + '</td><td>' +
+                            '<a class="btn btn-success" style="margin-right:2%;" href="/HumanResource/DisplayEmployeeDetails?q='+ getDataEncrypted("UserId="+data[i].UserId +"?isDisplay=false")+ '">' +
+                             '<i class="fa fa-pencil"></i></a>' +
+
+                             '<span class="btn btn-danger deleteUser" style="margin-right:2%;" data-userid="' + data[i].UserId + '" data-usertype="' + data[i].UserId + '">' +
+                             '<i class="fa fa-trash"></i></span>' +
+                             '<span class="btn btn-info showPckDetails" style="margin-right:2%;" data-userid="' + data[i].UserId + '" ' +
+                             ' data-pckid="' + data[i].SalaryPackageId + '" data-usertype="' + data[i].UserId + '">' +
+                             '<i class="fa fa-info-circle"></i></span>' +
+                             '<span class="btn btn-warning chngSalaryPck" style="margin-right:2%;" data-userid="' + data[i].UserId + '" ' +
+                             'data-pckid="' + data[i].SalaryPackageId + '" data-usertype="' + data[i].UserId + '">' +
+                             '<i class="fa fa-edit"></i></span>' +
+                             '</td></tr>');
+                    }
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+
+    //*******************************  SHOW INVENTORY ITEM DISPATCH QUANTITY DETIALS *****************************************
+    $("#Div_All_His").on("click", ".itemQuan", function (e) {
+        e.preventDefault();
+        var dispatchedid = $(this).data("dispatchedid");
+        //var invenid = $(this).data("invenid");
+        //var proname = $(this).data("proname");
+        $("#win_item_quan_info").empty();
+        $("#win_item_quan_info").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '70%',
+            position: { top: '20%' },
+            title: 'Dispatch Details'
+        });
+        $("#win_item_quan_info").html('<div class="win_loading_half"></div>');
+        var win_item_quan_info = $("#win_item_quan_info").data("kendoWindow");
+        win_item_quan_info.refresh({ url: "/Inventory/ShowInvenDispacthQuanDetails?dispatchedid=" + dispatchedid });
+        win_item_quan_info.center().open();
+    });
+    $("#Div_All_His").on("click", ".itemReQuan", function (e) {
+        e.preventDefault();
+        var invenid = $(this).data("invenid");
+        var proname = $(this).data("proname");
+        $("#win_item_requan_info").empty();
+        $("#win_item_requan_info").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '70%',
+            position: { top: '20%' },
+            title: proname + ' Return Quantity Details'
+        });
+        $("#win_item_requan_info").html('<div class="win_loading_half"></div>');
+        var win_item_requan_info = $("#win_item_requan_info").data("kendoWindow");
+        win_item_requan_info.refresh({ url: "/Inventory/ShowInvenDispacthReQuanDetails?invenid=" + invenid });
+        win_item_requan_info.center().open();
+    });
+    $("#Div_All_His").on("click", ".machine_details", function () {
+        var machineId = $(this).data("machineid");
+        $("#win_machine_details").empty();
+        $("#win_machine_details").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '40%',
+            position: { top: '20%' },
+            title:'Machine Details'
+        });
+        $("#win_machine_details").html('<div class="win_loading_half"></div>');
+        var win_item_requan_info = $("#win_machine_details").data("kendoWindow");
+        win_item_requan_info.refresh({ url: "/Inventory/_ShowMachineDetailsById?machineId=" + machineId });
+        win_item_requan_info.center().open();
+    });
+</script>
+<script>
+    $("#btn_today").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = {days: 1 };
+        $("#Div_All_His").empty();
+        $("#Div_All_His").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Today's Dispatched History");
+        $("#Div_All_His").load('@Url.Action("_DisItemReturnFromMachine", "Inventory")', passdata);
+        days = 1;
+    });
+    $("#btn_last_seven").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = { days: 7 };
+        $("#Div_All_His").empty();
+        $("#Div_All_His").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Last 7 Days Return Item From Machine");
+        $("#Div_All_His").load('@Url.Action("_DisItemReturnFromMachine", "Inventory")', passdata);
+        days = 7;
+    });
+    $("#btn_last_thirty").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = { days: 30 };
+        $("#Div_All_His").empty();
+        $("#Div_All_His").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Last 30 Days Return Item From Machine");
+        $("#Div_All_His").load('@Url.Action("_DisItemReturnFromMachine", "Inventory")', passdata);
+        days = 30;
+    });
+    $("#btn_All").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        $("#Div_All_His").empty();
+        $("#Div_All_His").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing All Return Item From Machine");
+        $("#Div_All_His").load('@Url.Action("_DisItemReturnFromMachine", "Inventory")');
+        days = 0;
+    });
+</script>
+<script>
+    //*******************************  RETURN ITEM ACCEPT BUTTON *****************************************
+    $("#win_item_quan_info,#win_product_vouchers").on("click", ".btn_Return_item_acpt", function (e) {
+        e.preventDefault();
+        var id = $(this).data("id");
+        var name = $(this).data("name");
+        quantity = $(this).data("quantity");
+        var dispatchedId = $(this).data("dispatchedId");
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        message = "Are you sure you want to accept this?";
+        var template = kendo.template($("#temp_win_acpt_quan").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        kendoWindow.find("#btn_return_acpt_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_return_acpt_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            $.ajax({
+                url: '@Url.Action("AcceptReturnParts", "Inventory")',
+                type: 'Post',
+                data: {id:id,userId:userId},
+                success: function (response) {
+                    if (response === "Success") {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        msg = "Machine spare parts '" + name + "'  has been successfully accepted.";
+                        notification.show({ message: msg, showTime: startTime() }, "upload-success");
+
+                        $("#Div_All_His").empty();
+                        $("#Div_All_His").append('<div class="loading_partial"></div>');
+                        $("#Div_All_His").load("_DisItemReturnFromMachine", "Inventory");
+                        location.reload();
+                       // $("#win_item_quan_info,#win_product_vouchers").data("kendoWindow").close();
+                        //$(this).closest(".k-window-content").data("kendoWindow").close();
+                    }
+                    else {
+                        msg = "Machine spare parts '" + name + "' return was unsuccessful.";
+                        notification.show({ message: msg, showTime: startTime() }, "upload-error");
+                    }
+                },
+                error: function () {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    msg = "Error occured!";
+                    notification.show({ message: msg, showTime: startTime() }, "upload-warning");
+                }
+            });
+        }).end();
+    });
+    console.log("Test");
+    function onSearchChange() {
+        var current = this.value();
+        var sendData = { dispatch: current }
+        if (isAccept == 0) {
+            $("#Div_All_His,#tab2productWise").empty();
+            $("#Div_All_His").append('<div class="loading_partial"></div>');
+            $("#Div_All_His").load('@Url.Action("_DisItemReturnFromMachine","Inventory")', sendData);
+            $('#VoucherSeaarch').data('kendoMultiSelect').dataSource.read();
+        } else {
+            $("#Div_All_His,#tab2productWise").empty();
+            $("#tab2productWise").append('<div class="loading_partial"></div>');
+            $("#tab2productWise").load('@Url.Action("_DisItemReturnFromMachineProductwise", "Inventory")', sendData);
+            $('#VoucherSeaarch').data('kendoMultiSelect').dataSource.read();
+        }
+    }
+    $("#btn_acceptLog").click(function () {
+        window.open('@Url.Action("AllAcceptLog","Inventory")?action=' + "view", '_blank');
+    });
+</script>

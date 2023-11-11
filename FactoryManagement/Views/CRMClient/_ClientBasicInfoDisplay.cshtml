@@ -1,0 +1,121 @@
+﻿
+
+
+@model FactoryManagement.Models.View_Client_Info
+<h3 style="margin-top:0px!important;">
+    Client Basic Information
+    @if (!ViewBag.isDisplay)
+    {<span class="fa fa-pencil" id="editBasicInfo" style="cursor:pointer;float:right;"></span>}
+</h3>
+<hr />
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 row">
+    <div class="form-horizontal form-widgets col-sm-6">
+        <div class="form-group">
+            @Html.LabelFor(model => model.Name, "Name", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-7 col-sm-7 col-xs-8 dis_info " style="padding-top:7px">
+                @Html.DisplayFor(model => model.Name, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.ClientType, "Type", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-7 col-sm-7 col-xs-8 dis_info " style="padding-top:7px">
+                @Html.DisplayFor(model => model.ClientType, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.ClientCode, "Client Code", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-7 col-sm-7 col-xs-8 dis_info " style="padding-top:7px">
+                @Html.DisplayFor(model => model.ClientCode, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Address, "Address", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-7 col-sm-7 col-xs-8 dis_info " style="padding-top:7px">
+                @Html.DisplayFor(model => model.Address, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+
+            </div>
+        </div>
+        @if (Model.AddressLine1 != null)
+        {
+            <div class="form-group">
+                @Html.LabelFor(model => model.AddressLine1, "Address Line 1", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                <div class="col-md-7 col-sm-7 col-xs-8 dis_info " style="padding-top:7px">
+                    @Html.DisplayFor(model => model.AddressLine1, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+            </div>
+        }
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Country, "Country", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-7 col-sm-7 col-xs-8 dis_info " style="padding-top:7px">
+                @Html.DisplayFor(model => model.CountryName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+
+            </div>
+        </div>
+
+        @if (Model.DivisionId != null && Model.Country == "Bangladesh")
+        {
+            <div class="form-group">
+                @Html.LabelFor(model => model.DivisionId, "Division", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                <div class="col-md-7 col-sm-7 col-xs-8 dis_info " style="padding-top:7px">
+                    @Html.DisplayFor(model => model.DivisionName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+            </div>
+        }
+    </div>
+    <div class="form-horizontal form-widgets col-md-6">
+        @if (Model.State != null)
+        {
+        <div class="form-group">
+            @Html.LabelFor(model => model.State, "State", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-7 col-sm-7 col-xs-8 dis_info " style="padding-top:7px">
+                @Html.DisplayFor(model => model.State, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        }
+        @if (Model.City != null)
+        {
+        <div class="form-group">
+            @Html.LabelFor(model => model.City, "City", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-7 col-sm-7 col-xs-8 dis_info " style="padding-top:7px">
+                @Html.DisplayFor(model => model.City, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        }
+        @if (Model.PostalCode != null)
+        {
+        <div class="form-group">
+            @Html.LabelFor(model => model.PostalCode, "Postal Code", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-7 col-sm-7 col-xs-8 dis_info " style="padding-top:7px">
+                @Html.DisplayFor(model => model.PostalCode, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        }
+        <div class="form-group">
+            @Html.LabelFor(model => model.Email, "Email", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-7 col-sm-7 col-xs-8 dis_info " style="padding-top:7px">
+                @Html.DisplayFor(model => model.Email, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        @if (Model.Website != null)
+        {
+        <div class="form-group">
+            @Html.LabelFor(model => model.Website, "Website", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-7 col-sm-7 col-xs-8 dis_info " style="padding-top:7px">
+                @Html.DisplayFor(model => model.Website, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        }
+        @if (Model.Fax != null)
+        {
+        <div class="form-group">
+            @Html.LabelFor(model => model.Fax, "Fax", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-7 col-sm-7 col-xs-8 dis_info " style="padding-top:7px">
+                @Html.DisplayFor(model => model.Fax, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        }
+    </div>
+</div>

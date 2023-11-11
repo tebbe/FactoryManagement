@@ -1,0 +1,53 @@
+﻿
+
+
+@model FactoryManagement.Models.TransactionsEditCount
+@Html.HiddenFor(m => m.RefTableColumnId)
+@Html.HiddenFor(m => m.PreAmount)
+@{
+    decimal maxAmnt = 0;
+    if (ViewBag.hasMaxAmount == true)
+    {
+        maxAmnt = Convert.ToDecimal(ViewBag.maxAmount);
+    }
+}
+<div class="editor-label"><label for="ReasonId">Revert Reason</label></div>
+<div class="editor-field">
+    @(Html.Kendo().DropDownListFor(m => m.ReasonId)
+    .OptionLabel("--Select One--")
+    .BindTo(ViewBag.ReasonId)
+    .HtmlAttributes(new { style = "width:100%" })
+    )
+    @Html.ValidationMessageFor(model => model.ReasonId, "", new { @class = "text-Danger" })
+</div>
+
+<div class="editor-label"><label for="ReasonId">Amount</label></div>
+<div class="editor-field">
+    <input class="k-textbox"
+           type="number" min="1" data-val-required="Please enter amount"
+           id="txt_change_Amount" name="txt_change_Amount" value="@Model.PreAmount">
+    <span class="field-validation-valid text-danger" data-valmsg-for="txt_change_Amount" data-valmsg-replace="true"></span>
+</div>
+<script>
+    $("#txt_change_Amount").change(function () {
+        if ('@(ViewBag.hasMaxAmount)' === 'True') {
+            if (parseFloat($(this).val()) > parseFloat(@(ViewBag.maxAmount))) {
+                var showData = 'User due salary amount  is  ' + Currency + ''+ @(ViewBag.maxAmount) + ' .Type amount can not be greater than ' +Currency+ @(ViewBag.maxAmount);
+                var kendoWindow = $("<div />").kendoWindow({
+                    actions: ["Close"],
+                    title: "Alert",
+                    resizable: false,
+                    modal: true
+                });
+
+                var template = kendo.template($("#temp_win_For_Alert").html());
+                kendoWindow.data("kendoWindow").content(template(showData)).center().open();
+
+                kendoWindow.find("#temp_win_Ok").click(function () {
+                    kendoWindow.data("kendoWindow").close();
+                }).end()
+                $("#txt_change_Amount").val('@Model.PreAmount');
+            }
+        }
+    });
+</script>

@@ -1,0 +1,145 @@
+﻿
+
+@************************************** Created By Jerin Jahan (Date:17.12.2016)  ***************************************@
+@model FactoryManagement.Models.View_All_Loan_History
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var Currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+
+    var list = db.TransactionsEditCounts.Where(m => m.RefTableColumnId == Model.LoanId).ToList();
+    int count = 0;
+    int count_edit = 0;
+}
+<style>
+    #tbl_pay_edit_details td, #tbl_pay_pak_details td {
+        border: none !important;
+    }
+
+    #div_Salary_tran_left .k-edit-label, .k-edit-form-container .editor-label {
+        width: 35% !important;
+    }
+
+    #div_Salary_tran_left .k-edit-field, .k-edit-form-container .editor-field {
+        width: 55% !important;
+    }
+</style>
+<div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">Employee Name</label></div>
+<div class="editor-field" style="float:left;">
+    <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;padding-top:7px;">
+        @Model.UserName
+    </div>
+</div>
+
+<div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">Designation Name</label></div>
+<div class="editor-field" style="float:left;">
+    <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;padding-top:7px;">
+        @Model.DesignationName
+    </div>
+</div>
+
+<div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">Loan Amount</label></div>
+<div class="editor-field" style="float:left;">
+    <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;padding-top:7px;">
+        <span>@Currency @Model.Amount</span>
+    </div>
+</div>
+
+<div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">Return Amount</label></div>
+<div class="editor-field" style="float:left;">
+    <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;padding-top:7px;">
+        <span>@Currency @Convert.ToDecimal(Model.PaidAmount)</span>
+    </div>
+</div>
+
+
+<div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">Paid By</label></div>
+<div class="editor-field" style="float:left;">
+    <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;padding-top:7px;">
+        @Model.LoanPaidUser
+    </div>
+</div>
+
+<div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">Paid Date</label></div>
+<div class="editor-field" style="float:left;">
+    <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;padding-top:7px;">
+        @Model.LoanPaidDate
+    </div>
+</div>
+
+<div class="col-sm-11" style="text-align:center;">
+    @if (db.TransactionsEditCounts.Where(m => m.RefTableColumnId == Model.LoanId && m.TransactionId==1).Any())
+        {
+            int edit_count = db.TransactionsEditCounts.Where(m => m.RefTableColumnId == Model.LoanId).Count();
+            // var editList = db.View_All_Revert_Trans.Where(m => m.IsRevert == false && m.RefTableColumnId == Model.LoanId).ToList();
+            var editList = db.View_All_TransactionEdit.Where(x => x.RefTableColumnId == Model.LoanId && x.TransactionId==1).ToList();
+            if (edit_count > 1)
+            {
+            <label>This transaction has been edited @edit_count times.</label>
+            }
+            else
+            {
+            <label>This transaction has been edited @edit_count time.</label>
+            }
+        <span id="btn_tran_edit_details"><a href="javascript;"><i class="fa fa-info-circle"></i></a></span>
+
+        <script id="temp_edit_tooltip" type="text/x-kendo-template">
+            <br /><br />
+            <table class="table table-condensed" id="tbl_pay_edit_details">
+                <tr>
+                    <th>Edited By</th>
+                    <th>Reason For Edit</th>
+                    <th>Amount( Before Edit)</th>
+                    <th>Amount( After Edit)</th>
+                    <th>Edited Date</th>
+                </tr>
+                @foreach (var edit in editList)
+                {
+                    count_edit++;
+                    <tr>
+                        <td>@count_edit. @edit.EditedByUserName</td>
+                        <td>@edit.ReasonName</td>
+                        <td>@Currency @edit.PreAmount</td>
+                        <td>@Currency @edit.NewAmount</td>
+                        <td>@edit.EditedDateFormate</td>
+                    </tr>
+                }
+            </table>
+        </script>
+
+        @*@(Html.Kendo().Tooltip()
+    .For("#btn_show_payment_details")
+    .Filter("a")
+    .ContentTemplateId("temp_tooltip")
+    .Position(TooltipPosition.Right)
+    .Width(400)
+        )*@
+
+        @(Html.Kendo().Tooltip()
+    .For("#btn_tran_edit_details")
+    .Filter("a")
+    .ContentTemplateId("temp_edit_tooltip")
+    .Position(TooltipPosition.Right)
+        )
+
+        @*<script id="temp_tooltip" type="text/x-kendo-template">
+            <br />
+            <br />
+            <table class="table table-condensed" id="tbl_pay_pak_details">
+                @foreach (var info in list)
+                {
+                    count++;
+                    <tr>
+                        <td>@count. @info.PreAmount</td>
+                        <td>@Currency @info.NewAmount</td>
+                    </tr>
+                }
+            </table>
+        </script>*@
+        <script>
+            $("#btn_show_payment_details").click(function () {
+                $("#div_payment_details").show();
+            });
+        </script>
+    }
+</div>
+

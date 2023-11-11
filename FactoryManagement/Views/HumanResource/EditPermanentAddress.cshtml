@@ -1,0 +1,160 @@
+﻿
+
+
+@model FactoryManagement.ModelView.HR.UserInformationModelView
+@Html.HiddenFor(m => m.UserId)
+@Html.HiddenFor(m => m.SamePresentAddress)
+
+<div class="editor-label"><label for="ParAddress">Address</label></div>
+<div class="editor-field">
+    @Html.EditorFor(model => model.ParAddress, new { htmlAttributes = new { @class = "form-control k-textbox", @onkeyup = "onkeyupforUserbasicInfo();" } })
+    @Html.ValidationMessageFor(model => model.ParAddress, "", new { @class = "text-danger" })
+</div>
+<div class="editor-label"><label for="ParAddressLine1">Address Line 1</label></div>
+<div class="editor-field">
+    @Html.EditorFor(model => model.ParAddressLine1, new { htmlAttributes = new { @class = "form-control k-textbox", @onkeyup = "onkeyupforUserbasicInfo();" } })
+    @Html.ValidationMessageFor(model => model.ParAddressLine1, "", new { @class = "text-danger" })
+</div>
+<div class="editor-label"><label for="ParCountry">Country</label></div>
+<div class="editor-field">
+    @(Html.Kendo().DropDownListFor(model => model.ParCountry)
+                                 .Name("ParCountry")
+                                 .OptionLabel("--Select Country--")
+                                 .Events(e => e.Change("onChangeOfParCountry"))
+                                 .BindTo(ViewBag.CountryId)
+                                 .HtmlAttributes(new { style = "width:100%" })
+    )
+    @Html.ValidationMessageFor(model => model.ParCountry, "", new { @class = "text-danger" })
+</div>
+<div id="DivForUserPerState">
+    <div class="editor-label"><label for="ParState">State</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.ParState, new { htmlAttributes = new { @class = "form-control k-textbox", @onkeyup = "onkeyupforUserbasicInfo();" } })
+        @Html.ValidationMessageFor(model => model.ParState, "", new { @class = "text-danger" })
+    </div>
+</div>
+<div id="DivForUserPerDivision">
+    <div class="editor-label"><label for="ParDivisionId">DivisionId</label></div>
+    <div class="editor-field">
+        @(Html.Kendo().DropDownListFor(model => model.ParDivisionId)
+                         .Name("ParDivisionId")
+                         .OptionLabel("--Select Division--")
+                                  .Events(e => e.Change("onChangeOfParDivisionId"))
+                         .BindTo(ViewBag.DivisionList)
+                         .HtmlAttributes(new { style = "width:100%" })
+        )
+        @Html.ValidationMessageFor(model => model.ParDivisionId, "", new { @class = "text-danger" })
+    </div>
+</div>
+<div class="editor-label"><label for="ParCity">City</label></div>
+<div class="editor-field">
+    @Html.EditorFor(model => model.ParCity, new { htmlAttributes = new { @class = "form-control k-textbox", @onkeyup = "onkeyupforUserbasicInfo();" } })
+    @Html.ValidationMessageFor(model => model.ParCity, "", new { @class = "text-danger" })
+</div>
+<div class="editor-label"><label for="ParArea">Area</label></div>
+<div class="editor-field">
+    @Html.EditorFor(model => model.ParArea, new { htmlAttributes = new { @class = "form-control k-textbox", @onkeyup = "onkeyupforUserbasicInfo();" } })
+    @Html.ValidationMessageFor(model => model.ParArea, "", new { @class = "text-danger" })
+</div>
+<div class="editor-label"><label for="ParPotalCode">Postal Code</label></div>
+<div class="editor-field">
+    @Html.EditorFor(model => model.ParPotalCode, new { htmlAttributes = new { @class = "form-control k-textbox", @onkeyup = "onkeyupforUserbasicInfo();" } })
+    @Html.ValidationMessageFor(model => model.ParPotalCode, "", new { @class = "text-danger" })
+</div>
+<div class="editor-label"><label for=""></label></div>
+<div class="editor-field">
+    <input data-val="true" id="SamePresentAddress" name="SamePresentAddress" type="checkbox" value="on" class="SamePresentAddress">Permanent address is also used as present address
+</div>
+<script>
+        var userId = @Request.Cookies["CookieAdminInfo"].Values["userid"].ToString();
+        $(document).ready(function(){
+            if ('@Model.SamePresentAddress' === "True") {
+                $("input[name='SamePresentAddress']").prop("checked", true);
+            }else
+            {
+                $("input[name='SamePresentAddress']").prop("checked", false);
+            }
+            if('@Model.ParCountry' != 'BD'){
+
+                $("#DivForUserPerState").show();
+                $("#DivForUserPerDivision").hide();
+            }else{
+                $("#DivForUserPerDivision").show();
+                $("#DivForUserPerState").hide();
+            }
+        });
+        var validation = $("#edit_user_permanent_address").kendoValidator({
+            rules: {
+                Division: function (input) {
+                    if (input.is("[name=ParDivisionId]") && $("#ParCountry").val() == "BD" && input.val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
+                State: function (input) {
+                    if (input.is("[name=ParState]") && $("#ParCountry").val() != "BD" && input.val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            },
+            messages: {
+                Division: "Please enter division",
+                State: "Please enter state",
+            }
+        }).data("kendoValidator");
+        $("#btnPermanentAddressUpdate").click(function () {
+            if (validation.validate()) {
+                notification.show({ message: "Permanent address saving...", showTime: startTime() }, "upload-progress");
+                var sendData = {
+                    UserId: $("#UserId").val(),
+                    UserType: $("#UserType").val(),
+                    ParAddress: $("#ParAddress").val(),
+                    ParAddressLine1: $("#ParAddressLine1").val(),
+                    ParCountry: $("#ParCountry").val(),
+                    ParDivisionId: $("#ParDivisionId").val(),
+                    ParState:$("#ParState").val(),
+                    ParCity: $("#ParCity").val(),
+                    ParArea: $("#ParArea").val(),
+                    ParPotalCode: $("#ParPotalCode").val(),
+                    SamePresentAddress: $("#SamePresentAddress").val(),
+                    CreatedBy:userId
+                };
+                $.ajax({
+                    url: '@Url.Action("PermanentAddressUpdate", "HumanResource")',
+                    type: 'Post',
+                    data: sendData,
+                    success: function (data) {
+                        notification.hide();
+                        notification.setOptions({ autoHideAfter: 5000 });
+                        if (data === 'Error') {
+                            notification.show({ message: "Permanent address of user '"+ data +"' update unsuccessful.", showTime: startTime() }, "upload-error");
+                        }
+                        else {
+                            notification.show({ message: "Permanent address of user '"+ data +"' has been successfully updated.", showTime: startTime() }, "upload-success");
+                        }
+                        $("#div_user_permanentAddress_edit").data("kendoWindow").close();
+                        $("#div_ryt_panel").load('@Url.Action("_ShowEmpInfo", "HumanResource")?UserId=' + '@Model.UserId' + '&isDisplay=false');
+                    },
+                    error: function (err) {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                    }
+                });
+            }
+        });
+
+        $('input:checkbox[name="SamePresentAddress"]').change(function () {
+            if ($(this).is(":checked")) {
+                $("#SamePresentAddress").val("True");
+            } else {
+                $("#SamePresentAddress").val("False");
+            }
+            $('button[id="btnPermanentAddressUpdate"]').prop('disabled', false);
+        });
+
+</script>
+
+

@@ -1,0 +1,27 @@
+﻿
+
+
+@************************************** Created By Jerin Jahan (Date:13.01.2017)  ***************************************@
+@{
+    DateTime now = DateTime.Now;
+}
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;width:96%!important;">
+    <div id="div_leave_edit_partial"><div class="win_loading_half"></div></div>
+    <script>
+        var sendData = { id: '@(ViewBag.id)',v:"p"};
+        $("#div_leave_edit_partial").load('@Url.Action("LeaveApplication", "LeaveManagement")', sendData);
+    </script>
+  
+    <div class="k-edit-buttons k-state-default col-xs-11">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_leave_edit_save">
+            <span class="k-icon k-update"></span>Update
+        </button>
+        <button type="reset" class="k-button k-button-icontext k-grid-cancel" id="btn_leave_edit_Refresh">
+            <span class="k-icon k-i-refresh"></span>Refresh
+        </button>
+        <button type="reset" class="k-button k-button-icontext k-grid-cancel" id="btn_leave_edit_Cancle">
+            <span class="k-icon k-cancel"></span>Cancel
+        </button>
+    </div>
+</div>

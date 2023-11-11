@@ -1,0 +1,31 @@
+﻿
+
+
+
+@********************************************* Created By Jerin Jahan (18.09.2016) *******************************@
+
+@model IEnumerable<FactoryManagement.ModelView.Inventory.InventoryListModelView>
+@{
+    var count = 1;
+}
+<style>
+    #tbl_resvrd_item_lists td {
+        border: none !important;
+    }
+</style>
+
+<table class="table" id="tbl_resvrd_item_lists">
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                <span>@count .</span>  @item.ProductName
+                <span style="float:right">
+                    @item.Quantity @item.UnitName
+                </span>
+            </td>
+        </tr>
+        count++;
+    }
+</table>
+

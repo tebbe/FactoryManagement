@@ -1,0 +1,145 @@
+﻿
+@******************************** Created By Tasnim Tuli (Date: 30.04.2017) ******************************************************@
+
+@using FactoryManagement.Helpers
+@model IEnumerable<FactoryManagement.Models.View_Dispacth_Item_Details>
+@{
+    int count = 0;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int userCount = 0;
+}
+<div class="k-edit-form-container col-md-10 col-sm-10 col-xs-10" style="margin-bottom:4%;">
+    @if (ViewBag.hasdisId == true)
+    {
+        <table class="table table-bordered table-condensed">
+            <tr>
+                <th width="10%">#</th>
+                <th width="10%">Dispatched Quantity</th>
+                <th width="10%">Return Quantity</th>
+                <th width="10%">Assigned With</th>
+                <th width="10%">Used Quantity</th>
+            </tr>
+            @foreach (var item in Model)
+            {
+                userCount = 0;
+                count++;
+                string assignedWith = "";
+                var receivedUserList = db.DispatchedItemAssignUsers.Where(m => m.DispatchItemId == item.Id).ToList();
+                if (item.MachineId > 0)
+                {
+                    assignedWith = "Machine : " + db.MachineLists.Where(m => m.MachineId == item.MachineId).Select(m => m.MachineAcronym).FirstOrDefault();
+                }
+                if (item.DeptId > 0)
+                {
+                    var deptdetail = db.DepartmentLists.Where(m => m.DeptId == item.DeptId).FirstOrDefault();
+                    var unitname = "";
+                    if (deptdetail.UnitId > 0)
+                    {
+                        unitname = "Unit : (" + db.Site_Unit_Lists.Where(m => m.UnitId == deptdetail.UnitId).Select(m => m.UnitName).FirstOrDefault() + " )";
+                    }
+                    else
+                    {
+                        unitname = "Site : (" + db.SiteLists.Where(m => m.Id == deptdetail.SiteId).Select(m => m.SiteName).FirstOrDefault() + " )";
+                    }
+                    assignedWith = unitname + " Dept. : " + db.DepartmentLists.Where(m => m.DeptId == item.DeptId).Select(m => m.DeptName).FirstOrDefault();
+                }
+                if (item.OrderId > 0)
+                {
+                    assignedWith = "Business Order : " + db.BusinessOrderLists.Where(m => m.BusinessOrderId == item.OrderId).Select(m => m.OrderName).FirstOrDefault();
+                }
+                if (item.LineId > 0)
+                {
+                    assignedWith = "Line : " + db.LineInfoes.Where(m => m.LineId == item.LineId).Select(m => m.LineAcronym).FirstOrDefault();
+                }
+                <tr>
+                    <td>@count. </td>
+                    <td>@item.Quantity @item.UnitName</td>
+                    <td>@item.ReturnQuantity @item.UnitName</td>
+                    <td>@assignedWith</td>
+                    <td>@item.UsedQuan @item.UnitName</td>
+                  
+                    @*<td>
+                        @if (receivedUserList.Count() == 0)
+                        {
+                            receivedUserList = db.DispatchedItemAssignUsers.Where(m => m.DispatchId == item.DispatchedId).ToList();
+                        }
+                        @foreach (var u in receivedUserList)
+                        {
+                            userCount++;
+                            var userInfo = db.View_UserLists.Where(m => m.UserId == u.UserId).FirstOrDefault();
+                            <label style="width:100%!important;font-weight:normal;">@userCount. @userInfo.UserName</label>
+                        }
+                    </td>*@
+                </tr>
+            }
+        </table>
+    }
+    else
+    {
+        <table class="table table-bordered table-condensed">
+            <tr>
+                <th width="5%">#</th>
+                <th width="10%">Voucher Name</th>
+                <th width="9%">Dispatched Quantity</th>
+                <th width="9%">Return Quantity</th>
+                <th width="9%">Used Quantity</th>
+                <th width="13%">Assigned With</th>
+            </tr>
+            @foreach (var item in Model)
+            {
+                userCount = 0;
+                count++;
+                string assignedWith = "";
+                var receivedUserList = db.DispatchedItemAssignUsers.Where(m => m.DispatchItemId == item.Id).ToList();
+                if (item.MachineId > 0)
+                {
+                    assignedWith = "Machine : " + db.MachineLists.Where(m => m.MachineId == item.MachineId).Select(m => m.MachineAcronym).FirstOrDefault();
+                }
+                if (item.DeptId > 0)
+                {
+                    var deptdetail = db.DepartmentLists.Where(m => m.DeptId == item.DeptId).FirstOrDefault();
+                    var unitname = "";
+                    if (deptdetail.UnitId > 0)
+                    {
+                        unitname = "Unit : (" + db.Site_Unit_Lists.Where(m => m.UnitId == deptdetail.UnitId).Select(m => m.UnitName).FirstOrDefault() + " )";
+                    }
+                    else
+                    {
+                        unitname = "Site : (" + db.SiteLists.Where(m => m.Id == deptdetail.SiteId).Select(m => m.SiteName).FirstOrDefault() + " )";
+                    }
+                    assignedWith = unitname + " Dept. : " + db.DepartmentLists.Where(m => m.DeptId == item.DeptId).Select(m => m.DeptName).FirstOrDefault();
+                }
+                if (item.OrderId > 0)
+                {
+                    assignedWith = "Business Order : " + db.BusinessOrderLists.Where(m => m.BusinessOrderId == item.OrderId).Select(m => m.OrderName).FirstOrDefault();
+                }
+                if (item.LineId > 0)
+                {
+                    assignedWith = "Line : " + db.LineInfoes.Where(m => m.LineId == item.LineId).Select(m => m.LineAcronym).FirstOrDefault();
+                }
+                <tr>
+                    <td>@count. </td>
+                    <td><a href="@Html.EncodedParam("DispatchHistoryDetails","StoreProduct",new {id=item.DispatchedId },null)">@item.VoucherName</a></td>
+                    <td>@item.Quantity @item.UnitName</td>
+                    <td>@item.ReturnQuantity @item.UnitName</td>
+                    <td>@item.UsedQuan @item.UnitName</td>
+                    <td>@assignedWith</td>
+                    @*<td>
+                        @if (receivedUserList.Count() == 0)
+                        {
+                            receivedUserList = db.DispatchedItemAssignUsers.Where(m => m.DispatchId == item.DispatchedId).ToList();
+                        }
+                        @foreach (var u in receivedUserList)
+                        {
+                            userCount++;
+                            var userInfo = db.View_UserLists.Where(m => m.UserId == u.UserId).FirstOrDefault();
+                            <label style="width:100%!important;font-weight:normal;">@userCount. @userInfo.UserName</label>
+                        }
+                    </td>*@
+                </tr>
+            }
+        </table>
+    }
+</div>
+
+

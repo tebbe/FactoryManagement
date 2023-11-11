@@ -1,0 +1,134 @@
+﻿
+
+@******************************** Created By Jerin Jahan (Date:09.12.2016) *********************************@
+@model IEnumerable<FactoryManagement.ModelView.HR.View_Attendance_BCRModelView>
+@{
+    var count = 1;
+
+    //***************** For Current Month Date Calculation *****************************
+    int total_work_days_full_month = 0;
+    List<string> total_days_fullmoth = new List<string>();
+    List<string> total_days_till_today = new List<string>();
+    List<string> dayslist_for_week = new List<string>();
+    int offset = Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["localTime"]);
+    DateTime now = DateTime.UtcNow.AddMinutes(offset);
+    var startDate = new DateTime(now.Year, now.Month, 1);
+    var endDate = now.Date;
+    for (DateTime date = startDate; date <= now; date = date.AddDays(1))
+    {
+        total_days_fullmoth.Add(date.ToShortDateString());
+        total_work_days_full_month++;
+
+        //if (dayslist_for_week.Contains(date.DayOfWeek.ToString()))
+        //{
+        //    total_days_fullmoth.Add(date.ToShortDateString());
+        //    total_work_days_full_month++;
+        //}
+    }
+
+
+
+
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int sceduleId = Convert.ToInt32(ViewBag.wrk_scdl_id);
+    int week_days = 0;
+    if (sceduleId > 0)
+    {
+        week_days = db.WorkingDayLists.Where(m => m.WorkingScheduleId == sceduleId).Count();
+        dayslist_for_week = db.WorkingDayLists.Where(m => m.WorkingScheduleId == sceduleId).Select(m => m.Day).ToList();
+    }
+
+}
+<style>
+    .table-bordered thead tr,.table-bordered thead tr th{
+    border:1px solid #ddd!important;
+    }
+    .table-bordered tbody tr, .table-bordered tbody tr td{
+        border: 1px solid #ddd !important;
+    }
+</style>
+<p style="color:#5a7391">@now.ToString("MMMM yyyy")</p>
+@if (Model.Count() > 0)
+{
+    <table class="table table-hover table-bordered table-striped" id="tbl_user_attendBCR">
+        <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>In Date & Times</th>
+            <th>Out Date & Times</th>
+            @*<th>Date & Time<span class="" id="btn_date_up"></span></th>*@
+            <th>Status<span class="" id="btn_icon"></span></th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            var in_tym = (item.IsIN) ? item.EntryDateTimeFormate : db.View_Attendance_BCR.Where(m => m.Dates == item.Dates && m.IsIN == true).Select(m => m.EntryDateTimeFormate).FirstOrDefault();
+            var out_tym = (!item.IsIN) ? item.EntryDateTimeFormate : db.View_Attendance_BCR.Where(m => m.Dates == item.Dates && m.IsIN == false).Select(m => m.EntryDateTimeFormate).FirstOrDefault();
+            <tr>
+                <td>@count.</td>
+                <td>@item.Dates</td>
+                <td>@in_tym</td>
+                <td>@out_tym</td>
+                @* <td>@item.EntryDateTimeFormate</td>*@
+                <td>@item.EntryType</td>
+            </tr>
+            count++;
+        }
+    </table>
+}
+else
+{
+    <table class="table table-hover table-bordered table-striped" id="tbl_user_attend">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Date</th>
+                <th>In Date & Times</th>
+                <th>Out Date & Times</th>
+                @*<th>Status<span class="" id="btn_icon"></span></th>*@
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in total_days_fullmoth)
+            {
+                string in_tym = "", out_tym = "";
+                //var in_tym = (item.IsIN) ? item.EntryDateTimeFormate : db.View_Attendance_BCR.Where(m => m.Dates == item.Dates && m.IsIN == true).Select(m => m.EntryDateTimeFormate).FirstOrDefault();
+                //var out_tym = (!item.IsIN) ? item.EntryDateTimeFormate : db.View_Attendance_BCR.Where(m => m.Dates == item.Dates && m.IsIN == false).Select(m => m.EntryDateTimeFormate).FirstOrDefault();
+                <tr>
+                    <td>@count.</td>
+                    <td>@item</td>
+                    <td>@in_tym</td>
+                    <td>@out_tym</td>
+                    <td>Absent</td>
+                </tr>
+                count++;
+            }
+        </tbody>
+
+    </table>
+}
+<script>
+    $(document).ready(function () {
+        if (up) {
+            $("#btn_icon").addClass('k-icon k-i-arrow-n');
+        }
+        else {
+            $("#btn_icon").addClass('k-icon k-i-arrow-s');
+        }
+    });
+    $("#btn_icon").click(function () {
+        if (up) {
+            $("#tab1AttendanceList").empty();
+            $("#tab1AttendanceList").append('<div class="loading_half"></div>');
+            var sendData = { UserId: selectedUserId, status: "out" };
+            $("#tab1AttendanceList").load('@Url.Action("UserAllAttendList", "HumanResource")', sendData);
+            up = false;
+        } else {
+            $("#tab1AttendanceList").empty();
+            $("#tab1AttendanceList").append('<div class="loading_half"></div>');
+            var sendData = { UserId: selectedUserId, status: "in" };
+            $("#tab1AttendanceList").load('@Url.Action("UserAllAttendList", "HumanResource")', sendData);
+            up = true;
+        }
+    });
+</script>

@@ -1,0 +1,23 @@
+﻿
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="divForCardInfoedit">
+    <div id="show_card_info"></div>
+    <div class="k-edit-buttons k-state-default">
+        @*<button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_EditCardInfo"><span class="k-icon k-update"></span>Update</button>*@
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_CardInfoEdit"><span class="k-icon k-update"></span>Update</button>
+        <button type="reset" class="k-button k-button-icontext k-grid-update" id="btn_RefreshCardInfo"><span class="k-icon k-i-refresh"></span>Refresh</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_CancelCardInfo"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+            $("#show_card_info").load('@Url.Action("EditCardInformation", "HumanResource")?UserId=' + '@ViewBag.UserId');
+     });
+    $("#btn_RefreshCardInfo").click(function () {
+            $("#show_card_info").empty();
+            $("#show_card_info").append('<div class="tiny_loading"></div>');
+            $("#show_card_info").load('@Url.Action("EditCardInformation", "HumanResource")?UserId=' + '@ViewBag.UserId');
+            $("#show_card_info").show();
+    });
+ 
+</script>

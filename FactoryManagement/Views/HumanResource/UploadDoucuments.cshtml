@@ -1,0 +1,270 @@
+﻿
+
+@******************************************* Tasnim Tuli (1 Feb,2017 )**********************@
+
+<style>
+    .uploadFileName {
+        cursor: pointer;
+        font-size: .9em;
+        float: left;
+        width: 95%;
+        height: 25px;
+        -ms-text-overflow: ellipsis;
+        -o-text-overflow: ellipsis;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        margin-top: 20px;
+        font-weight: normal;
+    }
+
+    .uploadedfilechange {
+        cursor: pointer;
+        font-weight: normal;
+    }
+
+    .file-icon {
+        display: inline-block;
+        float: left;
+        width: 48px;
+        height: 48px;
+        margin-left: 10px;
+        margin-top: 13.5px;
+    }
+
+    .p-icon {
+        display: inline-block;
+        width: 36px;
+        height: 36px;
+        overflow: hidden;
+        background-repeat: no-repeat;
+        font-size: 0;
+        line-height: 0;
+        text-align: center;
+        -ms-high-contrast-adjust: none;
+    }
+
+    .k-filename {
+        position: relative;
+        display: inline-block;
+        min-width: 10em;
+        max-width: 80%;
+        vertical-align: middle;
+        margin-left: 1em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    li.k-file .file-wrapper .k-upload-action {
+        position: absolute;
+        top: 0;
+        right: 0;
+    }
+
+    li.k-file div.file-wrapper {
+        position: relative;
+        height: 75px;
+    }
+
+    .img-file {
+        background-image: url(/content/web/upload/jpg.png);
+    }
+
+    .doc-file {
+        background-image: url(/content/web/upload/doc.png);
+    }
+
+    .pdf-file {
+        background-image: url(/content/web/upload/pdf.png);
+    }
+
+    .xls-file {
+        background-image: url(/content/web/upload/xls.png);
+    }
+
+    .zip-file {
+        background-image: url(/content/web/upload/zip.png);
+    }
+
+    .default-file {
+        background-image: url(/content/web/upload/default.png);
+    }
+</style>
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:2%;margin-top:2%;" id="Div_For_document_upload">
+    <div class="editor-label"><label>Upload Document/s</label></div>
+    <div class="editor-field">
+        <div class="demo-section">
+            @(Html.Kendo().Upload()
+                                .Name("files")
+                                .TemplateId("fileTemplate")
+                                .HtmlAttributes(new { @style = "width:100%" })
+                                .Multiple(true)
+                                .Async(a => a.Save("UserDocumentFileSave", "HumanResource")
+                                .AutoUpload(true))
+                                .Events(m => m.Upload("onUploadUserFile"))
+                                .HtmlAttributes(new { accept = ".doc, .docx, .pdf, .ppt, .pptx,.jpg, .png, .jpeg, .bmp " }))
+            <span class="field-validation-valid text-danger"
+                  data-valmsg-for="files" data-valmsg-replace="true" style="display: none;"></span>
+        </div>
+   </div>
+    <div class="k-edit-buttons k-state-default">
+    <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnDocumentUpload"><span class="k-icon k-update"></span>Save</button>
+        <button type="button" class="k-button k-button-icontext k-grid-update" id="btnDocumentUploadRefresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+    <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnDocumentUploadCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+   </div>
+</div>
+<script id="fileTemplate" type="text/x-kendo-template">
+    <div class='file-wrapper'>
+        <label class="col-sm-1 col-xs-1" style="padding-left:0px!important;">
+            <span class='file-icon #=addExtensionClass(files[0].extension)#'></span>
+        </label>
+        <label class="col-sm-8 col-xs-8"><span class='uploadFileName'>#=name#</span></label>
+        <label class="col-sm-8 col-xs-8" style="margin-top:20px;display:none;">
+            <input type="text" class="form-control k-textbox"
+                   data-val-required="*"
+                   id="txtFileName" name="txtFileName"
+                   value="#=name.substring(0, name.lastIndexOf('.'))#" />
+            <span class="k-icon k-i-tick fileRenameTick" style="cursor:pointer;" data-extension="#=name.split('.').pop()#"></span>
+            <span class="k-icon k-i-close fileRenameTickClose" style="cursor:pointer;"></span>
+        </label>
+        <div class="col-sm-1 col-xs-1" style="text-align:right;padding-right:0px!important;padding-left:0px!important;">
+            <span data-toggle="tooltip" title="Remove File" class="k-icon k-i-close fileRemove" style="cursor:pointer;"></span>
+        </div>
+    </div>
+   
+</script>
+<script>
+    allMainFile = [];
+    $('[data-toggle="tooltip"]').tooltip();
+    $("#Div_For_document_upload").on("click", ".uploadFileName", function (e) {
+        e.preventDefault();
+        var str = $(this).text();
+        var rest = str.substring(0, str.lastIndexOf("."));
+        $(this).parent('label').next('label').css("display", "inline");
+        $(this).parent('label').next('label').children('input').val(rest);
+        $(this).parent('label').css("display", "none");
+        $(this).parent('label').next('label').children('.field-validation-error').hide();
+    });
+    $("#Div_For_document_upload").on("click", ".fileRenameTick", function (e) {
+        e.preventDefault();
+        var inputval = $(this).siblings('input').kendoValidator().data("kendoValidator");
+        if (inputval.validate()) {
+            var ext = $(this).data("extension");
+            var reName = $(this).siblings('input').val() + "." + ext;
+            $(this).parent('label').prev('label').children('span').text(reName);
+            $(this).parent('label').css("display", "none");
+            $(this).parent('label').prev('label').css("display", "inline");
+        }
+    });
+    $("#Div_For_document_upload").on("click", ".fileRenameTickClose", function (e) {
+        e.preventDefault();
+        $(this).parent('label').css("display", "none");
+        $(this).parent('label').prev('label').css("display", "inline");
+    });
+    $("#Div_For_document_upload").on("click", ".fileRemove", function (e) {
+        e.preventDefault();
+        $(this).parent('div').parent('div').parent('li').remove();
+        var uid = $(this).parent('div').parent('div').parent('li').data("uid");
+        $.each(allMainFile, function (i, el) {
+            if (this.uid === uid) {
+                allMainFile.splice(i, 1);
+            }
+        });
+    });
+
+    function addExtensionClass(extension) {
+        switch (extension) {
+            case '.jpg':
+            case '.img':
+            case '.png':
+            case '.gif':
+                return "img-file";
+            case '.doc':
+            case '.docx':
+                return "doc-file";
+            case '.xls':
+            case '.xlsx':
+                return "xls-file";
+            case '.pdf':
+                return "pdf-file";
+            case '.zip':
+            case '.rar':
+                return "zip-file";
+            default:
+                return "default-file";
+        }
+    };
+    var validation = $("#Div_For_document_upload").kendoValidator({
+        rules: {
+            upload: function (input) {
+                if (input[0].type == "file" && input.is("[name=files]")) {
+                    return input.closest(".k-upload").find(".k-file").length;
+                }
+                return true;
+            }
+        },
+        messages: {
+            upload: "Please select document"
+        }
+
+    }).data("kendoValidator");
+    $("#btnDocumentUpload").click(function () {
+        if (validation.validate()) {
+            notification.show({ message: "Document uploading...", showTime: startTime() }, "upload-progress");
+            var str = [];
+            $('.uploadFileName').each(function () {
+                str.push($(this).text());
+            });
+            var sendData = new FormData();
+            sendData.append("UserId", EmpId);
+            sendData.append("AllFilename", JSON.stringify(str));
+            sendData.append("FileName", $("#FileName").val());
+            sendData.append("FileOriginalName", $("#FileOriginalName").val());
+            sendData.append("CreatedBy", userId);
+            for (var i = 0; i < allMainFile.length; i++) {
+                sendData.append("files[" + i + "]", allMainFile[i].rawFile);
+
+            }
+            $.ajax({
+                url: '@Url.Action("UserDocumentSave", "HumanResource")',
+                type: "POST",
+                data: sendData,
+                dataType: 'json',
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    if (response === 'Success') {
+                        notification.show({ message: "Document has been successfully uploaded.", showTime: startTime() }, "upload-success");
+                        $("#tab1doc").empty();
+                        $("#tab1doc").append('<div class="loading_half"></div>');
+                        $("#tab1doc").load('@Url.Action("_UserDocuments", "HumanResource")?UserId=' + EmpId);
+                    } else {
+                        notification.show({ message: "Document upload was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                    $("#btnDocumentUpload").closest(".k-window-content").data("kendoWindow").close();
+                    $("#Div_For_document_upload").empty();
+                    $("#Div_For_document_upload").remove();
+                    $("#win_for_uploader").remove();
+                },
+                error: function (error) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+    $("#btnDocumentUploadCancel").click(function (e) {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+       // $("#Div_For_document_upload").remove();
+        $("#Div_For_document_upload").empty();
+      //  $("#win_for_uploader").remove();
+        $("#win_for_uploader").empty();
+    });
+</script>
+
+

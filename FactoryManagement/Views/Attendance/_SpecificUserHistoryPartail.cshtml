@@ -1,0 +1,240 @@
+﻿
+@************************************** Created By Jerin Jahan (Date:22.12.2016)  ***************************************@
+@model IEnumerable<FactoryManagement.Models.View_Daily_Attendance>
+@{
+    var count = 0;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    long userId = ViewBag.UserId;
+}
+<style>
+    .k-edit-field, .k-edit-form-container .editor-field {
+        width: 70% !important;
+    }
+
+    /*#tbl_Spec_Atten td,#tbl_Spec_Atten th {
+        border: none !important;
+    }*/
+</style>
+@if (ViewBag.option == "win")
+{
+                    if (Model.Count() <= 0)
+                    {
+                    <span>
+                        <h3>No Records to Display</h3>
+                        @if (db.View_Daily_Attendance.Where(x => x.UserId == userId).Any())
+                        {
+                            <button class="btn green" onclick="clearFilter()">Back</button>
+                        }
+                        else
+                        {
+                            @*<button type="button" class="k-button k-button-icontext k-grid-cancel k-window-action k-link" id="btn_Close_no_date"><span class="k-icon k-cancel"></span>Cancel</button>
+                            <script>
+                        $("#btn_Close_no_date").click(function () {
+                            $(this).closest(".k-window-content").data("kendoWindow").close();
+                        });
+                            </script>*@
+                        }
+                    </span>
+                    
+                    }
+                    else
+                    {
+                    <div class="row">
+                    <div class="col-sm-12 col-xs-12" style="float:right;padding-right:0px;padding-top:7px;">
+                        <table class="table table-bordered table-hover table-responsive table-condensed table-striped" id="tbl_Spec_Atten">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Employee Name</th>
+                                    <th>Attendance Type</th>
+                                    <th>
+                                        Date <span id="filter_by_Date_ICON" style="float:right;color:dodgerblue;cursor:pointer">
+                                            <i class="glyphicon glyphicon-filter">
+                                            </i>
+                                        </span>
+                                    </th>
+                                    <th>Time</th>
+                                    <th>Inserted By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var list in Model)
+                                {
+                                    count++;
+                                    <tr>
+                                        <td>@count . </td>
+                                        <td>@list.UserName</td>
+                                        <td>
+                                            @if (list.AttType == 1)
+                                            {
+                                                <span>Present</span>
+                                            }
+                                            else if (list.AttType == 2)
+                                            {
+                                                <span>Absent</span>
+                                            }
+                                            else
+                                            {
+                                                <span>Leave</span>
+                                            }
+                                        </td>
+                                        <td>@Convert.ToDateTime(list.AttDate).ToString("MMM dd, yyyy")</td>
+                                        <td>@list.AttTime</td>
+                                        <td>@list.InsertedUserName</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div></div>
+                    <script id="temp_show_dateFilter" type="text/x-kendo-template">
+                        <table class="table">
+                            <tr>
+                                <td class="tdLeft">
+                                    From Date
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <input id="fromDate" style="width: 100%" value="@ViewBag.fromDate" onchange="fromDateChange()" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="tdLeft">
+                                    To Date
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <input id="toDate" style="width: 100%" value="@ViewBag.toDate" onchange="toDateChange()" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" class="tdLeft">
+                                    <button class="btn green" type="button" onclick="filterbyDates()"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
+                                    <button class="btn red" id="clearateFilter" onclick="clearFilter()"><i class="fa fa-refresh" aria-hidden="true"></i> Clear</button>
+                                </td>
+                            </tr>
+                        </table>
+                    </script>
+                    @(Html.Kendo().Tooltip()
+    .For("#filter_by_Date_ICON")
+    .Filter("i")
+    .ContentTemplateId("temp_show_dateFilter")
+    .Position(TooltipPosition.Bottom)
+    .AutoHide(false)
+ .ShowOn(TooltipShowOnEvent.Click)
+                    )
+                    <script>
+
+                            function fromDateChange() {
+                                $('#toDate').kendoDatePicker({
+                                    min: ($("#fromDate").val() != null && $("#fromDate").val() != '') ? new Date($("#fromDate").val()) : new Date(),
+                                    format: "MMMM dd yyyy",
+                                    max:new Date()
+                                });
+                                fromDate = $("#fromDate").val();
+                                toDate =  $("#toDate").val();
+                                if (fromDate != null && fromDate != "" && toDate != null && toDate != "" && toDate >= fromDate) {
+                                    filterbyDates();
+                                }
+                            }
+                            function toDateChange() {
+                                $('#fromDate').kendoDatePicker({
+                                    max: ($("#toDate").val() != null && $("#toDate").val() != '' && $("#toDate").val() != 'undefined' && new Date($("#toDate").val())) ? new Date($("#toDate").val()) : new Date(),
+                                    format: "MMMM dd yyyy"
+                                });
+                                fromDateChange();// $("#fromDate").change();
+                            };
+                            function filterbyDates() {
+                                var param = {
+                                    UserId: '@userId',
+                                    FromDate: fromDate,
+                                    ToDate: toDate,
+                                    option:'win'
+                                }
+                                $("#filter_by_Date_ICON_tt_active").remove();
+                                $(".k-tooltip-closable").remove();
+                                $("#div_Spec_Attend_his").empty();
+                                $("#div_Spec_Attend_his").append('<div class="loading_partial"></div>');
+                                $("#div_Spec_Attend_his").load('@Url.Action("_SpecificUserHistoryPartail", "Attendance")', param);
+                            }
+        $("#filter_by_Date_ICON").click(function () {
+            $("#fromDate").kendoDatePicker({
+                max: new Date(),
+                format: "MMMM dd yyyy"
+            })
+            if ('@ViewBag.fromDate' != null && '@ViewBag.fromDate!=""') {
+                $("#toDate").kendoDatePicker({
+                    min:new Date('@ViewBag.fromDate'),
+                    format: "MMMM dd yyyy",
+                    max:new Date()
+                });
+            } else {
+                $("#toDate").kendoDatePicker({
+                    min: ($("#fromDate").val() != null && $("#fromDate").val() != "") ? new Date($("#fromDate").val()) : new Date(),
+                    format: "MMMM dd yyyy",
+                    max:new Date()
+                });
+            }
+        });
+                    </script>
+                    }
+            }
+else
+{
+    <table class="table table-condensed" id="tbl_Pack_Details">
+        <tr>
+            <th>SL.</th>
+            <th>Employee Name</th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+        @foreach (var list in Model)
+        {
+            count++;
+            <tr>
+                <td>@count . </td>
+                <td>@list.UserName</td>
+                <td>
+                    @if (list.AttType == 1)
+                    {
+                        <span>Present</span>
+                    }
+                    else if (list.AttType == 2)
+                    {
+                        <span>Absent</span>
+                    }
+                    else
+                    {
+                        <span>Leave</span>
+                    }
+                </td>
+                <td>@Convert.ToDateTime(list.AttDate).ToString("MMM dd, yyyy")</td>
+                <td>@list.AttTime</td>
+                <td>@list.InsertedUserName</td>
+            </tr>
+        }
+    </table>
+}
+<script>
+    function clearFilter() {
+            fromDate = null;
+            toDate = null;
+            $("#btn_All").click();
+            @*var param = {
+                UserId: '@userId',
+                FromDate: fromDate,
+                ToDate: toDate,
+                option: 'win'
+            }
+            $("#filter_by_Date_ICON_tt_active").remove();
+            $(".k-tooltip-closable").remove();
+            $("#div_Spec_Attend_his").empty();
+            $("#div_Spec_Attend_his").append('<div class="loading_half"></div>')
+            $("#div_Spec_Attend_his").load('@Url.Action("_SpecificUserHistoryPartail", "Attendance")', param);*@
+        };
+    total_spec_user_atten = '@(ViewBag.TotalUser)';
+    show_spec_user_atten = '@(count)';
+    </script>

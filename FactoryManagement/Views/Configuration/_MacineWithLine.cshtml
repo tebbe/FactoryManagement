@@ -1,0 +1,64 @@
+﻿@******************************** Created By (Jerin Jahan) Date (17.09.2016) *******************************@
+<div id="tv_Site_list" class="tvCustomClass" style="margin-top:0px!important;"></div>
+<script>
+    var isCom = false;
+    $(document).ready(function () {
+        var line = {
+            transport: {
+                read: {
+                    url: "/Configuration/GetAllLine",
+                    type: "GET",
+                    data: function (e) {
+                        var tree = $("#tv_Site_list").getKendoTreeView();
+                        var item = tree.dataSource.get(e.id);
+                        if (item) {
+                            return { deptId: item.id };
+                        }
+                    }
+                }
+            },
+            schema: {
+                model:
+                    {
+                        hasChildren: "hasLine",
+                        id: "id",
+                        children: line
+                    }
+            }
+        };
+        var deptList = {
+            transport: {
+                read: {
+                    url: "/Configuration/GetAllDept",
+                    type: "GET",
+                    data: function (e) {
+                        var tree = $("#tv_Site_list").getKendoTreeView();
+                        var item = tree.dataSource.get(e.id);
+                        if (item.isComposite) { isCom = true; } else { isCom = false; }
+                        if (item) {
+                            var site = item.siteId + "-" + item.isComposite;
+                            return { site: site };
+                        }
+                    }
+                }
+            },
+            schema: {
+                model:
+                    {
+                        hasChildren: "hasLine",
+                        children: isCom ? deptList : line,
+                        id: "id"
+                    }
+            }
+        };
+        var siteList = {
+            transport: { read: { url: "@Url.Action("GetAllSiteList", "Configuration")", type: "GET" } },
+            schema: { model: { hasChildren: "hasChild", id: "id", children: deptList } }
+        };
+        $("#tv_Site_list").kendoTreeView({
+            template: kendo.template($("#templateForRight").html()),
+            dataSource: siteList
+        });
+
+    });
+</script>

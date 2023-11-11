@@ -1,0 +1,148 @@
+﻿
+@{
+    ViewBag.Title = "AllAcceptLog";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Inventory/DisItemReturnFromMachine"> All Accept Log</a>
+            
+        </li>
+     
+            
+        
+    </ul>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">All Accept Log</span>
+                </div>
+                <div class="actions">
+                    <button id="print_dates" class="btn green">
+                        <i class="fa fa-print"> </i>
+                        Print
+                    </button>
+                    <label class="green" id="IdForDateStatus"></label>
+                    <div class="btn-group btn-group-devided" data-toggle="buttons">
+                        <div id="reportrange" class="pull-right" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
+                            <span></span> <b class="caret"></b>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="portlet-body">         
+                <div id="All_accpt_his"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="tran_details"></div>
+<script>
+    var start = moment();
+    var end = moment().subtract(1, 'days');
+    $(document).ready(function () {
+        $("#All_accpt_his").empty();
+        $("#All_accpt_his").append('<div class="loading_partial"></div>');
+        $("#All_accpt_his").load('@Url.Action("_AllAcceptLog", "Inventory")');
+        $("#liForInventory").addClass('active');
+      
+        $('#reportrange').daterangepicker({
+            startDate: start,
+            endDate: end,
+            ranges: {
+                'All': [moment(), moment().subtract(1, 'days')],
+                'Today': [moment(), moment()],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            }
+        }, cb);
+
+        cb(start, end);
+        start = moment(); end = moment();
+
+        $('.ranges').on("click", "li", function () {
+          
+            var day = $(this).data("range-key");
+            if (day == "All") {
+                $("#All_accpt_his").empty();
+                $("#All_accpt_his").append('<div class="loading_partial"></div>');
+                $("#All_accpt_his").load('@Url.Action("_AllAcceptLog", "Inventory")');
+            } else {
+                if (day == "Today") {
+                    $("#All_accpt_his").empty();
+                    $("#All_accpt_his").append('<div class="loading_partial"></div>');
+                    $("#All_accpt_his").load('@Url.Action("_AllAcceptLog", "Inventory")?day=0');
+                } else if (day == "Last 7 Days") {
+                    $("#All_accpt_his").empty();
+                    $("#All_accpt_his").append('<div class="loading_partial"></div>');
+                    $("#All_accpt_his").load('@Url.Action("_AllAcceptLog", "Inventory")?day=7');
+                } else if (day == "Last 30 Days") {
+                    $("#All_accpt_his").empty();
+                    $("#All_accpt_his").append('<div class="loading_partial"></div>');
+                    $("#All_accpt_his").load('@Url.Action("_AllAcceptLog", "Inventory")?day=30');
+                }
+            }
+        });
+        $(".applyBtn").click(function () {
+            var startDate = $("[name=daterangepicker_start]").val();
+            var endDate = $("[name=daterangepicker_end]").val();
+            $("#All_accpt_his").empty();
+            $("#All_accpt_his").append('<div class="loading_partial"></div>');
+            $("#All_accpt_his").load('@Url.Action("_AllAcceptLog", "Inventory")?startDate=' + startDate+"&endDate="+endDate);
+        });
+    });
+    function cb(start, end) {
+        if (start == null && end == null) {
+            $('#reportrange span').html("All");
+            $("#IdForDateStatus").empty();
+            return;
+        }
+        else if ((!start._isValid && !end._isValid)) {
+            $('#reportrange span').html("All");
+            $("#IdForDateStatus").empty();
+            return;
+        } else if (start._d > end._d) {
+            $('#reportrange span').html("All");
+            $("#IdForDateStatus").empty();
+            return;
+        }
+        $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+    }
+   
+    $("#All_accpt_his").on("click", ".return_Tran_Name", function () {
+        var id = $(this).data("id");
+        $("#tran_details").empty();
+        $("#tran_details").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '20%',
+            title: 'Return Reason',
+            close: onWindowClose
+        });
+        $("#tran_details").html('<div class="partial_loading_half"></div>');
+        var Win_unit_Add = $("#tran_details").data("kendoWindow");
+        Win_unit_Add.refresh({ url: "/Inventory/ShowReturnReason?Id=" + id });
+        Win_unit_Add.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+    $("#print_dates").click(function () {
+        var startDate = $("[name=daterangepicker_start]").val();
+        var endDate = $("[name=daterangepicker_end]").val();
+        window.open("/Inventory/AcceptLogPrint?startDate="+startDate+"&endDate="+endDate, "_blank")
+    });
+</script>

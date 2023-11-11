@@ -1,0 +1,307 @@
+﻿
+
+
+
+
+
+
+@************************************** Created By Jerin Jahan (Date:18.08.2016)  ***************************************@
+
+
+
+@model FactoryManagement.ModelView.SalaryConfig.SalaryAccAddModelView
+
+<h4>Add New Account Type</h4><hr />
+<div id="DivForSalaryAccAdd">
+
+    @Html.HiddenFor(m => m.AllMonthName)
+    @Html.HiddenFor(m => m.AccPayType)
+    @Html.HiddenFor(m => m.IsBaseSalary)
+    @Html.HiddenFor(m => m.CatagoryName)
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.Catagory, "Catagory", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4" })
+        <div class="col-md-6 col-sm-7">
+            @(Html.Kendo().DropDownListFor(model => model.Catagory)
+              .OptionLabel("--Select One--")
+              .DataTextField("Name")
+              .DataValueField("SalaryCatagoryId")
+              .DataSource(source =>
+              {
+                  source.Read(read =>
+                  {
+                      read.Action("GetSalaryCatagory", "SalaryConfig", new { HasBaseSalary = Model.IsBaseSalary, isBas=false });
+                  });
+              })
+              .Events(e => e.Change("onCatagoryChange"))
+              .HtmlAttributes(new { style = "width: 100%" })
+            )
+            @Html.ValidationMessageFor(model => model.Catagory, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group" id="Div_Acc_type">
+        @Html.LabelFor(model => model.AccountType,"Type", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4" })
+        <div class="col-md-6 col-sm-7">
+            @(Html.Kendo().DropDownListFor(model => model.AccountType)
+              .OptionLabel("--Select One--")
+              .DataTextField("AccountName")
+              .DataValueField("Id")
+              .DataSource(source =>
+              {
+                  source.Read(read =>
+                  {
+                      read.Action("GetSalaryAccountType", "SalaryConfig", new { IsBaseSalary = Model.IsBaseSalary });
+                  });
+              })
+              .Events(e => e.Change("onAccountTypeChange"))
+              .HtmlAttributes(new { style = "width: 100%" })
+            )
+            @Html.ValidationMessageFor(model => model.AccountType, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group" id="DivForName">
+        @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-4 col-sm-4" })
+        <div class="col-md-6 col-sm-4">
+            <div style="width:100%;float:left;">
+                @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control k-textbox", style = "width:50%!important;float:left;" } })
+                <span style="margin-left:10px;display:none;width:50%;font-weight:bold;" id="lblForCatagory"></span>
+            </div>
+            @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+        </div> 
+    </div>
+    <div class="form-group" id="DivForCheckBox">
+        <div class="col-md-offset-4 col-md-8">
+            <input id="SpMonth" name="AccPayTyp" type="radio" value="Specific Month" class="k-valid"> Specific Month
+            <span id="ckHoliday"><input id="Holiday" name="AccPayTyp" type="radio" value="Event" class="k-valid"> Event</span>
+            <input id="Annual" name="AccPayTyp" type="radio" value="Annual" class="k-valid"> Annual
+            @Html.ValidationMessageFor(model => model.AccPayType, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group" id="DivForSpMon" style="display:none;">
+        @Html.LabelFor(model => model.MonthId, htmlAttributes: new { @class = "control-label col-md-4 col-sm-4" })
+        <div class="col-md-6 col-sm-7">
+            @(Html.Kendo().MultiSelect()
+            .Name("AllMonthId")
+            .DataTextField("Text")
+            .DataValueField("Value")
+            .Placeholder("--Select One--")
+            .HtmlAttributes(new { style = "width:100%" })
+            .BindTo(
+                new List<SelectListItem>() {
+                new SelectListItem() {Text = "January",Value = "1-January"},
+                new SelectListItem() {Text = "February",Value = "2-February" },
+                new SelectListItem() {Text = "March",Value = "3-March"},
+                new SelectListItem() {Text = "April",Value = "4-April"},
+                new SelectListItem() {Text = "May",Value = "5-May" },
+                new SelectListItem() {Text = "June",Value = "6-June"},
+                new SelectListItem() {Text = "July",Value = "7-July"},
+                new SelectListItem() {Text = "August",Value = "8-August" },
+                new SelectListItem() {Text = "September",Value = "9-September"},
+                new SelectListItem() {Text = "October",Value = "10-October"},
+                new SelectListItem() {Text = "November",Value = "11-November" },
+                new SelectListItem() {Text = "December",Value = "12-December"}
+                })
+                .Events(e=>e.Select("OnMonthSelect").Change("OnMonthChange"))
+            )
+            @Html.ValidationMessageFor(model => model.AllMonthId, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group" id="DivForHoliday" style="display:none;">
+        @Html.LabelFor(model => model.HolidayId, htmlAttributes: new { @class = "control-label col-md-4 col-sm-4" })
+        <div class="col-md-6 col-sm-7">
+            @(Html.Kendo().DropDownListFor(model => model.HolidayId)
+                              .OptionLabel("--Select One--")
+                              .BindTo(ViewBag.HolidayId)
+                              .HtmlAttributes(new { style = "width:100%" })
+            )
+            @Html.ValidationMessageFor(model => model.HolidayId, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group" id="DivForAmount">
+        @Html.LabelFor(model => model.Amount, htmlAttributes: new { @class = "control-label col-md-4 col-sm-4" })
+        <div class="col-md-6 col-sm-4">
+            <input class="form-control k-textbox"
+                   id="Amount" name="Amount" type="text"
+                   min="1" value="" data-class="Amount"
+                   placeholder="Amount"
+                   data-val-regex="Invalid. Use only two digits after decimal point"
+                   data-val-regex-pattern="\d+(\.\d{1,2})?"
+                   data-val-length="Invalid number"
+                   data-val-length-max="15">
+            @Html.ValidationMessageFor(model => model.Amount, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group" id="DivForPercentage">
+        @Html.LabelFor(model => model.Percentage, htmlAttributes: new { @class = "control-label col-md-4 col-sm-4" })
+        <div class="col-md-6 col-sm-4">
+            <div style="width:100%;float:left;">
+                <input class="form-control k-textbox"
+                       id="Percentage" name="Percentage" type="text"
+                       min="1" value=""
+                       placeholder="Percentage"
+                       data-val-regex="Invalid. Use only two digits after decimal point"
+                       data-val-regex-pattern="\d+(\.\d{1,2})?"
+                       data-val-length="Invalid number"
+                       data-val-length-max="5"
+                       style="width:40%!important;float:left;">
+                <span style="margin-left:10px;"> % of @Model.BaseSalary </span>
+            </div>
+            @Html.ValidationMessageFor(model => model.Percentage, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.AccountType, "Type", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4" })
+        <div class="col-md-6 col-sm-7" style="padding-top:7px;">
+            <input id="Addition" name="AmountType" type="radio" value="Addition" class="k-valid"> Addition
+            <input id="Deduction" name="AmountType" type="radio" value="Deduction" class="k-valid"> Deduction
+            @Html.ValidationMessageFor(model => model.AmountType, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-offset-4 col-md-7 col-sm-offset-5 col-sm-7">
+            <input type="button" value="Save" class="k-button k-state-default" id="btnSaveAccount" />
+            <input type="reset" value="Refresh" class="k-button k-state-default" id="btnAddAccRefresh" />
+            <input type="button" value="Cancel" class="k-button k-state-default" id="btnAddAccCancel" />
+        </div>
+    </div>
+</div>
+<script>
+    var AllMonthId,IsAddition = true,AccPayType,AllMonthName=[];
+    $("#Addition").prop("checked",true);
+    $("#DivForPercentage").hide();
+
+    $("#SpMonth").click(function () {
+        if ($(this).is(":checked")) {
+            $("#DivForSpMon").show();
+            $("#DivForHoliday").hide();
+            $("#AccPayType").val(1)
+        }
+        else {
+            $("#DivForSpMon").hide();
+        }
+    });
+    $("#Holiday").click(function () {
+        if ($(this).is(":checked")) {
+            $("#DivForHoliday").show();
+            $("#DivForSpMon").hide();
+            $("#AccPayType").val(2)
+        }
+        else {
+            $("#DivForHoliday").hide();
+        }
+    });
+    $("#Annual").click(function () {
+        if ($(this).is(":checked")) {
+            $("#DivForHoliday").hide();
+            $("#DivForSpMon").hide();
+            $("#AccPayType").val(3)
+        }
+    });
+
+    $("#Addition").click(function () {
+        if ($(this).is(":checked")) {
+            IsAddition = true;
+        }
+        else {
+            IsAddition = false;
+        }
+    });
+    $("#Deduction").click(function () {
+        if ($(this).is(":checked")) {
+            IsAddition = false;
+        }
+        else {
+            IsAddition = true;
+        }
+    });
+
+    $("#btnSaveAccount").click(function () {
+        var validation = $("#DivForSalaryAccAdd").kendoValidator({
+            rules: {
+                accPayType: function (input) {
+                    if (input.attr('name') === "AccPayType" && $("#AccPayType").val() === '0') {
+                        return false;
+                    }
+                    return true;
+                },
+                amount: function (input) {
+                    if (input.attr('name') === "Amount" && !ispercentaile && $("#Amount").val() === '' && !isdynamic) {
+                        return false;
+                    }
+                    return true;
+                },
+                percentaile: function (input) {
+                    if (input.attr('name') === "Percentage" && ispercentaile && $("#Percentage").val() === '' && !isdynamic) {
+                        return false;
+                    }
+                    return true;
+                },
+                month: function (input) {
+                    if (input.attr('name') === "AllMonthId" && $("#AccPayType").val() === '1' && AllMonthName.length == 0) {
+                        return false;
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                accPayType:"Please select one type",
+                amount:"Please enter amount",
+                percentaile:"Please enter percentage",
+                month:"Please select month"
+            }
+        }).data("kendoValidator");
+        if (validation.validate()) {
+            notification.show({
+                message: "Account type adding...",showTime: startTime()}, "upload-progress");
+
+            var sendData = {PackageId:@Model.PackageId,Catagory:$("#Catagory").val(),CatagoryName:$("#CatagoryName").val(),
+                            AccountType:$("#AccountType").val(),IsBaseSalary:$("#IsBaseSalary").val(),
+                            Name:$("#Name").val(),AccPayType:$("#AccPayType").val(),
+                            AllMonthId:$("#AllMonthId").data("kendoMultiSelect").value().join(","),
+                            HolidayId:$("#HolidayId").val(),Amount:$("#Amount").val(),
+                            Percentage:$("#Percentage").val(),IsAddition:IsAddition,CreatedBy:userId};
+
+            $.ajax({
+                url: '@Url.Action("AddAccountWithSalaryPck", "SalaryConfig")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+
+                    notification.hide();
+                    notification.setOptions({autoHideAfter: 5000});
+
+                    if(data === "Success"){
+                        notification.show({message: "Account type '"+sendData.Name+"'  has been successfully added.", showTime: startTime()},"upload-success");
+                        $("#Div_Salay_Acc_Add").hide();
+                        $("#Div_Salay_Acc_Add").empty();
+
+                        $("#Div_Already_Add_Acc").empty();
+                        $("#Div_Already_Add_Acc").show();
+                        $("#Div_Already_Add_Acc").append('<div class="win_loading_half"></div>');
+                        $("#Div_Already_Add_Acc").load('@Url.Action("AddedAccountWithPackList", "SalaryConfig")?PackageId=' + '@(Model.PackageId)');
+                    }
+                    else{
+                        notification.show({message: "Account type '"+sendData.Name+"' addition was unsuccessful.", showTime: startTime()},"upload-error");
+                    }
+                },
+                error:function(err){
+                    notification.hide();
+                    notification.setOptions({autoHideAfter: 5000});
+                    notification.show({message: "Error occured.", showTime: startTime()},"upload-warning");
+                }
+            });
+
+
+
+        }
+    });
+    $("#btnAddAccRefresh").click(function(){
+        $("#Div_Salay_Acc_Add").load('@Url.Action("SalaryPackageAccAdd", "SalaryConfig")?HasBaseSalary=' + HasBaseSalary + '&PackageId=' + '@(Model.PackageId)');
+        $("#Div_Salay_Acc_Add").show();
+    });
+
+    $("#btnAddAccCancel").click(function(){
+        $("#Div_Salay_Acc_Add").empty();
+        $("#Div_Salay_Acc_Add").hide();
+    });
+</script>

@@ -1,0 +1,139 @@
+﻿@********************************************* Created By Jerin Jahan (28.09.2016) *******************************@
+
+@model IEnumerable<FactoryManagement.Models.View_All_Approved_AcquisitionList>
+@{
+    int ItemCount = 1;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int busId = ViewBag.busId;
+}
+
+<h4>All Item List </h4><hr />
+<table class="table table-bordered" id="tbl_all_Item">
+    <tbody>
+        <tr style="border:1px solid #ddd!important;">
+            <th width="8%">#</th>
+            <th width="40%">
+                <input id="selectallOrder"
+                       type="checkbox"
+                       style="cursor:pointer;">
+                Product Name
+            </th>
+            <th width="20%">Quantity</th>
+            <th>Status</th>
+            @*<th></th>*@
+        </tr>
+        @foreach (var item in Model)
+        {
+            int Recieve_Quantity = Convert.ToInt32(db.BusinessOrderProductLists
+                .Where(m => m.AcquisitionOrderId == item.AcquisitionId && m.BusinessOrderId == busId)
+                .Select(m => m.ReceivedQuantity).FirstOrDefault());
+            int remain_quan = Convert.ToInt32(item.Quantity) - Recieve_Quantity;
+            if (remain_quan > 0)
+            {
+                <tr class="tbl_tr">
+                    <th scope="row">@ItemCount.</th>
+                    <td>
+                        <input id="chk_@item.AcquisitionOrderId"
+                               name="chk_@item.AcquisitionOrderId"
+                               type="checkbox" value="@item.AcquisitionOrderId"
+                               data-productid="@item.ProductId"
+                               class="chkForAcquisitionId"
+                               style="cursor:pointer;">
+                        @item.ProductName
+                    </td>
+                    <td>
+                        <span class="k-icon k-i-arrow-n QuantyUp"
+                              style="cursor:pointer;display:none;"
+                              data-id="@item.AcquisitionOrderId"
+                              id="QuantyUp_@item.AcquisitionOrderId"
+                              data-quan="@item.Quantity">
+                        </span>
+                        <span id="span_quantity_@item.AcquisitionOrderId" style="margin-right:5px;">@remain_quan</span><span>@item.UnitName</span>
+                        <span class="k-icon k-i-arrow-s QuantyDwn"
+                              style="cursor:pointer;"
+                              data-id="@item.AcquisitionOrderId"
+                              id="QuantyDwn_@item.AcquisitionOrderId"
+                              data-quan="@item.Quantity">
+                        </span>
+                    </td>
+                    <td>
+                        <span class="fa fa-recycle btnOrderItemRecvd"
+                              data-acqid="@item.AcquisitionId"
+                              data-productid="@item.ProductId"
+                              data-quantity="@item.Quantity"
+                              data-uname="@item.UnitName"
+                              data-unitname="Bale">
+                            Waitng to be delivered
+                        </span>
+                    </td>
+                    @*<td>
+                        <span class="fa fa-check btnOrderItemRecvd"
+                              data-acqid="@item.AcquisitionId"
+                              data-productid="@item.ProductId"
+                              data-quantity="@item.Quantity"
+                              data-uname="@item.UnitName"
+                              data-unitname="Bale">
+                            Received
+                        </span>
+                    </td>*@
+                </tr>
+                ItemCount++;
+            }
+        }
+    </tbody>
+</table>
+<div class="form-group">
+    <div class="col-md-offset-10 col-md-2 col-sm-offset-10 col-sm-2" style="float:right;text-align:right;margin-right:0px!important;padding-right:0px!important;">
+        <input type="button" value="Receive" class="k-button k-state-default" id="btn_Received_Item" />
+    </div>
+</div>
+<script>
+    $(function () {
+        $("#selectallOrder").click(function () {
+            $('input:checkbox').not(this).prop('checked', this.checked);
+        });
+        $(".chkForAcquisitionId").click(function () {
+            if ($(".chkForAcquisitionId").length == $(".chkForAcquisitionId:checked").length) {
+                $("#selectallOrder").prop('checked', true);
+            } else {
+                $("#selectallOrder").removeAttr("checked");
+            }
+        });
+    });
+    function getCheckEventId() {
+        id = [];
+        quantity = [];
+        $('.chkForAcquisitionId:checked').each(function (i) {
+            id[i] = $(this).val();
+            quan[i] = $("#span_quantity_" + $(this).val()).text();
+        });
+    }
+
+    $("#btn_Received_Item").click(function () {
+        getCheckEventId();
+        if (id.length > 0) {
+            var sendData = {
+                id: id,
+                qan: quan,
+            };
+            notification.show({ message: "Saving...", showTime: startTime() }, "upload-progress");
+            $.ajax({
+                url: '@Url.Action("ReceiveItemSave", "CRM")',
+                type: 'Post',
+                data: sendData,
+                success: function (response) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 2000 });
+                    if (response === 'Success') {
+                        location.reload();
+                    }
+                    else {
+                        notification.show({ message: "Save Unsuccessful", showTime: startTime() }, "upload-error");
+                    }
+                }
+            });
+        } else {
+            alert("You didn't select any order.Please select order.");
+        }
+    });
+</script>

@@ -1,0 +1,65 @@
+﻿@************************************** Created By Mabia Mishu (Date:09.09.2016)  ***************************************@
+@using FactoryManagement.Helpers
+@{
+    var count = 1;
+}
+
+<table class="table table-bordered table-condensed tableForUnitList">
+    <tbody>
+        <tr>
+            <th>Name</th>
+            <th>Created By</th>
+            <th>Created Date</th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in ViewBag.AllParentUnitList as IEnumerable<FactoryManagement.ModelView.Inventory.Product.UnitListViewModel>)
+        {
+            <tr id="tr_@item.UnitId">
+                <td>
+                    <span style="font-weight:bold;">@count.</span>
+                    <span id="spanForName_@item.UnitId">
+                        @if (item.HasChild == "True")
+                        {
+                            <span class="btn_expandUnit" id="newtrForAp_@item.UnitId"
+                                  data-id="@item.UnitId"
+                                  data-isclick="0">
+                                <i class="fa fa-plus-square-o fa-2"></i>
+                            </span>
+                        }
+                        @Html.DisplayFor(modelItem => item.UnitName)
+                    </span>
+                </td>
+                <td>
+                    <img src="~/Images/UserPicture/thumb/admin.jpg" class="img-circle" />
+                    @if (item.CreatedBy == 0)
+                    {
+                        <span>Super admin</span>
+                    }
+                    else
+                    {
+                       
+                        @Html.EncodedActionLink(item.UserName, "DisplayEmployeeDetails", "HumanResource", new { UserId = item.CreatedBy, isDisplay = true },null)
+                    }
+
+                </td>
+                <td>@Html.DisplayFor(modelItem => item.CreatedDateName)</td>
+                <td>
+                    <span data-toggle="tooltip" title="Update Information" class="btn green btn_unit_Edit" data-id="@item.UnitId"><i class="fa fa-pencil"></i></span>
+                    <span data-toggle="tooltip" title="Add New Sub Unit Type" class="btn blue btn_unit_child_add" data-name="@item.UnitName" data-id="@item.UnitId"><i class="fa fa-plus-circle"></i></span>
+                    @if (item.HasChild == "False")
+                    {
+                        <span data-toggle="tooltip" title="Delete Unit Type" class="btn btn-danger btn_unit_Delete" data-id="@item.UnitId"><i class="fa fa-trash"></i></span>
+                    }
+                </td>
+            </tr>
+            count++;
+        }
+
+    </tbody>
+</table>
+<script>
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>

@@ -1,0 +1,96 @@
+﻿
+
+@******************************** Created By Jerin Jahan (Date:14.07.2016) *********************************@
+@model IEnumerable<FactoryManagement.Models.DepartmentList>
+
+@{
+    ViewBag.Title = "ShowAllDeptList";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    var count = 1;
+}
+
+<h2>Show All Dept. List</h2>
+
+<p>@Html.ActionLink("Create New Dept.", "DepartmentCreate", new { siteId = ViewBag.siteId }) </p>
+<div class="row">
+    <div class="col-xs-12">
+        <table class="table table-bordered" id="tbl_dept_list">
+            <tr>
+                <th>#</th>
+                <th>Dept. Name</th>
+                <th>Dept. Acronym</th>
+                <th>No. Of Line</th>
+                <th>Status</th>
+                <th>Created Date</th>
+                <th>Created By</th>
+                <th></th>
+            </tr>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <th>@count</th>
+                    <td>@Html.DisplayFor(modelItem => item.DeptName)</td>
+                    <td>@Html.DisplayFor(modelItem => item.DeptAcronym)</td>
+                    <td>@Html.DisplayFor(modelItem => item.NumberOfLine)</td>
+                    <td>@if (item.Status == 1)
+                    { <span>Active</span>}
+                    else
+                    { <span>Inactive</span>}</td>
+                    <td>
+                        @if (item.CreatedBy == 1)
+                        {
+                            <img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" />
+                            @Request.Cookies["CookieAdminInfo"].Values["username"].ToString()
+                        }
+                        else
+                        {
+                            FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+                            var user = db.View_UserLists.Where(m => m.UserType == 1 && m.UserId == item.CreatedBy).FirstOrDefault();
+                            <img src="~/Images/UserPicture/thumb/@user.Picture" class="user-photo" />
+                            <span>@user.UserName</span>
+                        }
+                    </td>
+                    <td>@Convert.ToDateTime(item.CreatedDate).ToString("MMMM dd,yyyy")</td>
+                    <td>
+                        <a href="/Configuration/DepartmentCreate?id=@item.DeptId "><span class="fa fa-pencil"></span></a>|
+                        <span style="cursor:pointer;color:#428bca;" data-deptid="@item.DeptId" class="btn_dept_delete"><i class="fa fa-trash"></i></span>|
+                        @Html.ActionLink("Line Info", "AssignMachineWithLine", new { deptId = item.DeptId })
+                    </td>
+                </tr>
+                count++;
+            }
+        </table>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#liForHR").removeClass('active');
+        $("#liForConfig").addClass('active');
+    });
+
+    //********************************* SITE  DELETE *********************************************
+
+    $("#tbl_dept_list").on("click", ".btn_dept_delete", function (e) {
+        if (confirm('Are you sure want to delete this department?')) {
+            e.preventDefault();
+            var deptid = $(this).data("deptid");
+            notification.show({ message: "Department deleting...", showTime: startTime() }, "upload-progress");
+            $.ajax({
+                url: '@Url.Action("DeptDelete", "Configuration")',
+                type: 'Post',
+                data: { id: deptid, UserId: userId },
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 2000 });
+
+                    if (data === "Error") {
+                        notification.show({ message: "Department deletion unsuccessful", showTime: startTime() }, "upload-error");
+                    } else {
+                        notification.show({ message: "Department successfully deleted", showTime: startTime() }, "upload-success");
+                        location.reload();
+                    }
+                }
+            });
+        }
+    });
+</script>

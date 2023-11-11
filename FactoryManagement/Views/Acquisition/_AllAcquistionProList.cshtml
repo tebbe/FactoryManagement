@@ -1,0 +1,51 @@
+﻿
+
+@model IEnumerable<FactoryManagement.ModelView.Acquisition.AcquisitionViewModel>
+@{
+    var count = 1;
+}
+<table class="table table-bordered" id="tbl_Acq_Pro_List">
+    <tr>
+        <th>#</th>
+        <th>Product Name</th>
+        <th>Product Type Name</th>
+        <th>Quantity(Requested)</th>
+        @if (ViewBag.Type == "2")
+        {
+            <th>Quantity(Assigned)</th>
+        }
+        <th></th>
+    </tr>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@count .</td>
+            <td>@item.ProductName</td>
+            <td>@item.ProductTypeName</td>
+            <td>@item.Quantity @item.UnitName</td>
+            @if (ViewBag.Type == "2")
+            {
+                <td><span>@item.AssignedQuantity @item.UnitName</span></td>
+            }
+            <td>
+                @if (item.OrderStatus == 0)
+                {
+                    <span class="fa fa-pencil-square-o btnForEditProduct" data-acquisitionid="@item.AcquisitionId"></span><span>|</span>
+                    <span class="fa fa-trash btnAcqDelete" data-id="@item.AcquisitionId" data-orderid="@item.AcquisitionOrderId"></span><span>|</span>
+                }
+                <span class="fa fa-info-circle btn_Details" data-id="@item.AcquisitionId"></span>Details<span>|</span>
+                @*<a href="/Acquisition/AcqusiProductDetails?AcqId=@item.AcquisitionId"><span class="fa fa-info-circle"></span>Details</a>*@ 
+                @if (ViewBag.Type == "2" && item.OrderStatus == 0)
+                {
+                    <span>|</span><span class="fa fa-pencil btnAssignProduct"
+                          data-id="@item.AcquisitionId" data-name="@item.ProductName"
+                          data-orderid="@item.AcquisitionOrderId"
+                          data-type="@ViewBag.Type" data-quantity="@item.Quantity" data-unitname="@item.UnitName">
+                        Assign
+                    </span>
+                }
+            </td>
+        </tr>    
+        count++;
+    }
+</table>

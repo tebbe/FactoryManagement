@@ -1,0 +1,151 @@
+﻿<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="report_setup">
+    @if (ViewBag.view == "month")
+    {
+        <div class="editor-label"><label>Select Year</label></div>
+        <div class="editor-field">
+            @(Html.Kendo().DropDownList().Name("yearDrop")
+            .OptionLabel("--Select One--")
+                .BindTo(ViewBag.yearList as SelectList)
+                 .HtmlAttributes(new { style = "width:100%" })
+                .Events(e=>e.Change("onYearDropChange")).Value(DateTime.Now.Year.ToString())
+                )
+            <span class="field-validation-valid text-danger" data-valmsg-for="yearDrop" data-valmsg-replace="true"></span>
+        </div>
+        <div class="editor-label">
+            <label>Select Month</label>
+        </div>
+        <div class="editor-field">         
+          <input id="monthDrop" />
+            <span class="field-validation-valid text-danger" data-valmsg-for="monthDrop" data-valmsg-replace="true"></span>
+        </div>      
+    }
+    else if(ViewBag.view=="spec")
+    {
+        <div class="editor-label">
+            <label>Start Date</label>
+        </div>
+        <div class="editor-field">
+            @(Html.Kendo().DatePicker().Name("startDate").Events(e=>e.Change("startDateChange")).Max(DateTime.Now).HtmlAttributes(new { style="width:100%"}))
+            <span class="field-validation-valid text-danger" data-valmsg-for="startDate" data-valmsg-replace="true"></span>
+        </div>
+        <div class="editor-label">
+            <label for="endDate">End Date</label>
+        </div>
+        <div class="editor-field">
+            @(Html.Kendo().DatePicker().Name("endDate").Max(DateTime.Now).HtmlAttributes(new { style = "width:100%" }))
+            <span class="field-validation-valid text-danger" data-valmsg-for="endDate" data-valmsg-replace="true"></span>
+        </div>
+    }
+    <div class="col-sm-11 col-xs-11" style="margin-top:5px;float:right">
+        <div class="k-edit-buttons k-state-default">
+            @if (ViewBag.view == "month")
+            {
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_month_ok"><span class="k-icon k-update"></span>Ok</button>
+            }
+            else if(ViewBag.view=="spec")
+            {
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_spec_ok"><span class="k-icon k-update"></span>Ok</button>
+            }
+            
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        if ('@ViewBag.view' == "month") {
+            $("#yearDrop").val(new Date().getMonth());
+          
+            $("#monthDrop").kendoDropDownList({
+                index: new Date().getMonth(),
+                    dataTextField: "text",
+                    dataValueField: "value",
+                    dataSource: currentmonthList,                    
+                });            
+        }
+    });
+    $("#btn_cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#btn_month_ok").click(function () {
+        var validation = $("#report_setup").kendoValidator({
+            rules: {
+                check_month: function (input) {
+                    if ($("#monthDrop").val() === "" || $("#monthDrop").val() < 0) {
+                        return false;
+                    }
+                    return true;
+                },
+                check_year: function (input) {
+                    if ($("#yearDrop").val() === "" || $("#yearDrop").val() < 0) {
+                        return false;
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                check_month: "Please select a month",
+                check_year: "Please select a year"
+            }
+        }).data("kendoValidator");
+        if (validation.validate()) {
+            
+            var month = $("#monthDrop").val();
+            var year = $("#yearDrop").data("kendoDropDownList").text();
+            if (AllId.length > 0) {
+                var sendData = {  AllId,  month, year }
+                $(this).closest(".k-window-content").data("kendoWindow").close();
+                var data = "allId=" + AllId + "&month=" + month + "&year=" + year;
+                window.open('@Url.Action("InvenProMonthReport", "StoreProduct")?q=' + btoa(data), '_blank');
+        } else {
+            alert("You didn't select any product");
+        }
+        }
+    });
+    $("#btn_spec_ok").click(function () {
+        var validation = $("#report_setup").kendoValidator({
+            rules: {
+                start_Date: function (input) {
+                    if (input.is("[name=startDate]") && $("#startDate").val() === "") {
+                        return false;
+                    }
+                    return true;
+                },
+                end_Date: function (input) {
+                    if (input.is("[name=endDate]") && $("#endDate").val() === "") {
+                        return false;
+                    }
+                    return true;
+                },
+                valid_start: function (input) {
+                    var start = new Date($("#startDate").val());
+                    var end = new Date($("#endDate").val());
+                    if (input.is("[name=startDate]") && (start > new Date() || start > end)) {
+                        return false;
+                    }
+                    return true;
+                },
+                valid_end: function (input) {
+                    var end = new Date($("#endDate").val());
+                    var start = new Date($("#startDate").val());
+                    if (input.is("[name=endDate]") && (end > new Date() || start > end)) {
+                        return false;
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                start_Date: "Please enter a start date",
+                end_Date: "Please enter a end date",
+                valid_start: "Please provide a valid start date",
+                valid_end: "Please provide a valid end date"
+            }
+        }).data("kendoValidator");
+        if (validation.validate()) {
+            if (AllId.length > 0) {
+                 $(this).closest(".k-window-content").data("kendoWindow").close();
+                 window.open('@Url.Action("InvenProSpecificReport", "StoreProduct")?q=' + AllId + '&startDate=' +$("#startDate").val() + '&endDate=' +$("#endDate").val(), '_blank');
+            }
+        }
+    });
+</script>

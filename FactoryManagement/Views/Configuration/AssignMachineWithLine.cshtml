@@ -1,0 +1,283 @@
+﻿@{
+    ViewBag.Title = "Assign Machine With Line";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+<style>
+    .panel-body {
+        overflow: auto;
+        padding-left: 0px !important;
+        padding-right: 0px !important;
+        padding-bottom: 0px !important;
+    }
+    .child {
+        margin-bottom: 30px;
+        float: left;
+    }
+    .panel {margin-bottom: 0px !important;}
+    .panel.panel-default .panel-heading {background: #f5f5f5;}
+    .panel .panel-heading h2, .panel .panel-heading h3 {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-weight: 600;
+            line-height: .5;
+            margin-top: 4px;
+            margin-bottom: 4px;
+            font-size: 14px;
+            color: #333;
+        }
+    .panel .panel-heading h2 .ryt_btn{float:right;cursor:pointer;font-size: 18px;}
+     .delete-link {
+        width: 12px;
+        height: 12px;
+        background: transparent url('../../Content/web/treeview/close.png') no-repeat 50% 50%;
+        overflow: hidden;
+        display: inline-block;
+        font-size: 0;
+        line-height: 0;
+        vertical-align: top;
+        margin: 2px 0 0 3px;
+        -webkit-border-radius: 5px;
+        -mox-border-radius: 5px;
+        border-radius: 5px;
+    }
+</style>
+
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-gears fa-fwt"></i>
+            <a href="javascript:;">Configuration</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-check-square"></i>
+            <a href="/Configuration/AssignMachineWithLine">Assign Machine With Line</a>
+        </li>
+    </ul>
+</div>
+<div class="portlet light bordered">
+    <div class="portlet-title">
+        <div class="caption font-green">
+            <i class="fa fa-plus font-green"></i>
+            <span class="caption-subject bold uppercase"> Assign Machine With Line</span>
+        </div>
+    </div>
+    <div class="portlet-body">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-6 col-sm-6 col-xs-12 child" style="padding-left:0px!important;">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h2>All Machine Lists <span class="ryt_btn" id="btnLeftDivRefresh"><i class="k-icon k-i-refresh"></i></span></h2></div>
+                        <div class="panel-body">
+                            <div id="div_load_machine"><div class="loading_30"></div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-horizontal col-md-6 col-sm-12 col-xs-12 child" id="divForSelectedParts" style="padding:0px!important;">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h2>All Line Lists <span class="ryt_btn" id="btnRytDivRefresh"><i class="k-icon k-i-refresh"></i></span></h2></div>
+                        <div class="panel-body"><div id="div_load_line" class="customTreeView"><div class="loading_30"></div></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script id="templateForLeft" type="text/kendo-ui-template">
+    #if(item.type === 'parent' ){
+    if(item.id.split('-')[1] === 't' ){#
+        <span class="k-checkbox-wrapper">
+            <input type="checkbox" id="chkbox-#:item.id#" data-id="#:item.id#" class="k-checkbox nodechk" onchange='chkParent(this);' />
+            <label for="chkbox-#:item.id#" class="k-checkbox-label" style="margin-top:-1em!important"></label>
+        </span>
+    #}#
+    <label>#:item.text#</label>
+    #}else{#
+        <span class="k-checkbox-wrapper">
+            <input type="checkbox" id="chkbox-#:item.id#" data-id="#:item.id#" class="k-checkbox nodecheck" data-machineid="#:item.machineTypeId#" />
+            <label for="chkbox-#:item.id#" class="k-checkbox-label" style="margin-top:-1em!important"></label>
+        </span>
+        <label>#:item.text#</label>
+    #}#
+</script>
+<script id="templateForRight" type="text/kendo-ui-template">
+    <label>#:item.text#</label>
+    #if(item.id.split('-')[1]=="m"){#
+    <span style="width:5%;">
+        <a class='delete-link' data-machinetypeid="#:item.machineTypeId#" data-linename="#:item.parentNode().text#" data-machinename="#:item.text#" data-machineid="#:item.machineId#" data-lineid="#:item.parentNode().lineId#" href='\#'></a>
+    </span>
+    #}#
+</script>
+
+<script>
+    var searchText = '', deptId = '@(ViewBag.deptId)';
+    var checkedNodes = [];
+    var allMachinename = [];
+    $(document).ready(function () {
+        $("#liForConfig").addClass('active');
+        $("#liForAssignMachine").addClass('sublistActive');
+        $('#div_load_machine').load('@Url.Action("MachineListInPartialPage", "Configuration")?searchText=' + searchText, '&deptId=' + deptId);
+        $('#div_load_line').load('@Url.Action("_MacineWithLine", "Configuration")');
+    });
+    $("#btnLeftDivRefresh").click(function () {
+        $('#div_load_machine').load('@Url.Action("MachineListInPartialPage", "Configuration")?searchText=' + searchText, '&deptId=' + deptId);
+    });
+    $("#btnRytDivRefresh").click(function () {
+        $('#div_load_line').load('@Url.Action("_MacineWithLine", "Configuration")');
+    });
+
+
+
+    function chkParent(e) {
+        var id = $("#" + e.id).data('id').split('-')[0];
+        $(".nodecheck").each(function () {
+            if ($(this).data('machineid') == id) {
+                $(this).prop('checked', true);
+            }
+        });
+    }
+
+
+    function getAllChkNode() {
+        $(".nodecheck").each(function () {
+            if (this.checked) {
+                checkedNodes.push($(this).data("id"));
+            }
+        });
+    }
+    function onDrop(e) {
+        var dragData = this.dataItem(e.sourceNode).toJSON();
+        var destinationNode = $(e.destinationNode);
+        var leftTreeView = $('#tvForMachineType').data('kendoTreeView');
+        var rightTreeView = $('#tv_Site_list').data('kendoTreeView');
+        var destinationNodeObject = rightTreeView.dataItem(e.destinationNode);
+        var sourceuid = leftTreeView.dataSource.get(dragData.id).uid;
+
+        if (destinationNodeObject === undefined || e.dropPosition !== "over") {
+            e.setValid(false);
+        }
+        else {
+            if (destinationNodeObject.id.split('-')[1] == 'l') {
+                notification.show({ message: "Machine is assigning...", showTime: startTime() }, "upload-progress");
+                var allMachineId = [];
+                var destinationuid = rightTreeView.dataSource.get(destinationNodeObject.id).uid;
+
+                checkedNodes = [];
+                allMachinename = [];
+                getAllChkNode();
+                if (checkedNodes.length > 0) {
+                    for (i = 0; i < checkedNodes.length; i++) {
+                        dragDataObject = leftTreeView.dataSource.get(checkedNodes[i]);
+                        allMachinename.push(dragDataObject.text);
+                        allMachineId.push(dragDataObject.machineId);
+                        if (dragDataObject.uid != sourceuid) {
+                            rightTreeView.append(leftTreeView.findByUid(dragDataObject.uid), rightTreeView.findByUid(destinationuid));
+                        }
+                    }
+                }
+                else {
+                    dragDataObject = leftTreeView.dataSource.get(dragData.id);
+                    allMachineId.push(dragDataObject.machineId);
+                    allMachinename.push(dragDataObject.text);
+                }
+                $.ajax({
+                    url: '@Url.Action("AssignMachineSave", "Configuration")',
+                    type: 'Post',
+                    data: { allMachineId: allMachineId, LineId: destinationNodeObject.lineId, userId: userId },
+                    success: function (data) {
+                        if (data === "Success") {
+                            var name = "";
+                            notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                            for (var m = 0; m < allMachinename.length; m++) {
+                                name = name + allMachinename[m] + ",";
+                            }
+                            notification.show({ message: "Machine '" + name + "' has been successfully assigned to Line '" + destinationNodeObject.text + "'", showTime: startTime() }, "upload-success");
+                        } else {
+                            notification.show({ message: data, showTime: startTime() }, "upload-error");
+                        }
+                    },
+                    error: function (data) {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        notification.show({ message: "Error occurred", showTime: startTime() }, "upload-warning");
+                    }
+                });
+            }
+            else {
+                e.setValid(false);
+            }
+        }
+    };
+    //************* Delete function ****************************//
+    $("#div_load_line").on("click", ".delete-link", function (e) {
+        e.preventDefault();
+        notification.show({ message: "Machine information updating...", showTime: startTime() }, "upload-progress");
+        var machineId = $(this).data("machineid");
+        var machinename = $(this).data("machinename");
+        var linename = $(this).data("linename");
+        var lineId = $(this).data("lineid");
+
+        var leftTreeView = $('#tvForMachineType').data('kendoTreeView');
+        var rightTreeView = $('#tv_Site_list').data('kendoTreeView');
+        var mid = machineId + "-m";
+        var tid = $(this).data("machinetypeid") + "-t";
+        var dragDataObject = rightTreeView.dataSource.get(mid);
+        dragDataObject.type = 'child';
+        var dragData = leftTreeView.dataSource.get(tid);
+        $.ajax({
+            url: '@Url.Action("DeleteAssignMachineFromLine", "Configuration")',
+            type: 'Post',
+            async: false,
+            data: { MachineId: machineId, machinename: machinename, LineId: lineId, userId: userId, LineName: linename },
+            success: function (data) {
+                if (data === "Success") {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if (dragData) {
+                        leftTreeView.append(rightTreeView.findByUid(dragDataObject.uid), leftTreeView.findByUid(dragData.uid));
+                    }
+                    else {
+                        rightTreeView.remove($(this).closest(".k-item"));
+                        $('#div_load_machine').load('@Url.Action("MachineListInPartialPage", "Configuration")?searchText=' + searchText, '&deptId=' + deptId);
+                    }
+                    notification.show({ message: "Machine '" + machinename + "' has been successfully deleted from line '" + linename + "'", showTime: startTime() }, "upload-success");
+                } else {
+
+                }
+            },
+            error: function (data) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Machine deletetion was unsuccessful.", showTime: startTime() }, "upload-warning");
+            }
+        });
+    });
+</script>
+<script>
+    // function that gathers IDs of checked nodes
+    function checkedNodeIds(nodes, checkedNodes) {
+        for (var i = 0; i < nodes.length; i++) {
+            if (nodes[i].checked) {
+                checkedNodes.push(nodes[i].id);
+            }
+            if (nodes[i].hasChildren) {
+                checkedNodeIds(nodes[i].children.view(), checkedNodes);
+            }
+        }
+    }
+
+    // show checked node IDs on datasource change
+    function onCheck() {
+        var checkedNodes = [],
+            treeView = $("#treeview").data("kendoTreeView"),
+            message;
+
+        checkedNodeIds(treeView.dataSource.view(), checkedNodes);
+
+        if (checkedNodes.length > 0) {
+            message = "IDs of checked nodes: " + checkedNodes.join(",");
+        } else {
+            message = "No nodes checked.";
+        }
+
+        $("#result").html(message);
+    }
+</script>

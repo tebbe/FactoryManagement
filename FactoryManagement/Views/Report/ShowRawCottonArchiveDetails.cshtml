@@ -1,0 +1,157 @@
+﻿@*********************************************** Created By Jerin Jahan Date(23.05.2017) ************************@
+@model FactoryManagement.Models.Daily_Raw_Cotton_Report_List
+@{
+    ViewBag.Title = "Daily Raw Cotton Stock";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var path = String.Format("{0}DailyRawCottonXML", AppDomain.CurrentDomain.BaseDirectory);
+
+    System.Xml.Linq.XElement root = System.Xml.Linq.XElement.Load(path + "\\" + Model.ReportName);
+
+    System.Xml.XmlDocument doc = new System.Xml.XmlDocument();
+    doc.Load(path + "\\" + Model.ReportName);
+    int total_count = 0;
+    int loop_count = 0; int sl_count = 0;
+    var u_list = db.Site_Unit_Lists.Where(m => m.UnitStatus == 1).ToList();
+    int CountryCount = root.Descendants("country").Count();
+
+    IEnumerable<string> CountryList = from code in root.Elements("country")
+                                let Country = (string)code.Element("item").Element("Country")
+                                orderby Country
+                                select Country;
+   var Altotal = (from person in root.Descendants("Total")
+                select new
+                {
+                    total_o_blnc = person.Element("total_o_blnc").Value,
+                    total_imp = person.Element("total_imp").Value,
+                    total_stock= person.Element("total_stock").Value,
+                    TotalU_1 = person.Element("TotalU_1").Value,
+                    TotalU_2 = person.Element("TotalU_2").Value,
+                    TotalU_3 = person.Element("TotalU_3").Value,
+                    TotalU_4 = person.Element("TotalU_4").Value,
+                    total_ise = person.Element("total_ise").Value,
+                    total_closing= person.Element("total_closing").Value,
+                }).ToList();
+    var GrandTotal =(from person in root.Elements("GrandTotal")
+                     select new
+                     {
+                         GrandTotal = person.Element("GrandTotal").Value,
+                         GrandImp = person.Element("GrandImp").Value,
+                         GrandStock = person.Element("GrandStock").Value,
+                         GrandU_1 = person.Element("GrandU_1").Value,
+                         GrandU_2 = person.Element("GrandU_2").Value,
+                         GrandU_3 = person.Element("GrandU_3").Value,
+                         GrandU_4 = person.Element("GrandU_4").Value,
+                         GrandIssue = person.Element("GrandIssue").Value,
+                         GrandClosing = person.Element("GrandClosing").Value
+                     }).ToList();
+}
+<center>
+    <h2>Daily Raw Cotton Stock</h2>
+</center>
+<div>
+    <span style="float:right;font-size:16px;">
+        <p style="text-align:right;margin:0px!important;">Date: @Model.CreatedDate.ToString("dd-mm-yy hh:mm tt")</p>
+        <p style="text-align:right;">Genegrated By: System</p>
+    </span>
+</div>
+<table class="table table-bordered">
+    @foreach (var country in CountryList)
+    {
+        loop_count++;
+        if (loop_count == 1)
+        {
+            <tr style="border:2px solid black;border-bottom:0px!important;">
+                <th width="5%" rowspan="2">SL NO.</th>
+                <th width="15%" rowspan="2">Country Of Origin</th>
+                <th width="8%" rowspan="2">Staple</th>
+                <th width="8%" rowspan="2">L/C NO.</th>
+                <th width="8%" rowspan="2">O/Balance In Bales</th>
+                <th width="10%" rowspan="2">Received IN Bales</th>
+                <th width="5%" rowspan="2">Total Stock</th>
+                <th width="21%" colspan="@u_list.Count()">Issue to Mills in Bales</th>
+                <th width="5%" rowspan="2">Total Issue</th>
+                <th width="10%" rowspan="2">Closing Balance</th>
+                <th width="5%" rowspan="2">Remarks</th>
+            </tr>
+            <tr>
+                @foreach (var u in u_list)
+                {
+                    <td>@u.UnitAcryonm</td>
+                }
+            </tr>
+        }
+        double total_o_blnc = 0;
+        double total_imp = 0;
+        double total_ise = 0;
+        var products = from person in root.Descendants("item")
+                       where (string)person.Element("Country") == country
+                       select new
+                       {
+                           SL = person.Element("SL").Value,
+                           Product = person.Element("Product").Value,
+                           Staple = person.Element("Staple").Value,
+                           LC = person.Element("LC").Value,
+                           OBalance = person.Element("OBalance").Value,
+                           RBalance = person.Element("RBalance").Value,
+                           Stock = person.Element("Stock").Value,
+                           u_1 = person.Element("u_1").Value,
+                           u_2 = person.Element("u_2").Value,
+                           u_3 = person.Element("u_3").Value,
+                           u_4 = person.Element("u_4").Value,
+                           TotalIssue = person.Element("TotalIssue").Value,
+                           Closing = person.Element("Closing").Value,
+                           Remarks = person.Element("Remarks").Value
+                       };
+        if (products.Count() > 0)
+        {
+            foreach (var item in products)
+            {
+                sl_count++;
+                <tr style="border-left:2px solid black!important;border-right:2px solid black!important;">
+                    <td width="5%">@sl_count.</td>
+                    <td width="15%">@item.Product</td>
+                    <td width="8%">@item.Staple</td>
+                    <td width="8%">@item.LC</td>
+                    <td width="8%">@item.OBalance</td>
+                    <td width="10%">@item.RBalance</td>
+                    <td width="5%">@item.Stock</td>
+                    <td>@item.u_1.Split('|')[1]</td>
+                    <td>@item.u_2.Split('|')[1]</td>
+                    <td>@item.u_3.Split('|')[1]</td>
+                    <td>@item.u_4.Split('|')[1]</td>
+                    <td width="5%">@item.TotalIssue</td>
+                    <td width="10%">@item.Closing</td>
+                    <td width="5%">@item.Remarks</td>
+                </tr>
+            }
+            <tr style="border-left:2px solid black;border-right:2px solid black;border-top:2px solid black!important;">
+                    <td colspan="4" style="text-align:right;font-weight:bold;">Total</td>
+                    <td>@Altotal[total_count].total_o_blnc</td>
+                    <td>@Altotal[total_count].total_imp</td>
+                    <td>@Altotal[total_count].total_stock</td>
+                    <td>@Altotal[total_count].TotalU_1</td>
+                    <td>@Altotal[total_count].TotalU_2</td>
+                    <td>@Altotal[total_count].TotalU_3</td>
+                    <td>@Altotal[total_count].TotalU_4</td>
+                    <td>@Altotal[total_count].total_ise</td>
+                    <td>@Altotal[total_count].total_closing</td>
+                    <td></td>
+                </tr>
+        }
+    }
+    <tr style="border:2px solid black;">
+        <td colspan="4" style="text-align:right;font-weight:bold;">Grand Total</td>
+        <td>@GrandTotal[0].GrandTotal</td>
+        <td>@GrandTotal[0].GrandImp</td>
+        <td>@GrandTotal[0].GrandStock</td>
+        <td>@GrandTotal[0].GrandU_1</td>
+        <td>@GrandTotal[0].GrandU_2</td>
+        <td>@GrandTotal[0].GrandU_3</td>
+        <td>@GrandTotal[0].GrandU_4</td>
+        <td>@GrandTotal[0].GrandIssue</td>
+        <td>@GrandTotal[0].GrandClosing</td>
+        <td>Bales</td>
+    </tr>
+    
+</table>

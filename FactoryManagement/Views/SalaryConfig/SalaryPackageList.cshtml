@@ -1,0 +1,286 @@
+﻿
+@************************************** Created By Jerin Jahan (Date:18.08.2016)  ***************************************@
+
+
+
+@{
+    ViewBag.Title = "SalaryPackageList";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<style>
+    #tbl_sal_pac_search{margin-bottom:0px!important;margin-top:10px!important;border-bottom:none!important;}
+</style>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-users fa-fwt"></i>
+            <span>Human Resource</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <span>Salary Package</span>
+           
+        </li>
+
+    </ul>
+</div>
+@*<div class="note note-success"><p id="h4title">Showing All Salary Package's</p></div>*@
+<div class="row">
+    <div class="col-xs-12">
+        <p><span id="btn_CreateSalaryPack" data-toggle="tooltip" title="Create New Salary Package" style="text-decoration: none !important;" class="btn green"><span><i class="fa fa-plus"></i> Add New Package</span></span></p>
+    </div>
+</div>
+<div class="portlet light portlet-fit bordered">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-list-ul font-green" aria-hidden="true"></i>
+            <span class="caption-subject font-green bold uppercase">Salary Package List</span>
+        </div>
+    </div>
+    <div class="portlet-body">
+        <div class="row">
+            <div class="col-xs-12" id="div_User_List">
+                <table class="table table-bordered" id="tbl_sal_pac_search">
+                    <tr>
+                        <td>
+                            <span class="autocomplete-wrapper">
+                                <input class="text-field" id="autocomplete" name="country" placeholder="Start typing salary package name" type="text" autocomplete="off">
+                                <span class="k-icon k-i-search" style="margin-top:-25px;margin-right:10px;float:right;">&nbsp;</span>
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+                <div id="Div_All_Salary_Package" style="display:none;"><div class="loading_partial"></div></div>
+                @if (db.Salary_Package_List.Any())
+                {
+                    <script>
+            $("#DivForSalaryPackageList").show();
+            $("#Div_All_Salary_Package").show();
+            $("#Div_All_Salary_Package").load('@Url.Action("_SalaryPackageList", "SalaryConfig")');
+                    </script>
+                }
+                else
+                {
+                    <p>There is no salary package to display.</p>
+                }
+            </div>
+        </div>
+        <div id="loading" style="display:none;"></div>
+    </div>
+</div>
+
+<div id="loading" style="display:none"></div>
+<div id="win_pck_create"></div>
+<div id="win_pck_edit"></div>
+<div id="win_pck_info"></div>
+
+<script id="temp_win_usr_cunt" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">
+            You cann't delete this salary package.This package already assigned with #=data# users.
+            <span style="color:darkblue;cursor:pointer;" id="btn_See_All_Usr">See all user</span>
+        </p>
+        <div style="text-align: right">
+            <input type="button" value="Update" class="k-button k-state-default" id="OK" />
+        </div>
+    </div>
+</script>
+<script id="temp_win_con" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">#=message#</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_win_con_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_win_con_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+
+<script>
+    var showCount = 0, inCallback = false, page = 0, totalCount = 0,content = '';
+    $(document).ready(function () {
+        $("#liForHR").addClass('active');
+        $("#liForSalaryList").addClass('sublistActive');
+    });
+    $(function () {
+        $("#autocomplete").autocomplete({
+            minLength: 0,
+            source: function (request, response) {
+                content = $.trim(request.term);
+                $.ajax({
+                    url: '@Url.Action("SearchSalaryPackage", "SalaryConfig")',
+                    type: "POST",
+                    dataType: "json",
+                    data: { prefix: content },
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return { label: item.PackageName, value: item.PackageName, id: item.PackageId };
+                        }))
+                    }
+                })
+            },
+            minLength: 1,
+            select: function (event, ui) {
+                isloadFirstTime = true;
+                var selectTextId = ui.item.id;
+                $("#Div_All_Salary_Package").load('@Url.Action("_SalaryPackageList", "SalaryConfig")?PackageId=' + selectTextId);
+            },
+        })
+    .keyup(function () {
+        if ($.trim($("#autocomplete").val()) == "") {
+            showCount = 0; page = 0, totalCount = 0;
+            $("#Div_All_Salary_Package").load('@Url.Action("_SalaryPackageList", "SalaryConfig")');
+        }
+    })
+    .autocomplete("instance")._renderItem = function (ul, item) {
+        var term = $.trim(this.term);
+        var re = new RegExp("(" + term + ")", "gi"),
+                   cls = "bold-text",
+                   template = "<span class='" + cls + "'>$1</span>",
+                   label = item.label.replace(re, template),
+                   $li = $("<li/>").appendTo(ul);
+        $("<span>").html(label).appendTo($li);
+        return $li;
+    };
+    });
+    //********************************* SALARY PACKAGE CREATE ***********************************************
+    $("#btn_CreateSalaryPack").click(function () {
+        $("#win_pck_create").empty();
+        $("#win_pck_edit").empty();
+        $("#win_pck_create").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '45%',
+            height: '25%',
+            title: 'Add New Salary Package',
+            close: onWindowClose
+        });
+        $("#win_pck_create").html('<div class="win_loading_half"></div>');
+        var win_pck_create = $("#win_pck_create").data("kendoWindow");
+        win_pck_create.refresh({ url: "/SalaryConfig/_SalaryPackageCreate" });
+        win_pck_create.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+    $("#Div_All_Salary_Package").on("click", ".btn_edit_Salary_Package", function (e) {
+        var PackageId = $(this).data("packageid");
+        $("#win_pck_create").empty();
+        $("#win_pck_edit").empty();
+        $("#win_pck_edit").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '45%',
+            height: '25%',
+            title: 'Add New Salary Package',
+            close: onWindowClose
+        });
+        $("#win_pck_edit").html('<div class="win_loading_half"></div>');
+        var win_pck_edit = $("#win_pck_edit").data("kendoWindow");
+        win_pck_edit.refresh({ url: "/SalaryConfig/_SalaryPackageCreate?id=" + PackageId });
+        win_pck_edit.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+    //********************************* SALARY PACKAGE DELETE *********************************************
+
+    $("#Div_All_Salary_Package").on("click", ".btn_pck_delete", function (e) {
+        e.preventDefault();
+        var PackageId = $(this).data("packageid");
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close:onWindowClose
+        });
+        message = "Are you sure you want to delete this salary package?";
+        var template = kendo.template($("#temp_win_con").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+
+        kendoWindow.find("#btn_win_con_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_win_con_ok").click(function () {
+            var sendData = { PackageId: PackageId };
+            $.ajax({
+                url: '@Url.Action("ChkSalaryPackageInUsed", "SalaryConfig")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    if (data !== "Error") {
+                        if (data) {
+                            var kendo_Window = $("<div />").kendoWindow({
+                                actions: ["Close"],
+                                title: "Alert",
+                                resizable: false,
+                                modal: true,
+                                close:onWindowClose
+                            });
+                            var template = kendo.template($("#temp_win_usr_cunt").html());
+                            kendo_Window.data("kendoWindow").content(template(data)).center().open();
+                            document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+                            document.body.scroll = "no"; // ie only
+
+                            kendo_Window.find("#btnOkUpdate").click(function () {
+                                UpdateAccountType();
+                            }).end()
+
+                            kendo_Window.find("#btn_See_All_Usr").click(function () {
+                                $("#win_pck_create").empty();
+                                $("#win_pck_edit").empty();
+                                $("#win_pck_info").empty();
+                                $("#win_pck_info").kendoWindow({
+                                    actions: ["Close"],
+                                    draggable: false,
+                                    modal: true,
+                                    visible: false,
+                                    width: '60%',
+                                    height: '55%',
+                                    title: 'This Package Already Assigned With Following User/s.',
+                                    close:onWindowClose
+                                });
+                                $("#win_pck_info").html('<div class="win_loading_half"></div>');
+                                var win_pck_info = $("#win_pck_info").data("kendoWindow");
+                                win_pck_info.refresh({ url: "/SalaryConfig/_AllUserListForSpeficSalaryPack?PackageId=" + PackageId });
+                                win_pck_info.center().open();
+                                document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+                                document.body.scroll = "no"; // ie only
+                                kendo_Window.data("kendoWindow").close();
+                            }).end()
+                            kendoWindow.data("kendoWindow").close();
+                        }
+                        else {
+                            notification.show({ message: "Salary package deleting...", showTime: startTime() }, "upload-progress");
+                            $.ajax({
+                                url: '@Url.Action("SalaryPackDelete", "SalaryConfig")',
+                                type: 'Post',
+                                data: { PackageId: PackageId, UserId: userId },
+                                success: function (data) {
+                                    notification.hide(); notification.setOptions({ autoHideAfter: 2000 });
+                                    if (data === "Error") {
+                                        notification.show({ message: "Salary package deletion unsuccessful", showTime: startTime() }, "upload-error");
+                                    } else {
+                                        notification.show({ message: "Salary package successfully deleted", showTime: startTime() }, "upload-success");
+                                        $("#Div_All_Salary_Package").empty();
+                                        $("#Div_All_Salary_Package").append('<div class="loading_partial"></div>');
+                                        $("#Div_All_Salary_Package").load('@Url.Action("_SalaryPackageList", "SalaryConfig")');
+                                    }
+                                }
+                            });
+                            kendoWindow.data("kendoWindow").close();
+                        }
+                    }
+                }
+            });
+            
+        }).end();
+    });
+</script>

@@ -1,0 +1,21 @@
+﻿<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-top:1%;">
+    <div id="div_working_schedule"></div>
+    <div class="col-sm-11 col-xs-11">
+        <div id="Store_Details_div"></div>
+    </div>
+    <div class="k-edit-buttons k-state-default" style="margin-top:-15px">
+                   <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_Store_Details_Cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+
+</div>
+<script>
+
+    //$(document).ready(function () {
+        $("#Store_Details_div").empty();
+        $("#Store_Details_div").append('<div class="win_loading_half"></div>');
+        $("#Store_Details_div").load('@Url.Action("ShowStoreDetailsById", "Inventory")?Id=@ViewBag.Id');
+    //});
+    $("#btn_Store_Details_Cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

@@ -1,0 +1,48 @@
+﻿
+
+@************************************** Created By Mabia Mishu (Date:01.09.2016)  ***************************************@
+
+@{
+    var count = 1;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+
+<table class="table table-bordered table-condensed tableForProductTypeList">
+    <tbody>
+        <tr>
+            <th width="20%">Name</th>
+            <th width="15%">Created Date</th>
+            <th width="15%">Last Updated Date</th>
+            <th width="10%"></th>
+        </tr>
+        @foreach (var item in ViewBag.AllParentProType as IEnumerable<FactoryManagement.ModelView.Inventory.Product.ProductTypeViewModel>)
+        {
+            <tr id="tr_@item.ProductTypeId">
+                <td>
+                    <span>@count. </span>
+                    <span id="spanForName_@item.ProductTypeId">
+                        @if (item.HasChild == "True")
+                        {
+                            <span class="btn_expandProductType" id="newtrForAp_@item.ProductTypeId"
+                                  data-id="@item.ProductTypeId"
+                                  data-isclick="0">
+                                <i class="fa fa-plus-square-o fa-2"></i>
+                            </span>
+
+                        }
+                        <span>@Html.DisplayFor(modelItem => item.ProductTypeName)</span>
+                    </span>
+                </td>
+                <td>@Html.DisplayFor(modelItem => item.CreatedDateName)</td>
+                <td>@Html.DisplayFor(modelItem => item.UpdatedDateFormate)</td>
+                <td>
+                    <span class="btn btn-success btn_pro_type_Edit" data-id="@item.ProductTypeId"><i class="fa fa-pencil"></i></span>
+                    <span class="btn btn-info btn_protype_child_add" data-name="@item.ProductTypeName" data-id="@item.ProductTypeId"><i class="fa fa-plus-circle"></i></span>
+                    <span class="btn btn-danger btn_pro_type_Delete" data-id="@item.ProductTypeId"><i class="fa fa-trash"></i></span>
+                </td>
+            </tr>
+            count++;
+        }
+
+    </tbody>
+</table>

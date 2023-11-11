@@ -1,0 +1,167 @@
+﻿@************************************** Created By Jerin Jahan (Date:30.01.2017)  ***************************************@
+
+@model FactoryManagement.ModelView.Inventory.SparePartsListModelView
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int id = ViewBag.id;
+    var machineParts = db.View_Machine_Parts.Where(m => m.Id == id).FirstOrDefault();
+    double total_Quan = 0;
+}
+<style>
+    .k-edit-form-container .editor-label {
+        width: 35% !important;
+    }
+
+    .k-edit-form-container .editor-field {
+        width: 35% !important;
+    }
+</style>
+
+@using (Html.BeginForm())
+{
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(m => m.Id)
+    <br />
+    <div class="k-edit-form-container" style="margin-bottom:4%;margin-top:2%;" id="Div_machine_replace">
+        <div class="editor-label"><label>Parts Name</label></div>
+        <div class="editor-field" style="padding-top:6px!important;">@Model.PartsName</div>
+
+        <div class="editor-label"><label>Mahcine Name</label></div>
+        <div class="editor-field" style="padding-top:6px!important;">@Model.MachineAcronym</div>
+
+        <div class="editor-label"><label>Expired Date</label></div>
+        <div class="editor-field" style="padding-top:6px!important;">@machineParts.ReplaceDateName</div>
+
+        <div class="editor-label"><label>Left Day</label></div>
+        <div class="editor-field" style="padding-top:6px!important;">@machineParts.Left_Day</div>
+
+
+        @if (Model.Type == 3)
+        {
+            <div class="editor-label"><label>Quantity</label></div>
+            <div class="editor-field" style="width: 50% !important;">
+                <div style="width:50%!important;float:left;margin-right:15px;">
+                    <input class="form-control k-textbox"
+                           required="" data-required-msg="Please enter quantity"
+                           id="txtNotInsQuan" name="txtNotInsQuan"
+                           type="text" value=""
+                           data-val-regex="Invalid"
+                           data-val-regex-pattern="\d+(\.\d{1,2})?">
+                    <span class="field-validation-valid text-danger" data-valmsg-for="txtNotInsQuan" data-valmsg-replace="true"></span>
+                </div>
+                @if (Model.CanbeBreakable)
+                {
+                    total_Quan = Convert.ToDouble(Model.NotInsQuan) * Convert.ToDouble(Model.SubQuantity);
+                    <span style="font-weight:bold;">Out of @total_Quan @Model.SubUnitName</span>
+                }
+                else
+                {
+                    total_Quan = Convert.ToDouble(Model.NotInsQuan);
+                    <span style="font-weight:bold;">Out of @Model.NotInsQuan @Model.Unitname</span>
+                }
+            </div>
+        }
+
+        <div class="editor-label"><label>Expired Date</label></div>
+        <div class="editor-field">
+            <input class="form-control k-textbox"
+                   required="" data-required-msg="Please enter replace date"
+                   id="txtExpireDate" name="txtExpireDate"
+                   type="text" value=""
+                   aria-invalid="true" data-val-regex="Invalid"
+                   data-val-regex-pattern="([1-9][0-9]*)">
+            <span class="field-validation-valid text-danger" data-valmsg-for="txtExpireDate" data-valmsg-replace="true"></span>
+        </div>
+
+        <div class="k-edit-buttons k-state-default">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_parts_rep_save"><span class="k-icon k-update"></span>Replace</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_parts_rep_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+}
+<script>
+    var msg = "";
+    var validation = $("#Div_machine_replace").kendoValidator({
+        rules: {
+            maxQuan: function (input) {
+                if (input.is("[name=txtNotInsQuan]") && '@(Model.Type)' === '3') {
+                    var max = '@(total_Quan)';
+                    var value = $("#txtNotInsQuan").val();
+                    if (parseFloat(value) > parseFloat(max)) {
+                        return false;
+                    }
+                }
+                return true;
+            },
+            minQuan: function (input) {
+                if (input.is("[name=txtNotInsQuan]") && '@(Model.Type)' === '3') {
+                    var value = $("#txtNotInsQuan").val();
+                    if (parseFloat(value) < 0.1) {
+                        return false;
+                    }
+                }
+                return true;
+            },
+            txtExpireDate: function (input) {
+                if (input.is("[name=txtExpireDate]") && $("#txtExpireDate").val() === '') {
+                    return false;
+                }
+                return true;
+            }
+        },
+        messages: {
+            maxQuan: "Quantity can not be greater than " + '@(total_Quan)',
+            minQuan: "Quantity must be greater than 0",
+            txtExpireDate: "Please enter replace date"
+        }
+    }).data("kendoValidator");
+
+    $("#btn_parts_rep_cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#btn_parts_rep_save").click(function () {
+        if (validation.validate()) {
+            notification.show({ message: "Machine '" + '@(ViewBag.machinname)' + "' spare parts is replacing...", showTime: startTime() }, "upload-progress");
+            var quan = "";
+            if ('@(Model.Type)' === '3') {
+                quan = $("#txtNotInsQuan").val();
+            } else {
+                quan = 1;
+            }
+            var sendData = {
+                machinId: '@(ViewBag.machinId)', invenId: '@(Model.PartsId)', repDate: $("#txtExpireDate").val(),
+                userId: userId,
+                name: '@(Model.PartsName)',
+                MachineAcronym: '@(ViewBag.machinname)',
+                quan: quan
+            };
+            $.ajax({
+                url: '@Url.Action("_MachinePartReplace", "Inventory")',
+                type: 'Post',
+                data: sendData,
+                success: function (response) {
+                    if (response === "Success") {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        msg = "Machine spare parts " + sendData.name + " has been successfully replaced.";
+                        notification.show({ message: msg, showTime: startTime() }, "upload-success");
+
+                        $("#Div_All_Machi_Main").empty();
+                        $("#textForSearch").val("");
+                        $("#Div_All_Machi_Main").append('<div class="loading_partial"></div>');
+                        var passData = { machineTypeId: machineTypeId };
+                        $("#Div_All_Machi_Main").load('@Url.Action("_MachineMaintanence", "Inventory")', passData);
+                    }
+                    else {
+                        msg = "Machine spare parts " + sendData.name + " replace was unsuccessful.";
+                        notification.show({ message: msg, showTime: startTime() }, "upload-error");
+                    }
+                    $("#btn_parts_rep_save").closest(".k-window-content").data("kendoWindow").close();
+                },
+                error: function () {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occured!", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+</script>

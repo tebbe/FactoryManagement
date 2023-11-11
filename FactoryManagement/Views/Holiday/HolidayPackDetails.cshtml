@@ -1,0 +1,215 @@
+﻿
+@******************************** Created By Jerin Jahan (Date:03.01.2017) *********************************@
+@using FactoryManagement.Helpers
+@model FactoryManagement.Models.View_HolidayPackage
+@{
+    ViewBag.Title = "Holiday Package Details";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-users fa-fwt"></i>
+            <span>Human Resource</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list" aria-hidden="true"></i>
+            <a href="/Holiday/HolidayPackage"> Holiday</a>
+        </li>
+        <li>
+            <i class="fa fa-info" aria-hidden="true"></i>
+            <a href="@Html.EncodedParam("HolidayPackDetails","Holiday",new {id=Model.HolidayPackId },null)"> Holiday Package Details</a>
+        </li>
+    </ul>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption font-green">
+                    <i class="fa fa-info-circle font-green"></i>
+                    <span class="caption-subject bold uppercase"> Package Details</span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div id="div_holiday_pck_details"><div class="win_loading_half"></div></div>
+                <span class="btn green" id="btn_Holiday_Add" data-toggle="tooltip" title="Add New Holiday"><i class="fa fa-plus"></i> Add New Holiday</span>
+                <div id="div_holiday_list"></div>
+                @if (Model.HolidayPackId > 0)
+                {
+                    <script>
+            $("#div_holiday_pck_details").load('@Url.Action("_HolidayPackInfo", "Holiday")?id='+@(Model.HolidayPackId));
+                    </script>
+                }
+
+                @if (db.HolidayLists.Where(m => m.HolidayPackId == Model.HolidayPackId).Any())
+                {
+                    <script>
+            var data={HolidayPackId:@Model.HolidayPackId};
+            $("#div_holiday_list").append('<div class="loading_half"></div>');
+            $("#div_holiday_list").load('@Url.Action("_AllHolidayList", "Holiday")',data);
+                    </script>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+  
+</div>
+
+<div id="win_holiday_add"></div>
+<script id="temp_for_confirmation" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">#=message#</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_confirm_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_confirm_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+
+<script>
+    var HolidayPackId= '@(Model.HolidayPackId)';
+    $(document).ready(function () {
+        $("#liForHR").addClass('active');
+        $("#liForHolidayList").addClass('sublistActive');
+        
+    });
+    $(document).on("click","#btn_page_back",function(){
+        location.href="/Holiday/HolidayPackage";
+    });
+
+    //******************************** Add New Holiday *****************************************************
+    $("#btn_Holiday_Add").click(function (e) {
+        var id = $(this).data("id");
+        $("#win_holiday_add").empty();
+        $("#win_holiday_add").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            position: { top: '20%' },
+            title: 'Add New Holiday',
+            close:onWindowClose
+        });
+        $("#win_holiday_add").html('<div class="win_loading_half"></div>');
+        var win_holiday_add = $("#win_holiday_add").data("kendoWindow");
+        win_holiday_add.refresh({ url: "/Holiday/_HolidayCreateMain?id="+ id});
+        win_holiday_add.center().open();
+
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+
+    //******************************** Delete Holiday From Package *****************************************
+    $("#div_holiday_list").on("click", ".btn_holiday_remv", function (e) {
+        var id = $(this).data("id");
+        var name = $(this).data("name");
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close:onWindowClose
+        });
+
+        message = "Are you sure want to delete this holiday from package?";
+        var template = kendo.template($("#temp_for_confirmation").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+
+        kendoWindow.find("#btn_confirm_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_confirm_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            DeleteHoliday(id, name);
+        }).end();
+    });
+    function DeleteHoliday(id, name) {
+        notification.show({ message: "Hoilday '"+name+"' is deleting...", showTime: startTime() }, "upload-progress");
+        $.ajax({
+            url: '@Url.Action("DeleteHoliday", "Holiday")',
+            type: 'Post',
+            data: { id: id, UserId: userId, name: name,packId:HolidayPackId},
+            success: function (data) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                if (data !== "Error") {
+                    notification.show({ message: "Hoilday packgae '"+name+"' has been successfully deleted.", showTime: startTime() }, "upload-success");
+                    $("#div_holiday_list").empty();
+                    if(data){
+                        var data={HolidayPackId:@Model.HolidayPackId};
+                        $("#div_holiday_list").append('<div class="loading_half"></div>');
+                        $("#div_holiday_list").load('@Url.Action("_AllHolidayList", "Holiday")',data);
+                    }
+                } else {
+                    notification.show({ message: "Hoilday packgae '" + name + "' deletion was unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+            },
+            error: function (err) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+            }
+        });
+    }
+
+    //******************************** Edit Holiday From Package *****************************************
+    $("#div_holiday_list").on("click", ".btn_holiday_edit", function (e) {
+        var id = $(this).data("id");
+        var name = $(this).data("name");
+
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close:onWindowClose
+        });
+
+        message = "Are you sure want to edit this holiday from package?";
+        var template = kendo.template($("#temp_for_confirmation").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+
+        kendoWindow.find("#btn_confirm_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_confirm_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            editHoliday(id, name);
+            
+        }).end();
+    });
+    function editHoliday(id, name) {
+        $("#win_holiday_add").empty();
+        $("#win_holiday_add").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            position: { top: '20%' },
+            title: 'Edit Holiday',
+            close:onWindowClose
+        });
+        $("#win_holiday_add").html('<div class="win_loading_half"></div>');
+        $("#win_holiday_add").html('<div class="win_loading_half"></div>');
+        var win_holiday_add = $("#win_holiday_add").data("kendoWindow");
+        win_holiday_add.refresh({
+            url: "/Holiday/_HolidayCreateMain?id="+id
+        });
+        win_holiday_add.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie onlys
+    }
+</script>

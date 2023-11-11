@@ -1,0 +1,63 @@
+﻿
+
+@********************* Created By Jerin Jahan (Date:16.01.2017) *******************************@
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;width:96%!important;" id="Div_Reject_Reason">
+    <div class=" editor-label"><label for="Reason">Reason</label></div>
+    <div class="editor-field">
+        <textarea class="form-control k-textbox" cols="65" id="Reason" name="Reason" rows="5" 
+                  data-val-length-max="500" data-val-length="Reason cannot be longer than 500 characters."></textarea>
+        <span class="field-validation-valid text-danger" data-valmsg-for="Reason" data-valmsg-replace="true"></span>
+    </div>
+    <div class="k-edit-buttons k-state-default">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_temp_reject"><span class="k-icon k-update"></span>Confirm</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_temp_reject_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+<script>
+    $("#btn_temp_reject_cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#btn_temp_reject").click(function () {
+        var validation = $("#Div_Reject_Reason").kendoValidator({
+            rules: {
+                reason: function (input) {
+                    if (input.attr('name') === "Reason" && $("#Reason").val() === '') {
+                        return false;
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                reason:"Please enter reject reason",
+            }
+        }).data("kendoValidator");
+
+        if (validation.validate()) {
+            notification.show({ message: "Application is rejecting...", showTime: startTime() }, "upload-progress");
+            $.ajax({
+                url: '@Url.Action("LeaveAppReject", "LeaveManagement")',
+                type: 'Post',
+                data: { id: '@(ViewBag.id)', userId: userId, Reason: $("#Reason").val() },
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === "Error") {
+                        notification.show({ message: "Application rejection was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                    else {
+                        $("#btn_temp_reject").closest(".k-window-content").data("kendoWindow").close();
+                        notification.show({ message: "Application has been successfully rejected.", showTime: startTime() }, "upload-success");
+
+                        $("#div_For_Partial").empty();
+                        $("#div_For_Partial").append('<div class="loading_partial"></div>');
+                        $("#div_For_Partial").load(url);
+                    }
+                },
+                error: function (er) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+</script>

@@ -1,0 +1,102 @@
+﻿@**********************************Created By : Tasnim Tuli (22.12.2016)************@
+@model FactoryManagement.ModelView.HR.UserInformationModelView
+@Html.HiddenFor(m => m.UserId)
+
+<style>
+    .image-uploader {
+        width: 100%;
+        /*height: 260px;*/
+        height: 270px;
+        display: block;
+        text-align: center;
+    }
+
+    .imgPreview {
+        background-color: #e8e4d0;
+        margin-bottom: 20px;
+        position: relative;
+        width: 80%;
+        height: 160px;
+        border: 1px solid #808080;
+        display: block;
+        overflow: hidden;
+    }
+
+        .imgPreview img {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+            display: block;
+            max-width: 71%;
+            height: auto;
+        }
+
+    .lblForPics {
+        text-align: center;
+        max-width: 100%;
+        width: 100%;
+        height: 221px;
+        vertical-align: middle;
+        border: 1px dashed blue;
+    }
+
+        .lblForPics span {
+            color: #083bb5 !important;
+        }
+
+    .previewImgClose {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        float: right;
+        right: -1.8em;
+        bottom: -1.8em;
+        z-index: 9999;
+        margin-top: -3em;
+    }
+    .download_icon {
+        width : 20px;
+    }
+</style>
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="image_div">
+    <div class="editor-label"><label for="NationalIdFontImg">Image of front side</label></div>
+    <div class="editor-field" style="padding-top:6px;">
+        @if (Model.NationalIdFontImg != null && Model.NationalIdFontImg != "")
+        {
+            <div id="imgPreview-0" class="col-md-1 imgPreview"><img src="~/Images/UserPicture/NationalId/Original/@Model.NationalIdFontImg" /></div>
+            <span>
+                <a href="/HumanResource/DownloadNIDFront?UserId=@Model.UserId"><img src="~/Images/Icon/download_icon.png" class=" download_icon" style="cursor:pointer;" id="DownloadfrontImage" /></a>
+            </span>
+        }
+        else
+        {
+            <p>Not Uploaded</p>
+        }
+    </div>
+    <div class="editor-label"><label for="NationalIdBackImg">Image of back side</label></div>
+    <div class="editor-field" style="padding-top:6px;">
+        @if (Model.NationalIdBackImg != null && Model.NationalIdBackImg != "")
+        {
+            <div id="imgPreview-0" class="col-md-1 imgPreview"><img src="~/Images/UserPicture/NationalId/Original/@Model.NationalIdBackImg" /></div>
+            <span>
+                <a href="/HumanResource/DownloadNIDBack?UserId=@Model.UserId"><img src="~/Images/Icon/download_icon.png" class=" download_icon" style="cursor:pointer;" id="DownloadfrontImage" /></a>
+            </span>
+        }
+        else
+        {
+        <p>Not uploaded</p>
+        }
+    </div>
+    <div class="k-edit-buttons k-state-default">
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_Ntnl_Id_Image_Close"><span class="k-icon k-cancel"></span>Close</button>
+    </div>
+</div>
+<script>
+    $("#btn_Ntnl_Id_Image_Close").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

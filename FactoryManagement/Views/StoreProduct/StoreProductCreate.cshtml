@@ -1,0 +1,1089 @@
+﻿
+
+@************************************** Created By Jerin Jahan (Date:04.09.2016)  ***************************************@
+
+@model FactoryManagement.ModelView.Inventory.InventoryListModelView
+
+@{
+    ViewBag.Title = "InventoryCreate";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+<link href="~/Content/StoreProCreate.css" rel="stylesheet" />
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/StoreProduct/Store">Store</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-plus-circle" aria-hidden="true"></i>
+            <a href="/StoreProduct/StoreProductCreate">Add New Item</a>
+        </li>
+    </ul>
+</div>
+@using (Html.BeginForm())
+{
+    @Html.HiddenFor(m => m.InventoryId)
+    @Html.HiddenFor(m => m.LineId)
+    @Html.HiddenFor(m => m.Edit)
+    @Html.HiddenFor(m => m.ProductTypeId)
+    @Html.HiddenFor(m => m.UnitId)
+    @Html.HiddenFor(m => m.BrandId)
+    @Html.HiddenFor(m => m.SubUnits)
+    <div class="portlet light bordered">
+        <div class="portlet-title">
+            <div class="caption font-green">
+                <i class="fa fa-plus font-green"></i>
+                <span class="caption-subject bold uppercase">Add New Item</span>
+            </div>
+        </div>
+        <div class="portlet-body form">
+            <div class="form-horizontal" id="div_Inv_Pro">
+                <div class="form-body">
+                    <div class="form-group">
+                        <label class="control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" for="WareId">Select One Store</label>
+                        <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7">
+                            @(Html.Kendo().DropDownList()
+                              .Name("location")
+                              .DataTextField("Name")
+                              .DataValueField("IdWithChar")
+                              .OptionLabel("--Select One Type--")
+                              .HtmlAttributes(new { style = "width:100%" })
+                              .DataSource(source =>
+                              {
+                                  source.Read(read =>
+                                  {
+                                      read.Action("GetAllStoreWare", "StoreProduct");
+                                  })
+                                  .ServerFiltering(true);
+                              })
+                            )
+                            <span class="field-validation-valid text-danger" data-valmsg-for="location" data-valmsg-replace="true"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.ProductName, "Product Name", htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" })
+                        <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" id="div_Pro_AutoCom">
+                            @(Html.Kendo().AutoComplete()
+                            .Name("ProductName")
+                            .DataTextField("ProductName")
+                            .Filter("contains")
+                            .MinLength(3)
+                            .HtmlAttributes(new { style = "width:100%" })
+                            .Events(e => e.Select("InventoryItemSelect"))
+                            .DataSource(source =>
+                              {
+                                  source.Read(read =>
+                                  {
+                                      read.Action("ProductNameSearching", "StoreProduct").Data("onAdditionalData");
+                                  })
+                                  .ServerFiltering(true);
+                              })
+                            )
+                            @Html.ValidationMessageFor(model => model.ProductName, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-lg-9 col-md-9 col-sm-8 col-xs-7" style="display:none;padding-top:7px;" id="div_pro_select">
+                            <label id="lbl_Pro_Name"></label>
+                            <span class="k-icon k-i-close" id="btnCloseForProduct" data-id="1"></span>
+                        </div>
+                    </div>
+                    <div class="div_hide_display">
+                        <div id="divForProductCatagory">
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.ProductTypeId, "Product Type Name", htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" })
+                                <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" id="dynDivForProCat-1">
+                                    @(Html.Kendo().DropDownList().Name("productCatType-1")
+                                    .OptionLabel("--Select One Type--")
+                                    .BindTo(ViewBag.ProductTypeId as SelectList)
+                                    .Events(e => e.Change("onProductChange"))
+                                    .HtmlAttributes(new { style = "width:100%" })
+                                    )
+                                    @Html.ValidationMessageFor(model => model.ProductTypeId, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" style="display:none;padding-top:7px;" id="divForCatLbl-1">
+                                    <label id="lblForCatagoryName-1"></label>
+                                    <span class="k-icon k-i-close" id="btnCloseForCat-1" data-id="1"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.Country, "Country of Origin", htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" })
+                            <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7">
+                                @(Html.Kendo().DropDownListFor(model => model.Country)
+                                .BindTo(ViewBag.Country)
+                                .OptionLabel("--Select One--").DataTextField("Text")
+                                .HtmlAttributes(new { style = "width:100%" })
+                                )
+                                @Html.ValidationMessageFor(model => model.Country, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="form-group" id="divForBrand">
+                            @Html.LabelFor(model => model.BrandId, "Brand Name", htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" })
+                            <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" id="div_Brnd_AutoCom">
+                                @(Html.Kendo().AutoComplete()
+                                    .Name("BrandName")
+                                    .DataTextField("BrandName")
+                                    .Filter("contains")
+                                    .MinLength(3)
+                                    .HtmlAttributes(new { style = "width:100%" })
+                                    .Events(e => e.Select("BrandSelect"))
+                                    .DataSource(source =>
+                                      {
+                                          source.Read(read =>
+                                          {
+                                              read.Action("BrandNameSearching", "StoreProduct").Data("onBrandData");
+                                          })
+                                          .ServerFiltering(true);
+                                      })
+                                )
+                                @Html.ValidationMessageFor(model => model.BrandId, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" style="display:none;padding-top:7px;" id="div_brnd_select">
+                                <label id="lbl_Brnd_Name"></label>
+                                <span class="k-icon k-i-close" id="btnCloseForBrnd" data-id="1"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.ModelName, "Model", htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" })
+                            <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7">
+                                @Html.EditorFor(model => model.ModelName, new { htmlAttributes = new { @class = "form-control k-textbox col-lg-2 col-md-2" } })
+                            </div>
+                            <div class="col-lg-4 col-md-3 col-sm-4 col-xs-7">
+                                @Html.ValidationMessageFor(model => model.ModelName, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="form-group" style="display:none;">
+                            @Html.LabelFor(model => model.Price, "Price", htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" })
+                            <div class="col-md-4 col-sm-5 col-xs-7">
+                                @Html.EditorFor(model => model.Price, new { htmlAttributes = new { @class = "form-control k-textbox col-lg-2 col-md-2" } })
+                            </div>
+                            <div class="col-md-4 col-sm-4 col-xs-3">
+                                <span>@ViewBag.getCurrency (per item)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="div_slected_pro_info"></div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Quantity, "Quantity", htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" })
+                        <div class="col-md-2 col-sm-3 col-xs-7">
+                            @Html.EditorFor(model => model.Quantity, new { htmlAttributes = new { @class = "form-control k-textbox", @type = "text", @onkeypress = "return isNumber(event)" } })
+                        </div>
+                        <div class="col-md-2 col-sm-2 col-xs-3">
+                            <span id="lbl_select_pro_unitname"></span>
+                        </div>
+                    </div>
+                    <div id="divForUnitList">
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.UnitId, "Unit", htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" })
+                            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-8" id="divForunit-1">
+                                @(Html.Kendo().DropDownList().Name("unitType-1")
+                            .OptionLabel("--Select One Type--")
+                            .BindTo(ViewBag.UnitId as SelectList)
+                            .Events(e => e.Change("onUnitChange"))
+                            .HtmlAttributes(new { style = "width:100%" })
+                                )
+                                <span class="field-validation-valid text-danger" data-valmsg-for="UnitId" data-valmsg-replace="true"></span>
+                            </div>
+                            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-8" style="display:none;padding-top:7px;" id="divForUnitLbl-1">
+                                <label id="lblForUnitName-1"></label>
+                                <span class="k-icon k-i-close" id="btnCloseForUnit-1" data-id="1"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group" id="divForSubUnitChk">
+                        <div class="col-md-offset-3 col-md-9 col-sm-offset-4 col-sm-8  col-xs-12">
+                            <div>@Html.CheckBoxFor(model => model.CanbeBreakable, new { htmlAttributes = new { } }) Breakable quanity</div>
+                        </div>
+                    </div>
+                    <div id="divForSubUnits">
+                        <div class="form-group">
+                            <label class="control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" id="lblForSubQuantity"></label>
+                            <div class="col-md-2 col-sm-3 col-xs-7" style="padding-right:0px;">
+                                @Html.EditorFor(model => model.SubQuantity, new { htmlAttributes = new { @class = "form-control k-textbox", @type = "text", @onkeypress = "return isNumber(event)" } })
+                            </div>
+                        </div>
+                        <div id="divForSubUnitList">
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.SubUnits, "Unit", htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" })
+                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-8" id="divForSubUnit-1">
+                                    @(Html.Kendo().DropDownList().Name("SubunitType-1")
+                                .OptionLabel("--Select One Type--")
+                                .BindTo(ViewBag.UnitId as SelectList)
+                                .Events(e => e.Change("onBreakableUnitChange"))
+                                .HtmlAttributes(new { style = "width:100%" })
+                                    )
+                                    <span class="field-validation-valid text-danger" data-valmsg-for="SubUnits" data-valmsg-replace="true"></span>
+                                </div>
+                                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-8" style="display:none;padding-top:7px;" id="divForSubUnitLbl-1">
+                                    <label id="lblForSubUnitName-1"></label>
+                                    <span class="k-icon k-i-close" id="btnCloseForSubUnit-1" data-id="1"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group" id="Div_For_Mini_Quan">
+                        <label class="control-label col-lg-3 col-md-3 col-sm-4 col-xs-12">Minimum Quantity</label>
+                        <div class="col-md-2 col-sm-3 col-xs-7">
+                            <input class="form-control k-textbox" data-val-number="Minimun quantity must be a number."
+                                   data-val-regex="Enter only positive number" data-val-regex-pattern="^[-9]\d*$"
+                                   @*data-val="true"  data-val-required="Please enter minimum quantity"*@
+                                   id="txt_Mini_Quan" name="txt_Mini_Quan"
+                                   onkeypress="return isNumber(event)"
+                                   type="text" value="" aria-invalid="true">
+                            <span class="field-validation-valid text-danger" data-valmsg-for="txt_Mini_Quan" data-valmsg-replace="true"></span>
+                        </div>
+                        <div class="col-md-2 col-sm-2 col-xs-3">
+                            <span id="lbl_select_minquan_unitname"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-lg-3 col-md-3 col-sm-4 col-xs-12">Location</label>
+                        <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7">
+                            @Html.EditorFor(model => model.Rack, new { htmlAttributes = new { @class = "form-control k-textbox col-lg-2 col-md-2" } })
+                        </div>
+                    </div>
+                    <div class="div_hide_display" style="display:none;">
+                        <div class="form-group" id="divForSoldOption">
+                            <div class="col-md-offset-3 col-md-9 col-sm-offset-4 col-sm-8  col-xs-12">
+                                <div>@Html.ValidationMessageFor(model => model.CanbeSold, "", new { @class = "text-danger" })</div>
+                                <div>@Html.CheckBoxFor(model => model.CanbeOrdered, new { htmlAttributes = new { } }) Can be ordered</div>
+                                <div>@Html.CheckBoxFor(model => model.CanbeSold, new { htmlAttributes = new { } }) Can be sold</div>
+                                <div id="divForWarrantyChk">@Html.CheckBoxFor(model => model.CanbeRepaired, new { htmlAttributes = new { } }) Can be warranted</div>
+                                <div style="margin-left:20px;" id="divForWarranty">
+                                    @Html.RadioButtonFor(model => model.WarrantyFor, "1", new { id = "Replacement" }) Replacement
+                                    @Html.RadioButtonFor(model => model.WarrantyFor, "2", new { id = "Service" }) Service
+                                    @Html.ValidationMessageFor(model => model.WarrantyFor, "", new { @class = "text-danger" })
+                                    <div class="form-group" id="divForWarrantyDate">
+                                        <div id="divforwanlbl">
+                                            @Html.LabelFor(model => model.Warranty, "Warranty Day/s", htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" })
+                                        </div>
+                                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" style="padding-right:0px;padding-left:0px;">
+                                            @Html.EditorFor(model => model.WarrantyDay, new
+                                               {
+                                                   htmlAttributes = new
+                                                   {
+                                                       @class = "form-control k-textbox",
+                                                       @type = "text",
+                                                       @onkeypress = "return isNumber(event)"
+                                                   }
+                                               })
+                                            @Html.ValidationMessageFor(model => model.Warranty, "", new { @class = "text-danger" })
+                                        </div>
+                                        <div class="col-md-2 col-sm-6 col-xs-6">
+                                            @Html.CheckBoxFor(model => model.IsWarrantyStart) Start Now
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="div_Chk_Rep_Spare">@Html.CheckBoxFor(model => model.CanbeReplaceable, new { htmlAttributes = new { } }) Replaceable item</div>
+                                <div>@Html.CheckBoxFor(model => model.CanbePerishable, new { htmlAttributes = new { } }) Perishable item</div>
+                                <div id="div_Chk_topup_Spare">@Html.CheckBoxFor(model => model.CanbeTopUp, new { htmlAttributes = new { } }) Topup item</div>
+                            </div>
+                        </div>
+                        <div id="DivForExpiredDate">
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.ExpiredDate, "Best Buy(Expired Date)", htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" })
+                                <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7">
+                                    @(Html.Kendo().DatePicker()
+                                    .Name("ExpiredDate")
+                                    .Min(DateTime.Now)
+                                    .HtmlAttributes(new { @style = "width:100%" })
+                                    )
+                                </div>
+                                <div class="col-lg-4 col-md-3 col-sm-4 col-xs-7">
+                                    @Html.ValidationMessageFor(model => model.ExpiredDate, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" })
+                            <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7">
+                                @Html.TextAreaFor(model => model.Description, new { @class = "form-control k-textbox", rows = 5 })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.ProductImageName, "Upload Picture", htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" })
+                            <div class="col-md-9 col-sm-8 col-xs-12" style="padding-left:0px!important;" id="divForPic">
+                                <div class="col-md-3 col-xs-3" id="divPic-0">
+                                    <span id="divForpic-0"></span>
+                                    <div id="imgPreview-0" class="imgPreview"></div>
+                                    <div id="imgUpload-0" class="image-uploader">
+                                        <input type="file" name="files" id="file-0" class="inputfile" data-count="0" style="display:none;" />
+                                        <label for="file-0" id="lbl-0" class="lblForPics">
+                                            <span style="font-size: 25px;padding-top:1.8em;display:block;">+</span>
+                                            <span style="font-size: 15px;font-weight:bold;">Add Photos</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="form-group" id="Div_for_NewExpiredDate" style="display:none;">
+                        <label class="control-label col-lg-3 col-md-3 col-sm-4 col-xs-12">Expired Date</label>
+                        <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7">
+                            @(Html.Kendo().DatePickerFor(m => m.NewExpiredDate).Min(DateTime.Now).HtmlAttributes(new { @style = "width:100%" }))
+                            <span class="field-validation-valid text-danger" data-valmsg-for="NewExpiredDate" data-valmsg-replace="true"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <div class="row">
+                        <div class="col-md-offset-3 col-md-9 col-sm-offset-4 col-sm-8">
+                            <input type="button" value="Save" class="btn green" id="btnInventoryCreate" />
+                            <input type="Reset" value="Refresh" class="btn yellow" id="btnRefresh" />
+                            <input type="button" value="Cancel" class="btn red" id="btnCancel" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> 
+}
+<script>
+    function isNumber(e) {
+        e = (e) ? e : window.event;
+        var charCode = (e.which) ? e.which : e.keyCode;
+        if ((charCode != 46 || $(this).val().indexOf('.') != -1) && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+        return true;
+    }
+    function onAdditionalData() {
+        return {
+            prefix: $("#ProductName").val(),
+            isStore:false,
+            isware:false
+        };
+    }
+    function onBrandData() {
+        return {
+            prefix: $("#BrandName").val()
+        };
+    }
+    function InventoryItemSelect(e){
+        var dataItem = this.dataItem(e.item.index());
+        $(".div_hide_display").hide();
+        $("#div_Pro_AutoCom").hide();
+        $("#divForUnitList").hide();
+        $("#div_pro_select").show();
+        $("#div_slected_pro_info").show();
+        $("#div_slected_pro_info").append('<div class="loading_partial"></div>');
+        $("#div_slected_pro_info").load('@Url.Action("_AcquisitionBySearch", "StoreProduct")?InventoryId='+dataItem.InventoryId);
+        $("#lbl_Pro_Name").text(dataItem.ProductName);
+        $("#InventoryId").val(dataItem.InventoryId);
+        $("#Div_for_NewExpiredDate").show();
+    }
+    function BrandSelect(e){
+        var dataItem = this.dataItem(e.item.index());
+        $("#div_Brnd_AutoCom").hide();
+        $("#div_brnd_select").show();
+        $("#lbl_Brnd_Name").text(dataItem.BrandName);
+        $("#BrandId").val(dataItem.BrandId);
+    }
+    $("#btnCloseForProduct").click(function(){
+        $("#Div_for_NewExpiredDate").hide();
+        $("#divForSoldOption").hide();
+        $("#div_slected_pro_info").empty();
+        $("#div_slected_pro_info").hide();
+        $("#div_pro_select").hide();
+        $("#Div_for_NewExpiredDate").hide();
+        $("#NewExpiredDate").val('');
+        $("#Div_For_Mini_Quan").show();
+        $("#div_Pro_AutoCom").show();
+        $("#divForUnitList").show();
+        $("#lbl_Pro_Name").text('');
+        $("#InventoryId").val(0);
+        $("#Country").val('');
+        $("#Price").val('');
+        $("#ProductName").val('');
+        $("#UnitId").val('');
+        $("#lbl_select_pro_unitname").text('');
+
+        $(".div_hide_display").show();
+        $("#div_Pro_AutoCom").show();
+        $("#divForUnitList").show();
+        $("#div_pro_select").hide();
+    });
+    $("#btnCloseForBrnd").click(function(){
+        $("#div_brnd_select").hide();
+        $("#div_Brnd_AutoCom").show();
+        $("#lbl_Brnd_Name").text('');
+        $("#BrandId").val(0);
+    });
+</script>
+<script>
+    var BrandName,count = 1,unitCount=1,brandCount=1,subunitCount=1,allMainFile = [],allFileCount = [];
+    var isStore= '@(ViewBag.isStore)',isware='@(ViewBag.isWare)';
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $("#liForAllInventoryList").addClass('sublistActive');
+        $("#divForSubUnits").hide();
+        $("#divForWarranty").hide();
+        $("#divForWarrantyChk").hide();
+        $("#CanbeBreakable").prop('checked',false);
+        $("#CanbeSold").prop('checked',false);
+        $("#CanbeRepaired").prop('checked',false);
+        $("#CanbePerishable").prop('checked',false);
+        $("#CanbeReplaceable").prop('checked',false);
+        $("#CanbeTopUp").prop('checked',false);
+
+        $("#CanbeBreakable").val(false);
+        $("#CanbeSold").val(false);
+        $("#CanbeRepaired").val(false);
+        $("#CanbeReplaceable").val(false);
+        $("#CanbePerishable").val(false);
+        $("#CanbeTopUp").val(false);
+
+        if (@Model.InventoryId === 0) {
+            $("#btnInventoryCreate").val("Save");
+            $("#Quantity").val('');
+            $("#DivForExpiredDate").hide();
+            $("#divForSubUnitChk").hide();
+        }
+        else {
+            $("#btnInventoryCreate").val("Update");
+            if('@Model.CanbeBreakable'== 'True'){
+                $("#divForSubUnits").show();
+                $("#lblForSubQuantity").text("Per "+$("#UnitId").data("kendoDropDownList").text());
+                $("#divForSubUnits").show();
+            }
+            if('@Model.CanbeSold'== 'True'){
+                $("#divForWarranty").show();
+                $("#divForWarrantyChk").show();
+            }
+            if('@Model.CanbePerishable'== 'True'){
+                $("#DivForExpiredDate").show();
+            }
+            else{
+                $("#DivForExpiredDate").hide();
+            }
+            fileOriginalName='@Model.ImageOriginalName';
+        }
+        $("#divForCatLbl1").hide();
+
+        $("#div_Chk_Rep_Spare").hide();
+        $("#div_Chk_topup_Spare").hide();
+
+        if(isStore === "True"){
+            $("#liForAllInventoryList").addClass('sublistActive');
+        }
+        else{
+            $("#liForWarehouse").addClass('sublistActive');
+        }
+    });
+
+    //**************************** PRODUCT TYPE CHANGE ************************************************
+    function onProductChange(){
+        if(this.value() === ""){
+            $("#ProductTypeId").val(0);
+            $("#div_Chk_Rep_Spare").hide();
+            $("#div_Chk_topup_Spare").hide();
+        }
+        else{
+            var ProductTypeId= this.value();
+            var ProductTypeName= this.text();
+            if(ProductTypeName == "Spare Parts"){
+                $("#div_Chk_Rep_Spare").show();
+                $("#div_Chk_topup_Spare").show();
+            }else{
+                $("#div_Chk_Rep_Spare").hide();
+                $("#div_Chk_topup_Spare").hide();
+            }
+            $.ajax({
+                url: '@Url.Action("ProductTypeHasChildern", "Acquisition")',
+                type: 'Post',
+                data: {ProductTypeId:ProductTypeId},
+                success: function (data) {
+                    if(data)
+                    {
+                        $("#ProductTypeId").val(0);
+                        $("#lblForCatagoryName-"+count).text(ProductTypeName);
+                        $("#divForCatLbl-"+count).show();
+                        $("#dynDivForProCat-"+count).hide();
+
+                        count++;
+                        $("#divForProductCatagory").append('<div class="form-group dynDivForProCat" id="dynDivForProCat-'+count+'">'+
+                            '<label class="control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" for="ProductType-'+count+'">Sub Catagory</label>'+
+                            '<div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" id="divForcat-'+count+'">'+
+                            '<label id="productCatType-'+count+'" style="width:100%;"></label>'+
+                            '<span class="field-validation-valid text-danger" data-valmsg-for="ProductTypeId" data-valmsg-replace="true"></span></div>'+
+                            '<div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" style="display: none; padding-top: 7px;" id="divForCatLbl-'+count+'">'+
+                            '<label id="lblForCatagoryName-'+count+'"></label> '+
+                            '<span class="k-icon k-i-close" id="btnCloseForCat-'+count+'" data-id="'+count+'"></span></div></div>');
+
+                        $("#productCatType-"+count).kendoDropDownList({
+                            dataTextField: "ProductTypeName",
+                            dataValueField: "ProductTypeId",
+                            change: onProductChange,
+                            optionLabel: "--Select One--",
+                            dataSource: {
+                                transport: {
+                                    read: {
+                                        url: "@Url.Action("GetAllProductType", "Acquisition")?ParentId=" + ProductTypeId,
+                                        type: "GET"
+                                    }
+                                }
+                            }
+                        });
+
+                    }else{$("#ProductTypeId").val(ProductTypeId);}
+
+                }
+            });
+        }
+    };
+
+    //**************************** UNIT CHANGE ************************************************
+
+    function onUnitChange(){
+        if(this.value() === ""){
+            $("#divForSubUnitChk").hide();
+        }else{
+            if($("#CanbeBreakable").is(":checked")){
+                $("#lblForSubQuantity").text("Per "+$("#unitType-"+unitCount).data("kendoDropDownList").text());
+            }
+
+            var UnitId= this.value();
+            var UnitName= this.text();
+            $.ajax({
+                url: '@Url.Action("UnitHasChildern", "Acquisition")',
+                type: 'Post',
+                data: {UnitId:UnitId},
+                success: function (data) {
+                    if(data)
+                    {
+                        $("#UnitId").val(0);
+                        $("#lblForUnitName-"+unitCount).text(UnitName);
+                        $("#divForUnitLbl-"+unitCount).show();
+                        $("#divForunit-"+unitCount).hide();
+
+                        unitCount++;
+                        $("#divForUnitList").append('<div class="form-group dynDivForProUnit" id="dynDivForProUnit-'+unitCount+'">'+
+                            '<label class="control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" for="Unit-'+unitCount+'">Sub Unit</label>'+
+                            '<div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" id="divForunit-'+unitCount+'">'+
+                            '<label id="unitType-'+unitCount+'" style="width:100%;"></label>'+
+                            '<span class="field-validation-valid text-danger" data-valmsg-for="UnitId" data-valmsg-replace="true"></span></div>'+
+                            '<div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" style="display: none; padding-top:7px;" id="divForUnitLbl-'+count+'">'+
+                            '<label id="lblForUnitName-'+unitCount+'"></label> '+
+                            '<span class="k-icon k-i-close" id="btnCloseForUnit-'+unitCount+'" data-id="'+unitCount+'"></span></div></div>');
+                        $("#unitType-"+unitCount).kendoDropDownList({
+                            dataTextField: "UnitName",
+                            dataValueField: "UnitId",
+                            change: onUnitChange,
+                            optionLabel: "--Select One--",
+                            dataSource: {
+                                transport: {
+                                    read: {
+                                        url: "@Url.Action("GetAllUnit", "Acquisition")?ParentId=" + UnitId,
+                                        type: "GET"
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    else{
+                        $("#UnitId").val(UnitId);
+                        $("#divForSubUnitChk").show();
+                    }
+                }
+            });
+        }
+    };
+
+    //************************** Breakable Unit Change *****************************************
+    function onBreakableUnitChange(){
+        if(this.value() === ""){
+            $("#SubUnits").val(0);
+        }else{
+            var UnitId= this.value();
+            var UnitName= this.text();
+            $.ajax({
+                url: '@Url.Action("UnitHasChildern", "Acquisition")',
+                type: 'Post',
+                data: {UnitId:UnitId},
+                success: function (data) {
+                    if(data)
+                    {
+                        $("#SubUnits").val(0);
+                        $("#lblForSubUnitName-"+subunitCount).text(UnitName);
+                        $("#divForSubUnitLbl-"+subunitCount).show();
+                        $("#divForSubUnit-"+subunitCount).hide();
+
+                        subunitCount++;
+                        $("#divForSubUnitList").append('<div class="form-group" id="dynDivForSubUnit-'+subunitCount+'">'+
+                            '<label class="control-label col-lg-3 col-md-3 col-sm-4 col-xs-12">Sub Unit</label>'+
+                            '<div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" id="divForSubUnit-'+subunitCount+'">'+
+                            '<label id="SubunitType-'+subunitCount+'" style="width:100%;"></label>'+
+                            '<span class="field-validation-valid text-danger" data-valmsg-for="SubUnits" data-valmsg-replace="true"></span></div>'+
+                            '<div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" style="display: none; padding-top:7px;" id="divForSubUnitLbl-'+count+'">'+
+                            '<label id="lblForSubUnitName-'+subunitCount+'"></label> '+
+                            '<span class="k-icon k-i-close" id="btnCloseForSubUnit-'+subunitCount+'" data-id="'+subunitCount+'"></span></div></div>');
+
+                        $("#SubunitType-"+subunitCount).kendoDropDownList({
+                            dataTextField: "UnitName",
+                            dataValueField: "UnitId",
+                            change: onBreakableUnitChange,
+                            optionLabel: "--Select One--",
+                            dataSource: {
+                                transport: {
+                                    read: {
+                                        url: "@Url.Action("GetAllUnit", "Acquisition")?ParentId=" + UnitId,type: "GET"
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    else{$("#SubUnits").val(UnitId);}}});}};
+
+
+    $("#divForProductCatagory").on("click", ".k-i-close", function (e) {
+        var id = $(this).data("id");
+        $("#productCatType-" + id).data("kendoDropDownList").value(null);
+        $("#divForCatLbl-" + id).hide();
+        $("#dynDivForProCat-" + id).show();
+        $("#ProductTypeId").val(0);
+        $("#div_Chk_Rep_Spare").hide();
+        $("#div_Chk_topup_Spare").hide();
+
+        if (count > id) {
+            for (var i = id; i <= count; i++) {
+                $("#dynDivForProCat-" + (i + 1)).remove();
+                count--;
+            }
+        }
+    });
+    $("#divForBrand").on("click", ".k-i-close", function (e) {
+        var id = $(this).data("id");
+        $("#productBrand-" + id).data("kendoDropDownList").value(null);
+        $("#divForBrandLbl-" + id).hide();
+        $("#divForbrand-" + id).show();
+        $("#BrandId").val(0);
+        if (brandCount > id) {
+            for (var i = id; i <= brandCount; i++) {
+                $("#dynDivForProBrand-" + (i + 1)).remove();
+                brandCount--;
+            }
+        }
+    });
+    $("#divForUnitList").on("click", ".k-i-close", function (e) {
+        var id = $(this).data("id");
+        $("#divForSubUnits").hide();
+        $("#unitType-" + id).data("kendoDropDownList").value(null);
+        $("#divForUnitLbl-" + id).hide();
+        $("#divForunit-" + id).show();
+        $("#UnitId").val(0);
+        if (unitCount > id) {
+            for (var i = id; i <= unitCount; i++) {
+                $("#dynDivForProUnit-" + (i + 1)).remove();
+                unitCount--;
+            }
+        }
+        if(unitCount === 1){
+            $("#divForSubUnitChk").hide();
+        }
+    });
+    $("#divForSubUnitList").on("click", ".k-i-close", function (e) {
+        var id = $(this).data("id");
+        $("#divForSubUnits").hide();
+        $("#SubunitType-" + id).data("kendoDropDownList").value(null);
+        $("#divForSubUnitLbl-" + id).hide();
+        $("#divForSubUnit-" + id).show();
+        $("#SubUnits").val(0);
+        if (subunitCount > id) {
+            for (var i = id; i <= subunitCount; i++) {
+                $("#dynDivForSubUnit-" + (i + 1)).remove();
+                subunitCount--;
+            }
+        }
+    });
+    $('#CanbeBreakable').change(function() {
+        if ($(this).is(":checked")) {
+            $('#CanbeBreakable').val(true);
+        }
+        else {
+            $('#CanbeBreakable').val(false);
+        }
+        if($(this).is(":checked") && $("#unitType-"+unitCount).val() !== '') {
+            var unitname = $("#unitType-"+unitCount).data("kendoDropDownList").text();
+            $("#lblForSubQuantity").text("Per "+unitname);
+            $("#SubQuantity").val("");
+            $("#divForSubUnits").show();
+        }
+        else{
+            $(this).prop("checked",false);
+            $("#divForSubUnits").hide();
+        }
+    });
+    $('#CanbeSold').change(function() {
+        if($(this).is(":checked")) {
+            $("#divForWarrantyChk").show();
+        }
+        else{
+            $("#divForWarrantyChk").hide();
+        }
+    });
+    $('#CanbePerishable').change(function(){
+        if ($(this).is(":checked")) {
+            $('#DivForExpiredDate').show();
+            $('#CanbePerishable').val(1);
+        }
+        else {
+            $('#DivForExpiredDate').hide();
+            $('#CanbePerishable').val(0);
+        }
+    });
+    $("#CanbeRepaired").change(function(){
+        if ($(this).is(":checked")) {
+            $("#divForWarranty").show();
+        }
+        else {
+            $("#divForWarranty").hide();
+            $("#Replacement").prop('checked', false);
+            $("#Service").prop('checked', false);
+        }
+    });
+
+
+
+    //**************************  UPLOAD IMAGE AND REMOVE UPLOADED IMAGE FUNCTION (START) *******************************************
+
+    $("#divForPic").on('change', '.inputfile', function (e) {
+        var id = $(this).data("count");
+        var imgPath = $("#file-" + id)[0].value;
+        var extn = imgPath.substring(imgPath.lastIndexOf('.') + 1).toLowerCase();
+        var image_holder = $("#imgPreview-" + id);
+        var files = e.target.files;
+
+        if (extn == "gif" || extn == "png" || extn == "jpg" || extn == "jpeg") {
+            if (typeof (FileReader) != "undefined") {
+                allFileCount.push(id);
+                allMainFile[id] = files[0];
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $("<img />", { "src": e.target.result }).appendTo(image_holder);
+                }
+                $("#divForpic-" + id).append('<img src="/Content/Icon/modal_close.png" class="previewImgClose" data-count="' + id + '" />');
+                $("#imgUpload-" + id).hide();
+                image_holder.show();
+                $("#divForpic-" + id).show();
+
+                $("#ProductImageName").val($("#file-" + id)[0].files[0]);
+                reader.readAsDataURL($("#file-" + id)[0].files[0]);
+
+                id++;
+                $("#divForPic").append('<div class="col-md-3 col-sm-3 col-xs-3" id="divPic-' + id + '">' +
+                    '<span id="divForpic-' + id + '"></span>' +
+                    '<div id="imgPreview-' + id + '" class="imgPreview"></div>' +
+                    '<div id="imgUpload-' + id + '" class="image-uploader">' +
+                        '<input type="file" name="files" id="file-' + id + '" class="inputfile" data-count="' + id + '" style="display:none;"/>' +
+                        '<label for="file-' + id + '" id="lbl-' + id + '" class="lblForPics">' +
+                            '<span style="font-size: 21px;padding-top:2em;display:block;">+</span>' +
+                            '<span style="font-size: 15px;font-weight:bold;">Add Photos</span>' +
+                        '</label>' +
+                    '</div>' +
+                '</div>');
+
+            } else {
+                alert("This browser does not support FileReader.");
+            }
+        } else {
+            alert("Pls select only images");
+        }
+    });
+    $("#divForPic").on('click', '.previewImgClose', function (e) {
+        var id = $(this).data("count");
+        $("#divPic-" + id).remove();
+        for (var i = 0; i < allFileCount.length; i++) {
+            if (id == allFileCount[i]) {
+                allMainFile.splice(i, 1);
+                allFileCount.splice(i, 1);
+            }
+        }
+        if (allFileCount.length == 0) {
+            allMainFile = allFileCount = [];
+            closeUp = 1;
+        }
+    });
+
+    //**************************  UPLOAD IMAGE AND REMOVE UPLOADED IMAGE FUNCTION (START) *******************************************
+    $('#btnCancel').click(function () {
+        window.history.back();
+    });
+
+    $("#btnInventoryCreate").click(function () {
+        var validatable;
+        if($("#InventoryId").val() > 0){
+            validatable = $("#div_Inv_Pro").kendoValidator({
+                rules: {
+                    location: function (input) {
+                        if (input.is("[name=location]") && $("#location").val() === "") {
+                            return false;
+                        }
+                        return true;
+                    },
+                    ProductTypeId: function (input) {
+                        if (input.is("[name=productCatType-1]")) {
+                            alert($("#productCatType-1").val());
+                            return false;
+                        }
+                        return true;
+                    },
+                    unit: function (input) {
+                        if (input.is("[name=UnitId]") && $("#UnitId").val() === "0") {
+                            return false;
+                        }
+                        return true;
+                    },
+                    chkSubQuantity: function (input) {
+                        if (input.is("[name=SubQuantity]")) {
+                            if ($('#HasSubUnit').is(":checked") === true && $('#SubQuantity').val() === '') {
+                                return false;
+                            }
+                            else {
+                                return true;
+                            }
+                        }
+                        else
+                            return true;
+                    },
+                    chkSubUnit: function (input) {
+                        if (input.is("[name=SubUnits]")) {
+                            if ($('#HasSubUnit').is(":checked") === true && $('#SubUnits').val() === '') {
+                                return false;
+                            }
+                            else {
+                                return true;
+                            }
+                        }
+                        else
+                            return true;
+                    },
+                    NewExpiredDate: function (input) {
+                        if (input.is("[name=NewExpiredDate]")  && $("#NewExpiredDate").val() === "") {
+                            return false;
+                        }
+                        return true;
+                    }
+                },
+                messages: {
+                    location:"Please select one location",
+                    ProductTypeId:"Please select one type",
+                    unit: "Please select unit",
+                    chkSubQuantity:"Please enter quantity",
+                    chkSubUnit:"Please select one",
+                    NewExpiredDate:"Please enter expired date"
+                }
+            }).data("kendoValidator");
+        }else{
+            validatable = $("#div_Inv_Pro").kendoValidator({
+                rules: {
+                    location: function (input) {
+                        if (input.is("[name=location]") && $("#location").val() === "") {
+                            return false;
+                        }
+                        return true;
+                    },
+                    remote: function (input) {
+                        var errormessage;
+                        var remoteAttr = input.attr("data-val-remote-url");
+                        if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                            return true;
+                        }
+                        var isInvalid;
+                        var data = {};
+                        var InventoryId = $("#InventoryId").val();
+                        var productName = $("#ProductName").val();
+
+                        if (input.attr('name') === "ProductName") {
+                            data = { InventoryId: InventoryId, ProductName: productName };
+                        }
+                        $.ajax({
+                            url: remoteAttr,
+                            mode: "abort",
+                            port: "validate" + input.attr('name'),
+                            dataType: "json",
+                            type: input.attr("data-val-remote-type"),
+                            data: data,
+                            async: false,
+                            success: function (response) {
+                                isInvalid = response;
+                                if (isInvalid === true) {
+                                    isInvalid = true;
+                                }
+                                else {
+                                    isInvalid = false;
+                                }
+                            }
+                        });
+
+                        return isInvalid;
+                    },
+                    productType: function (input) {
+                        if (input.is("[name=ProductTypeId]") && $("#ProductTypeId").val() === "0") {
+                            return false;
+                        }
+                        return true;
+                    },
+                    unit: function (input) {
+                        if (input.is("[name=UnitId]") && $("#UnitId").val() === "0") {
+                            return false;
+                        }
+                        return true;
+                    },
+                    //chk1: function (input) {
+                    //    if (input.is("[name=CanbeSold]")) {
+                    //        if ($('#CanbeSold').is(":checked") === true || $('#CanbeOrdered').is(":checked") === true || $('#CanbeRepaired').is(":checked") === true) {
+                    //            return true;
+                    //        }
+                    //        else {
+                    //            return false;
+                    //        }
+                    //    }
+                    //    return true;
+                    //},
+                    chkDate: function (input) {
+                        if (input.is("[name=ExpiredDate]")) {
+                            if ($('#CanbePerishable').is(":checked") === true && $('#ExpiredDate').val() === '') {
+                                return false;
+                            }
+                            else {
+                                return true;
+                            }
+                        }
+                        else
+                            return true;
+                    },
+                    chkSubQuantity: function (input) {
+                        if (input.is("[name=SubQuantity]")) {
+                            if ($('#HasSubUnit').is(":checked") === true && $('#SubQuantity').val() === '') {
+                                return false;
+                            }
+                            else {
+                                return true;
+                            }
+                        }
+                        else
+                            return true;
+                    },
+                    chkSubUnit: function (input) {
+                        if (input.is("[name=SubUnits]")) {
+                            if ($('#HasSubUnit').is(":checked") === true && $('#SubUnits').val() === '') {
+                                return false;
+                            }
+                            else {
+                                return true;
+                            }
+                        }
+                        else
+                            return true;
+                    },
+                    chkWanDate: function (input) {
+                        if (input.is("[name=Warranty]")) {
+                            if ($('#CanbeRepaired').is(":checked") === true && $('#Warranty').val() === '') {
+                                return false;
+                            }
+                            else {
+                                return true;
+                            }
+                        }
+                        else
+                            return true;
+                    }
+                },
+                messages: {
+                    location:"Please select one location",
+                    remote: function (input) {return input.data('val-remote');},
+                    //chk1: "Please select atleast one checkbox",
+                    productType: "Please select product type",
+                    unit: "Please select unit",
+                    chkDate: "Date and Time is required",
+                    chkSubQuantity:"Please enter quantity",
+                    chkSubUnit:"Please select one",
+                    chkWanDate:"Please enter warranty days"
+                }
+            }).data("kendoValidator");
+        }
+        if(validatable.validate())
+        {
+            notification.show({ message: "New product information saving...", showTime: startTime() }, "upload-progress");
+            var url = '';
+            var sendData = new FormData();
+            sendData.append("SelectedLocId", $("#location").val());
+            sendData.append("LineId", '@(Model.LineId)');
+            sendData.append("InventoryId", $("#InventoryId").val());
+            sendData.append("ProductName", $("#ProductName").val());
+            sendData.append("ProductTypeId", $("#ProductTypeId").val());
+            sendData.append("UnitId", $("#UnitId").val());
+            if($("#BrandId").val() == 0){
+                sendData.append("Brand", $("#BrandName").val());
+            }else{
+                sendData.append("Brand", "");
+            }
+            sendData.append("BrandId", $("#BrandId").val());
+            sendData.append("Quantity", $("#Quantity").val());
+            sendData.append("Min_Quantity", $("#txt_Mini_Quan").val());
+            sendData.append("HasSubUnit", $("#HasSubUnit").val());
+            sendData.append("SubQuantity", $("#SubQuantity").val());
+            sendData.append("SubUnits", $("#SubUnits").val());
+            sendData.append("Country", $("#Country").val());
+            sendData.append("Description", $("#Description").val());
+            sendData.append("WarrantyDay", $("#WarrantyDay").val());
+            sendData.append("WarrantyFor", $("input[name=WarrantyFor]:checked").val());
+            sendData.append("IsWarrantyStart", $("#IsWarrantyStart").val());
+            sendData.append("ExpiredDate", $("#ExpiredDate").val());
+            sendData.append("NewExpiredDate", $("#NewExpiredDate").val());
+            sendData.append("ModelName", $("#ModelName").val());
+            sendData.append("Rack", $("#Rack").val());
+            sendData.append("Price", $("#Price").val());
+            sendData.append("CanbeBreakable", $("#CanbeBreakable").val());
+            sendData.append("CanbeSold", $("#CanbeSold").is(":checked")?true:false);
+            sendData.append("CanbeOrdered", $("#CanbeOrdered").is(":checked")?true:false);
+            sendData.append("CanbeRepaired", $("#CanbeRepaired").is(":checked")?true:false);
+            sendData.append("CanbeReplaceable", $("#CanbeReplaceable").is(":checked")?true:false);
+            sendData.append("CanbePerishable", $("#CanbePerishable").is(":checked")?true:false);
+            sendData.append("CanbeTopUp", $("#CanbeTopUp").is(":checked")?true:false);
+            sendData.append("CreatedBy", userId);
+
+            if($("#InventoryId").val() > 0){
+                url='@Url.Action("ExistingProQunatityChange", "StoreProduct")';
+            }else{
+                for (var i = 0; i < allMainFile.length; i++) {sendData.append("files[" + i + "]", allMainFile[i]);}
+                url='@Url.Action("StoreProductInsert", "StoreProduct")';
+            }
+            $.ajax({
+                url: url,
+                type: 'Post',
+                data: sendData,
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({autoHideAfter: 5000});
+                    if (data != null) {
+                        if (data === 'Error') {
+                            notification.show({ message: "Inventory product details insert unsuccessful.", showTime: startTime() }, "upload-error");
+                        }
+                        else {
+                            notification.show({ message: "Inventory product details successfully saved.", showTime: startTime()}, "upload-success");
+                            location.reload();
+                        }
+                    }
+                },
+                error: function (error) {
+                    notification.hide();
+                    notification.setOptions({autoHideAfter: 5000});
+                    notification.show({ message: "Unsuccessful", showTime: startTime() }, "upload-error");
+                }
+            });
+        }
+    });
+    $('#btnRefresh').click(function () {
+        location.reload();
+    });
+</script>

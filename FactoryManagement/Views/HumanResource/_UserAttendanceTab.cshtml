@@ -1,0 +1,32 @@
+﻿
+
+
+@******************** Created By Jerin Jahan(Date:09.12.2016) **************************@
+<div class="col-sm-12" style="padding-left:0px!important;padding-right:0px!important;">
+    <div class="panel with-nav-tabs panel-default">
+        <div class="panel-heading">
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#tab1AttendanceList" data-toggle="tab">All Record</a></li>
+                <li id="liUserAttenInput"><a href="#tab2AttenInput" data-toggle="tab">Input Attendance</a></li>
+            </ul>
+        </div>
+        <div class="panel-body">
+            <div class="tab-content">
+                <div class="tab-pane fade in active" id="tab1AttendanceList"><div class="loading_half"></div></div>
+                <div class="tab-pane fade" id="tab2AttenInput"><div class="loading_half"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var up = true, selectedUserId = '@(ViewBag.UserId)';
+    $(document).ready(function () {
+        var sendData = { UserId: '@(ViewBag.UserId)',wrk_scdl_id:work_schedule};
+        $("#tab1AttendanceList").load('@Url.Action("UserAllAttendList", "HumanResource")', sendData);
+    });
+    $("#liUserAttenInput").click(function () {
+        var sendData = { UserId: '@(ViewBag.UserId)'};
+        $("#tab2AttenInput").load('@Url.Action("_InputSingleUserAtten", "HumanResource")', sendData);
+    });
+    
+</script>

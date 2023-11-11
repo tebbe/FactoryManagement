@@ -1,0 +1,247 @@
+﻿@******************************** Created By Jerin Jahan (Date: 03.01.2017) ******************************************************@
+@model FactoryManagement.Models.View_HolidayPackage
+@{
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+@if (ViewBag.view == "win")
+{
+    <div class="k-edit-form-container col-md-10 col-sm-10 col-xs-10" id="Div_HolidayPck_Info" style="margin-bottom:4%;">
+        <dl class="dl-horizontal col-sm-offset-2 col-sm-8">
+            <dt>Package Name</dt>
+            <dd><span>@Model.HolidayPackName</span></dd>
+            <dt>No. of Paid Leave</dt>
+            <dd><span>@Model.NoOfPaidLeave days</span></dd>
+            <dt>Created By</dt>
+            <dd>
+                @if (Model.CreatedBy > 0)
+                {             
+                    <span>@Model.CreatedUserName</span>
+                }
+                else
+                {
+                    <span>Super Admin</span> 
+                }
+            </dd>
+
+            <dt>Created Date</dt>
+            <dd><span>@Model.CreatedDateFormate</span></dd>
+
+            <dt>Last Updated By</dt>
+            <dd><span>@Model.UpdateUsername</span></dd>
+            <dt>Last Updated Date</dt>
+            <dd><span>@Model.UpdatedDateFormate</span></dd>
+        </dl>
+    </div>
+}
+else if (ViewBag.view == "partial")
+{
+    <style>
+        #Div_Holiday dt {color: #5a7391 !important;}
+        #Div_Holiday dd {color: #93a3b5 !important;}
+    </style>
+    <dl class="dl-horizontal col-sm-12" id="Div_Holiday">
+        <dt>Package Name</dt>
+        <dd><span>@Model.HolidayPackName</span><i class="fa fa-pencil" id="btn_change_holy_pack" style="margin-left:5%;"></i></dd>
+
+        <dt>No. of Paid Leave</dt>
+        <dd><span>@Model.NoOfPaidLeave days</span></dd> 
+        
+        <dt></dt>
+        <dd><span style="color:#428bca;cursor:pointer;" id="btn_User_Pck_Holiday_List">Show All Holiday List</span></dd>
+    </dl>
+}
+else if (ViewBag.view == "isDisplay")
+{
+    <style>
+        #Div_Holiday dt {
+            color: #5a7391 !important;
+        }
+
+        #Div_Holiday dd {
+            color: #93a3b5 !important;
+        }
+    </style>
+    <dl class="dl-horizontal col-sm-12" id="Div_Holiday">
+        <dt>Package Name</dt>
+        <dd>
+            <span>@Model.HolidayPackName</span>
+        </dd>
+
+        <dt>No. of Paid Leave</dt>
+        <dd><span>@Model.NoOfPaidLeave days</span></dd>
+
+        <dt></dt>
+        <dd><span style="color:#428bca;cursor:pointer;" id="btn_User_Pck_Holiday_List">Show All Holiday List</span></dd>
+    </dl>
+}
+else
+{
+    <dl class="dl-horizontal col-sm-12">
+        <dt>Package Name</dt>
+        <dd>
+            <span>@Model.HolidayPackName</span>
+            <span data-toggle="tooltip" data-container="body" title="Update Holiday Package" class="btn green" style="margin-left:5%;margin-top:-10px;" id="btn_holiday_pck_edit"><i class="fa fa-pencil"></i></span>
+            <span data-toggle="tooltip" data-container="body" title="Copy Holiday Package" class="btn green" id="btn_dup_holy_pck" style="margin-top:-10px;"><i class="fa fa-copy"></i></span>
+        </dd>
+
+        <dt>No. of Paid Leave</dt>
+        <dd><span>@Model.NoOfPaidLeave days</span></dd>
+
+        <dt>Created By</dt>
+        <dd>
+            @if (Model.CreatedBy > 0)
+            {
+
+                <span>@Model.CreatedUserName</span>
+            }
+            else
+            {
+                <span>Admin</span>
+            }
+        </dd>
+
+        <dt>Created Date</dt>
+        <dd><span>@Model.CreatedDateFormate</span></dd>
+
+        <dt>Last Updated By</dt>
+        <dd><span>@Model.UpdateUsername</span></dd>
+
+        <dt>Last Updated Date</dt>
+        <dd><span>@Model.UpdatedDateFormate</span></dd>
+    </dl>
+}
+<div id="win_edit_holiday"></div>
+<div id="win_dup_holiday"></div>
+<div id="win_change_holiday"></div>
+<div id="win_holiday_list"></div>
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+    $("input[data-val-date]").removeAttr("data-val-date");
+    $("#btn_change_holy_pack").click(function () {
+        $("#win_change_holiday").empty();
+        $("#win_change_holiday").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height:'35%',
+            title: 'Change Holiday Package',
+            close:onWindowClose
+        });
+        $("#win_change_holiday").html('<div class="win_loading_half"></div>');
+        var win_change_holiday = $("#win_change_holiday").data("kendoWindow");
+        win_change_holiday.refresh({ url: "/Holiday/ChangeHolidayPack?packId=" +'@(Model.HolidayPackId)'});
+        win_change_holiday.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+    $("#btn_dup_holy_pck").click(function (e) {
+        e.preventDefault();
+        var name = '@Model.HolidayPackName';
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose
+        });
+        message = "Are you sure you want to duplicate this holiday package ?";
+        var template = kendo.template($("#temp_for_confirmation").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+
+        kendoWindow.find("#btn_confirm_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_confirm_ok").click(function () {
+            $("#win_dup_holiday").empty();
+            $("#win_dup_holiday").kendoWindow({
+                actions: ["Close"],
+                draggable: false,
+                modal: true,
+                visible: false,
+                width: '50%',
+                position: { top: '20%' },
+                title: "Duplicate of " + name + " Holiday Package",
+                close: onWindowClose
+            });
+            $("#win_dup_holiday").html('<div class="win_loading_half"></div>');
+            var win_dup_holiday = $("#win_dup_holiday").data("kendoWindow");
+            win_dup_holiday.refresh({ url: "/Holiday/EditaHoliday?HolidayPackId=" + '@Model.HolidayPackId' + "&view=add&from=HolidayPackDetails" });
+            win_dup_holiday.center().open();
+            document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+            document.body.scroll = "no"; // ie only
+
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+
+    })
+
+    $("#btn_holiday_pck_edit").click(function (e) {
+        e.preventDefault();
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        message = "Are you sure you want to edit this holiday package?Careful, editing this holiday package may do hamper for all other dependent modules.";
+        var template = kendo.template($("#temp_for_confirmation").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+
+        kendoWindow.find("#btn_confirm_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_confirm_ok").click(function () {
+            $("#win_edit_holiday").empty();
+            $("#win_edit_holiday").kendoWindow({
+                actions: ["Close"],
+                draggable: false,
+                modal: true,
+                visible: false,
+                width: '50%',
+                position: { top: '20%' },
+                title: 'Edit Holiday Package',
+               close:onWindowClose
+            });
+            $("#win_edit_holiday").html('<div class="win_loading_half"></div>');
+            var win_edit_holiday = $("#win_edit_holiday").data("kendoWindow");
+            win_edit_holiday.refresh({ url: "/Holiday/EditaHoliday?HolidayPackId=" + '@Model.HolidayPackId' + "&view=edit" });
+            win_edit_holiday.center().open();
+
+            document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+            document.body.scroll = "no"; // ie only
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+
+    });
+</script>
+<script>
+    $("#btn_User_Pck_Holiday_List").click(function (e) {
+        $("#win_holiday_list").empty();
+        $("#win_holiday_list").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            height: '75%',
+            width: '60%',
+            title: 'All Holiday List',
+            close:onWindowClose
+        });
+        $("#win_holiday_list").html('<div class="win_loading_half"></div>');
+        var win_holiday_list = $("#win_holiday_list").data("kendoWindow");
+        win_holiday_list.refresh({ url: "/Holiday/_AllHolidayList?HolidayPackId=" + '@Model.HolidayPackId' + "&view=view" });
+        win_holiday_list.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+
+    });
+</script>

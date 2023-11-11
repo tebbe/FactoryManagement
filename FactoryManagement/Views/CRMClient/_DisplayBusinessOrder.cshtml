@@ -1,0 +1,50 @@
+﻿@model IEnumerable<FactoryManagement.ModelView.CRM.BusinessOrderListModelView>
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var count = 1;
+}
+<style>
+    #tbl_bus_order_his th{
+        border:none!important;
+    }
+    #tbl_bus_order_his td{
+        border:none!important;
+    }
+</style> 
+@if (Model.Count() > 0) { 
+<table class="table" id="tbl_bus_order_his">
+    <tr>
+        <th width="3%"></th>
+        <th width="25%">Order Name</th>
+        <th width="25%">Appreoved by</th>
+        <th width="25%">Approved date</th>
+        <th width="25%">Order Status</th>
+    </tr>
+    @foreach (var item in Model)
+    {
+        <tr id="tr_@item.BusinessOrderId">
+            <td>@count</td>
+            <td>
+                <span id="spanForName_@item.BusinessOrderId">
+                    @if (db.BusiOrder_ManualSpec.Where(m => m.BusOrdId == item.BusinessOrderId).Any())
+                    {
+                        <span class="btn_expandProductType" id="newtrForAp_@item.BusinessOrderId"
+                              data-id="@item.BusinessOrderId"
+                              data-isclick="0">
+                            <i class="fa fa-plus-square-o fa-2"></i>
+                        </span>
+                    }
+                    @Html.DisplayFor(modelItem => item.OrderName)
+                </span>
+            </td>
+            <td>@item.CreatedByName</td>
+            <td>@Convert.ToDateTime(item.CreatedDate).ToString("MMMM dd,yyyy")</td>
+            <td>@item.OrderAprvStatus</td>
+        </tr>
+        count++;
+    }
+</table>
+}
+else{
+<h4>No record to show</h4>
+}

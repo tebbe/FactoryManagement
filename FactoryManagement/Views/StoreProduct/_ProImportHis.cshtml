@@ -1,0 +1,45 @@
+﻿
+@************************ Created By Jerin Jahan Date(07.12.2016) *******************************@
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int id = ViewBag.id;
+}
+<div class="k-edit-form-container" id="Div_Import_His" style="padding-left:10px;"></div>
+<div id="Win_show_Imp_His_Dtls"></div>
+
+@if (db.Import_History.Where(m => m.InventoryId == id).Any())
+{
+    <script>
+        $("#Div_Import_His").append('<div class="win_loading_half"></div>');
+        $("#Div_Import_His").load('@Url.Action("_ProAllImportHis", "StoreProduct")?id=' + '@(ViewBag.id)' + '&impid=' + '@(ViewBag.impid)');
+    </script>
+}
+else
+{
+    <script>
+        $("#Div_Import_His").append('<center><label>There is no record to display.</label></center>');
+    </script>
+}
+<script>
+    $("#Div_Import_His").on("click", ".show_import_details", function () {
+        var importId = $(this).data("id");
+        $("#Win_show_Imp_His_Dtls").empty();
+        $("#Win_show_Imp_His_Dtls").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '50%',
+            title: 'Import History Details'
+        });
+        $("#Win_show_Imp_His_Dtls").html('<div class="win_loading_half"></div>');
+        var Win_show_Imp_His_Dtls = $("#Win_show_Imp_His_Dtls").data("kendoWindow");
+        Win_show_Imp_His_Dtls.refresh({ url: "/StoreProduct/ImportHistoryDetails?id=" + importId });
+        Win_show_Imp_His_Dtls.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+
+</script>
+

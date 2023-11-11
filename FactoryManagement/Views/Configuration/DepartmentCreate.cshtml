@@ -1,0 +1,201 @@
+﻿
+@model FactoryManagement.ModelView.Configuration.DepartmentListModelView
+@Html.HiddenFor(m => m.SiteId)
+@Html.HiddenFor(m => m.UnitId)
+@Html.HiddenFor(m => m.DeptId)
+@Html.HiddenFor(m => m.HasLine)
+
+<div class="editor-label"><label for="DeptName">Dept Name</label></div>
+<div class="editor-field">
+    @Html.EditorFor(model => model.DeptName, new { htmlAttributes = new { @class = "k-textbox" } })
+    @Html.ValidationMessageFor(model => model.DeptName, "", new { @class = "text-danger" })
+</div>
+<div class="editor-label"><label for="DeptAcronym">Dept Acronym</label></div>
+<div class="editor-field">
+    @Html.EditorFor(model => model.DeptAcronym, new { htmlAttributes = new { @class = "k-textbox" } })
+    @Html.ValidationMessageFor(model => model.DeptAcronym, "", new { @class = "text-danger" })
+</div>
+<div class="editor-label"></div>
+<div class="editor-field">
+    @Html.CheckBox("ChkboxForLine", new { @onchange = "ShowLineNumber(this);" }) Check If Is There Any Line
+</div>
+<div id="DivForLineNumber" style="display:none">
+    <div class="editor-label"><label for="NumberOfLine">No Of Line</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.NumberOfLine, new
+           {
+               htmlAttributes = new
+               {
+                   @class = "k-textbox",
+                   type = "text",
+                   onkeypress = "return isNumber(event)",
+                   onkeyup = "isvalueNull(this.value)",
+                   maxlength = "2"
+               }
+           })
+        @Html.ValidationMessageFor(model => model.NumberOfLine, "", new { @class = "text-danger" })
+    </div>
+</div>
+<script>
+    var validation = $("#DivForDeptCreate").kendoValidator({
+        rules: {
+            remote: function (input) {
+                var errormessage;
+                var remoteAttr = input.attr("data-val-remote-url");
+                if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                    return true;
+                }
+                var isInvalid;
+                var data = {};
+                var SiteId = $("#SiteId").val();
+                var UnitId = $("#UnitId").val();
+                var DeptId = $("#DeptId").val();
+                var DeptName = $.trim($("#DeptName").val());
+
+                data = { DeptId: DeptId, DeptName: DeptName, SiteId: SiteId, UnitId: UnitId };
+                $.ajax({
+                    url: remoteAttr,
+                    mode: "abort",
+                    port: "validate" + input.attr('name'),
+                    dataType: "json",
+                    type: input.attr("data-val-remote-type"),
+                    data: data,
+                    async: false,
+                    success: function (response) {
+                        isInvalid = response;
+                        if (isInvalid === true) {
+                            isInvalid = true;
+                        }
+                        else {
+                            isInvalid = false;
+                        }
+                    }
+                });
+
+                return isInvalid;
+            },
+            remoteAcrm: function (input) {
+                var errormessage;
+                var remoteAttr = input.attr("data-val-remote-url");
+                if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                    return true;
+                }
+                var isInvalid;
+                var data = {};
+                var SiteId = $("#SiteId").val();
+                var UnitId = $("#UnitId").val();
+                var DeptId = $("#DeptId").val();
+                var DeptAcronym = $.trim($("#DeptAcronym").val());
+                data = { DeptId: DeptId, DeptAcronym: DeptAcronym, SiteId: SiteId, UnitId: UnitId };
+                $.ajax({
+                    url: remoteAttr,
+                    mode: "abort",
+                    port: "validate" + input.attr('name'),
+                    dataType: "json",
+                    type: input.attr("data-val-remote-type"),
+                    data: data,
+                    async: false,
+                    success: function (response) {
+                        isInvalid = response;
+                        if (isInvalid === true) {
+                            isInvalid = true;
+                        }
+                        else {
+                            isInvalid = false;
+                        }
+                    }
+                });
+
+                return isInvalid;
+            },
+            DeptAcrm: function (input) {
+                if (input.is("[name=DeptAcronym]") && $("#DeptAcronym").val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            LineNumber: function (input) {
+                if (input.is("[name=NumberOfLine]") && $("#ChkboxForLine").prop("checked") == true && $("#NumberOfLine").val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            maxLine: function (input) {
+                if (input.is("[name=NumberOfLine]") && $("#ChkboxForLine").is(':checked') && parseInt($("#NumberOfLine").val()) > 50) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            linenum: function (input) {
+                if (input.is("[name=NumberOfLine]") && $("#ChkboxForLine").is(':checked') && parseInt($("#NumberOfLine").val()) < 1) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        },
+        messages: {
+            remote: function (input) { return input.data('val-remote'); },
+            remoteAcrm: function (input) { return input.data('val-remote'); },
+            DeptAcrm: "Please enter line acronym",
+            LineNumber: "Please enter line number",
+            maxLine: "Line number cannot be more than 50",
+            linenum: "Line number cannot be less than 1"
+        }
+    }).data("kendoValidator");
+
+    $("#btnDeptCreate").click(function () {
+        if (validation.validate()) {
+            notification.show({ message: "Creating new department to site...", showTime: startTime() }, "upload-progress");
+            var senddata = {
+                SiteId: $("#SiteId").val(), SiteName: '@(Model.SiteName)', UnitId: $("#UnitId").val(), UnitName: '@(Model.UnitName)',
+                DeptId: $("#DeptId").val(), DeptName: $("#DeptName").val(), DeptAcronym: $("#DeptAcronym").val(),
+                NumberOfLine: $("#NumberOfLine").val(), HasLine: $("#HasLine").val(), CreatedBy: userId
+            };
+            $.ajax({
+                url: '@Url.Action("DepartmentCreateSave", "Configuration")',
+                type: 'Post',
+                data: senddata,
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if (data !== "Error") {
+                        //reloadUnit();
+                        notification.show({ message: "Department has been successfully created", showTime: startTime() }, "upload-success");
+                        $("#btnDeptCreate").closest(".k-window-content").data("kendoWindow").close();
+                        if (data.HasLine > 0) {
+                            location.href = '@Url.Action("DefineLine", "Configuration")?DeptId=' + data.DeptId + '&lineNo=' + data.NumberOfLine;
+                        }
+                        else if (data.SiteId != null) {
+                            if (pageName == "DeptList") {
+                                if (hasDept) {
+                                    hasDept = false;
+                                    $("#divFor_site_Info").empty();
+                                    $("#divFor_site_Info").append('<div class="loading_half"></div>');
+                                    $("#divFor_site_Info").load('@Url.Action("_ShowSiteDetails", "Configuration")?siteId=' + data.SiteId + '&view=partial');
+                                }
+                                var sendData = { siteId: data.SiteId, SiteName: data.SiteName };
+                                $("#divForAll_Dept_List").append('<div class="partial_loading_half"></div>');
+                                $("#divForAll_Dept_List").load('@Url.Action("_ShowAllDeptListBySite", "Configuration")', sendData);
+                            } else {
+                                location.href = '@Url.Action("ShowSiteInfoWithDeptList", "Configuration")?siteId=' + data.SiteId + '&IsDisplay=false';
+                            }
+                        }
+                        else if (data.UnitId != null) {
+                            $("#divFor_Dept_List_byUnit").empty();
+                            $("#divFor_Dept_List_byUnit").append('<div class="loading_partial"></div>');
+                            var sendData = { unitId: senddata.UnitId, UnitName: senddata.senddata };
+                            $("#divFor_Dept_List_byUnit").load('@Url.Action("_ShowAllDeptListBySite", "Configuration")', sendData);
+                            $("#Span_Dept_Count").text(parseInt($("#Span_Dept_Count").text()) + 1);
+                        }
+                    } else {
+                        notification.show({ message: "Department create unsuccessful", showTime: startTime() }, "upload-error");
+                    }
+                    
+                }
+            });
+        }
+    });
+</script>

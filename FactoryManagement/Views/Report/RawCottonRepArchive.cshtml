@@ -1,0 +1,103 @@
+﻿@*********************************************** Created By Jerin Jahan Date(23.05.2017) ************************@
+@{
+    ViewBag.Title = "Raw Cotton Report List";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<h3 class="page-title">
+    Raw Cotton Report List <small>Daily</small>
+</h3>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <a href="javascript:;">Inventory</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Report/RawCottonRepArchive">Raw Cotton Report List</a>
+        </li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="note note-success">
+            <p>
+                Daily Raw Cotton Report List
+            </p>
+        </div>
+        <p>
+            <a data-toggle="tooltip" title="Show Today Cotton Stock" data-placement="bottom" href="/Report/DailyRawCottonStock" class="btn btn-sm blue">
+                <i class="fa fa-file-o"></i> Today Cotton Report
+            </a>
+        </p>
+        <div class="portlet box green">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul"></i>Raw Cotton Report
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="table-responsive">
+                    <div id="Div_All_Finish_Pro" style="display:none;"><div class="loading_partial"></div></div>
+                    @if (db.Daily_Raw_Cotton_Report_List.Any())
+                    {
+                        <script>
+                            $("#Div_All_Finish_Pro").show();
+                            $("#Div_All_Finish_Pro").load("_RawCottonRepArchive", "Report");
+                        </script>
+                    }
+                    <div id="loading" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var showCount = 0, totalCount = 0, page = 0, inCallback = false,content = '';
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+    });
+     @******************************** OnScroll Bind Table Data *************************@
+    $(window).scroll(function () {
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/Report/GetRawRepArch',
+            data: { page: page },
+            success: function (data) {
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        $("table#tbl_raw_cottn > tbody").append('<tr>'+
+                                        '<th>' + showCount + '.</th>' +
+                                        '<td><a href="/Report/ShowRawCottonArchiveDetails?id=' + data[i].Id + '">' + data[i].ReportName + '</a></td>' +
+                                        '<td>' + data[i].CreatedDateFormat + '</td>' +
+                                        '<td><span class="btn green btn_show_rep" data-id="' + data[i].Id + '"><i class="fa fa-info-circle"></i></span></td>' +
+                                        '</tr>');
+                    }
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+</script>

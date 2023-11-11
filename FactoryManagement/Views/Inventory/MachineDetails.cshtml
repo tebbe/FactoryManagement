@@ -1,0 +1,477 @@
+﻿
+@************************************** Created By Jerin Jahan (Date:28.07.2016)  ***************************************@
+
+@model FactoryManagement.Models.View_Machine_Lists
+
+@{
+    ViewBag.Title = "Machine Details";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int acqid = 0;
+    if (db.Acquisition_List.Where(m => m.MachineId == Model.MachineId && m.AcquisitionType == 3 && m.AcquisitionStatus == 0).Any())
+    {
+        acqid = db.Acquisition_List.Where(m => m.MachineId == Model.MachineId && m.AcquisitionType == 3 && m.AcquisitionStatus == 0).Select(m => m.AcquisitionOrderId).FirstOrDefault();
+    }
+}
+<style>
+    .addedParts {cursor: pointer;}
+    #tbl_notIstalled_machine{border:none!important;}
+    #tbl_notIstalled_machine td {border:none!important;}
+
+    #tbl_Istalled_machine{border:none!important;}
+    #tbl_Istalled_machine td {border:none!important;}
+
+    .loading_half_half {
+        background: url('../../Content/Icon/loading2.gif') no-repeat center center;
+        margin-top: 10px;
+        height: 300px;
+    }
+    .panel-body {
+        overflow: auto;
+        padding-left: 0px !important;
+        padding-right: 0px !important;
+        padding-bottom: 0px !important;
+    }
+    .child {
+        margin-bottom: 30px;
+        float: left;
+    }
+    .panel {margin-bottom: 0px !important;}
+    .panel.panel-default .panel-heading {background: #f5f5f5;}
+    .panel .panel-heading h2, .panel .panel-heading h3 {
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-weight: 500;
+        line-height: .5;
+        margin-top: 8px;
+        margin-bottom: 8px;
+        font-size: 18px;color: #333;
+        }
+    .panel .panel-heading h2 .ryt_btn{float:right;cursor:pointer;font-size: 18px;}
+</style>
+
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <a href="javascript:;">Inventory</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-building" aria-hidden="true"></i>
+            <a href="/Home/EquipDash">Equipments</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-list" aria-hidden="true"></i>
+            <a href="/Inventory/AllEquipmentList">All Equipment List</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-info-circle" aria-hidden="true"></i>
+            <a href="/Inventory/MachineDetails?machineId=@Model.MachineId">Machine Information</a>
+        </li>
+    </ul>
+</div>
+@Html.HiddenFor(m => m.MachineId)
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption font-green">
+                    <i class="fa fa-info-circle font-green"></i>
+                    <span class="caption-subject green bold uppercase"> Machine Details</span>
+                </div>
+                <span style="float:right;">
+                    @if (db.DispatchedItemLists.Where(m => m.MachineId == Model.MachineId).Any())
+                    {
+                        <span class="btn blue" data-toggle="tooltip" title="Show All Dispatch History" data-container="body" id="btn_All_Dis_His"><i class="fa fa-list-ul"></i></span>
+                    }
+                    @if (db.DispatchedPartsReturnLists.Where(m => m.MachineId == Model.MachineId).Any())
+                    {
+                        <span class="btn blue" data-toggle="tooltip" title="Show All Return Parts List" data-container="body" id="btn_All_Return_His"><i class="fa fa-list-ul"></i></span>
+                    }
+                    @if (db.View_Maintenance_Log.Where(m => m.MachineId == Model.MachineId).Any())
+                    {
+                        <span class="btn blue" data-toggle="tooltip" title="Show All Maintenance Logs" data-container="body" id="btn_All_Main_Log"><i class="fa fa-list-ul"></i></span>
+                    }
+                </span>
+            </div>
+            <div class="portlet-body form">
+                <p>Type : @Model.MachineTypeName</p>
+                <p>MachineAcronym : @Model.MachineAcronym</p>
+                <p>Brand : @Model.BrandName</p>
+                @if (Model.ModelName != null && Model.ModelName.Length > 0)
+                {
+                    <p>Model : @Model.ModelName</p>
+                }
+                <p>Mgf : @Model.Mgf</p>
+                <p>Country of Origin : @Model.CountryName</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="col-md-6 col-sm-6 col-xs-12 child" style="padding-left:0px!important;">
+            <div class="panel panel-default">
+                <div class="panel-heading"><h2>Spare Parts(In Use) <span class="ryt_btn" id="btn_Parts_Add"><i class="fa fa-plus"></i></span></h2></div>
+                <div class="panel-body"><div class="col-sm-offset-1 col-sm-11" id="DivForPartsList"></div></div>
+            </div>
+            @if (Model.Status == 1 && db.MachinePartsLists.Where(m => m.MachineId == Model.MachineId).Any())
+            {
+                <script>
+                    $("#DivForPartsList").append('<div class="loading_half"></div>');
+                    $("#DivForPartsList").load('@Url.Action("MachinePartsList", "Inventory")?machineId='+@Model.MachineId);
+                </script>
+            }
+            else
+            {
+                <script>
+                    $("#DivForPartsList").append('<p>There is no record to display...</p>');
+                </script>
+            }
+        </div>
+        <div class="col-md-6 col-sm-4 col-xs-12 child" id="Div_Not_Installed" style="display:none;padding:0px!important;"></div>
+        @if (db.MachinePartsNotInstalledLists.Where(m => m.MachineId == Model.MachineId).Any())
+        {
+            <script>
+                $("#Div_Not_Installed").show();
+                $("#Div_Not_Installed").append('<div class="loading_half_half"></div>');
+                $("#Div_Not_Installed").load('@Url.Action("NotInstalledParts", "Inventory")?machineId='+@Model.MachineId);
+            </script>
+        }
+
+        <div class="form-horizontal col-md-6 col-sm-12 col-xs-12 child" id="divForSelectedParts" style="padding:0px!important;display:none;">
+            <div class="panel panel-default">
+                @*<div class="panel-heading"><h2>Add New Spare Parts</h2></div>*@
+                <div class="panel-body">
+                    <div class="form-horizontal col-sm-12" id="DivForMaintanence"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@(Html.Kendo().Window()
+       .Name("WinForAddNewParts")
+       .Visible(false)
+       .Modal(true)
+       .Draggable(true)
+)
+
+<div id="Win_Add_Parts"></div>
+<div id="Win_Installed_machine"></div>
+<div id="Win_back_store"></div>
+<div id="Win_Dis_His"></div>
+<div id="Win_Return_His"></div>
+<div id="Win_Maintenance"></div>
+<div id="win_item_quan_info"></div>
+
+<script>
+    var MachineId='@(Model.MachineId)',machineName='@Model.MachineAcronym',returnPartsId;
+    var AllLineDetails = "";
+    var AllSparePartsId = "",sparePartsMultiselect,userId;
+    var previous,current,repDate,repTypeId,partsName="";
+
+    var hieght,panel_height= 0;
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $('#liForInventory > ul > li:first').addClass('open');
+        $('#liForInventory > ul > li:first >ul:first').show();
+        $("#liForAllEquipmentList").addClass('sublistActive');
+
+        var windowHeight = $(window).height() - $(".navbar-fixed-top").height()-150;
+        hieght = (parseInt(windowHeight) / 2) + 50;
+        panel_height = (parseInt(windowHeight) / 2);
+        $(".child").css({ "min-height": hieght });
+    });
+
+    function isNumber(e,v) {
+        e = (e) ? e : window.event;
+        var charCode = (e.which) ? e.which : e.keyCode;
+        if (charCode < 48 || charCode > 57) {
+            return false;
+        }else{
+            if(charCode == 48 && v === ''){
+                return false;
+            }
+            return true;
+        }
+
+    }
+    function onSparePartsSelect(e) {
+        previous = this._savedOld;
+        current = this.value();
+        var diff = [];
+        if (previous) {
+            diff = $(previous).not(current).get();
+        }
+        this._savedOld = current.slice(0);
+        if (diff.length > 0 && current != '') {
+            $("#trfor-" + diff).remove();
+        }
+    };
+    function onSparePartsChange(e) {
+        previous = this._savedOld;
+        current = this.value();
+        var diff = [];
+        if (previous) {
+            diff = $(previous).not(current).get();
+        }
+        this._savedOld = current.slice(0);
+        if (diff.length > 0) {
+            $("#trfor-"+diff).remove();
+            if (current == "") {
+                $("#btnPartsAdd").prop('disabled', true);
+                $("#tblForAddedPart").hide();
+            }
+            else{
+                $("#btnPartsAdd").prop('disabled', false);
+            }
+        }
+    }
+    function onChangeType(e){
+        var dataItem = this.dataItem(e.item);
+        if(dataItem.Value === '1'){
+            $("#DivForExpire").show();
+        }
+        else{
+            $("#DivForExpire").hide();
+            $("#ExpireDate").val('');
+        }
+    }
+
+    @***************************************  Replaceable Date Change Function    ***************@
+    $("#tblForAddedPart").on("click",".btnReplaceChange",function(){
+        var id = $(this).data('id');
+        $("#txtRepDate-"+id).val($("#spanForDesRepDate-"+id).text());
+        $("#spanForDesRepDate-"+id).hide();
+        $("#btnReplaceChange-"+id).hide();
+
+        $("#spanForEditRepDate-"+id).show();
+        $("#btnForTick-"+id).show();
+    });
+    $("#tblForAddedPart").on("click",".btnReplaceClose",function(){
+        var id = $(this).data('id');
+
+        $("#spanForEditRepDate-"+id).hide();
+        $("#btnForTick-"+id).hide();
+
+        $("#spanForDesRepDate-"+id).show();
+        $("#btnReplaceChange-"+id).show();
+    });
+    $("#tblForAddedPart").on("click",".btnReplaceTick",function(){
+        var id = $(this).data('id');
+        $("#spanForEditRepDate-"+id).hide();
+        $("#btnForTick-"+id).hide();
+
+        $("#spanForDesRepDate-"+id).text($("#txtRepDate-"+id).val());
+        $("#spanForDesRepDate-"+id).show();
+        $("#btnReplaceChange-"+id).show();
+    });
+
+
+    @***************************************  Add New Spare Parts Using Window   ***************@
+
+    $("#DivForMaintanence").on("click","#btnAddNewParts",function(e){
+        e.preventDefault();
+        var window = $("#WinForAddNewParts").data("kendoWindow");
+        window.setOptions({
+            width: '60%',
+            title: 'Add New Spare Parts'
+        });
+        window.refresh({
+            url: "/Inventory/_AddNewSpareParts?CreatedBy=" + userId
+        });
+        window.open();
+        window.center();
+
+    });
+    $("#DivForMaintanence").on("click","#btnPartsAddCancel",function(){
+        $("#divForSelectedParts").hide();
+        $("#DivForMaintanence").hide();
+        $("#tblForAddedPart").hide();
+        $("table#tblForAddedPart > tbody .tr_dyn").remove();
+        $("#btn_Parts_Add").show();
+    });
+
+    $("#btn_Parts_Add").click(function(){
+        var id = '@(Model.MachineId)';
+        $("#Win_Add_Parts").empty();
+        $("#Win_Add_Parts").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '40%',
+            title: 'Add New Spare Parts',
+            close: onWindowClose
+        });
+        $("#Win_Add_Parts").html('<div class="win_loading_half"></div>');
+        var Win_Add_Parts = $("#Win_Add_Parts").data("kendoWindow");
+        Win_Add_Parts.refresh({ url: "/Inventory/AddPartsWithMachine?machineId="+id});
+        Win_Add_Parts.center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+       // $("#btn_Parts_Add").hide();
+    });
+
+    @***************************************  Replaceable Parts Acquisition   ***************@
+    $("#DivForPartsList").on("click",".addedParts",function(){
+        var id = $(this).data('id');
+        var PartsId = $(this).data('partsid');
+        var PartsName = $(this).data('partsname');
+        location.href='@Url.Action("Acquisition", "Acquisition")?AcquisitionType=3&PartsId='+PartsId+'&MachineId='+@Model.MachineId+'&PartsName='+PartsName;
+    });
+    $("#btn_MachineAcqui").click(function(){
+        var acqid = $(this).data('acqid');
+        if(acqid > 0){
+            location.href='@Url.Action("Acquisition", "Acquisition")?AcquisitionOrderId='+acqid;
+        }else{
+            location.href='@Url.Action("Acquisition", "Acquisition")?AcquisitionType=3&MachineId='+@Model.MachineId+'&PartsName='+'@(Model.MachineAcronym)';
+        }
+    });
+
+
+    @********************************** Not Installed Parts Installed ***************************************@
+
+    $("#Div_Not_Installed").on("click",".notInstalled",function(){
+        var partsId = $(this).data("partsid");
+        var id = $(this).data("id");
+        partsName = $(this).data("partsname");
+
+        $("#Win_Installed_machine").empty();
+        $("#Win_Installed_machine").kendoWindow({
+            actions: ["Close"],
+            visible: false,
+            modal: true,
+            position: { top: '50%', left: '50%' },
+            title: 'Setup Machine Parts',
+            width: "50%",
+            minHeight: 100,
+            content: "/Inventory/_SetUpMahcineParts?id=" + id+"&machineId="+MachineId
+        });
+        $("#Win_Installed_machine").data("kendoWindow").center().open();
+    });
+
+    @********************************** Back To Store ***************************************@
+
+    $("#Div_Not_Installed").on("click",".btnBackToStore",function(){
+        var partsId = $(this).data("partsid");
+        returnPartsId=partsId;
+        var id = $(this).data("id");
+        partsName = $(this).data("partsname");
+        var locId = $(this).data("locid");
+        var unitname = $(this).data("unitname");
+
+        $("#Win_back_store").empty();
+        $("#Win_back_store").kendoWindow({
+            actions: ["Close"],
+            visible: false,
+            modal: true,
+            position: { top: '50%', left: '50%' },
+            title: 'Restore',
+            width: "50%",
+            minHeight: 100,
+            content: "/Inventory/_MachinePartsBackToStore?id=" + id+"&unitname="+unitname+"&proname="+partsName+"&machineId="+MachineId
+        });
+        $("#Win_back_store").data("kendoWindow").center().open();
+    });
+    function additionalMachineId(){
+        return {machineId:MachineId,partsId:returnPartsId}
+    }
+    function onVoucherChange(){
+        if(this.value()==null || this.value()==""){
+            $("#txt_re_quan").text('');
+            $("#txt_re_quan").prop("disabled",true);
+        }else{
+            $("#available_quan").text("Out of "+this.value().split('-')[0]+" ");
+            $("#txt_re_quan").prop("disabled",false);
+        } 
+    }
+</script>
+<script>
+    $("#btn_All_Dis_His").click(function(){
+        $("#Win_Dis_His").empty();
+        $("#Win_Dis_His").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width:'60%',
+            height:'60%',
+            title: 'All Dispatch Item History',
+            close: onWindowClose
+        });
+        $("#Win_Dis_His").html('<div class="loading_30"></div>');
+        var Win_Dis_His = $("#Win_Dis_His").data("kendoWindow");
+        Win_Dis_His.refresh({ url: "/Inventory/_MachinePartsDisHis?id=" + '@(Model.MachineId)' });
+        Win_Dis_His.center().open();
+
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+    });
+
+
+    $("#btn_All_Return_His").click(function(){
+        $("#Win_Return_His").empty();
+        $("#Win_Return_His").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width:'60%',
+            height:'60%',
+            title: 'All Return Parts History',
+            close: onWindowClose
+        });
+        $("#Win_Return_His").html('<div class="loading_30"></div>');
+        var Win_Return_His = $("#Win_Return_His").data("kendoWindow");
+        Win_Return_His.refresh({ url: "/Inventory/_MachineReturnPartsList?id=" + '@(Model.MachineId)' });
+        Win_Return_His.center().open();
+
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+    });
+
+    $("#btn_All_Main_Log").click(function(){
+        $("#Win_Maintenance").empty();
+        $("#Win_Maintenance").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width:'60%',
+            height:'60%',
+            title: 'All Return Parts History',
+            close: onWindowClose
+        });
+        $("#Win_Maintenance").html('<div class="loading_30"></div>');
+        var Win_Maintenance = $("#Win_Maintenance").data("kendoWindow");
+        Win_Maintenance.refresh({ url: "/Home/_DailyMaintenanceMain?machineId=" + '@(Model.MachineId)' });
+        Win_Maintenance.center().open();
+
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+    });
+    $("#Win_Dis_His").on("click",".voucher_details",function(){
+        var dispatchedid = $(this).data("dispatchedid");
+
+        $("#win_item_quan_info").empty();
+        $("#win_item_quan_info").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '70%',
+            position: { top: '20%' },
+            title: 'Dispatch Details'
+        });
+        $("#win_item_quan_info").html('<div class="win_loading_half"></div>');
+        var win_item_quan_info = $("#win_item_quan_info").data("kendoWindow");
+        win_item_quan_info.refresh({ url: "/Inventory/ShowDispatchHistoryDetailsById?dispatchedid=" + dispatchedid });
+        win_item_quan_info.center().open();
+    });
+</script>

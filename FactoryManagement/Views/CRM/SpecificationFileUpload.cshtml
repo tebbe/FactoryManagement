@@ -1,0 +1,407 @@
+﻿@************************************** Created By Tasnim Tuli (Date:25.08.2016)  ***************************************@
+
+
+
+
+@model FactoryManagement.ModelView.CRM.Business_Order_FileListsModelView
+@Html.HiddenFor(m => m.FileSendBy)
+
+<style>
+     .dropdown-header {
+        padding-left:5px!important;
+        border:none!important;
+    }
+    .dropdown-header > span {
+        display: inline-block;
+         padding: 10px 20px 10px 0px;
+    }
+    .k-list > li {
+    padding: 10px!important;
+    line-height: normal!important;
+    }
+    .k-list > li .userName {
+    padding-left: 10px!important;
+    display:inline-block!important;
+    vertical-align:top!important;
+    }
+</style>
+
+<div class="editor-label" style="float:left;padding-left:0px;"><label for="IsMainFile"></label></div>
+<div class="editor-field" style="float:left;">
+    <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;">
+        @Html.CheckBoxFor(model => model.IsMainFile) Check if it is main file
+    </div>
+</div>
+
+<div class="editor-label" style="float:left;padding-left:0px;"><label for="UploadFile">Upload File</label></div>
+<div class="editor-field" style="float:left;">
+    <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;">
+        @(Html.Kendo().Upload()
+                .Name("files")
+                .TemplateId("FileTemplate")
+                .HtmlAttributes(new { @style = "width:100%" })
+                .Multiple(false)
+                .Async(a => a.Save("SpecificationFileSave", "CRM").AutoUpload(true))
+                .Events(m => m.Upload("onOrderFileUpload").Success("onSuccess"))
+                .HtmlAttributes(new { accept = ".doc, .docx, .pdf, .ppt, .pptx,.jpg, .png, .jpeg, .bmp " })
+        )
+        <span class="field-validation-valid text-danger" data-valmsg-for="files" data-valmsg-replace="true"></span>
+    </div>
+</div>
+
+<div class="editor-label" style="float:left;padding-left:0px;"><label for="FileSendBy">File Sent By</label></div>
+<div class="editor-field" style="float:left;">
+    <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;">
+        @Html.RadioButtonFor(model => model.FileSendBy, "1", new { id = "FileSendBy1", @class = "FileSendBy" })
+        @Html.Label("In-House", "In-House")  &nbsp;&nbsp;
+        @Html.RadioButtonFor(model => model.FileSendBy, "2", new { id = "FileSendBy2", @class = "FileSendBy" })
+        @Html.Label("Client", "Client")<br />
+        @Html.ValidationMessageFor(model => model.FileSendBy, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div id="div_Client_User" style="display:none;">
+    <div class="editor-label" style="float:left;padding-left:0px;"><label for="Client_User_Id">User Name</label></div>
+    <div class="editor-field" style="float:left;">
+        <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;">
+            @(Html.Kendo().AutoComplete()
+                    .Name("UserName")
+                    .Placeholder("Type user name....")
+                    .DataTextField("Name")
+                    .HtmlAttributes(new { style = "width:100%" })
+                    .Events(events => events.Select("onClientUserSelect"))
+                    .Filter("startswith")
+                    .Filter("contains")
+                    .DataSource(source =>
+                    {
+                        source.Read(read =>
+                        {
+                            read.Action("GetUserName", "CRM", new { ClientId = Model.ClientId, BusinessOrderId = Model.BusinessOrderId });
+                        });
+                    })
+                    .HeaderTemplate("<div class=\"dropdown-header k-widget k-header\">" +
+                                                "<span>PHOTO </span>" +
+                                                "<span> USER INFO</span>" +
+                                            "</div>")
+                   .Template("<span class=\" k-state-default\"><img class='user-photo' src=\"" + Url.Content("/Images/Client/ClientUserImage/thumb/") + "#:data.Picture#\" /></span>" + " " +
+                                                   "<span class=\"userName k-state-default \">#: data.Name # </br><small> #: data.ClientName #</small></span>")
+            )
+            <span class="field-validation-valid text-danger" data-valmsg-for="UserName" data-valmsg-replace="true"></span>
+        </div>
+    </div>
+</div>
+<div id="div_Inhouse_User" style="display:none;">
+    <div class="editor-label" style="float:left;padding-left:0px;"><label for="Client_User_Id">User Name</label></div>
+    <div class="editor-field" style="float:left;">
+        <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;">
+            @(Html.Kendo().AutoComplete()
+                    .Name("InHOuserUserName")
+                    .Placeholder("Type user name....")
+                    .DataTextField("Name")
+                    .HtmlAttributes(new { style = "width:100%" })
+                    .Events(events => events.Select("onInHouseUserSelect"))
+                    .Filter("startswith")
+                    .Filter("contains")
+                    .DataSource(source =>
+                    {
+                        source.Read(read =>
+                        {
+                            read.Action("GetInhouseUser", "CRM", new { UserId = Model.ClientId });
+                        });
+                    })
+                   .HeaderTemplate("<div class=\"dropdown-header k-widget k-header\">" +
+                                        "<span>PHOTO </span>" +
+                                        "<span> USER INFO</span>" +
+                                        "</div>")
+                  .Template("<span class=\" k-state-default\"><img class='user-photo' src=\"" + Url.Content("/Images/UserPicture/thumb/") + "#:data.Picture#\" /></span>" + " " +
+                                       "<span class=\"userName k-state-default \">#: data.Name # </br><small> #: data.EmpId # #: data.UserType #</small></span>")
+            )
+            <span class="field-validation-valid text-danger" data-valmsg-for="InHOuserUserName" data-valmsg-replace="true"></span>
+        </div>
+    </div>
+</div>
+<div class="k-edit-buttons k-state-default">
+    <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_Spec_FileUpload"><span class="k-icon k-update"></span>Create</button>
+    <button type="reset" class="k-button k-button-icontext k-grid-update" id="btn_Spec_FileUpload_Refresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+    <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_Spec_FileUpload_Cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+</div>
+<script id="FileTemplate" type="text/x-kendo-template">
+    <div class='file-wrapper'>
+        <label class="col-sm-3 col-xs-3" style="padding:0px!important;">
+            <span class='file-icon #=addExtensionClass(files[0].extension)#'></span>
+        </label>
+        <label class="col-sm-8 col-xs-8" style="padding:0px!important;"><span class='uploadFileName'>#=name#</span></label>
+        <label class="col-sm-8 col-xs-8" style="padding:0px!important;margin-top:20px;display:none;">
+            <input type="text" class="k-textbox"
+                   data-val-required="*"
+                   style="width:70%!important;"
+                   id="txtImageName" name="txtImageName"
+                   value="#=name.substring(0, name.lastIndexOf('.'))#" />
+            <span class="k-icon k-i-tick orderFileUpTick" style="cursor:pointer;" data-toggle="tooltip" title="Save Rename" data-extension="#=name.split('.').pop()#"></span>
+            <span class="k-icon k-i-close orderFileUpClose" style="cursor:pointer;" data-toggle="tooltip" title="Cancel Rename"></span>
+        </label>
+        <div class="col-sm-1 col-xs-1" style="text-align:right;padding-right:0px!important;padding-left:0px!important;">
+            <span class="k-icon k-i-close orderFileUpRemove" style="cursor:pointer;" data-toggle="tooltip" title="Remove"></span>
+        </div>
+    </div>
+</script>
+
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+
+    $(document).ready(function () {
+        allMainFile = [];
+    });
+    $(".FileSendBy").click(function () {
+        $("#FileSendBy").val($(this).val());
+        if ($(this).val() === "2") {
+            $("#div_Inhouse_User").hide();
+            $("#div_Client_User").show();
+        } else {
+            $("#div_Client_User").hide();
+            $("#div_Inhouse_User").show();
+        }
+    });
+
+    //********************************** CHECK MAIN FILE OR NOT ***************************************************
+    $("#IsMainFile").change(function (event) {
+        var isMainFile = "@Model.IsMainFile";
+        if (isMainFile == "False") {
+            if (this.checked) {
+                $.ajax({
+                    url: '@Url.Action("OrderMainFileCheck", "CRM")',
+                    type: 'Post',
+                    data: { BusinessOrderId: @Model.BusinessOrderId, FileType: @Model.FileType },
+                    success: function (data) {
+                        if (data) {
+                            msg = "One mainfile is already exists !!! If you make this file as Mainfile, the previous one will no longer be a mainfile.";
+                            var kendoWindow = $("<div/>").kendoWindow({
+                                actions: ["Close"],
+                                title: "Alert",
+                                resizable: false,
+                                width: "30%",
+                                modal: true,
+                                close: onWindowClose
+                            });
+                            var template = kendo.template($("#temp_win_businessOrder_details").html());
+                            kendoWindow.data("kendoWindow").content(template).center().open();
+                            document.documentElement.style.overflow = 'hidden';
+                            document.body.scroll = "no";
+                            $("#IsMainFile").prop("checked", false);
+                            kendoWindow.find("#btn_busOrd_det_noty_cancel").click(function () {
+                                $("#IsMainFile").prop("checked", false);
+                                kendoWindow.data("kendoWindow").close();
+                                document.documentElement.style.overflow = 'auto';
+                                document.body.scroll = "yes";
+                            }).end();
+                            kendoWindow.find("#btn_busOrd_det_noty_ok").click(function () {
+                                $("#IsMainFile").prop("checked", true);
+                                kendoWindow.data("kendoWindow").close();
+                            }).end();
+                        }
+                    }
+                })
+            }
+        }
+    });
+    //********************************************************************************************************************************
+    //********************************** UPLOAD FILE RENAME,DELETE FUNTION (START)****************************************************
+    //********************************************************************************************************************************
+    $("#divForSpeFileUpload").on("click", ".uploadFileName", function (e) {
+        e.preventDefault();
+        var str = $(this).text();
+        var rest = str.substring(0, str.lastIndexOf("."));
+        $(this).parent('label').next('label').css("display", "inline");
+        $(this).parent('label').next('label').children('input').val(rest);
+        $(this).parent('label').css("display", "none");
+        $(this).parent('label').next('label').children('.field-validation-error').hide();
+    });
+    $("#divForSpeFileUpload").on("click", ".orderFileUpTick", function (e) {
+        e.preventDefault();
+        var inputval = $("#txtImageName").kendoValidator({
+            rules: {
+                txtImageName: function (input) {
+                    if (input.is("[type=text]") && input.is("[name=txtImageName]")) {
+                        return $.trim($("#txtImageName").val()) != "";
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                txtImageName: "*"
+            }
+        }).data("kendoValidator");
+
+        if (inputval.validate()) {
+            var ext = $(this).data("extension");
+            var reName = $(this).siblings('input').val() + "." + ext;
+            $(this).parent('label').prev('label').children('span').text(reName);
+            $(this).parent('label').css("display", "none");
+            $(this).parent('label').prev('label').css("display", "inline");
+        }
+    });
+    $("#divForSpeFileUpload").on("click", ".orderFileUpClose", function (e) {
+        e.preventDefault();
+        $(this).parent('label').css("display", "none");
+        $(this).parent('label').prev('label').css("display", "inline");
+    });
+    $("#divForSpeFileUpload").on("click", ".orderFileUpRemove", function (e) {
+        e.preventDefault();
+        $(this).parent('div').parent('div').parent('li').remove();
+        var uid = $(this).parent('div').parent('div').parent('li').data("uid");
+        $.each(allMainFile, function (i, el) {
+            if (this.uid === uid) {
+                allMainFile.splice(i, 1);
+            }
+        });
+    });
+
+    //********************************************************************************************************************************
+    //********************************** UPLOAD FILE RENAME,DELETE FUNTION (END)******************************************************
+    //********************************************************************************************************************************
+    //$(document).on("click", ".btncloseEditDiv", function (e) {
+    //    e.preventDefault();
+    //    $(this).parent('label').css("display", "none");
+    //    $(this).parent('label').prev('label').css("display", "inline");
+    //    $(this).parent('label').next('label').css("display", "inline");
+    //});
+
+</script>
+
+<script>
+
+    $("#btn_Spec_FileUpload_Refresh").click(function () {
+        $("#divForSpeFileUpload").empty();
+        $("#divForSpeFileUpload").append('<div class="win_loading_half"></div>');
+        $("#divForSpeFileUpload").show();
+        $("#divForSpeFileUpload").load('@Url.Action("SpecificationFileUpload", "CRM")?FileType=' + '@Model.FileType' + "&orderId=" + orderId);
+    });
+
+    $("#btn_Spec_FileUpload_Cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+
+    $("#btn_Spec_FileUpload").click(function () {
+        var validation = $("#divForSpeFileUpload").kendoValidator({
+            rules: {
+                files: function (input) {
+                    if (input.is("[type=file]") && input.is("[name=files]")) {
+                        return $("#files").data("kendoUpload").wrapper.find(".k-file").length > 0;
+                    }
+                    return true;
+                },
+                FileSendBy: function (input) {
+                    if (input.is("[type=radio]") && input.is("[name=FileSendBy]")) {
+                        return $("#divForSpeFileUpload").find("[name=" + input.attr("name") + "]").is(":checked");
+                    }
+                    return true;
+                },
+                ClientId: function (input) {
+                    if ($("#div_Client_User").css("display") == "block") {
+                        if (input.is("[type=text]") && input.is("[name=UserName]")) {
+                            return $.trim($("#divForSpeFileUpload").find("[name=" + input.attr("name") + "]").val()) != "" && onClientSelect == true;
+                        }
+                        return true;
+                    }
+                    if ($("#div_Inhouse_User").css("display") == "block") {
+                        if (input.is("[type=text]") && input.is("[name=InHOuserUserName]")) {
+                            return $.trim($("#divForSpeFileUpload").find("[name=" + input.attr("name") + "]").val()) != "" && onInHouseSelect == true;
+                        }
+                        return true;
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                files: "Please select a file",
+                FileSendBy: "Please select any one",
+                ClientId: "Type name to select client"
+            }
+        }).data("kendoValidator");
+
+        if (validation.validate()) {
+            var msg="";
+            if('@Model.FileType' == 1){
+                msg = "Specification ";
+            }
+            else if('@Model.FileType' == 2)
+            {
+                msg = 'Negotiation ';
+            }
+            else
+            {
+                msg = 'Finance ';
+            }
+            notification.show({ message: msg +"File Uploading.....", showTime: startTime() }, "upload-progress");
+            var str = [];
+            $('.uploadFileName').each(function () {
+                str.push($(this).text());
+            });
+            var BusinessOrderId = orderId;
+            var sendData = new FormData();
+
+            sendData.append("BusinessOrderId", BusinessOrderId);
+            sendData.append("FileSendBy", $("#FileSendBy").val());
+            sendData.append("IsMainFile", $("#IsMainFile").is(":checked"));
+            sendData.append("FileContentType", $("#FileContentType").val());
+            sendData.append("CreatedDate", $("#CreatedDate").val());
+            sendData.append("AllFilename", JSON.stringify(str));
+            sendData.append("FileType", '@Model.FileType');
+            sendData.append("CreatedBy", userId);
+            sendData.append("Client_User_Id", $("#Client_User_Id").val());
+            sendData.append("files[0]", allMainFile[allMainFile.length - 1].rawFile);
+            $.ajax({
+                url: '@Url.Action("FileUploadSaveForSpecification", "CRM")',
+                type: "POST",
+                data: sendData,
+                dataType: 'json',
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 2000 });
+                    if (response === 'Success') {
+                        onClientSelect = false;
+                        onInHouseSelect = false;
+                        notification.show({ message: msg +"File successfully uploaded.", showTime: startTime() }, "upload-success");
+                        if ('@Model.FileType' === '1') {
+                            $("#Div_Spec_List").empty();
+                            $("#Div_Spec_List").show();
+                            $("#Div_Spec_List").append('<div class="loading_partial"></div>');
+                            $("#Div_Spec_List").load('@Url.Action("_OrderFileLists", "CRM")?BusinessOrderId=' + BusinessOrderId + '&FileType=1');
+
+                        } else if ('@Model.FileType' === '2') {
+                            $("#Div_Nego_List").empty();
+                            $("#Div_Nego_List").show();
+                            $("#Div_Nego_List").append('<div class="loading_partial"></div>');
+                            $("#Div_Nego_List").load('@Url.Action("_OrderFileLists", "CRM")?BusinessOrderId=' + BusinessOrderId + '&FileType=2');
+                        } else {
+                            $("#Div_Finance_List").empty();
+                            $("#Div_Finance_List").show();
+                            $("#Div_Finance_List").append('<div class="loading_partial"></div>');
+                            $("#Div_Finance_List").load('@Url.Action("_OrderFileLists", "CRM")?BusinessOrderId=' + BusinessOrderId + '&FileType=3');
+                        }
+                        //if ($("#IsMainFile").change()) {
+                        $("#div_order_main_file").empty();
+                        $("#div_order_main_file").show();
+                        $("#div_order_main_file").append('<div class="tiny_loading"></div>');
+                        $("#div_order_main_file").load('@Url.Action("_OderMainFileList", "CRM")?BusinessOrderId=' + BusinessOrderId);
+
+                        $("#OrderTimeline").empty();
+                        $("#OrderTimeline").append('<div class="loading_partial"></div>');
+                        $("#OrderTimeline").show();
+                        $("#OrderTimeline").load('@Url.Action("_OrderTimeLine", "CRM")?BusinessOrderId=' + BusinessOrderId);
+                        $("#btn_Spec_FileUpload").closest(".k-window-content").data("kendoWindow").close();
+                    } else {
+                        notification.show({ message: msg +"File upload unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                },
+                error: function (error) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 2000 });
+                    notification.show({ message: msg +"File upload unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+            });
+        }
+    });
+</script>

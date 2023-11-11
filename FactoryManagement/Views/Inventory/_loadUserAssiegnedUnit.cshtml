@@ -1,0 +1,14 @@
+﻿
+@{
+    long uid = ViewBag.uId;
+}
+<td>
+    @(Html.Kendo().MultiSelect()
+        .Name("assignUnit_" + uid)
+        .HtmlAttributes(new { style = "width:90%", @class = "customers unit" })
+        .BindTo(ViewBag.allUnitList)
+        .Value(ViewBag.selectedUnit)
+        .AutoClose(false)
+        .Placeholder("-- Select Unit --"))
+    <span class="field-validation-valid text-danger" data-valmsg-for="assignUnit_@uid" data-valmsg-replace="true"></span>
+</td>

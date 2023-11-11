@@ -1,0 +1,163 @@
+﻿
+@* Created by kaikubad on 27-03-2017   *@
+
+@model FactoryManagement.Models.View_All_InventoryList
+@{
+    var Currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var list = db.Inventory_Item_Location.Where(m => m.InventoryId == Model.InventoryId).ToList();
+    var locationList = (from bs in list
+                        group bs by new { bs.StoreId, bs.WarehouseId } into i
+                        select new
+                        {
+                            StoreId = i.FirstOrDefault().StoreId,
+                            WarehouseId = i.FirstOrDefault().WarehouseId,
+                            Quantity = i.Sum(x => x.Quantity),
+                            LineId=i.FirstOrDefault().LineId
+                        }).ToList();
+}
+<div class="form-horizontal col-md-4 col-md-offset-1 col-sm-5 col-sm-offset-1">
+    @Html.HiddenFor(model => model.InventoryId)
+    <input data-val="true" data-val-required="The InventoryId field is required." id="ImportId" name="ImportId" type="hidden" value="">
+    <dl class="dl-horizontal col-md-12 col-sm-12">
+        <dt>Product Name</dt>
+        <dd><span>@Model.ProductName</span></dd>
+
+        @if (!string.IsNullOrEmpty(Model.ProductType))
+        {
+            <dt>Product Type</dt>
+            <dd><span>@Model.ProductType</span></dd>
+        }
+
+        @if (!string.IsNullOrEmpty(Model.BrandName))
+        {
+            <dt>Brand Name</dt>
+            <dd><span>@Model.BrandName</span></dd>
+        }
+
+        @if (!string.IsNullOrEmpty(Model.CountryName))
+        {
+            <dt>Country of Origin</dt>
+            <dd><span>@Model.CountryName</span></dd>
+        }
+
+        @if (Model.Quantity > 0)
+        {
+            <dt>Total Quantity Exists</dt>
+            <dd><span> @Model.Quantity @Model.UnitName</span></dd>
+        }
+        <dt>Location</dt>
+        @foreach (var store in locationList)
+            {
+                string name = "";
+                if (store.StoreId > 0)
+                {
+                    name = db.StoreLists.Where(m => m.Id == store.StoreId).Select(m => m.StoreName).FirstOrDefault();
+                }
+                else if (store.WarehouseId > 0)
+                {
+                    name = db.WarehouseLists.Where(m => m.Id == store.WarehouseId).Select(m => m.WarehouseName).FirstOrDefault();
+                }
+                else
+                {
+                    name = db.LineInfoes.Where(m => m.LineId == store.LineId).Select(m => m.LineAcronym).FirstOrDefault();
+                }
+                <dd>
+                    <span style="padding-left:0px!important;">
+                        @name
+                        <span style="font-size:12px;color:#808080;">(Quantity @store.Quantity @Model.UnitName)</span>
+                    </span>
+                </dd>    
+        }
+    </dl>
+</div>
+<div class="form-horizontal col-md-7 col-sm-6" id="div_Loc_define">
+    <div class="form-group">
+        <label class="control-label col-md-3 col-sm-4 col-xs-12">L/C</label>
+        <div class="col-md-6 col-sm-7 col-xs-7">
+            @(Html.Kendo().AutoComplete()   
+            .Name("LC")
+            .Placeholder("Type L/C number")  
+            .DataTextField("Lc")   
+            .Filter("contains") 
+            .MinLength(0)
+            .HtmlAttributes(new { style = "width:100%" })
+            .Events(e => e.Select("onLCSelect"))
+            .DataSource(source =>{source.Read(read =>
+                {
+                    read.Action("LcNameSearching", "StoreProduct").Data("onAdditionalLc");
+                }).ServerFiltering(false);
+                })
+            )
+            <span class="field-validation-valid text-danger" data-valmsg-for="LC" data-valmsg-replace="true"></span>
+        </div>
+    </div>
+    <input data-val="true" data-val-number="The field must be a number." id="TotalQuan" name="TotalQuan" type="hidden" value="">
+    <div class="form-group">
+        <label class="control-label col-md-3 col-sm-4 col-xs-12">Total Quantity</label>
+        <div class="col-md-7 col-sm-8 col-xs-8">
+            <span style="width:85%!important;float:left!important;margin-right:2%!important;">
+                <input class="form-control k-textbox"
+                       id="TotalQuantity" name="TotalQuantity" type="text"
+                       min="1" value="" data-class="Amount"
+                       placeholder="Total Quantity"
+                       data-val-regex="Invalid. Use only two digits after decimal point"
+                       data-val-regex-pattern="\d+(\.\d{1,2})?"
+                       data-val-length="Invalid number"
+                       data-val-length-max="15"
+                       data-val-required="Please enter quantity" />
+                <span class="field-validation-valid text-danger" data-valmsg-for="Quantity" data-valmsg-replace="true"></span>
+            </span>
+            <span>@Model.UnitName</span>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-md-3 col-sm-4 col-xs-12">Location</label>
+        <div class="col-md-6 col-sm-7 col-xs-7">
+            @(Html.Kendo().MultiSelect()
+                  .Name("location")
+                  .DataTextField("Name")
+                  .DataValueField("IdWithChar")
+                  .Placeholder("Select location...")
+                  .AutoBind(false)
+                  .Events(e => e.Select("onLocationSelect").Change("onLocationChange"))
+                  .DataSource(source =>
+                  {
+                      source.Read(read =>
+                      {
+                          read.Action("GetAllStoreWare", "StoreProduct");
+                      })
+                      .ServerFiltering(true);
+                  })
+            )
+            <span class="field-validation-valid text-danger" data-valmsg-for="location" data-valmsg-replace="true"></span>
+        </div>
+    </div>
+    <div class="form-group" id="Div_Dyn_Loc" style="display:none;">
+        <div class="col-md-offset-3 col-md-9 col-sm-offset-4 col-sm-8 col-xs-12">
+            <table class="table table-bordered table-condensed" id="tbl_Div_Loc">
+                <tr>
+                    <th>SL.</th>
+                    <th>Name</th>
+                    <th>Quantity</th>
+                    <th>Minimum Quantity</th>
+                </tr>
+            </table>
+            <span class="field-validation-valid text-danger" data-valmsg-for="TotalQuan" data-valmsg-replace="true"></span>
+        </div>
+    </div>
+    <div class="form-group" id="actionButtons">
+        <div class="col-md-offset-3 col-md-9 col-sm-offset-4 col-sm-8 col-xs-12">
+            <button type="submit" class="btn green" id="btn_Loc_define_save">Submit</button>
+            <button type="button" class="btn yellow" id="btn_Loc_define_refresh">Refresh</button>
+            <button type="button" class="btn red" id="btn_Loc_define_cancel">Cancel</button>
+        </div>
+    </div>
+</div>
+<script>
+    inventoryId = '@Model.InventoryId';
+    UnitId = '@Model.UnitId';
+    Unitname = '@(Model.UnitName)'
+  
+</script>
+

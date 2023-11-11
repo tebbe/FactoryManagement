@@ -1,0 +1,41 @@
+﻿
+<div class="k-edit-form-container">
+    <div id="div_for_selected_bank">
+        <div class="editor-label"><label for="BankName">Bank Name</label></div>
+        <div class="editor-field">
+            @(Html.Kendo().AutoComplete()
+                    .Name("Bank")
+                    .Placeholder("Type bank name....")
+                    .DataTextField("BankName")
+                    .HtmlAttributes(new { style = "width:100%" })
+                    .Events(events => events.Select("BankSelect"))
+                    //.Events(events => events.Change("onBankNameChange"))
+                    .Filter("startswith")
+                    .DataSource(source =>
+                    {
+                        source.Read(read =>
+                        {
+                            read.Action("GetBankName", "Accounting").Data("onAdditionalData");
+                        });
+                    })
+            )
+        </div>
+    </div>
+    <div id="div_notsavedBranch" style="display:none;">
+        <div class="editor-label"><label for="BranchName">Branch Name</label></div>
+        <div class="editor-field">
+            <input class="form-control k-textbox text-box single-line k-valid" data-val="true" data-val-length="Invalid" data-val-length-max="40" data-val-length-min="2" data-val-required="Please enter account name" id="ClientName" name="ClientName" type="text" value="">
+        </div>
+        <div class="editor-label"><label for="AccountSlipNo">Account Slip No</label></div>
+        <div class="editor-field">
+            <input class="form-control k-textbox text-box single-line k-valid" data-val="true" data-val-length="Invalid" data-val-length-max="40" data-val-length-min="2" data-val-required="Please enter account name" id="ClientName" name="ClientName" type="text" value="">
+        </div>
+    </div>
+    <div class="editor-label"><label for="Amount">Amount</label></div>
+    <div class="editor-field">
+        <input class="form-control k-textbox text-box single-line k-valid" data-val="true" data-val-length="Invalid" data-val-length-max="40" data-val-length-min="2" data-val-required="Please enter account name" id="ClientName" name="ClientName" type="text" value="">
+    </div>
+    <div class="k-edit-buttons k-state-default">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnAddUser"><span class="k-icon k-update"></span>Save</button>
+    </div>
+</div>

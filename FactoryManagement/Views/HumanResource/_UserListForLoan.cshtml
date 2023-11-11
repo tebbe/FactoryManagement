@@ -1,0 +1,76 @@
+﻿@******************************** Created By Jerin Jahan (Date:08.11.2016) *********************************@
+@model IEnumerable<FactoryManagement.ModelView.HR.UserInformationModelView>
+@using FactoryManagement.Helpers
+@{
+    var count = 1;
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<table class="table table-bordered" id="tbl_salary_usr">
+    <tbody>
+        <tr>
+            <th width="3%">#</th>
+            <th width="15%">Name</th>
+            <th width="5%">User Type</th>
+            <th width="10%">Designation</th>
+            <th width="10%">Join Date</th>
+            <th width="25%"></th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <th>
+                    <span data-userid="@item.UserId" data-usertype="@item.UserType"
+                          data-pckid="@item.SalaryPackageId"
+                          id="count_@count">
+                        @count.
+                    </span>
+                </th>
+                <td >
+                    <img class="user-photo" src="~/Images/UserPicture/thumb/@item.Picture" />
+                    <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = item.UserId,isDisplay = true }, null)">@Html.DisplayFor(modelItem => item.UserName)</a>              
+                </td>
+                <td >@Html.DisplayFor(modelItem => item.UserTypeName)</td>
+                <td >@Html.DisplayFor(modelItem => item.Designation)</td>
+                <td >@Convert.ToDateTime(item.JoinDate).ToString("MMMM dd,yyyy")</td>
+                <td >
+                    @if (item.HasLoanRecord)
+                    {
+                        <span class="btn blue loanDetails" data-toggle="tooltip" data-original-title="Loan Deatils" data-id="@count"><i class="fa fa-info-circle"></i> </span>
+                    }
+                    <span class="btn green GiveLoan" data-toggle="tooltip" data-original-title="Give Loan" data-id="@count"><i class="fa fa-pencil-square-o"></i></span>
+                    @if (item.HasDueLoan)
+                    {
+                        <span class="btn green ReceiveLoan" data-toggle="tooltip" data-original-title="Receive Loan" data-id="@count"><i class="fa fa-pencil-square-o"></i></span>
+                    }              
+                </td>
+            </tr>
+            count++;
+        }
+    </tbody>
+</table>
+<script>
+    $(document).ready(function () {
+        totalCount = '@(ViewBag.count)';
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+    $("#chk_AllUser").click(function () {
+        if ($(this).is(':checked')) {
+            $(".chkUser").each(function () {
+                $(this).prop('checked',true);
+            });
+        }
+        else {
+            $(".chkUser").each(function () {
+                $(this).prop('checked', false);
+            });
+        }
+    });
+    $('.chkUser').on('click', function () {
+        if ($('.chkUser:checked').length == $('.chkUser').length) {
+            $('#chk_AllUser').prop('checked', true);
+        } else {
+            $('#chk_AllUser').prop('checked', false);
+        }
+    });
+</script>

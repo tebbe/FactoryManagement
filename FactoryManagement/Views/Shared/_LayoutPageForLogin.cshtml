@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CostERP - Login Page</title>
+
+    @*For Theme Change*@
+
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/styles.css" rel="stylesheet" />
+
+    <link href="~/Content/kendo/2015.3.1111/kendo.common-bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/kendo/2015.3.1111/kendo.bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/kendo/2015.3.1111/kendo.dataviz.min.css" rel="stylesheet" />
+    <link href="~/Content/kendo/2015.3.1111/kendo.dataviz.bootstrap.min.css" rel="stylesheet" />
+
+    <link href="~/Content/kendo/2015.3.1111/kendo.common.min.css" rel="stylesheet" />
+    <link href="~/Content/kendo/2015.3.1111/kendo.default.min.css" rel="stylesheet" />
+
+    <script src="~/Scripts/jquery-1.10.2.js"></script>
+    <script src="~/Scripts/kendo/2015.3.1111/kendo.all.min.js"></script>
+    <script src="~/Scripts/kendo/2015.3.1111/kendo.timezones.min.js"></script>
+    <script src="~/Scripts/kendo/2015.3.1111/kendo.aspnetmvc.min.js"></script>
+    <script src="~/Scripts/kendo/2015.3.1111/kendo.all.min.js"></script>
+    <script src="~/Scripts/kendo/2015.3.1111/kendo.timezones.min.js"></script>
+    <script src="~/Scripts/kendo/2015.3.1111/kendo.aspnetmvc.min.js"></script>
+    <script src="~/Scripts/jszip.min.js"></script>
+
+    <link href="~/Content/fontawesome/css/font-awesome.css" rel="stylesheet" />
+    <link href="~/Content/fontawesome/css/font-awesome.min.css" rel="stylesheet" />
+
+    <link href="~/Content/kendo/2015.3.1111/kendo.common.min.css" rel="stylesheet" />
+    <link href="~/Content/kendo/2015.3.1111/kendo.rtl.css" rel="stylesheet" />
+
+    <link href="~/Content/kendo/2015.3.1111/kendo.default.mobile.min.css" rel="stylesheet" />
+    <link href="~/Content/kendo/2015.3.1111/kendo.dataviz.default.min.css" rel="stylesheet" />
+
+    <link href="~/Content/TelerikThemes/themeChooser.css" rel="stylesheet" />
+    <link href="~/Content/Site.css" rel="stylesheet" />
+    <style>
+        .Absolute-Center {
+          margin: auto;
+          /*position: absolute;*/
+          left: 0;
+          right: 0;
+      }
+    </style>
+
+</head>
+<body>
+    <div class="container body-content">
+        @RenderBody()
+        <footer style="text-align:right;margin-top:15em;">
+            <p>Powered By <span><a href="http://www.spicybinary.com/">@@ZS-Soft Tech</a></span></p>
+        </footer>
+    </div>
+
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+    @RenderSection("head", required: false)
+    <script>
+        $(document).ready(function () {
+            var dt = new Date();
+            var tz = -dt.getTimezoneOffset();
+            setCookie("CookieCostLT", tz, 30);
+        });
+        function setCookie(cname, cvalue, exdays) {
+            var d = new Date();
+            d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+            var expires = "expires=" + d.toUTCString();
+            document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+        }
+    </script>
+</body>
+</html>

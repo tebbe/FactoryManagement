@@ -1,0 +1,75 @@
+﻿
+@{
+    var count = 0;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<table class="table table-striped table-bordered table-hover" id="tbl_AllUser">
+    <tbody>
+        <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Subtitle</th>
+            <th>Created By</th>
+            <th>Created Date</th>
+            <th>Updated By</th>
+            <th>Updated Date</th>
+            <th></th>
+        </tr>
+        @foreach (var item in ViewBag.ProTitleList as IEnumerable<FactoryManagement.Models.Factory_Finished_Pro_Title>)
+        {
+            count++;
+            <tr>
+                <th>@count .</th>
+                <td><a href="/StoreProduct/FinishedProTitleWise?id=@item.Id">@item.Title</a></td>
+                <td>@item.SubTitle</td>
+                <td>
+                    @if (item.CreatedBy > 0)
+                    {
+                        <span>@db.View_UserLists.Where(m => m.UserId == item.CreatedBy).Select(m => m.UserName).FirstOrDefault()</span>
+                    }
+                    else
+                    {
+                        <span>Super Admin</span>
+                    }
+                </td>
+                <td>@Convert.ToDateTime(item.CreatedDate).ToString("dd-MM-yy")</td>
+                <td>
+                    @if (item.UpdatedBy != null)
+                    {
+                        if (item.CreatedBy > 0)
+                        {
+                            <span>@db.View_UserLists.Where(m => m.UserId == item.CreatedBy).Select(m => m.UserName).FirstOrDefault()</span>
+                        }
+                        else
+                        {
+                            <span>Super Admin</span>
+                        }
+                    }
+                    else
+                    {
+                        <span>Not updated yet</span>
+                    }
+                    
+                </td>
+                <td>
+                    @if (item.UpdatedBy != null)
+                    {
+                        <span>@Convert.ToDateTime(item.CreatedDate).ToString("dd-MM-yy")</span>
+                    }
+                    else
+                    {
+                        <span>Not updated yet</span>
+                    }
+                </td>
+                <td>
+                    <span class="btn green btn_edit_pro" data-id="@item.Id"><i class="fa fa-pencil"></i></span>
+                    <span class="btn btn-danger delete_pro" data-id="@item.Id"><i class="fa fa-trash"></i></span>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<script>
+    totalCount = '@(ViewBag.TotalPro)';
+    showCount = '@count';
+</script>

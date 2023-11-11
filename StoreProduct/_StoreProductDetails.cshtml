@@ -1,0 +1,536 @@
+﻿
+
+
+
+@************************************** Created By Jerin Jahan (Date:22.09.2016)  ***************************************@
+
+@model FactoryManagement.Models.View_All_InventoryList
+
+@{
+    ViewBag.Title = "Product Details";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var locationList = (from m in db.Inventory_Item_Location
+                        where m.InventoryId == Model.InventoryId
+                        group m by new
+                        {
+                            m.StoreId,
+                            m.WarehouseId
+                        } into i
+                        select new
+                        {
+                            InventoryId = i.FirstOrDefault().InventoryId,
+                            LocationId = i.FirstOrDefault().LocationId,
+                            StoreId = i.FirstOrDefault().StoreId,
+                            WareId = i.FirstOrDefault().WarehouseId,
+                            StoreName = (i.FirstOrDefault().StoreId > 0) ? db.StoreLists.Where(sm => sm.Id == i.FirstOrDefault().StoreId).Select(sm => sm.StoreName).FirstOrDefault() : "",
+                            WareName = (i.FirstOrDefault().WarehouseId > 0) ? db.WarehouseLists.Where(sm => sm.Id == i.FirstOrDefault().WarehouseId).Select(sm => sm.WarehouseName).FirstOrDefault() : "",
+                            Quantity = i.Sum(x => x.Quantity)
+                        }).ToList();
+
+    var Quan = locationList.Where(x => x.InventoryId == Model.InventoryId).Select(x => x.Quantity).Sum();
+}
+
+
+<link href="~/Content/desoSlide/css/demo.css" rel="stylesheet" />
+<link href="~/Content/desoSlide/css/animate.min.css" rel="stylesheet" />
+<style>
+    #ulSlideshow {margin-bottom: 0px !important;}
+    #ulSlideshow li {padding-right: 0px !important;}
+    #ulSlideshow li img {max-width: 120px;max-height: 80px;border: 1px solid #ddd !important;}
+    #slideshow {
+        border: 1px solid #ddd;
+        padding: 20px 0px 20px 25px;
+        margin-bottom: 10px;
+        position: relative;
+        width: 90%;
+        height: 335px;
+        overflow: hidden;
+    }
+    #slideshow img {
+            border: none !important;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+    #section_demo .text-center{border:1px solid #ddd;width: 90%!important;}
+    .available {
+        color: #59b210;
+        font-weight: 700 !important;
+        text-transform: capitalize;
+    }
+    .availability label {
+        color: #707070;
+        font-weight: 700 !important;
+        text-transform: capitalize;
+    }
+</style>
+
+
+<div class="portlet light bordered">
+    <div class="portlet-title">
+        <div class="caption font-green">
+            <i class="fa fa-list-ul font-green"></i>
+            <span class="caption-subject green bold uppercase">Inventory Item Details</span>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="row" id="div_pro_details">
+            @if (db.Inventory_Image_Lists.Where(m => m.InventoryId == Model.InventoryId).Any())
+            {
+                <div class="col-lg-4 col-md-5 col-sm-5" id="section_demo"></div>
+                <script>
+                    $("#section_demo").append('<div class="loading_half"></div>');
+                    $("#section_demo").load('@Url.Action("_ProductImages", "StoreProduct")?id='+@Model.InventoryId);
+                </script>
+            }
+            else
+            {
+                <div class="product-image-wrapper col-md-3 col-sm-4 col-xs-12">
+                    <div class="single-products">
+                        <div class="productinfo text-center thumbnail" id="find">
+                            <img class="img-responsive" src="/Images/Inventory/Store/no_img.jpg" alt="Product" style="height:150px;width:150px">
+                        </div>
+                    </div>
+                </div>
+            }
+            <div class="form-horizontal col-md-6 col-sm-6 col-xs-11" style="padding-left:20px;">
+                <h3>@Model.ProductName</h3>
+                <div class="availability">
+                    <label>Availability:</label>
+                    @if (Model.Quantity > 0)
+                    {<span class="available">in stock </span>}
+                </div>
+                <hr />
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ProductName, "Product Name", htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-4" })
+                    <div class="col-lg-7 col-md-7 col-sm-6 col-xs-6" style="padding-top:7px;">
+                        @Html.DisplayFor(model => model.ProductName, new { htmlAttributes = new { @class = "form-control k-textbox col-lg-2 col-md-2" } })
+                    </div>
+                </div>
+                @if (Model.CanbeReplaceable || Model.CanbePerishable || Model.CanbeTopup)
+                {
+                    <div class="form-group">
+                        <label class="control-label col-lg-3 col-md-3 col-sm-4 col-xs-4" for="ProductName">Type</label>
+                        <div class="col-lg-7 col-md-7 col-sm-6 col-xs-6" style="padding-top:7px;">
+                            @if (Model.CanbeReplaceable)
+                            {
+                                <span>Replaceable</span>
+                            }
+                            @if (Model.CanbePerishable)
+                            {
+                                <span>Perishable</span>
+                            }
+                            @if (Model.CanbeTopup)
+                            {
+                                <span>Top-up</span>
+                            }
+                        </div>
+                    </div>
+                }
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ProductType, "Product Type", htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-4" })
+                    <div class="col-lg-7 col-md-7 col-sm-6 col-xs-6" style="padding-top:7px;">
+                        @Html.DisplayFor(model => model.ProductType, new { htmlAttributes = new { @class = "form-control k-textbox col-lg-2 col-md-2" } })
+                    </div>
+                </div>
+                @if (Model.BrandName != null)
+                {
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.BrandName, "Brand Name", htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-4" })
+                        <div class="col-lg-7 col-md-7 col-sm-6 col-xs-6" style="padding-top:7px;">
+                            @Html.DisplayFor(model => model.BrandName, new { htmlAttributes = new { @class = "form-control k-textbox col-lg-2 col-md-2" } })
+                        </div>
+                    </div>
+                }
+                @if (Model.Model != null)
+                {
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Model, "Model Name", htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-4" })
+                        <div class="col-lg-7 col-md-7 col-sm-6 col-xs-6" style="padding-top:7px;">
+                            @Html.DisplayFor(model => model.Model, new { htmlAttributes = new { @class = "form-control k-textbox col-lg-2 col-md-2" } })
+                        </div>
+                    </div>
+                }
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CountryName, "Country of Origin", htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-4" })
+                    <div class="col-lg-7 col-md-7 col-sm-6 col-xs-6" style="padding-top:7px;">
+                        @Html.DisplayFor(model => model.CountryName, new { htmlAttributes = new { @class = "form-control k-textbox col-lg-2 col-md-2" } })
+                    </div>
+                </div>
+                @if (Model.Description != null)
+                {
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-4" })
+                        <div class="col-lg-7 col-md-7 col-sm-6 col-xs-6" style="padding-top:7px;">
+                            <span>@ViewBag.getCurrency  @Model.Description</span><span style="font-size:12px;color:#808080;"> </span>
+                        </div>
+                    </div>
+                }
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Quantity, "Quantity", htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-4" })
+                    <div class="col-lg-7 col-md-7 col-sm-6 col-xs-6" style="padding-top:7px;">
+                        @Quan
+                        @Model.UnitName
+                        @if (Model.CanbeBreakable)
+                        {
+                            <span style="font-size:12px;color:#808080;">(Per @Model.UnitName @Model.SubQuantity @Model.SubUnitName)</span>
+                        }
+                    </div>
+                </div>
+
+                @if (Model.CanbePerishable)
+                {
+                    var list = (from m in db.StoreItemLists
+                                where m.InventoryId == Model.InventoryId
+                                select new
+                                {
+                                    Expired = m.ExpiredDate
+                                }).GroupBy(g => g.Expired).ToList();
+                    <div class="form-group">
+                        <label class="control-label col-lg-3 col-md-3 col-sm-4 col-xs-4">Item Expired Date</label>
+                        <div class="col-lg-7 col-md-7 col-sm-6 col-xs-6" style="padding-top:7px;">
+                            @foreach (var date in list)
+                            {
+                                DateTime ex_date = Convert.ToDateTime(date.Key);
+                                int count = db.StoreItemLists.Where(m => m.ExpiredDate == ex_date).Count();
+                                if (count > 0)
+                                {
+                                    <span class="col-md-9 col-sm-9 col-xs-9" style="padding-left:0px!important;">
+                                        <span>@count @Model.UnitName</span>
+                                        <span style="font-size:12px;color:#808080;margin-left:10px;"> Expired Date : @Convert.ToDateTime(ex_date).ToString("MMM dd,yyyy")</span>
+                                    </span>
+
+                                }
+                            }
+                        </div>
+                    </div>
+                }
+                <div class="form-group">
+                    <label class="control-label col-lg-3 col-md-3 col-sm-4 col-xs-4">Location</label>
+                    <div class="col-lg-7 col-md-7 col-sm-6 col-xs-6" style="padding-top:7px;">
+                        @foreach (var multi in locationList)
+                        {
+                            <span class="col-md-9 col-sm-9 col-xs-9" style="padding-left:0px!important;">
+                                @if (multi.StoreId > 0)
+                                {
+                                    <span>@multi.StoreName</span>
+                                }
+                                else
+                                {
+                                    <span>@multi.WareName</span>
+                                }
+                                <span style="font-size:12px;color:#808080;">(Quantity @multi.Quantity @Model.UnitName)</span>
+                            </span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var inventoryId ='@(Model.InventoryId)';
+    //************************ All Reserve Order Deatils ********************************
+    $("#btn_Resrv_Details").click(function(){
+        $("#Win_Add_Resrv_Deatils").empty();
+        $("#Win_Add_Resrv_Deatils").kendoWindow({
+            actions: ["Close"],
+            visible: false,
+            modal: true,
+            position: { top: '50%', left: '50%' },
+            title: 'Show All List',
+            width: "50%",
+            minHeight: 100,
+            content: "/StoreProduct/ProductReserveDetails?inventoryId="+'@(Model.InventoryId)'
+        });
+        $("#Win_Add_Resrv_Deatils").data("kendoWindow").center().open();
+    });
+
+    //************************ All Requistion History ********************************
+    $("#btn_acq_his").click(function(){
+        $("#Win_Req_His").empty();
+        $("#Win_Req_His").kendoWindow({
+            actions: ["Close"],
+            visible: false,
+            modal: true,
+            position: { top: '50%', left: '50%' },
+            title: 'Show Requistion History',
+            width: "60%",
+            minHeight: 100,
+            content: "/StoreProduct/_ProRequistionHis?id="+inventoryId
+        });
+        $("#Win_Req_His").data("kendoWindow").center().open();
+    });
+
+    //************************ All Buying History ********************************
+    $("#btn_buy_his").click(function(){
+        $("#Win_Buying_His").empty();
+        $("#Win_Buying_His").kendoWindow({
+            actions: ["Close"],
+            visible: false,
+            modal: true,
+            position: { top: '50%', left: '50%' },
+            title: 'Show All Buying History',
+            width: "60%",
+            minHeight: 100,
+            content: "/StoreProduct/_ProBuyingHis?id="+inventoryId
+        });
+        $("#Win_Buying_His").data("kendoWindow").center().open();
+    });
+
+    //************************ All Requistion History ********************************
+    $("#btn_dis_his").click(function(){
+        $("#Win_Dis_His").empty();
+        $("#Win_Dis_His").kendoWindow({
+            actions: ["Close"],
+            visible: false,
+            modal: true,
+            //position: { top: '20%', left: '50%' },
+            title: 'Show Requistion History',
+            width: "80%",
+            minHeight: 100,
+            content: "/StoreProduct/_ProDispatchedHis?id="+inventoryId
+        });
+        $("#Win_Dis_His").data("kendoWindow").center().open();
+    });
+
+
+    //************************ EDIT PRODUCT DETAILS ********************************
+    $("#btn_Pro_Edit").click(function(){
+        $("#Win_Pro_Deatils").empty();
+        $("#Win_Pro_Deatils").kendoWindow({
+            actions: ["Close"],
+            visible: false,
+            modal: true,
+            //position: { top: '20%', left: '50%' },
+            title: 'Product Information Edit',
+            //width: "80%",
+            //minHeight: 100,
+            content: "/StoreProduct/StoreProductEdit?id="+inventoryId
+        });
+        $("#Win_Pro_Deatils").data("kendoWindow").maximize().open();
+    });
+</script>
+<script>
+    function onAdditionalData() {
+        return {
+            prefix: $("#ProductName").val()
+        };
+    }
+    function onBrandData() {
+        return {
+            prefix: $("#BrandName").val()
+        };
+    }
+    function InventoryItemSelect(e){
+        var dataItem = this.dataItem(e.item.index());
+        $(".div_hide_display").hide();
+        $("#div_Pro_AutoCom").hide();
+        $("#divForUnitList").hide();
+        $("#div_pro_select").show();
+        $("#div_slected_pro_info").show();
+        $("#div_slected_pro_info").append('<div class="loading_partial"></div>');
+        $("#div_slected_pro_info").load('@Url.Action("_AcquisitionBySearch", "StoreProduct")?InventoryId='+dataItem.InventoryId);
+        $("#lbl_Pro_Name").text(dataItem.ProductName);
+        $("#InventoryId").val(dataItem.InventoryId);
+    }
+    function BrandSelect(e){
+        var dataItem = this.dataItem(e.item.index());
+        $("#div_Brnd_AutoCom").hide();
+        $("#div_brnd_select").show();
+        $("#lbl_Brnd_Name").text(dataItem.BrandName);
+        $("#BrandId").val(dataItem.BrandId);
+    }
+    $("#btnCloseForProduct").click(function(){
+        $("#div_slected_pro_info").empty();
+        $("#div_slected_pro_info").hide();
+        $("#div_pro_select").hide();
+        $(".div_hide_display").show();
+        $("#div_Pro_AutoCom").show();
+        $("#divForUnitList").show();
+        $("#lbl_Pro_Name").text('');
+        $("#InventoryId").val(0);
+        $("#Country").val('');
+        $("#Price").val('');
+        $("#ProductName").val('');
+        $("#UnitId").val('');
+        $("#lbl_select_pro_unitname").text('');
+    });
+    $("#btnCloseForBrnd").click(function(){
+        $("#div_brnd_select").hide();
+        $("#div_Brnd_AutoCom").show();
+        $("#lbl_Brnd_Name").text('');
+        $("#BrandId").val(0);
+    });
+</script>
+<script>
+    var BrandName,count = 1,unitCount=1,brandCount=1,subunitCount=1;
+    var allMainFile = [];
+    var allFileCount = [];
+
+
+    var addedImg = [];
+    var newImg = [];
+
+    //**************************** PRODUCT TYPE CHANGE ************************************************
+    function onProductChange(){
+        if(this.value() === ""){
+            $("#ProductTypeId").val(0);
+        }
+        else{
+            var ProductTypeId= this.value();
+            var ProductTypeName= this.text();
+            $.ajax({
+                url: '@Url.Action("ProductTypeHasChildern", "Acquisition")',
+                type: 'Post',
+                data: {ProductTypeId:ProductTypeId},
+                success: function (data) {
+                    if(data)
+                    {
+                        $("#ProductTypeId").val(0);
+                        $("#lblForCatagoryName-"+count).text(ProductTypeName);
+                        $("#divForCatLbl-"+count).show();
+                        $("#dynDivForProCat-"+count).hide();
+
+                        count++;
+                        $("#divForProductCatagory").append('<div class="form-group dynDivForProCat" id="dynDivForProCat-'+count+'">'+
+                            '<label class="control-label col-lg-2 col-md-2 col-sm-3 col-xs-12" for="ProductType-'+count+'">Sub Catagory</label>'+
+                            '<div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" id="divForcat-'+count+'">'+
+                            '<label id="productCatType-'+count+'" style="width:100%;"></label>'+
+                            '<span class="field-validation-valid text-danger" data-valmsg-for="ProductTypeId" data-valmsg-replace="true"></span></div>'+
+                            '<div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" style="display: none; padding-top: 7px;" id="divForCatLbl-'+count+'">'+
+                            '<label id="lblForCatagoryName-'+count+'"></label> '+
+                            '<span class="k-icon k-i-close" id="btnCloseForCat-'+count+'" data-id="'+count+'"></span></div></div>');
+
+                        $("#productCatType-"+count).kendoDropDownList({
+                            dataTextField: "ProductTypeName",
+                            dataValueField: "ProductTypeId",
+                            change: onProductChange,
+                            optionLabel: "--Select One--",
+                            dataSource: {
+                                transport: {
+                                    read: {
+                                        url: "@Url.Action("GetAllProductType", "Acquisition")?ParentId=" + ProductTypeId,
+                                    type: "GET"
+                                }
+                            }
+                        }
+                        });
+
+                }else{$("#ProductTypeId").val(ProductTypeId);}
+
+    }
+    });
+    }
+    };
+
+    //**************************** UNIT CHANGE ************************************************
+
+    function onUnitChange(){
+        if(this.value() === ""){
+            $("#divForSubUnitChk").hide();
+        }else{
+            if($("#CanbeBreakable").is(":checked")){
+                $("#lblForSubQuantity").text("Per "+$("#unitType-"+unitCount).data("kendoDropDownList").text());
+            }
+
+            var UnitId= this.value();
+            var UnitName= this.text();
+            $.ajax({
+                url: '@Url.Action("UnitHasChildern", "Acquisition")',
+                type: 'Post',
+                data: {UnitId:UnitId},
+                success: function (data) {
+                    if(data)
+                    {
+                        $("#UnitId").val(0);
+                        $("#lblForUnitName-"+unitCount).text(UnitName);
+                        $("#divForUnitLbl-"+unitCount).show();
+                        $("#divForunit-"+unitCount).hide();
+                        divForunit-1
+                        unitCount++;
+                        $("#divForUnitList").append('<div class="col-xs-12 dynDivForProUnit" id="dynDivForProUnit-'+unitCount+'">'+
+                            '<label class="editor-label" for="Unit-'+unitCount+'">Sub Unit</label>'+
+                            '<div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" id="divForunit-'+unitCount+'">'+
+                            '<label id="unitType-'+unitCount+'" style="width:100%;"></label>'+
+                            '<span class="field-validation-valid text-danger" data-valmsg-for="UnitId" data-valmsg-replace="true"></span></div>'+
+                            '<div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" style="display: none; padding-top:7px;" id="divForUnitLbl-'+count+'">'+
+                            '<label id="lblForUnitName-'+unitCount+'"></label> '+
+                            '<span class="k-icon k-i-close" id="btnCloseForUnit-'+unitCount+'" data-id="'+unitCount+'"></span></div></div>');
+                        $("#unitType-"+unitCount).kendoDropDownList({
+                            dataTextField: "UnitName",
+                            dataValueField: "UnitId",
+                            change: onUnitChange,
+                            optionLabel: "--Select One--",
+                            dataSource: {
+                                transport: {
+                                    read: {
+                                        url: "@Url.Action("GetAllUnit", "Acquisition")?ParentId=" + UnitId,
+                                    type: "GET"
+                                }
+                            }
+                        }
+                        });
+                }
+                    else{
+                        $("#UnitId").val(UnitId);
+                        $("#divForSubUnitChk").show();
+        }
+    }
+    });
+    }
+    };
+
+    //************************** Breakable Unit Change *****************************************
+    function onBreakableUnitChange(){
+        if(this.value() === ""){
+            $("#SubUnits").val(0);
+        }else{
+            var UnitId= this.value();
+            var UnitName= this.text();
+            $.ajax({
+                url: '@Url.Action("UnitHasChildern", "Acquisition")',
+                type: 'Post',
+                data: {UnitId:UnitId},
+                success: function (data) {
+                    if(data)
+                    {
+                        $("#SubUnits").val(0);
+                        $("#lblForSubUnitName-"+subunitCount).text(UnitName);
+                        $("#divForSubUnitLbl-"+subunitCount).show();
+                        $("#divForSubUnit-"+subunitCount).hide();
+
+                        subunitCount++;
+                        $("#divForSubUnitList").append('<div class="form-group" id="dynDivForSubUnit-'+subunitCount+'">'+
+                            '<label class="control-label col-lg-2 col-md-2 col-sm-3 col-xs-12">Sub Unit</label>'+
+                            '<div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" id="divForSubUnit-'+subunitCount+'">'+
+                            '<label id="SubunitType-'+subunitCount+'" style="width:100%;"></label>'+
+                            '<span class="field-validation-valid text-danger" data-valmsg-for="SubUnits" data-valmsg-replace="true"></span></div>'+
+                            '<div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" style="display: none; padding-top:7px;" id="divForSubUnitLbl-'+count+'">'+
+                            '<label id="lblForSubUnitName-'+subunitCount+'"></label> '+
+                            '<span class="k-icon k-i-close" id="btnCloseForSubUnit-'+subunitCount+'" data-id="'+subunitCount+'"></span></div></div>');
+
+                        $("#SubunitType-"+subunitCount).kendoDropDownList({
+                            dataTextField: "UnitName",
+                            dataValueField: "UnitId",
+                            change: onBreakableUnitChange,
+                            optionLabel: "--Select One--",
+                            dataSource: {
+                                transport: {
+                                    read: {
+                                        url: "@Url.Action("GetAllUnit", "Acquisition")?ParentId=" + UnitId,type: "GET"
+                                }
+                            }
+                        }
+                        });
+                }
+            else{$("#SubUnits").val(UnitId);}}});}};
+
+</script>

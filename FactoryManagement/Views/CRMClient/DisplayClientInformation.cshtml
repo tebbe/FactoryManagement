@@ -1,0 +1,266 @@
+﻿@model FactoryManagement.ModelView.CRM.ClientListModelView
+@{
+    ViewBag.Title = "Client Information Display";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var userList = db.Client_User_Lists.Where(m => m.ClientId == Model.ClientId).ToList();
+    var clientContactList = db.ClientContactLists.Where(m => m.ClientId == Model.ClientId).ToList();
+    var vehicleList = db.Client_Vehicle_Lists.Where(m => m.ClientId == Model.ClientId).ToList();
+    var count = 1; 
+}
+<div class="row">
+    <div class="col-sm-5">
+        <h2 style="margin-top:0px!important;">Display Client Information</h2>
+    </div> 
+    <div class="col-sm-7" style="text-align:right;">
+        @if ((db.ClientLists.Where(m => m.ClientId == Model.ClientId && m.IsBuyer).Any()) && (db.BusinessOrderLists.Where(m => m.ClientId == Model.ClientId && m.OrderType == 1).Any()))
+        {
+            <span class="k-button k-state-default" id="btnbusinessHistory" data-clientid="@Model.ClientId"><span class="fa fa-list-ul"> Business History</span></span>
+        }
+        @if ((db.ClientLists.Where(m => m.ClientId == Model.ClientId && m.IsSupplier).Any()) && (db.BusinessOrderLists.Where(m => m.ClientId == Model.ClientId && m.OrderType == 2).Any()))
+        {
+            <span class="k-button k-state-default" id="btnSupplyHistory" data-clientid="@Model.ClientId"><span class="fa fa-list-ul"> Supply History</span></span>
+        }
+        <span class="k-button k-state-default" id="btnbacktolist" data-clientid="@Model.ClientId"><span class="fa fa-list-ul"> List of clients</span></span>
+    </div>  
+</div>
+@(Html.Kendo().Window()
+       .Name("WinForDisplayUserDetails")
+       .Visible(false)
+       .Modal(true)
+       .Draggable(true)
+)
+<div id="dialog"></div>
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 row">
+    <div class="form-horizontal col-md-6 col-sm-6" id="DivForBasicInfo">
+        <h4>
+            Client Basic Information
+        </h4>
+        <hr />
+        <div class="form-group">
+            @Html.LabelFor(model => model.Name, "Name", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-7 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.Name, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.ClientType, "Type", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-7 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.ClientType, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.ClientCode, "Client Code", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-7 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.ClientCode, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Address, "Address", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-7 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.Address, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        @if (Model.AddressLine1 != null)
+        {
+            <div class="form-group">
+                @Html.LabelFor(model => model.AddressLine1, "Address Line 1", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                <div class="col-md-7 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                    @Html.DisplayFor(model => model.AddressLine1, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+            </div>
+        }
+        <div class="form-group">
+            @Html.LabelFor(model => model.Country, "Country", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-7 col-sm-7 col-xs-8" style="padding-top:7px">
+                @Html.DisplayFor(model => model.CountryName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        @if (Model.DivisionId != null && Model.Country == "BD")
+        {
+            <div class="form-group">
+                @Html.LabelFor(model => model.DivisionId, "Division", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                <div class="col-md-7 col-sm-7 col-xs-8" style="padding-top:7px">
+                    @Html.DisplayFor(model => model.DivisionName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+            </div>
+        }
+        @if (Model.State != null)
+        {
+            <div class="form-group">
+                @Html.LabelFor(model => model.State, "State", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                <div class="col-md-7 col-sm-7 col-xs-8" style="padding-top:7px">
+                    @Html.DisplayFor(model => model.State, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+            </div>
+        }
+        @if (Model.City != null)
+        {
+            <div class="form-group">
+                @Html.LabelFor(model => model.City, "City", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                <div class="col-md-7 col-sm-7 col-xs-8" style="padding-top:7px">
+                    @Html.DisplayFor(model => model.City, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+            </div>
+        }
+        @if (Model.PostalCode != null)
+        {
+            <div class="form-group">
+                @Html.LabelFor(model => model.PostalCode, "Postal Code", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                <div class="col-md-7 col-sm-7 col-xs-8" style="padding-top:7px">
+                    @Html.DisplayFor(model => model.PostalCode, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+            </div>
+        }
+        <div class="form-group">
+            @Html.LabelFor(model => model.Email, "Email", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-7 col-sm-7 col-xs-8" style="padding-top:7px">
+                @Html.DisplayFor(model => model.Email, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        @if (Model.Website != null)
+        {
+            <div class="form-group">
+                @Html.LabelFor(model => model.Website, "Website", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                <div class="col-md-7 col-sm-7 col-xs-8" style="padding-top:7px">
+                    @Html.DisplayFor(model => model.Website, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+            </div>
+        }
+        @if (Model.Fax != null)
+        {
+            <div class="form-group">
+                @Html.LabelFor(model => model.Fax, "Fax", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                <div class="col-md-7 col-sm-7 col-xs-8" style="padding-top:7px">
+                    @Html.DisplayFor(model => model.Fax, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+            </div>
+        }
+    </div>
+    <div class="form-horizontal col-md-6 col-sm-6" id="divForContactNumber">
+        <h4>
+            Client Contact Information
+        </h4>
+        <hr />
+        @foreach (var item in clientContactList as IEnumerable<FactoryManagement.Models.ClientContactList>)
+        {
+            <div class="form-horizontal form-widget">
+
+                <div class="form-group" id="divForContactLabel-@item.CientContactId">
+                    @Html.LabelFor(modelItem => item.Contact, "Contact" + ' ' + count, htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                    <div class="col-md-7 col-sm-7 col-xs-8" style="padding-top:7px">
+                        <p>@item.Contact (@item.ContactTypeName)</p>
+                        <p>@item.Comments</p>
+                    </div>
+                </div>
+                <div id="divforContactEdit-@item.CientContactId">
+                </div>
+            </div>
+            count++;
+        }
+    </div>
+</div>
+<div class="row">
+    <h2 class="col-sm-10"></h2> 
+</div>
+<div class="row" style="margin-top:10px;">
+    <div class="form-horizontal col-lg-6 col-md-6 col-sm-6 col-xs-6">
+        <h4>List of Users</h4><hr />
+        <div id="DivForDisplayUser" style="display:none;"><div class="loading_partial"></div></div>
+        @if (userList.Count() > 0)
+        {
+            <script>
+                $("#DivForDisplayUser").show();
+                $("#DivForDisplayUser").load('@Url.Action("DisplayUserList", "CRMClient")?Id=' + '@(Model.ClientId)');
+            </script>
+        }
+    </div>
+    @if (Model.IsLogistic == true) { 
+    <div class="form-horizontal col-lg-6 col-md-6 col-sm-6 col-xs-6">
+        <h4>List of Vehicle</h4><hr />
+        <div id="DivForDisplayVehicle" style="display:none;"><div class="loading_partial"></div></div>
+        @if (vehicleList.Count() > 0)
+        {
+            <script>
+                $("#DivForDisplayVehicle").show();
+                $("#DivForDisplayVehicle").load('@Url.Action("DisplayVehicleList", "CRMClient")?Id=' + '@(Model.ClientId)');
+            </script>
+        }
+    </div>
+    }
+</div>
+<script>
+    $("#btnbacktolist").click(function () {
+        location.href = '@Url.Action("AllClientList", "CRMClient")';
+    });
+    $(document).on("click", ".userDetailsDisplay", function (e) {
+        e.preventDefault();
+        var window = $("#WinForDisplayUserDetails").data("kendoWindow");
+        var userId = $(this).data('userid');
+        var clientId = $(this).data('clientid');
+        window.setOptions({
+            width: '60%',
+            title: 'Display User Details'
+        });
+        window.refresh({
+            url: "/CRMClient/_DisplayUserInformation?UserId=" + userId + "&ClientId=" + clientId
+        });
+        window.open();
+        window.center();
+    });
+    $(document).on("click", ".k-overlay", function () {
+        $("#WinForDisplayUserDetails").empty();
+        $("#WinForDisplayUserDetails").data("kendoWindow").close();
+    });
+    $("#DivForDisplayVehicle").on("click", "#vehicleDetailsDisplay", function (e) {
+        e.preventDefault();
+        var window = $("#WinForDisplayUserDetails").data("kendoWindow");
+        var vehicleId = $(this).data('vehicleid');
+        var clientId = $(this).data('clientid');
+        window.setOptions({
+            width: '60%',
+            title: 'Display Vehicle Details'
+        });
+        window.refresh({
+            url: "/CRMClient/_DisplayVehicleInformation?VehicleId=" + vehicleId + "&ClientId=" + clientId
+        });
+        window.open();
+        window.center();
+    });
+
+//************************** Show All Business Order History **********************************************
+    $("#btnbusinessHistory").click(function (e) {
+        e.preventDefault();
+        var clientId = $(this).data('clientid');
+        $("#dialog").empty();
+        $("#dialog").kendoWindow({
+            actions: ["Close"],
+            draggable: true,
+            modal: true,
+            visible: false,
+            pinned: false,
+            width: "60%",
+            title: 'Display Business History',
+            content: "/CRMClient/_DisplayBusinessOrderHistory?ClientId=" + clientId
+        });
+        $("#dialog").data("kendoWindow").open().center().maximize();
+    });
+    $("#btnSupplyHistory").click(function (e) {
+        e.preventDefault();
+        var clientId = $(this).data('clientid');
+        $("#dialog").empty();
+        $("#dialog").kendoWindow({
+            actions: ["Close"],
+            draggable: true,
+            modal: true,
+            visible: false,
+            pinned: false,
+            width: "60%",
+            title: 'Display Supply History',
+            content: "/CRMClient/_DisplaySupplyHistory?ClientId=" + clientId
+        });
+        $("#dialog").data("kendoWindow").open().center().maximize();
+    });
+
+</script>

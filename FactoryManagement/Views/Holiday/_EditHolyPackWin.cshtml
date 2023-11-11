@@ -1,0 +1,27 @@
+﻿
+
+
+@******************************** Created By Jerin Jahan (Date: 01.02.2017) ******************************************************@
+@model FactoryManagement.ModelView.HR.HolidayPackageListModelView
+
+<div class="editor-label"><label for="HolidayPackName">Package Name</label></div>
+<div class="editor-field">
+    @Html.EditorFor(model => model.HolidayPackName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+    @Html.ValidationMessageFor(model => model.HolidayPackName, "", new { @class = "text-danger" })
+</div>
+
+@if (ViewBag.view == "edit")
+{
+    <div class="editor-label"><label for="NoOfPaidLeave">No. of Paid Leaves</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.NoOfPaidLeave, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        @Html.ValidationMessageFor(model => model.NoOfPaidLeave, "", new { @class = "text-danger" })
+    </div>
+}
+<script>
+    $(document).ready(function () {
+        if ('@(ViewBag.view)' == "add") {
+            $("#HolidayPackName").val('');
+        }
+    });
+</script>

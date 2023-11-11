@@ -1,0 +1,69 @@
+﻿
+
+
+@{
+    var count = 0;
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+<style>
+    .tranDetails {
+        cursor: pointer;
+        color: #428bca;
+    }
+
+    #tbl_AllPaid_His .out {
+        background-color: #ff0000;
+        color: #fff;
+    }
+
+    #tbl_AllPaid_His .in {
+        background-color: #247671;
+        color: #fff;
+    }
+</style>
+<table class="table table-bordered table-condensed" id="tbl_AllPaid_His">
+    <tbody>
+        <tr>
+            <th width="4%">#</th>
+            <th width="10%">Transaction</th>
+            <th width="10%">Transaction Type</th>
+            <th width="17%">Employee Name</th>
+            <th width="10%">Amount</th>
+            <th width="17%">Paid By</th>
+            <th width="12%">Paid Date</th>
+        </tr>
+        @foreach (var item in ViewBag.UserList as IEnumerable<FactoryManagement.Models.View_Transaction>)
+        {
+            count++;
+            <tr>
+                @if (item.TranTypeId == 4)
+                {
+                    <th class="in">@count .</th>
+                }
+                else
+                {
+                    <th class="out">@count .</th>
+                }
+                <td>
+                    <span class="tranDetails" data-id="@item.TranId">@item.TranName</span>
+                </td>
+                <td>@item.Name</td>
+                <td>
+                    <img class="user-photo" src="~/Images/UserPicture/thumb/@item.Picture" />
+                    <a href="/HumanResource/DisplayEmployeeDetails?UserId=@item.UserId&isDisplay=true">@Html.DisplayFor(modelItem => item.UserName)</a>
+                </td>
+
+                <td>@currency @item.Amount</td>
+                <td>
+                    <img class="user-photo" src="~/Images/UserPicture/thumb/@item.InsertUserPic" />
+                    <a href="/HumanResource/DisplayEmployeeDetails?UserId=@item.UserId&isDisplay=true">@Html.DisplayFor(modelItem => item.InsertUser)</a>
+                </td>
+                <td>@item.InsertedDateFormate</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<script>
+    totalCount = '@(ViewBag.TotalUser)';
+    showCount = '@count';
+</script>

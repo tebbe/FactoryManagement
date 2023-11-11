@@ -1,0 +1,582 @@
+﻿
+
+
+@model FactoryManagement.ModelView.HR.EmpSalaryPaymentDetailModelView
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var remainAmnt = Convert.ToDecimal(Model.TotalAmount) - Convert.ToDecimal(Model.PaidAmount);
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    int packCount = 0;
+    decimal total_pck_amnt = 0,calculate_loan_amnt=0;
+    
+}
+@************************************** Created By Jerin Jahan (Date:30.10.2016)  ***************************************@
+<input type="hidden" id="SalaryPayType" value="0" />
+@{
+    int total_work_days_full_month = 30, noPaidLeave = 0, total_work_days_till_today = 0;
+    var allSalaryPck = db.SalaryPaymentPckDetails.Where(m => m.PaymentId == Model.Id).ToList();
+    ViewBag.allSalaryPck= allSalaryPck;
+
+    int offset = Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["localTime"]);
+    DateTime now = DateTime.UtcNow.AddMinutes(offset);
+    var startDate = new DateTime(now.Year, Model.MonthId, 1);
+    var endDate = startDate.AddMonths(1).AddDays(-1);
+
+    List<string> total_days_fullmoth = new List<string>();
+    List<string> total_days_till_today = new List<string>();
+    List<string> dayslist_for_week = new List<string>();
+
+    var CurrentMonthPresentList = db.Daily_Attendance.Where(m => m.UserId == Model.UserId && m.Year == Model.Year && m.MonthId == Model.MonthId).ToList();
+    var count = db.Daily_Attendance.Where(m => m.UserId == Model.UserId && m.Year == Model.Year && m.MonthId == Model.MonthId).Count();
+
+    if (db.UserInformations.Where(m => m.HolidayPackId > 0 && m.UserId == Model.UserId).Any())
+    { 
+        int alread_taken_leave = db.EmployeeLeaveRecords.Where(m => m.UserId == Model.UserId && m.Year == now.Year).Count();
+        total_work_days_full_month = 0;
+        int HolypackId =Convert.ToInt32(db.UserInformations.Where(m => m.HolidayPackId > 0 && m.UserId == Model.UserId).Select(m => m.HolidayPackId).FirstOrDefault());
+        noPaidLeave = db.HolidayPackageLists.Where(m => m.HolidayPackId == HolypackId).Select(m => m.NoOfPaidLeave).FirstOrDefault();
+        int week_days = 0;
+        if (Model.WorkingScheduleId > 0)
+        {
+            week_days = db.WorkingDayLists.Where(m => m.WorkingScheduleId == Model.WorkingScheduleId).Count();
+            dayslist_for_week = db.WorkingDayLists.Where(m => m.WorkingScheduleId == Model.WorkingScheduleId).Select(m => m.Day).ToList();
+        }
+
+        if (alread_taken_leave > 0)
+        {
+            noPaidLeave = noPaidLeave - alread_taken_leave;
+        }
+        for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
+        {
+            if (dayslist_for_week.Contains(date.DayOfWeek.ToString()))
+            {
+                total_days_fullmoth.Add(date.ToShortDateString());
+                total_work_days_full_month++;
+            }
+        }
+    }
+    for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
+    {
+        if (dayslist_for_week.Count() > 0)
+        {
+            if (dayslist_for_week.Contains(date.DayOfWeek.ToString()))
+            {
+                total_days_till_today.Add(date.ToShortDateString());
+                total_work_days_till_today++;
+            }
+        }
+        else
+        {
+            total_work_days_till_today++;
+        }
+
+    }
+    bool loanDeduct = db.AllUserLoanLists.Where(m => m.UserId == Model.UserId && m.PaidStatus == 0 && m.DeductionFromSalary == true).Any();
+    decimal Loan_Amn_Deduct = 0;
+    if (loanDeduct)
+    {
+        var loan_details = db.AllUserLoanLists.Where(m => m.UserId == Model.UserId && m.PaidStatus == 0 && m.DeductionFromSalary == true).FirstOrDefault();
+        decimal unPaid_Amnt = loan_details.Amount - Convert.ToDecimal(loan_details.PaidAmount);
+        if (unPaid_Amnt > Convert.ToDecimal(loan_details.DeductAmountPerMonth))
+        {
+            Loan_Amn_Deduct = Convert.ToDecimal(loan_details.DeductAmountPerMonth);
+        }
+        else
+        {
+            Loan_Amn_Deduct = unPaid_Amnt;
+        }
+        remainAmnt = remainAmnt - Loan_Amn_Deduct;
+    }
+    int absent_days = total_work_days_till_today - count;
+
+    decimal per_day_amnt = 0, final_amnt = 0, base_amount=0;
+    //****************** Calculate Salary Using Deduction  **********************************
+    if (absent_days > 0 && allSalaryPck.Where(m => m.IsBasic).Any())
+    {
+        base_amount = allSalaryPck.Where(m => m.IsBasic).Select(m => m.Amount).FirstOrDefault();
+        per_day_amnt = Convert.ToDecimal(base_amount) / total_work_days_full_month;
+        final_amnt = (per_day_amnt * count);
+        foreach (var amnt in allSalaryPck)
+        {
+            if (!amnt.IsBasic)
+            {
+                if (amnt.IsDeduct)
+                {
+                    final_amnt = final_amnt - Convert.ToDecimal(amnt.Amount);
+                }
+                else
+                {
+                    final_amnt = final_amnt + Convert.ToDecimal(amnt.Amount);
+                }
+            }
+        }
+    }
+    else
+    {
+        final_amnt = Convert.ToDecimal(Model.TotalAmount);
+    }
+    final_amnt = Math.Round(final_amnt, 2);
+    decimal final_amnt_after_loandeduct = 0;
+    if (Loan_Amn_Deduct > 0)
+    {
+        if (Loan_Amn_Deduct > final_amnt)
+        {
+            calculate_loan_amnt = final_amnt;
+            final_amnt_after_loandeduct = 0;
+        }
+        else
+        {
+            final_amnt_after_loandeduct = Math.Round((final_amnt - Loan_Amn_Deduct), 2);
+        }
+
+    }
+    else
+    {
+        final_amnt_after_loandeduct = Math.Round(final_amnt, 2);
+    }
+}
+<style>
+    #div_Salary_pay_option_left .editor-label{width:40%!important;}
+    #div_Salary_pay_option_left .editor-field{width:50%!important;}
+</style>
+<label>Employee Salary Packge Details (For Month : @Model.Month @Model.Year)</label>
+<table class="table table-condensed">
+    @foreach (var pack in allSalaryPck)
+    {
+        packCount++;
+        <tr>
+            <td>@packCount. @pack.Acc_Name</td>
+            <td style="text-align:right;">
+                @if (pack.IsDeduct)
+                {
+                    total_pck_amnt = total_pck_amnt - pack.Amount;
+                    <span style="color:red;">@currency @pack.Amount (-)</span>
+                }
+                else
+                {
+                    <span>@currency @pack.Amount</span>
+                    total_pck_amnt = total_pck_amnt + pack.Amount;
+                }
+                
+            </td>
+        </tr>
+    }
+    <tr>
+        <td colspan="2" style="text-align:right;">@currency @total_pck_amnt</td>
+    </tr>
+</table>
+
+<div style="float:left;width:100%;">
+    <div class="editor-label"><label for="PackageName">Total Working Days</label></div>
+    <div class="editor-field" style="padding-top:5px;">
+        <span>(For @Model.Month : @total_work_days_full_month Days)</span>
+        @*<span>(Till Today @total_work_days_till_today Days)</span>*@
+    </div>
+
+    <div class="editor-label">
+        <label for="PackageName">Present Days</label>
+    </div>
+    <div class="editor-field" style="padding-top:5px;">@count Days</div>
+
+
+    @if (absent_days > 0)
+    {
+        <script>isAbsent= true;</script>
+        <div class="editor-label"><label for="PackageName">Absent Days</label></div>
+        <div class="editor-field" style="padding-top:5px;">@absent_days Days</div>
+        
+        <div class="editor-label"><label for="PackageName">No.of paid Leave</label></div>
+        <div class="editor-field" style="padding-top:5px;">@noPaidLeave Days</div>
+    }
+
+    @**************************** If Is There Any Absent Day And Has Any paid Leave Tpo Adjust ******************************@
+    
+    @if (absent_days > 0 && noPaidLeave > 0)
+    {
+        if (noPaidLeave > 0)
+        {
+            <script>hasPaidLeave= true;</script>
+            <div class="editor-label"><label>For Absent</label></div>
+            <div class="editor-field" id="div_radio">
+                <div style="width:100%;">
+                    <input id="Chk_deduct_leave" name="Duct_Amnt_Absenct" type="radio" value="Deduct" class="k-valid" checked> Deduct from salary
+                    <input id="Chk_adjust_leave" name="Duct_Amnt_Absenct" type="radio" value="Adjust" class="k-valid"> Adjust with paid leave
+                </div>
+                <span class="field-validation-valid text-danger" data-valmsg-for="Duct_Amnt_Absenct" data-valmsg-replace="true"></span>
+            </div>
+        }
+        else
+        {
+            <div class="editor-label"><label>For Absent</label></div>
+            <div class="editor-field" id="div_radio">
+                <div style="width:100%;">
+                    <input id="Chk_deduct_leave" name="Duct_Amnt_Absenct" type="radio" value="Deduct" class="k-valid" checked> Deduct from salary
+                </div>
+                <span class="field-validation-valid text-danger" data-valmsg-for="Duct_Amnt_Absenct" data-valmsg-replace="true"></span>
+            </div>
+            <script>hasPaidLeave= false;</script>
+        }
+        <div class="editor-label"><label>Total Amount For @count days </label></div>
+        <div class="editor-field" style="padding-top:5px;">@currency @final_amnt</div>
+    }
+
+    @**************************** If Loan Exists And Is Loan Deduct From Salary ******************************@
+
+    @if (Loan_Amn_Deduct > 0)
+    {
+        <div class="editor-label"><label for="PackageName">Deduct Loan Amount(Per Month) </label></div>
+        <div class="editor-field" style="padding-top:5px;color:red;">@currency @Loan_Amn_Deduct (-)</div>
+    }
+
+    <div class="editor-label"><label for="PackageName">Payment Dispatch By</label></div>
+    <div class="editor-field" style="padding-top:5px;">
+        <div style="width:100%;">
+            <input id="Cash" name="AccPayTyp" type="radio" value="Cash" class="k-valid"> Cash
+            <input id="Check" name="AccPayTyp" type="radio" value="Check" class="k-valid"> Cheque
+            @*<input id="Account" name="AccPayTyp" type="radio" value="Account" class="k-valid"> Account*@
+        </div>
+        <span class="field-validation-valid text-danger" data-valmsg-for="AccPayTyp" data-valmsg-replace="true"></span>
+    </div>
+</div>
+<div id="Div_for_Cash" style="display:none;float:left;width:100%;"></div>
+<div id="Div_for_Check" style="display:none;width:100%;"></div>
+<div id="div_for_Account" style="display:none;">
+    <div class="editor-label"><label>Payment In </label></div>
+    <div class="editor-field">
+        <input id="AccCash" name="AccPayType" type="radio" value="Cash" class="k-valid"> Cash
+        <input id="AccCheck" name="AccPayType" type="radio" value="Check" class="k-valid"> Cheque
+        <span class="field-validation-valid text-danger" data-valmsg-for="AccPayType" data-valmsg-replace="true"></span>
+    </div>
+</div>
+<div style="float:left;width:100%;display:none;" id="div_Bank_acc_Slip">
+    <div class="editor-label">
+        <label for="BankAccSlipNo">Bank A/C Slip No.</label>
+    </div>
+    <div class="editor-field" style="padding-top:5px;">
+        @Html.EditorFor(model => model.BankAccSlipNo, new { htmlAttributes = new { @class = "form-control k-textbox", } })
+        @Html.ValidationMessageFor(model => model.BankAccSlipNo, "", new { @class = "text-danger" })
+    </div>
+</div>
+@if (absent_days > 0 && noPaidLeave > 0)
+{
+    <div id="div_for_adjusted_day"></div>
+    <div id="Div_For_Amount">
+        <div class="editor-label"><label for="Amount">Amount</label></div>
+        <div class="editor-field" style="padding-top:5px;">
+            <input class="k-textbox"
+                   type="number" min="0" max="@remainAmnt" data-val-required="Please enter amount"
+                   id="Amount" name="Amount" value="@final_amnt_after_loandeduct" style="width:40%!important;">
+                @Html.ValidationMessageFor(model => model.Amount, "", new { @class = "text-danger" })
+            </div>
+        </div>
+}
+else
+{
+    <div style="float:left;width:100%;" id="Div_For_Amount">
+        <div class="editor-label"><label for="Amount">Amount</label></div>
+        <div class="editor-field" style="padding-top:5px;">
+            <input class="k-textbox"
+                   type="number" min="0" max="@remainAmnt"
+                   data-val-required="Please enter amount"
+                   id="Amount" name="Amount" value="@final_amnt_after_loandeduct" style="width:40%!important;">
+                @Html.ValidationMessageFor(model => model.Amount, "", new { @class = "text-danger" })
+            </div>
+        </div>
+}
+
+<script>
+    $("#headPayMonth").text("Salary Pay For "+'@(Model.Month)'+ "  Year :"+'@(Model.Year)');
+</script>
+<script>
+    var calculate_salary = '@(final_amnt)';
+    var calculate_loan_amnt= '@(calculate_loan_amnt)';
+    var adjusted_leave = 0;
+    $("#Cash").click(function () {
+        if ($(this).is(":checked")) {
+            $("#SalaryPayType").val(1);
+            $("#div_Bank_acc_Slip").hide();
+            $("#div_for_Account").hide();
+            $("#Div_for_Check").hide();
+            $("#Div_for_Check").empty();
+            $("#Div_for_Cash").empty();
+            $("#Div_for_Cash").append('<div class="editor-label">' +
+            '<label for="InernalAccId">Account Name</label></div>'+
+            '<div class="editor-field">'+
+            '<input id="InernalAccId" name="InernalAccId" style="width: 100%;" />'+
+            '<span class="field-validation-valid text-danger" data-valmsg-for="InernalAccId" data-valmsg-replace="true"></span>'+
+            '</div>');
+
+            $("#InernalAccId").kendoDropDownList({
+                dataTextField: "AccountName",
+                dataValueField: "AccId",
+                optionLabel: "--Select One--",
+                change: onInternalAccChange,
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "@Url.Action("AllAccountList", "HumanResource")?userId=" + userId, type: "GET"
+                        }
+                    }
+                }
+            });
+            $("#Div_for_Cash").show();
+        }
+    });
+    $("#Check").click(function () {
+        if ($(this).is(":checked")) {
+            $("#SalaryPayType").val(2);
+            $("#div_for_Account").hide();
+            $("#Div_for_Cash").hide();
+            $("#Div_for_Check").empty();
+            $("#Div_for_Check").append('<div style="width:100%;">' +
+                                       '<div class="editor-label">' +
+                                       '<label for="PackageName">Bank</label></div>' +
+                                       '<div class="editor-field">' +
+                                       '<input id="BankId" name="BankId" style="width: 100%;" />' +
+                                       '<span class="field-validation-valid text-danger" data-valmsg-for="BankId" data-valmsg-replace="true">' +
+                                       '</span></div>' +
+                                       '<div id="Div_For_Bank_Branch" style="float:left;width:100%;"></div>');
+            $("#BankId").kendoDropDownList({
+                dataTextField: "BankName",
+                dataValueField: "BankId",
+                change: onBankNameChange,
+                optionLabel: "--Select One--",
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "@Url.Action("AllBankList", "HumanResource")", type: "GET"
+                        }
+                    }
+                }
+            });
+            $("#Div_for_Check").show();
+        }
+    });
+    $("#Account").click(function () {
+        if ($(this).is(":checked")) {
+            $("#SalaryPayType").val(3);
+            $("#div_for_Account").show();
+            $("#Div_for_Cash").hide(); $("#Div_for_Check").empty();
+        }
+    });
+    $("#btn_Payment_Cancle").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#btn_Payment_Save").click(function () {
+        var validation = $("#div_Salary_pay_option_left").kendoValidator({
+            rules: {
+                option: function (input) {
+                    if (input.attr('name') === "AccPayTyp" && $("#SalaryPayType").val() === '0') {
+                        return false;
+                    }
+                    return true;
+                },
+                Internal: function (input) {
+                    if (input.attr('name') === 'InernalAccId' && $("#Cash").is(":checked") && $("#InernalAccId").val() === '') {
+                        return false;
+                    }
+                    return true;
+                },
+                BankName: function (input) {
+                    if (input.attr('name') === 'BankId' && $("#Check").is(":checked") && $("#BankId").val() === '') {
+                        return false;
+                    }
+                    return true;
+                },
+                BankAccId: function (input) {
+                    if (input.attr('name') === 'BankAccId' && $("#Check").is(":checked") && $("#BankAccId").val() === '') {
+                        return false;
+                    }
+                    return true;
+                },
+                BankAccSlipNo: function (input) {
+                    if (input.attr('name') === 'BankAccSlipNo' && $("#Check").is(":checked") && $("#BankAccSlipNo").val() === '') {
+                        return false;
+                    }
+                    return true;
+                },
+                duduct_absent: function (input) {
+                    if (input.attr('name') === "Duct_Amnt_Absenct" && hasPaidLeave) {
+                        return $("#div_Salary_pay_option_left").find("[type=radio]").is(":checked")
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                option:"Please select one",
+                Internal:"Please select one",
+                BankName: "Please select one",
+                BankAccId: "Please select one",
+                BankAccSlipNo:"Please enter slip number",
+                duduct_absent:"Please select one"
+            }
+        }).data("kendoValidator");
+
+        if (validation.validate()) {
+            var isDeduct = false,isAdjust=false,loan_amnt=0;
+            if($("#Chk_deduct_leave").is(":Checked")){
+                isDeduct = true,isAdjust=false;
+            }
+            if($("#Chk_adjust_leave").is(":Checked")){
+                isDeduct = false,isAdjust=true;
+            }
+            if('@(Loan_Amn_Deduct)' > 0){
+                if($("#Amount").val() > 0){
+                    loan_amnt = '@(Loan_Amn_Deduct)';
+                }
+                else{
+                    loan_amnt = calculate_loan_amnt;
+                }
+            }
+
+            var sendData = {
+                EmpSalaryPayId:@Model.Id,
+                UserId:@Model.UserId,
+                UserType:@Model.UserType,
+                PayType:$("#SalaryPayType").val(),
+                Amount:$("#Amount").val(),
+                InernalAccId:internal_AccId,
+                BankId:bankId,
+                BankAccId:banlAccId,
+                BankAccSlipNo:$("#BankAccSlipNo").val(),
+                InsertBy:userId,
+                username: username,
+                currency: Currency,
+                loanDeduct:isDeduct,
+                isAdjust:isAdjust,
+                loan_amnt:loan_amnt,
+                adjusted_leave:adjusted_leave,
+                salary_amnt:calculate_salary
+            };
+            $.ajax({
+                url: '@Url.Action("SaveSingleUserSalary", "HumanResource")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    if(data !== "Error"){
+                        $("#btn_Payment_Save").closest(".k-window-content").data("kendoWindow").close();
+                        $('#WinForSalaryPack').empty();
+                        totalChkAmnt = 0;
+                        if(data){
+                            $('#achrPay_'+SeletecUserCount).hide();
+                        }
+
+                    }else{
+
+                    }
+                },
+                error: function (xhr) {
+                    alert('error');
+                }
+            });
+        }
+    });
+</script>
+<script>
+    $("#Chk_adjust_leave").click(function(){
+        $("#Amount").val('');
+        $("#div_for_adjusted_day").empty();
+        $("#div_for_adjusted_day").append('<div id="Div_For_Amount">'+
+            '<div class="editor-label"><label>No.of Adjusted Day</label></div>'+
+            '<div class="editor-field" style="padding-top:5px;">'+
+                '<input class="k-textbox" type="number" min="1" max="@absent_days" data-val-required="*"'+
+                'id="txt_adjusted_day" name="txt_adjusted_day" value="" style="width:40%!important;margin-right:10px;"><span>Out of @noPaidLeave days</span>'+
+            '<span class="field-validation-valid text-danger" data-valmsg-for="txt_adjusted_day" data-valmsg-replace="true"></span>'+
+            '</div></div>');
+    });
+    $("#Chk_deduct_leave").click(function(){
+        calculate_salary = '@(final_amnt)';
+        calculate_loan_amnt= '@(calculate_loan_amnt)';
+        $("#div_for_adjusted_day").empty();
+        if('@final_amnt_after_loandeduct' > 0){
+            $("#Amount").val('@final_amnt_after_loandeduct');
+        }else{
+            $("#Amount").val(0);
+        }
+    });
+    $("#div_for_adjusted_day").on("change","#txt_adjusted_day",function(){
+        var absent_days = '@(absent_days)';
+        $("#div_adjusted_day_amnt").remove();
+        var validation = $("#div_for_adjusted_day").kendoValidator({
+            rules: {
+                required: function (input) {
+                    if (input.attr('name') === "txt_adjusted_day" && $("#txt_adjusted_day").val() === '') {
+                        return false;
+                    }
+                    return true;
+                },
+                min: function (input) {
+                    if (input.attr('name') === 'txt_adjusted_day' && parseInt($("#txt_adjusted_day").val()) < 1) {
+                        return false;
+                    }
+                    return true;
+                },
+                max: function (input) {
+                    if (input.attr('name') === 'txt_adjusted_day' && parseInt($("#txt_adjusted_day").val()) > parseInt(absent_days)) {
+                        return false;
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                required:"Please enter adjusted day",
+                min:"Day can not be less than 1",
+                max:"Day can not be greater than "+absent_days
+            }
+        }).data("kendoValidator");
+        if(validation.validate()){
+            var absent= '@(absent_days)';
+            var noPaidLeave ='@(noPaidLeave)';
+            var value = $(this).val();
+            if((parseInt(noPaidLeave) > parseInt(value)) || (parseInt(noPaidLeave) == parseInt(value))){
+                calculateAdjustedSalary(value);
+            }
+        }
+        else{
+            $("#txt_adjusted_day")
+            $("#div_adjusted_day_amnt").remove();
+            $("#Amount").val(0);
+        }
+    });
+    function calculateAdjustedSalary(value){
+        adjusted_leave= value;
+        var total_amnt= ''; var total_paid= 0;
+        var present_days='@(count)';
+        var prese_plus_adjust = parseInt(present_days)+parseInt(value);
+        var salary_till_today = 0;
+
+        var Pck_details = @Html.Raw(
+                Json.Encode(
+                    ((IEnumerable<FactoryManagement.Models.SalaryPaymentPckDetail>)ViewBag.allSalaryPck).Select(m => new
+                    {
+                        Amount = m.Amount,
+                        IsBase = m.IsBasic,
+                        IsDeduct = m.IsDeduct
+                    })
+                    )
+                );
+        for(var i =0; i<Pck_details.length;i++){
+            if(Pck_details[i].IsBase){
+                var per_day_amnt= parseFloat(parseFloat(Pck_details[i].Amount) / parseInt('@(total_work_days_full_month)'));
+                salary_till_today=parseFloat(per_day_amnt * parseInt(prese_plus_adjust));
+            }else{
+                if(Pck_details[i].IsDeduct){
+                    salary_till_today =parseFloat(salary_till_today) - parseFloat(Pck_details[i].Amount);
+                }else{
+                    salary_till_today =parseFloat(salary_till_today) + parseFloat(Pck_details[i].Amount);
+                }
+            }
+        }  
+        calculate_salary = salary_till_today;
+        var final_amnt= (salary_till_today - parseFloat('@(Loan_Amn_Deduct)')).toFixed(2);
+        $("#div_for_adjusted_day").append('<div id="div_adjusted_day_amnt"><div class="editor-label"><label>Total Amount For '+prese_plus_adjust+' days </label></div>'+
+                    '<div class="editor-field" style="padding-top:5px;">'+Currency+' '+salary_till_today.toFixed(2)+'</div></div>');
+
+        if(final_amnt > 0){
+            $("#Amount").val(final_amnt);
+        }else{
+            $("#Amount").val(0);
+            calculate_loan_amnt = salary_till_today.toFixed(2);
+        }
+    }
+</script>

@@ -1,0 +1,101 @@
+﻿
+
+
+@************************************ Created By Jerin Jahan (Date: 26.10.2016) ****************************************************************@
+
+@model FactoryManagement.Models.AccountName
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    var allUser = (from m in db.AccNameAssignedWithUsers
+                   join v in db.View_UserLists on m.UserId equals v.UserId
+                   where m.AccId == Model.AccId
+                   select new
+                   {
+                       Id = m.UserId,
+                       Username = v.UserName,
+                       Pic = v.Picture
+                   }).ToList();
+}
+<style>
+    #Div_For_Acc_Grp_Info .editor-label {
+        width: 40% !important;
+    }
+
+    #Div_For_Acc_Grp_Info .editor-field {
+        padding-top: 7px;
+    }
+</style>
+<div class="k-edit-form-container col-xs-11" style="margin-bottom:4%;" id="Div_For_Acc_Grp_Info">
+    <div class="editor-label"><label for="AccountName">Account Name</label></div>
+    <div class="editor-field">@Model.AccountName1</div>
+
+    <div class="editor-label"><label for="AccountName">Account Cash Flow Type</label></div>
+    <div class="editor-field">
+        @if (Model.Acc_CashType == 1)
+        {
+            <span>Debit</span>
+        }
+        else if (Model.Acc_CashType == 2)
+        {
+            <span>Credit</span>
+        }
+        else
+        {
+            <span>Debit & Credit</span>
+        }
+    </div>
+
+    @if (Model.Acc_CashType == 1 || Model.Acc_CashType == 3)
+    {
+        <div class="editor-label"><label for="AccountName">Account Type</label></div>
+        <div class="editor-field">
+            @if (Model.Acc_Type == 1 )
+            {
+                <span>Salary</span>
+            }
+            else if (Model.Acc_Type == 2)
+            {
+                <span>Utility</span>
+            }
+            else
+            {
+                <span>Cash</span>
+            }
+        </div>
+        <div class="editor-label"><label for="WorkingBalance">Working Balance</label></div>
+        <div class="editor-field">@currency @Model.Balance </div>
+
+        <div class="editor-label"><label for="TotalCreditLimit">Total Credit Limit</label></div>
+        <div class="editor-field">@currency @Model.TotalCreditLimit </div>
+
+        <div class="editor-label"><label for="TransactionHigestAmount">Transaction Highest Amount(Per Month)</label></div>
+        <div class="editor-field">@currency @Model.TransactionHigestAmount </div>
+
+        <div class="editor-label"><label for="NoOfTranPerMonth">No.of Transaction(Per Month)</label></div>
+        <div class="editor-field">@Model.NoOfTranPerMonth</div>
+    }
+    else
+    {
+        <div class="editor-label"><label for="WorkingBalance">Current Balance @currency</label></div>
+        <div class="editor-field">@Model.Balance</div>
+    }
+    @************************* All Assigned User List ********************************@
+    <div class="editor-label"><label>All User Who Can Access</label></div>
+    <div class="editor-field">
+        @{
+            foreach (var usr in allUser)
+            {
+                <div>
+                    <img src="~/Images/UserPicture/thumb/@usr.Pic" class="user-photo" />@usr.Username
+                </div>
+            }
+        }
+    </div>
+    @if (Model.Description != null)
+    {
+        <div class="editor-label"><label for="WorkingBalance">Current Balance</label></div>
+        <div class="editor-field">@Model.Balance</div>
+    }
+</div>
+

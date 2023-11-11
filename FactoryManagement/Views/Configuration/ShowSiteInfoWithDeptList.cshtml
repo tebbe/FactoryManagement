@@ -1,0 +1,467 @@
+﻿
+
+
+@******************************** Created By Mabia Mishu (Date:17.09.2016) *********************************@
+
+@using FactoryManagement.Helpers
+@model FactoryManagement.ModelView.Configuration.SiteListModelView
+@{
+    ViewBag.Title = "Site Information";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-gears fa-fwt"></i>
+            <span>Configuration</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Configuration/AllSiteInfo">All Site Info</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="@Html.EncodedParam("ShowSiteInfoWithDeptList", "Configuration", new { siteId = Model.Id, IsDisplay = Model.IsDisplay }, null)">Site Details</a>
+        </li>
+    </ul>
+</div>
+
+@if (Model.Id > 0)
+{
+    <div id="divFor_site_Info"></div>
+    <script>
+        $("#divFor_site_Info").append('<div class="partial_loading_half"></div>');
+        $("#divFor_site_Info").load('@Url.Action("_ShowSiteDetails", "Configuration")?siteId=' +@Model.Id+'&view=partial');
+    </script>
+}
+<div id="divForAll_Dept_List"></div>
+@if (db.DepartmentLists.Where(m => m.SiteId == Model.Id).Any() || db.Site_Unit_Lists.Where(m => m.SiteId == Model.Id).Any())
+{
+    <script>
+        var sendData = {siteId:@Model.Id,SiteName:'@(Model.SiteName)'};
+        $("#divForAll_Dept_List").append('<div class="partial_loading_half"></div>');
+        $("#divForAll_Dept_List").load('@Url.Action("_ShowAllDeptListBySite", "Configuration")',sendData);
+    </script>
+}
+<div id="Win_dept_create"></div>
+<div id="Win_unit_Add"></div>
+<div id="Win_site_edit"></div>
+<script id="temp_alert" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">#= message #</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_alertOk"><span class="k-icon k-update"></span>OK</button>
+        </div>
+    </div>
+</script>
+<script id="temp_confirmation" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">#= message #</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    var firstpress=true,pageName="DeptList",displayInfo='';
+    var message='',uId=0;
+    var siteId = '@(Model.Id)',canDisplay=false,isResidential= false;
+    var hasDept= true,hasDepts=false;
+    var SiteName="";
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+        $("#liForConfig").addClass('active');
+        $("#liForSiteList").addClass('sublistActive');
+        canDisplay='@(Model.IsDisplay)';
+        $("#top_header_link").append('<span>Configuration</span>'+
+                        '<span><i class="fa fa-angle-right fa-2x"></i></span>'+
+                        '<span><a href="/Configuration/AllSiteInfo"> All Site Info</a></span>'+
+                        '<span><i class="fa fa-angle-right fa-2x"></i></span>' +
+                        '<span class="current"> Site Information </span><span><a href="/Configuration/AllSiteInfo"><i class="fa fa-reply"> Back</i></a></span>');
+        if (canDisplay == 'True') {
+            $("#linkForDeptCreate").hide();
+            $("#btn_dept_add_into_site").hide();
+        }
+    });
+    function isNumber(e) {
+        e = (e) ? e : window.event;
+        var charCode = (e.which) ? e.which : e.keyCode;
+        if(firstpress && charCode==48){
+            firstpress=false;
+            return false;
+        }
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+        return true;
+    }
+    function isvalueNull(value){
+        firstpress=(value=='')?true:false;
+    }
+    function onStatusChange(e){
+        var dataItem = this.dataItem(e.item);
+        $("#Status").val(dataItem.Value);
+    }
+    function ShowLineNumber(cb) {
+        if (cb.checked === true) {
+            $("#DivForLineNumber").show();
+            $("#HasLine").val(1);
+        } else {
+            $("#DivForLineNumber").hide();
+            $("#HasLine").val(0);
+        }
+        $("#NumberOfLine").val('');
+    }
+    function onCountryChange() {
+        if ($("#Country").val() == "BD") {
+            $("#Div_State").hide();
+            $("#Div_Division").show();
+            $("#Statename").val('');
+        }
+        else {
+            $("#Div_Division").hide();
+            $("#Div_State").show();
+            $("#DivisionId").val('');
+        }
+    };
+    //********************************* Define Unit to Site *********************************************
+
+    $("#divFor_site_Info").on("click","#btnForDefineUnit",function(){
+        $("#lblForAdd").show();
+        $("#inputForAdd").show();
+    });
+    $("#divFor_site_Info").on("click","#btnForAddUnit",function(){
+        var validation = $("#inputForAdd").kendoValidator({
+            rules: {
+                UnitNo: function (input) {
+                    if (input.is("[name=UnitNumber]") && input.val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
+                maxUnit: function (input) {
+                    if (input.is("[name=UnitNumber]") && parseInt($("#UnitNumber").val()) > 20) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            },
+            messages: {
+                UnitNo: "Please enter unit number",
+                maxUnit: "Unit number cannot be more than 20"
+            }
+        }).data("kendoValidator");
+        if (validation.validate()) {
+            location.href = '@Url.Action("DefineUnitOfSite", "Configuration")?SiteId='+siteId+'&UnitNo=' + $("#UnitNumber").val();
+        }
+    });
+    $("#divFor_site_Info").on("click","#btnForCancleUnit",function(){
+        $("#lblForAdd").hide();
+        $("#inputForAdd").hide();
+        $("#inputForAdd").empty();
+        $("#inputForAdd").append('<div>'+
+            '<input input type="text" onkeypress="return isNumber(event)" onkeyup="isvalueNull(this.value)" class="k-textbox text-box single-line k-invalid" '+
+                   'name="UnitNumber" id="UnitNumber" maxlength="2" style="width:10%!important;height: 1.7em!important;" /> '+
+            '<span id="btnForAddUnit"><i class="fa fa-check fa-2"></i></span> '+
+            '<span id="btnForCancleUnit"><i class="fa fa-times fa-2"></i></span>'+
+        '</div>'+
+        '<span class="field-validation-valid text-danger" data-valmsg-for="UnitNumber" data-valmsg-replace="true"></span>');
+    });
+    
+    //********************************* Site Information  Edit *********************************************
+    $("#divFor_site_Info").on("click","#btnForSiteEdit",function(){
+       
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width:"30%",
+            modal: true,
+            close: onWindowClose
+        });
+        message="Are you sure want to update this site information? ";
+        var template = kendo.template($("#temp_confirmation").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+
+        kendoWindow.find("#btn_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_ok").click(function () {
+            showWinForSiteEdit();
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+    });
+   
+    function showWinForSiteEdit(){
+        $("#Win_site_edit").empty();
+        $("#Win_site_edit").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '60%',
+            title: 'Update Site Information',
+            close: onWindowClose
+        });
+        $("#Win_site_edit").html('<div class="loading_30"></div>');
+        var Win_site_edit = $("#Win_site_edit").data("kendoWindow");
+        Win_site_edit.refresh({ url: "/Configuration/_ShowSiteDetailsPopUp?siteId=" +siteId+ "&view=win" });
+        Win_site_edit.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    }
+    //********************************* Dept  Create *********************************************
+    $("#div_for_add_btn").on("click", "#linkForDeptCreate, .linkForDeptCreate", function (e) {
+        var unitId=$(this).data("unitid");
+        var unit=$(this).data("uname");
+        $("#Win_dept_create").empty();
+        $("#Win_dept_create").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '30%',
+            title: 'Add New Department',
+            close: onWindowClose
+        });
+        $("#Win_dept_create").html('<div class="win_loading_half"></div>');
+        var Win_dept_create = $("#Win_dept_create").data("kendoWindow");
+        Win_dept_create.refresh({ url: "/Configuration/DepartmentCreatePopUp?siteId="+'@Model.Id'+"&UnitId=" + unitId + '&siteName=' + unit });
+        Win_dept_create.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+    
+   
+    $("#divFor_site_Info").on("click", "#btn_dept_add_into_site", function (e) {
+        var SiteName='@(Model.SiteName)';
+        $("#Win_dept_create").empty();
+        $("#Win_dept_create").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '30%',
+            title: 'Add New Department',
+            close: onWindowClose
+        });
+        $("#Win_dept_create").html('<div class="win_loading_half"></div>');
+        var Win_dept_create = $("#Win_dept_create").data("kendoWindow");
+        Win_dept_create.refresh({ url: "/Configuration/DepartmentCreatePopUp?siteId=" + siteId + '&siteName=' + SiteName });
+        Win_dept_create.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+
+    });
+    //********************************* Dept  DELETE *********************************************
+
+    function deleteDept(deptid){
+        notification.show({ message: "Department deleting...", showTime: startTime() }, "upload-progress");
+        $.ajax({
+            url: '@Url.Action("ChkDeptCount", "Configuration")',
+            type: 'Post',
+            data: { siteId: siteId, UserId: userId},
+            success: function (count) {
+                $.ajax({
+                    url: '@Url.Action("DeptDelete", "Configuration")',
+                    type: 'Post',
+                    data: { id: deptid,siteName:site, UserId: userId },
+                    success: function (data) {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        if(data==="Success"){
+                            notification.show({ message: "Department has been successfully deleted", showTime: startTime() }, "upload-success");
+                            if(count==1){
+                                hasDept = true;
+                                $("#divFor_site_Info").empty();
+                                $("#divFor_site_Info").append('<div class="partial_loading_half"></div>');
+                                $("#divFor_site_Info").load('@Url.Action("_ShowSiteDetails", "Configuration")?siteId=' + siteId + '&view=partial');
+
+                                $("#divForAll_Dept_List").empty();
+                                $("#divForAll_Dept_List").hide();
+                                $("#Span_DeptCount").text(0);
+                            }
+                            else{
+                                $("#divForAll_Dept_List").empty();
+                                $("#divForAll_Dept_List").append('<div class="partial_loading_half"></div>');
+                                var sendData = {siteId:siteId,SiteName:site};
+                                $("#divForAll_Dept_List").load('@Url.Action("_ShowAllDeptListBySite", "Configuration")',sendData);
+                            }
+                        }
+                        else{
+                            var msg=(data!=="Error")? "Department can not be deleted, already used for users.":"Department deletion unsuccessful";
+                            notification.show({ message: msg, showTime: startTime() }, "upload-error");
+                        }
+                    }
+                });
+            }
+        });
+    }
+    //********************************* Delete Unit  *********************************************
+
+    $("#divForAll_Dept_List").on("click", ".btn_dept_delete", function (e) {
+        var deptid = $(this).data("deptid");
+        var deptStatus=$(this).data("status");
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width:"30%",
+            modal: true,
+            close: onWindowClose
+        });
+        message="Are you sure want to delete this department from site?";
+        var template = kendo.template($("#temp_confirmation").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+        kendoWindow.find("#btn_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_ok").click(function () {
+            if(deptStatus === 1){
+                var kendoWindow2 = $("<div />").kendoWindow({
+                    actions: ["Close"],
+                    title: "Alert",
+                    resizable: false,
+                    width:"30%",
+                    modal: true,
+                    close: onWindowClose
+                });
+                message="You can not delete this dept because this dept already in used.";
+                var template = kendo.template($("#temp_alert").html());
+                kendoWindow2.data("kendoWindow").content(template).center().open();
+                document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+                document.body.scroll = "no"; // ie only
+                kendoWindow2.find("#btn_alertOk").click(function () {
+                    kendoWindow2.data("kendoWindow").close();
+                    kendoWindow.data("kendoWindow").close();
+                }).end();
+            }else{
+                kendoWindow.data("kendoWindow").close();
+                deleteDept(deptid);
+            }
+        }).end();
+    });
+    //********************************* Unit Add  Create *********************************************
+    $("#divFor_site_Info").on("click", "#btn_Add_Unit", function (e) {
+        $("#Win_unit_Add").empty();
+        $("#Win_unit_Add").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '23%',
+            title: 'Add Unit',
+            close: onWindowClose
+        });
+        $("#Win_unit_Add").html('<div class="partial_loading_half"></div>');
+        var Win_unit_Add = $("#Win_unit_Add").data("kendoWindow");
+        Win_unit_Add.refresh({ url: "/Configuration/_UnitAddPopUp?siteId=" + siteId });
+        Win_unit_Add.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+   
+    //********************************* Unit  DELETE *********************************************
+  
+    $("#divForAll_Dept_List").on("click", ".btn_unit_delete", function (e) {
+        e.preventDefault();
+        var unitId = $(this).data("unitid");
+        var unitStatus =$(this).data("status");
+        var uname = $(this).data("uname");
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width:"30%",
+            modal: true,
+            close: onWindowClose
+        });
+        message="Are you sure want to delete this unit from site?";
+        var template = kendo.template($("#temp_confirmation").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+        kendoWindow.find("#btn_cancel").click(function () {kendoWindow.data("kendoWindow").close();}).end();
+        kendoWindow.find("#btn_ok").click(function () {
+            if(unitStatus === 1){
+                var kendoWindow2 = $("<div />").kendoWindow({
+                    actions: ["Close"],
+                    title: "Alert",
+                    resizable: false,
+                    width:"30%",
+                    modal: true,
+                    close: onWindowClose
+                });
+                message="You can not delete this unit as it is already in use.";
+                var template = kendo.template($("#temp_alert").html());
+                kendoWindow2.data("kendoWindow").content(template).center().open();
+                document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+                document.body.scroll = "no"; // ie only
+                kendoWindow2.find("#btn_alertOk").click(function () {
+                    kendoWindow2.data("kendoWindow").close();
+                    kendoWindow.data("kendoWindow").close();
+                }).end();
+            }else{
+                kendoWindow.data("kendoWindow").close();
+                notification.show({ message: "Unit deleting...", showTime: startTime() }, "upload-progress");
+                $.ajax({
+                    url: '@Url.Action("ChkUnitCount", "Configuration")',
+                    type: 'Post',
+                    data: { siteId: @Model.Id, UserId: userId },
+                    success: function (count) {
+                        $.ajax({
+                            url: '@Url.Action("SiteUnitDelete", "Configuration")',
+                            type: 'Post',
+                            data: { id: unitId,siteName:site, UserId: userId },
+                            success: function (data) {
+                                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                                if(data === "Success"){
+                                    notification.show({ message: "Unit '"+ uname +"' deletion was successful.", showTime: startTime() }, "upload-success");
+                                    $("#divFor_site_Info").empty();
+                                    $("#divFor_site_Info").append('<div class="partial_loading_half"></div>');
+                                    $("#divFor_site_Info").load('@Url.Action("_ShowSiteDetails", "Configuration")?siteId=' +@Model.Id+'&view=partial');
+                                    if(count ==1){
+                                        $("#divForAll_Dept_List").empty();
+                                    }
+                                    else{
+                                        $("#divForAll_Dept_List").empty();
+                                        $("#divForAll_Dept_List").append('<div class="partial_loading_half"></div>');
+                                        var sendData = {siteId:@Model.Id,SiteName:site};
+                                        $("#divForAll_Dept_List").load('@Url.Action("_ShowAllDeptListBySite", "Configuration")',sendData);
+                                    }
+                                }
+                                else{
+                                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                                    var msg=(data!=="Error")?"Unit '"+uname+"' can not be deleted, already used for users.":"Unit '"+uname+"' deletion was unsuccessful.";
+                                    notification.show({ message: msg, showTime: startTime() }, "upload-error");
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        }).end();
+    });
+    function reloadUnit() {
+        var sendData = { siteId:@Model.Id, SiteName: '@(Model.SiteName)' };
+        $("#divForAll_Dept_List").empty();
+        $("#divForAll_Dept_List").append('<div class="partial_loading_half"></div>');
+        $("#divForAll_Dept_List").load('@Url.Action("_ShowAllDeptListBySite", "Configuration")',sendData);
+    }
+  
+</script>
+
+
+

@@ -1,0 +1,102 @@
+﻿
+
+
+@******************************** Created By Jerin Jahan (Date:29.09.2016) *********************************@
+@model IEnumerable<FactoryManagement.Models.View_All_Approved_AcquisitionList>
+
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var count = 1;
+}
+<style>
+    #tbl_apprv_item{
+        border: none !important;
+    }
+    #tbl_apprv_item th {
+        border: none !important;
+    }
+    #tbl_apprv_item td {
+        border: none !important;
+    }
+</style>
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;" id="Div_Salary_Dup_Name">
+    <table class="table table-bordered" id="tbl_apprv_item">
+        <tbody>
+            <tr>
+                <th>#</th>
+                <th>
+                    <input id="selectallOrder"
+                           type="checkbox"
+                           style="cursor:pointer;">
+                    Product Name
+                </th>
+                <th>Quantity</th>
+            </tr>
+            @foreach (var item in Model)
+            {
+                <tr class="tbl_tr">
+                    <th scope="row">@count</th>
+                    <td>
+                        <input id="chk_@item.AcquisitionId"
+                               name="chk_@item.AcquisitionId"
+                               type="checkbox" value="@item.AcquisitionId"
+                               data-productid="@item.ProductId"
+                               class="chkForAcquisitionId"
+                               style="cursor:pointer;">
+                        @item.ProductName
+                    </td>
+                    <td>
+                        <span class="k-icon k-i-arrow-n ItemUp" style="cursor:pointer;"></span>
+                        <span>@item.Quantity</span>
+                        <span class="k-icon k-i-arrow-s ItemDown" style="cursor:pointer;"></span>
+                    
+                    @item.UnitName</td>
+                </tr>
+                count++;
+            }
+        </tbody>
+    </table>
+    <div class="k-edit-buttons k-state-default col-xs-11">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_Ordr_Select"><span class="k-icon k-update"></span>Save</button>
+        <button type="reset" class="k-button k-button-icontext k-grid-cancel" id="btnOrderSelectCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+
+
+<script>
+
+    //************************ CLICK FUNCTION FOR KENDO WINDOW ***********************************
+
+    var selectedId = [];
+    $("#tbl_apprv_item").on("click", "#selectallOrder", function () {
+        $('input:checkbox').not(this).prop('checked', this.checked);
+    });
+    $("#tbl_apprv_item").on("click", ".chkForAcquisitionId", function () {
+        if ($(".chkForAcquisitionId").length == $(".chkForAcquisitionId:checked").length) {
+            $("#selectallOrder").prop('checked', true);
+        } else {
+            $("#selectallOrder").removeAttr("checked");
+        }
+    });
+
+    $(".chkForAcquisitionId").click(function () {
+        if ($(".chkForAcquisitionId").length == $(".chkForAcquisitionId:checked").length) {
+            $("#selectallOrder").prop('checked', true);
+        } else {
+            $("#selectallOrder").removeAttr("checked");
+        }
+
+    });
+    function getCheckEventId() {
+        val = [];
+        $('.chkForAcquisitionId:checked').each(function (i) {
+            selectedId[i] = $(this).val();
+        });
+    }
+
+
+    $("#btnOrderSelectCancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

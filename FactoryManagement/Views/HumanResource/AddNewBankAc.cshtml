@@ -1,0 +1,14 @@
+﻿@*************************************Added by kaikubad 31-01-2017*****************************************@
+
+@{
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<div id="Div_For_bankac_add"></div>
+<script>
+    $(document).ready(function () {
+        $("#Div_For_bankac_add").append('<div class="partial_loading_half"></div>')
+        $("#Div_For_bankac_add").load('@Url.Action("_AddNewBankAc", "HumanResource")?UserId=' + EmpId + '&BankId=' + bankId);
+    });
+   
+</script>

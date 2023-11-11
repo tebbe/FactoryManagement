@@ -1,0 +1,50 @@
+﻿@******************** Created By Kaikubad(Date:07.02.2017) **************************@
+<div id="divForSalaryAssign" class="form-horizontal col-md-12 col-sm-12 col-xs-12">
+    <div id="assign_slary"></div>
+    <div class="form-group">
+        <div class="col-md-offset-3 col-md-9 col-sm-offset-3 col-sm-9" style="margin-left:26%;">
+            <input type="button" value="Assign" data-placement="bottom" class="btn green" data-toggle="tooltip" title="Assign Salary Package" data-container="body" id="btn_salary_pck_save" onclick="btn_salary_pck_save()" disabled />
+            <input type="button" data-toggle="tooltip" title="Reset Values" data-placement="bottom" value="Refresh" data-container="body" class="btn yellow" id="btn_salary_pck_Refresh" />
+        </div>
+    </div>
+</div>
+<div id="divForSalaryUpdate" class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;">
+    <div id="update_slary"></div>
+    <div class="k-edit-buttons k-state-default col-xs-11">
+        <button type="button" data-toggle="tooltip" class="k-button k-button-icontext k-primary k-grid-update" id="btn_salary_pack_Change" disabled onclick="btn_salary_pack_Change()"><span class="k-icon k-update"></span>Change</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_salary_chng_Refresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+        <button type="reset" class="k-button k-button-icontext k-grid-cancel" id="btn_salary_chng_Cancle"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+    $(document).ready(function () {
+        var reason = '@ViewBag.reason';
+        if (reason == "assign") {
+            $("#divForSalaryUpdate").hide();
+            $("#divForSalaryAssign").show();
+            $("#assign_slary").append('<div class="win_loading_half"></div>');
+            $("#assign_slary").load('@Url.Action("_assignSalaryPackage", "HumanResource")?view=assign');
+        } else {
+            $("#divForSalaryUpdate").show();
+            $("#divForSalaryAssign").hide();
+            $("#update_slary").append('<div class="win_loading_half"></div>');
+            $("#update_slary").load('@Url.Action("_assignSalaryPackage", "HumanResource")?view=win');
+        }
+    });
+    $("#btn_salary_chng_Refresh").click(function (){
+        $("#update_slary").empty();
+        $("#update_slary").append('<div class="win_loading_half"></div>');
+        $("#btn_salary_pack_Change").prop('disabled', true);
+        $("#update_slary").load('@Url.Action("_assignSalaryPackage", "HumanResource")?view=win');
+    });
+    $("#btn_salary_chng_Cancle").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+        $("#update_slary").empty();
+    });
+    @*$("#btn_salary_pck_Refresh").click(function () {
+        $("#btn_salary_pck_save").attr("disabled", true);
+        $("#assign_slary").empty();
+        $("#assign_slary").load('@Url.Action("_assignSalaryPackage", "HumanResource")?view=assign');
+    });*@
+</script>

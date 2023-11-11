@@ -1,0 +1,95 @@
+﻿@*********************************************** Kaikubad Date(17.05.2017) ************************@
+@{
+    var date = DateTime.Now;
+}
+<style>
+    .k-edit-field, .k-edit-form-container .editor-field {
+        width: 70% !important;
+    }
+</style>
+<div class="k-edit-form-container col-md-10 col-sm-10 col-xs-10" id="DivForEntryUpdate" style="margin-bottom:2%;">
+    <div id="entry_Edit"></div>
+    <div class="k-edit-buttons k-state-default">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_entry_Update"><span class="k-icon k-update"></span>Update</button>
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_Update_Refresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_Update_Cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+<script>
+    var productName, refreshData;
+    $(document).ready(function () {
+        productName = '@ViewBag.productName';
+        refreshData = {
+            invenid: '@ViewBag.invenid',
+            date: '@ViewBag.date',
+            type: '@ViewBag.type',
+            name:'@ViewBag.name'
+        };
+        $("#entry_Edit").empty();
+        $("#entry_Edit").append('<div class="partial_loading_half"></div>');
+        $("#entry_Edit").load('@Url.Action("_UpdateMCSNumber", "StoreProduct")', refreshData);
+    });
+    $("#btn_Update_Refresh").click(function () {
+        $("#entry_Edit").empty();
+        $("#entry_Edit").append('<div class="partial_loading_half"></div>');
+        $("#entry_Edit").load('@Url.Action("_UpdateMCSNumber", "StoreProduct")', refreshData);
+    });
+    $("#btn_Update_Cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+        $("#DivForEntryUpdate").empty();
+        $("#entry_Edit").empty();
+    });
+    $("#btn_entry_Update").click(function () {
+        var validation = $("#entry_Edit").kendoValidator({
+            rules: {
+                unit: function (input) {
+                    if (input.is("[name=UnitId]") && $("#UnitId").val() === "") {
+                        return false;
+                    }
+                    return true;
+                }
+            },
+            messages: { unit: "Please select one type" }
+        }).data("kendoValidator");
+        if (validation.validate()) {
+            notification.show({ message: "Data is updating...", showTime: startTime() }, "upload-progress");
+            var allUnitQuan = [];
+            $(".txtUnitQuan").each(function () {
+                var id = $(this).data("id");
+                allUnitQuan.push(id + "|" + $(this).val());
+            });
+            var sendData = { name: '@ViewBag.name', allUnitQuan: allUnitQuan, UnitId: $("#UnitId").val() };
+            $.ajax({
+                url: '@Url.Action("UpdateWaste", "StoreProduct")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === "Success") {
+                        if (type == 1) {
+                            notification.show({ message: "Rejected pcs during the time of running in Mcs has been successfully updated.", showTime: startTime() }, "upload-success");
+                        }
+                        else if (type == 2) {
+                            notification.show({ message: "Rejected pcs shown int MRR has been successfully updated.", showTime: startTime() }, "upload-success");
+                        }
+                        else {
+                            notification.show({ message: "Inventory item " + productName + "'s waste has been successfully updated.", showTime: startTime() }, "upload-success");
+                        }
+                    }
+                    else {
+                        notification.show({ message: "Data update was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                    $("#btn_Update_Cancel").click();
+
+                    reloadActiveTab();
+
+                },
+                error: function (err) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+
+</script>

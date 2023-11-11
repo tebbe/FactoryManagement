@@ -1,0 +1,439 @@
+﻿@************************************** Created By Jerin Jahan (Date:21.08.2016)  ***************************************@
+@using FactoryManagement.Helpers
+@{
+    ViewBag.Title = "AssignSalaryPackage";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    string pageName="";
+    if (ViewBag.userId > 0 && ViewBag.PackageId > 0)
+    {
+        pageName = "Change Salary Package";
+    }
+    else
+    {
+        pageName = "Assign Salary Package";
+    }
+}
+
+
+<style>
+    .tbl_For_UserSearck td {
+        border: none !important;
+    }
+    .dropdown-header {
+        border-width: 0 0 1px 0;
+        text-transform: uppercase;
+    }
+    .dropdown-header > span {
+            display: inline-block;
+            padding: 10px;
+        } 
+    .dropdown-header > span:first-child {
+                width: 50px;
+            }
+    .selected-value {
+        display: inline-block;
+        vertical-align: middle;
+        width: 18px;
+        height: 18px;
+        background-size: 100%;
+        margin-right: 5px;
+        border-radius: 50%;
+    }
+    #customers-list .k-item {
+        line-height: 1em;
+        min-width: 300px;
+    }
+
+    .k-material #customers-list .k-item,
+    .k-material #customers-list .k-item.k-state-hover,
+    .k-materialblack #customers-list .k-item,
+    .k-materialblack #customers-list .k-item.k-state-hover {
+        padding-left: 5px;
+        border-left: 0;
+    }
+
+    #customers-list .k-item > span {
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        display: inline-block;
+        vertical-align: top;
+        margin: 20px 10px 10px 5px;
+    }
+        #customers-list .k-item > span:first-child {
+            -moz-box-shadow: inset 0 0 30px rgba(0,0,0,.3);
+            -webkit-box-shadow: inset 0 0 30px rgba(0,0,0,.3);
+            box-shadow: inset 0 0 30px rgba(0,0,0,.3);
+            margin: 10px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-size: 100%;
+            background-repeat: no-repeat;
+        }
+    #customers-list h3 {
+        font-size: 1.2em;
+        font-weight: normal;
+        margin: 0 0 1px 0;
+        padding: 0;
+    }
+    #customers-list p {
+        margin: 0;
+        padding: 0;
+        font-size: .8em;
+    }
+    .SelectedUserphoto {
+    display: inline-block;
+    width: 45px;
+    height: 42px;
+    border-radius: 50%;
+    background-size: 32px 35px;
+    background-position: center center;
+    vertical-align: middle;
+    line-height: 32px;
+    box-shadow: inset 0 0 1px #999, inset 0 0 10px rgba(0,0,0,.2);
+    margin-left: 5px;
+}
+</style>
+<h3 class="page-title">
+@pageName
+</h3>
+<div class="page-bar" id="salaPackageForFinance">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-calculator"></i>
+            <span> Finance</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-money" aria-hidden="true"></i>
+            <a href="/HumanResource/PaySalary">Payroll</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-user-plus" aria-hidden="true"></i>
+            <a href="/SalaryConfig/AssignSalaryPackage">@pageName</a>
+        </li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption font-green">
+                    <i class="fa fa-info-circle font-green"></i>
+                    <span class="caption-subject bold uppercase">@pageName</span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="row" style="margin-top:10px;margin-bottom:10px;">
+                    <div class="col-md-6 col-sm-6" style="border:1px solid #ddd;padding-bottom:20px;min-height:410px;" id="div_Pck_list">
+                        <h4>All Package List</h4><hr />
+                        <div class="loading_half" id="Div_Loading_Left"></div>
+                        <div id="DivForLeftTree" style="display:none;"></div>
+                    </div>
+                    <div class="col-md-6 col-sm-6" style="border:1px solid #ddd;display:none;padding-bottom:20px;min-height:410px;" id="div_Pck_Info">
+                        <h4>Selected Package Details</h4><hr />
+                        <div class="loading_half" id="Div_Loading_Left_pck_Info"></div>
+                        <div id="div_Selected_Pck_Details" style="display:none;"></div>
+                    </div>
+                    <div class="col-md-6 col-sm-6" style="border:1px solid #ddd;min-height:408px;">
+                        <h4>User List</h4><hr />
+                        @if (!ViewBag.Singleuser)
+                        {
+                            <table class="table tbl_For_UserSearck" style="margin-bottom:30px!important;margin-top:10px!important;border:none!important;">
+                                <tr>Select User/s</tr>
+                                <tr>
+                                    <td>
+                                        @(Html.Kendo().MultiSelect()
+                           .Placeholder("Select users...")
+                          .Name("customers")
+                          .DataTextField("UserName")
+                          .DataValueField("UserId")
+                          .DataSource(source =>
+                          {
+                              source.Read(read =>
+                              {
+                                  read.Action("GetUserList", "SalaryConfig");
+                              });
+                          })
+                          .Height(400)
+                          .HeaderTemplate("<div class=\"dropdown-header k-widget k-header\"><span>Photo</span><span>User info</span></div>")
+                          .ItemTemplate("<span class=\"k-state-default\" style=\"background-image: url(" + Url.Content("~/Images/UserPicture/thumb/") + "#:data.Picture#\");\"></span>" +
+                                        "<span class=\"k-state-default\"><h3>#: data.UserName # (EmpId : #: data.EmpId #) </h3><p>Designation : #: data.Designation # </p></span>")
+
+                         .TagTemplate("<span class=\"selected-value\" style=\"background-image: url(" + Url.Content("~/Images/UserPicture/thumb/") + "#:data.Picture#\");\"></span>" +
+                                               "<span>#: data.UserName #</span>")
+                         .Events(e => e.Select("onUserSelect").Change("onUserSelectChange"))
+                                        )
+                                    </td>
+                                </tr>
+                            </table>
+                        }
+                        <div id="Div_Ryt_User" style="display:none;">
+                            <h4>Selected User </h4>
+                            <div class="loading_half" id="Div_Loading_ryt_single_user"></div>
+                            <div id="DivForSelectedUserList" style="display:none;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <div class="col-md-offset-9 col-md-3 col-sm-offset-8 col-sm-4">
+                            <input type="button" value="Save" class="btn green" id="btnPckAssign" disabled />
+                            <input type="reset" value="Refresh" class="btn default" id="btnPckAssignRefresh" />
+                            <input type="button" value="Cancel" class="btn default" id="btnPckAssignCancel" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script id="tem_left_tv" type="text/kendo-ui-template">
+    # if (item.id.split('-')[1] === 'p') { #
+        <label style="margin-right:20px;">#: item.text #</label>
+        <span style="float:right;cursor:pointer;" data-id="#:item.id#" data-name="#:item.text#" class="btnForSelectPck">
+            <i class="fa fa-plus"></i>
+        </span>       
+    # } else{#
+        <span style="margin-right:20px;">#: item.text #</span> 
+        #if(item.AccountType === 2){#
+            <span>#: item.Percentage # %</span>   
+        #}else{#
+            <span>#: item.Amount #  Tk</span>   
+    #}}#
+</script>
+
+<script>
+    var isPckSelect = false, PackageId = 0, pckName = "",AllUserId="",isSingle = false;
+    var current = "", previous;
+    var btnDisable = true;
+    var prog_msg,sucess_msg,err_msg;
+
+    $(document).ready(function () {
+        $("#liForAccounting").addClass('active');
+        $("#liForHRSalary").addClass('sublistActive');
+        if('@(ViewBag.Singleuser)' === "True"){
+            AllUserId = '@(ViewBag.userId)';
+            var sendUserInfo = {userId:'@(ViewBag.userId)'};
+            $("#Div_Ryt_User").show();
+
+            $('#DivForSelectedUserList').load('@Url.Action("SeletedUserInfoForSalary", "SalaryConfig")',sendUserInfo);
+            $("#Div_Loading_ryt_single_user").hide();
+            $('#DivForSelectedUserList').show();
+            isSingle = true;
+
+            if('@(ViewBag.changePck)' === "True"){
+                $("#div_Pck_list").hide();
+                $("#div_Pck_Info").show();
+
+                $("#div_Selected_Pck_Details").load('@Url.Action("_SelectedPckDetailsToAssign", "SalaryConfig")?PackageId=' + '@(ViewBag.PackageId)');
+                $("#div_Selected_Pck_Details").show();
+                $("#Div_Loading_Left_pck_Info").hide();
+
+                isPckSelect = true;
+                PackageId = '@(ViewBag.PackageId)';
+
+                $("#btnPckAssign").val('Change');
+                $("#btnPckAssign").attr('disabled',true);
+                btnDisable = true;
+
+                prog_msg = "Salary package changing...";
+                sucess_msg = "Salary package change successful";
+                err_msg = "Salary package change unsuccessful";
+
+            }else{
+                $('#DivForLeftTree').load('@Url.Action("_AllPackageList", "SalaryConfig")');
+                $("#Div_Loading_Left").hide();$('#DivForLeftTree').show();
+            }
+        }
+        prog_msg = "Salary package assigning...";
+        sucess_msg = "Salary package successfully assigned";
+        err_msg = "Salary package assign unsuccessful";
+
+        $('#DivForLeftTree').load('@Url.Action("_AllPackageList", "SalaryConfig")');
+        $("#Div_Loading_Left").hide();$('#DivForLeftTree').show();
+    });
+    function onUserSelect(e) {
+        previous = this._savedOld;
+        current = this.value();
+        var diff = [];
+        if (previous) {
+            diff = $(previous).not(current).get();
+        }
+        this._savedOld = current.slice(0);
+        if (diff.length > 0 && current != '') {
+            $("#div_user_" + diff).remove();
+        } else {
+            var dataItem = this.dataSource.view()[e.item.index()];
+            $("#DivForSelectedUserList").append('<div style="margin-bottom:10px;" class="row" id="div_user_' + dataItem.UserId + '">' +
+                '<div class="col-md-1">'+
+                '<span><img src="/Images/UserPicture/thumb/' + dataItem.Picture + '"  class="media-object"  /></span>'+
+                '</div>' +
+                '<div class="col-md-8">' +
+                    '<span class="k-state-default"><span>' + dataItem.UserName + ' (EmpId : ' + dataItem.EmpId + ') </span></span>' +
+                    '<p>Designation : ' + dataItem.Designation + ' </p>' +
+                '</div>' +
+                '<div class="col-md-1">' +
+                    '<span style="float:right;cursor:pointer;" data-id="' + dataItem.UserId + '" data-typeid="' + dataItem.UserId_Type + '" class="btn_Delete_User"><i class="fa fa-close"></i></span>' +
+                '</div>' +
+            '</div>');
+            $("#Div_Loading_ryt_single_user").hide();
+            $("#DivForSelectedUserList").show();
+            $("#Div_Ryt_User").show();
+            if(isPckSelect){
+                $("#btnPckAssign").removeAttr('disabled');
+                btnDisable = false;
+            }
+        }
+    };
+    function onUserSelectChange(e) {
+        previous = this._savedOld;
+        current = this.value();
+        if (current == "") {
+            //$("#btnPartsAdd").prop('disabled', true);
+            //$("#tblForAddedPart").hide();
+        } else {
+            // $("#btnPartsAdd").prop('disabled', false);
+        }
+        var diff = [];
+        if (previous) {
+            diff = $(previous).not(current).get();
+        }
+        this._savedOld = current.slice(0);
+        if (diff.length > 0) {
+            if (current == "") {
+                $("#DivForSelectedUserList").hide();
+            }
+            var id = diff.toString().split('-')[0];
+            $("#div_user_" + id).remove();
+        }
+        if(current == ''){
+            btnDisable = true;
+            $("#btnPckAssign").attr('disabled',true);
+        }
+    }
+
+    //*****************************  LEFT SIDE PACKAGE SELECT ***************************************
+    $(document).on("click", ".btnForSelectPck", function () {  
+        var id = $(this).data('id');
+        id = id.split('-')[0];
+        $("#div_Pck_list").hide();
+        $("#div_Pck_Info").show();
+
+        $("#div_Selected_Pck_Details").load('@Url.Action("_SelectedPckDetailsToAssign", "SalaryConfig")?PackageId=' + id);
+        $("#div_Selected_Pck_Details").show();
+        $("#Div_Loading_Left_pck_Info").hide();
+
+        isPckSelect = true;
+        PackageId = id;
+        pckName = $(this).data("name");
+
+        if(isSingle){
+            $("#btnPckAssign").removeAttr('disabled');
+            btnDisable = false;
+        }else{
+            if(isPckSelect && current != ''){
+                $("#btnPckAssign").removeAttr('disabled');
+                btnDisable = false;
+            }else{
+                $("#btnPckAssign").attr('disabled',true);
+                btnDisable = true;
+            }
+        }
+        
+    });
+
+    //*****************************  DELETE SELECTED USER ***************************************
+    $("#DivForSelectedUserList").on("click", ".btn_Delete_User", function () {
+        var id = $(this).data('id');
+        var typeid = $(this).data('typeid');
+        $("#div_user_" + id).remove();
+
+        var multi = $("#customers").data("kendoMultiSelect");
+        current = $.grep(current, function (value) {
+            return value != typeid;
+        });
+        multi.dataSource.filter({});
+        multi.value(current);
+        if(current == ''){
+            $("#DivForSelectedUserList").empty();
+            $("#Div_Ryt_User").hide();
+        }
+        if(isPckSelect && current != ''){
+            $("#btnPckAssign").removeAttr('disabled');
+            btnDisable = false;
+        }else{
+            $("#btnPckAssign").attr('disabled',true);
+            btnDisable = true;
+        }
+    });
+    $("#btnPckAssign").click(function () {
+        if(!isSingle){
+            AllUserId = current;
+        }
+        if (!isPckSelect) {
+            alert("You didn't select any package");
+        }
+        else if (AllUserId == "") {
+            alert("You didn't select any user");
+        } else {
+            var sendData;
+            if (isSingle) {
+                alert('single');
+                sendData = { AllUserId: AllUserId, PackageId: PackageId, pckName: pckName, CreatedBy: userId };
+            }else{
+                sendData = { AllUserId: $("#customers").data("kendoMultiSelect").value().join(","), PackageId: PackageId, pckName: pckName, CreatedBy: userId };
+            }
+
+            notification.show({ message: prog_msg, showTime: startTime() }, "upload-progress");
+
+            $.ajax({
+                url: '@Url.Action("SavePackageIdWithUser", "SalaryConfig")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === "Error") {
+                        notification.show({ message: err_msg, showTime: startTime() }, "upload-error");
+                    } else {
+                        notification.show({ message:sucess_msg , showTime: startTime() }, "upload-success");
+                        if(isSingle){
+                            location.href='@Url.Action("AllUserLists", "HumanResource")';
+                        }else{
+                            location.reload();
+                        }
+                    }
+                }
+            });
+        }
+    });
+
+
+    $("#btnPckAssignCancel").click(function(){
+        if(isSingle){
+            location.href='@Url.Action("AllUserLists", "HumanResource")';
+        }else{
+            location.href='@Url.Action("AllUserLists", "HumanResource")';
+        }
+    });
+    $("#btnPckAssignRefresh").click(function(){
+        location.reload();
+    });
+
+</script>
+
+<style>
+    .media-object{
+        border-radius: 50% !important;
+        width: 38.57143px;
+        opacity: 0.8;
+        filter: alpha(opacity=80);
+        float: left;
+        margin-right: 10px;
+    }
+</style>

@@ -1,0 +1,118 @@
+﻿
+@model FactoryManagement.ModelView.Voucher.VoucherModelView
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var voucherProduct = db.Voucher_Service_List.Where(m => m.VoucherId == Model.VoucherId).ToList();
+    var voucherOtherService = db.View_VoucherServicesCostList.Where(m => m.VoucherId == Model.VoucherId).ToList();
+    var count = 1;
+    var otherServiceCount = 1;
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+   
+
+}
+<style>
+    #tbl_all_voucherProduct_list td {
+        border: none !important;
+    }
+
+    #tbl_all_voucherProduct_list th {
+        border: none !important;
+    }
+
+    #tbl_all_voucherOtherService_list td {
+        border: none !important;
+    }
+
+    #tbl_all_voucherOtherService_list th {
+        border: none !important;
+    }
+</style>
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;">
+   
+    <div class="col-md-9 col-sm-9 col-xs-9">
+        <div class="editor-label">
+            <label for="VoucherTitle">Title</label>
+        </div>
+        <div class="editor-field" style="padding-top:5px">
+            @Html.DisplayFor(model => model.VoucherTitle, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        </div>
+        <div class="editor-label"><label for="VoucherTypeId">Type</label></div>
+        <div class="editor-field" style="padding-top:5px">
+            @Html.DisplayFor(model => model.VoucherTypeName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        </div>
+        <div class="editor-label"><label for="Number">Voucher no</label></div>
+        <div class="editor-field" style="padding-top:5px">
+            @Html.DisplayFor(model => model.Number, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        </div>
+        <br />
+        <div class="col-md-offset-2 col-md-9" id="div_for_VoucherProductEdit">
+            <table class="table table-condensed" id="tbl_all_voucherProduct_list">
+                <tr>
+                    <th width="15%">#</th>
+                    <th width="40%">Services</th>
+                    <th width="30%">Amounts</th>
+                </tr>
+                @if (voucherProduct.Count() > 0)
+                {
+                    foreach (var item in voucherProduct as IEnumerable<FactoryManagement.Models.Voucher_Service_List>)
+                    {
+                        <tr id="display_tr-@item.VoucherServiceId">
+                            <td><div><label>@count</label></div></td>
+                            <td>
+                                @item.Name
+                            </td>
+                            <td>
+                                @currency @item.Amount
+                            </td>
+                        </tr>
+                        count++;
+                    }
+                }
+                else { 
+                <tr>nothing to show</tr>
+                }
+            </table>
+            @if (db.Voucher_Other_Costs_List.Where(m => m.VoucherId == Model.VoucherId).Any())
+            {
+                <table class="table table-condensed" id="tbl_all_voucherOtherService_list">
+                    <tr>
+                        <th width="15%"></th>
+                        <th width="40%">Other Services</th>
+                        <th width="30%"></th>
+                    </tr>
+                    @foreach (var cost in voucherOtherService as IEnumerable<FactoryManagement.Models.View_VoucherServicesCostList>)
+                   {
+                        <tr id="display_trforOtherService-@cost.OtherCostId">
+                            <td><div><label>@otherServiceCount</label></div></td>
+                                <td>
+                                  @cost.ServiceName
+                                </td>
+                            <td>
+                                @currency @cost.Amount
+                            </td>
+                        </tr>
+                        otherServiceCount++;
+                    }
+                </table>
+            }
+        </div>
+        <div class="col-md-offset-6 col-md-5">
+            <span style="margin-left:2rem;"><label for="TotalAmount">Total </label></span>
+            <span style="margin-left:7rem;">@currency @Html.DisplayFor(model => model.TotalAmount, new { htmlAttributes = new { @class = "form-control k-textbox" } })</span>
+        </div>
+    </div>
+    <div class="col-md-2 col-sm-2 col-xs-2" id="div_for_arcive">
+        @if (db.Vouchers.Where(m => m.ParentId == Model.VoucherId && m.IsArchive == true).Any())
+        {
+            <span class="btn btn-info" id="btn_show_arch"><i class="fa fa-list-ul"></i> Show Archive</span>
+        }
+    </div>
+    <div id="div_For_archive_2"></div>
+</div>
+<script>
+    $("#btn_show_arch").click(function () {
+        $("#div_For_archive_2").empty();
+        $("#div_For_archive_2").append('<div class="partial_loading_half"></div>');
+        $("#div_For_archive_2").load('@Url.Action("_ShowAllArchVoucher", "Voucher")?VoucherId=' + '@Model.VoucherId');
+    });
+</script>

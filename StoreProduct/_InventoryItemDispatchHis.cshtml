@@ -1,0 +1,73 @@
+﻿
+
+
+
+@************************* Created By Jerin Jahan (Date : 24.01.2017) ***************************************@
+@using FactoryManagement.Helpers
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var count = 0;
+}
+
+@if ((Enumerable.Count(ViewBag.list)) > 0)
+{
+    <table class="table table-hover table-bordered table-striped table-condensed" id="tbl_All_his">
+        <tbody>
+            <tr>
+                <th width="3%">#</th>
+                <th width="25%">Name</th>
+                <th width="10%">Total Quantity</th>
+                <th width="10%">Total Return Quantity</th>
+                <th width="10%">Total Used Quantity</th>
+                @*<th width="10%"></th>*@
+            </tr>
+            @foreach (var item in ViewBag.list as IEnumerable<FactoryManagement.ModelView.Inventory.Store.View_Dispacth_Item_DetailsModelView>)
+            {
+                count++;
+                <tr>
+                    <th>@count.</th>
+                    <td>
+                    @Html.EncodedActionLink(item.ProductName, "StoreProductDetails", "StoreProduct", new { id = item.InventoryId },null)
+                    </td>
+                    @*<td><a href="/StoreProduct/StoreProductDetails?id=@item.InventoryId&v=details&importId=@item.ImportId&LC=@item.LC"> @item.ProductName</a></td>*@
+                    <td>
+                        <span class="itemQuan" style="color:#428bca;cursor:pointer;" data-invenid="@item.InventoryId" data-proname="@item.ProductName">@item.Total_Quantity @item.UnitName</span>
+                    </td>
+                    <td>
+                        @if (item.Total_Return > 0)
+                        {
+                            <span class="itemReQuan" style="color:#428bca;cursor:pointer;" data-invenid="@item.InventoryId" data-proname="@item.ProductName">
+                            @item.Total_Return @item.UnitName</span>
+                        }
+                        else
+                        {
+                            <span>@item.Total_Return @item.UnitName</span>
+                        }
+                    </td>
+                    <td>
+                        @if (item.Total_UsedQuan > 0)
+                        {
+                            <span class="itemUsed" style="color:#428bca;cursor:pointer;" data-invenid="@item.InventoryId" data-proname="@item.ProductName">
+                                @item.Total_UsedQuan @item.UnitName
+                            </span>
+                        }
+                        else
+                        {
+                                <span>@item.Total_UsedQuan @item.UnitName</span>
+                                }
+</td>
+                    @*<td><span class="btn btn-info" data-invenid="@item.InventoryId"><i class="fa fa-info-circle"></i> Detials</span></td>*@
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <h4>There is no record to display</h4>
+}
+
+<script>
+    totalCount = '@(ViewBag.TotalUser)';
+    showCount = '@count';
+</script>

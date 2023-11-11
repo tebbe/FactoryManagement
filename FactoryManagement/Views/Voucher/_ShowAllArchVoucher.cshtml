@@ -1,0 +1,52 @@
+﻿
+@model IEnumerable<FactoryManagement.Models.View_VoucherInfo>
+@{
+    var nameCount = 0;
+}
+
+<style>
+    #tbl_archieved_Voucher td, #tbl_archieved_Voucher th {border: none !important;}
+</style>
+<style>
+    .k-edit-field, .k-edit-form-container .editor-field {
+        width: 70% !important;
+    }
+</style>
+<table class="table" id="tbl_archieved_Voucher">
+    <tr>
+        <th>#</th>
+        <th>Voucher Name</th>
+    </tr>
+    @foreach (var item in Model)
+    {
+        nameCount++;
+        <tr>
+            <th scope="row">@nameCount.</th>
+            <td>
+                <a href="#" class="Display_ArchievedVoucherDetails" data-id="@item.VoucherId">@item.VoucherTitle@item.VoucherId</a>
+            </td>
+        </tr>
+    }
+</table>
+<div id="div_For_PopUp"></div>
+<script>
+    $("#tbl_archieved_Voucher").on("click", ".Display_ArchievedVoucherDetails", function (e) {
+        e.preventDefault();
+        var voucherid = $(this).data('id');
+        $("#div_For_PopUp").empty();
+        $("#div_For_PopUp").kendoWindow({
+            actions: ["Close"],
+            draggable: true,
+            modal: true,
+            visible: false,
+            width: '60%',
+            title: 'Display Voucher Details',
+        });
+        $("#div_For_PopUp").html('<div class="loading_partial"></div>');
+        var div_For_PopUp = $("#div_For_PopUp").data("kendoWindow");
+        div_For_PopUp.refresh({ url: "/Voucher/DisplayArchieveVoucher?VoucherId=" + voucherid });
+        div_For_PopUp.center().open().maximize();
+    });
+   
+</script>
+

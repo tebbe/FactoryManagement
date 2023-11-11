@@ -1,0 +1,8 @@
+﻿
+
+@************************ Created By Jerin Jahan Date(17.06.2017) *******************************@
+<div class="k-edit-form-container" id="Div_LC_His" style="padding-left:10px;"></div>
+<script>
+    $("#Div_LC_His").append('<div class="win_loading_half"></div>');
+    $("#Div_LC_His").load('@Url.Action("_ProLCList", "StoreProduct")?id=' + inventoryId);
+</script>

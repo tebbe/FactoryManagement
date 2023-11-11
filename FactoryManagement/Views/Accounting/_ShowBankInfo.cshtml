@@ -1,0 +1,84 @@
+﻿
+
+@model FactoryManagement.ModelView.Accounting.Bank_BranchListModelView
+
+
+<dl class="dl-horizontal col-md-12 col-sm-12" id="showBankInfo">
+    @if (Model.BranchName != null)
+    {
+        <dt>Branch Name </dt>
+            <dd>
+             <span>@Html.DisplayFor(model => model.BranchName)</span>
+            <span class="btn btn-success editBankInfo" id="editBankInfo" style="margin-left:2%;margin-top:-1em;"><i class="fa fa-pencil"></i></span>
+        </dd>
+    }
+    @if (Model.Address != null || Model.AddressLine1 != "")
+    {
+        <dt>Address</dt>
+        <dd>@Html.DisplayFor(model => model.Address)</dd>
+    }
+    @if (Model.AddressLine1 != null)
+    {
+        <dt>Address Line1 </dt>
+        <dd>
+            @Html.DisplayFor(model => model.AddressLine1)
+        </dd>
+    }
+    @if (Model.Country != null)
+    {
+        <dt>Country </dt>
+        <dd>
+            @Html.DisplayFor(model => model.CountryName)
+        </dd>
+    }
+    @if (Model.DivisonId != null && Model.Country == "BD")
+    {
+        <dt>Divison </dt>
+        <dd>
+            @Html.DisplayFor(model => model.DivisionName)
+        </dd>
+    }
+    @if (Model.State != null && Model.Country != "BD")
+    {
+        <dt>State </dt>
+        <dd>
+            @Html.DisplayFor(model => model.State)
+        </dd>
+    }
+    @if (Model.City != null )
+    {
+        <dt>City </dt>
+        <dd>
+            @Html.DisplayFor(model => model.City)
+        </dd>
+    }
+    @if (Model.PostalCode != null)
+    {
+        <dt>Postal Code </dt>
+        <dd>
+            @Html.DisplayFor(model => model.PostalCode)
+        </dd>
+    }
+    @if (Model.PhoneNo != null)
+    {
+        <dt>Phone No </dt>
+        <dd>
+            @Html.DisplayFor(model => model.PhoneNo)
+        </dd>
+    }
+    @if (Model.MobileNo != null)
+    {
+        <dt>Mobile No </dt>
+        <dd>
+            @Html.DisplayFor(model => model.MobileNo)
+        </dd>
+    }
+</dl>
+<script>
+    $(document).ready(function () {
+        if ('@Model.ForDisplay' > 0) {
+            $("#editBankInfo").hide();
+        }
+    });
+</script>
+

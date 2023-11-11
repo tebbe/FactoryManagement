@@ -1,0 +1,331 @@
+﻿
+
+/********************************************Created By Jerin Jahan (Date@ 11.05.2016)*************************************************************/
+
+    .file-icon {
+        display: inline-block;
+        float: left;
+        width: 48px;
+        height: 48px;
+        margin-top: 13.5px;
+    }
+    .lblForMaterialName .file-icon {
+        float: left;
+        width: 20px;
+        height: 20px;
+    }
+    .img-file {
+        background-image: url(../content/web/upload/jpg.png);
+    }
+    .png-file {
+        background-image: url(../content/web/upload/png_converted.png);
+    }
+    .doc-file {
+        background-image: url(../content/web/upload/doc.png);
+    }
+    .ppt-file {
+        background-image: url(../content/web/upload/ppt.png);
+    }
+    .pdf-file {
+        background-image: url(../content/web/upload/pdf.png);
+    }
+    .xls-file {
+        background-image: url(../content/web/upload/xls.png);
+    }
+    .zip-file {
+        background-image: url(../content/web/upload/zip.png);
+    }
+    .default-file {
+        background-image: url(../content/web/upload/default.png);
+    }
+    .uploadFileName {
+        cursor: pointer;
+        font-size: .9em;
+        float: left;
+        width: 95%;
+        height: 25px;
+        -ms-text-overflow: ellipsis;
+        -o-text-overflow: ellipsis;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        margin-top: 20px;
+        font-weight: normal;      
+    }
+    li.k-file div.file-wrapper {
+        position: relative;
+        height: 75px;
+    }
+    .k-file {
+        padding: .5em .0em .0em .5em !important;
+    }
+    .maretialName{
+        font-family: Arial;
+        font-size: 1.1em;
+        display: inline-block;
+        float: left;
+        width: 80%;
+        height: 25px;
+        -ms-text-overflow: ellipsis;
+        -o-text-overflow: ellipsis;
+        text-overflow: ellipsis;
+        overflow:hidden;
+        white-space:nowrap;
+    }
+     #DivForTeachMatEventCreate .col-sm-offset-3 {
+         margin-left: 28%;
+     }
+     #PartialDivForSubEventAdd .col-sm-offset-3 {
+         margin-left: 28%;
+     }
+     #DivForEventdateChanged .col-sm-offset-3 {
+         margin-left: 28%;
+     }
+     #DivForSpecialEvent .col-sm-offset-3 {
+         margin-left: 30%;
+     }
+     #DivForMainEventMatAdd .col-sm-offset-3 {
+         margin-left: 28%;
+     }
+     
+     
+
+     /**************************** EditMode Off Page ****************************************/ 
+
+    .WithOutEditMode  {
+            margin: 0 0 20px 0;
+            min-height: 40px;
+            border: 2px solid #DDD;
+            border-radius: 4px;
+    }
+    .WithOutEditMode  label {font-weight: normal;}
+    .WithOutEditMode .first {
+                padding-left: 0px !important;
+                padding-right: 0px !important;
+                margin-bottom: 0px !important;
+                border-right: 0px solid #dddddd;
+    }
+    .WithOutEditMode .first label {
+        margin-bottom: 0px !important;
+    }
+    .WithOutEditMode .first .evantname {
+                    padding: 7px 0 7px 7px;
+                    border-bottom: 2px solid #dddddd;
+    }
+    .WithOutEditMode  .middle {
+                padding-left: 0px !important;
+                padding-right: 0px !important;
+                margin-bottom: 0px !important;
+                border-left: 2px solid #dddddd;
+                min-height: 100% !important;
+                height: 100% !important;
+    }
+    .WithOutEditMode  .middle .tilteName{
+        border-bottom: 2px solid #dddddd; padding: 7px 0 7px 5px;
+    }
+   
+    .WithOutEditMode  .middle .lblforguestparticipation {
+                    padding-left: 0px !important;
+                    padding-right: 0px !important;
+                    margin-bottom: 0px !important;
+                    border-left: 2px solid #dddddd;
+    }            
+    .WithOutEditMode  .middle .lblForMaterial {
+                    padding-left: 0px !important;
+                    padding-right: 0px !important;
+                    margin-bottom: 0px !important;
+                    margin-top: 0px !important;
+                    padding-top: 0px !important;
+                    border: 0px solid #2d2996;
+    }        
+    .WithOutEditMode  .lblbutton {
+        padding-left: 0px !important;
+        padding-right: 0px !important;
+        margin-bottom: 0px !important;
+    } 
+    .WithOutEditMode  .lblbutton div{
+        padding-left: 0px !important;
+        padding-right: 0px !important;
+        margin-bottom: 0px !important;
+        height:100%!important;
+    } 
+
+    .WithOutEditMode  .lblbutton label  {
+        width: 100%;
+        text-align: center;
+        border-bottom: 1px solid #d3d3d3;
+        margin-bottom: 0px !important;
+        padding: 6px 0 7px 0;
+    }
+    .WithOutEditMode  .lbltitle label {
+                border: 1px solid #dddddd;
+                margin-left: 0px !important;
+                padding: 10px;
+    } 
+     
+
+    /**************************** EditMode Page ****************************************/ 
+
+    .draggableDiv {
+            margin: 0 0 0px 0;
+            border-top: 1px solid #DDD;
+            border-bottom: 1px solid #DDD;
+    }
+    .draggableDiv label {font-weight: normal;}
+    .draggableDiv .first {
+                padding-left: 0px !important;
+                padding-right: 0px !important;
+                margin-bottom: 0px !important;
+                border-right: 0px solid #dddddd;
+    }
+    .draggableDiv .first label {
+        margin-bottom: 0px !important;
+    }
+    .draggableDiv .first .evantname {
+                    padding: 7px 0 7px 5px;
+                    border-bottom: 2px solid #dddddd;
+    }
+
+    .draggableDiv .middle {
+                padding-left: 0px !important;
+                padding-right: 0px !important;
+                margin-bottom: 0px !important;
+                border-left: 2px solid #dddddd;
+                border-right: 2px solid #dddddd;
+                min-height: 100% !important;
+                height: 100% !important;
+    }
+    .draggableDiv .middle .tilteName{
+        border-bottom: 2px solid #dddddd; padding: 8px 0 8px 5px;
+    }
+    .draggableDiv .middle .tileNameEdit{
+        border-bottom: 2px solid #dddddd; padding: 6px 0 6px 5px;
+    }
+    .lblforMaterialList{
+        padding-left: 0px !important;
+        padding-right: 0px !important;
+        margin-bottom: 0px !important;
+        margin-top: 0px !important;
+        padding-top: 0px !important;
+    }
+
+    .draggableDiv .middle .lblforguestparticipation {
+                    padding-left: 0px !important;
+                    padding-right: 0px !important;
+                    margin-bottom: 0px !important;
+                    margin-top: 0px !important;
+                    padding-top: 0px !important;
+                    border-left: 2px solid #dddddd;
+    }            
+    .draggableDiv .middle .lblForMaterial {
+                    padding-left: 0px !important;
+                    padding-right: 0px !important;
+                    margin-bottom: 0px !important;
+                    margin-top: 0px !important;
+                    padding-top: 0px !important;
+                    border: 0px solid #2d2996;
+    }        
+    .draggableDiv .lblbutton {
+        padding-left: 0px !important;
+        padding-right: 0px !important;
+        margin-bottom: 0px !important;
+    } 
+    .draggableDiv .lblbutton div{
+        padding-left: 0px !important;
+        padding-right: 0px !important;
+        margin-bottom: 0px !important;
+        height:100%!important;
+    } 
+
+    .draggableDiv .lblbutton label  {
+        width: 100%;
+        text-align: center;
+        border-bottom: 1px solid #d3d3d3;
+        margin-bottom: 0px !important;
+        padding: 6px 0 7px 0;
+    }
+    .draggableDiv .lbltitle label {
+                border: 1px solid #dddddd;
+                margin-left: 0px !important;
+                padding: 10px;
+    }
+    .lblForMaterialName {
+            padding-left: 0px !important;
+            padding-right: 0px !important;
+    }
+    .k-icon {cursor: pointer;}
+    .tooltips {cursor: pointer; }
+    .tooltips:hover {z-index: 10;}
+    .k-tooltip-content {padding: 10px;}
+
+
+    .triangles {
+        display: inline-block;
+        margin: 0 5px;
+        vertical-align: middle;
+    }
+    .triangle-2 {
+         width: 30px;
+         height: 60px; 
+         border-right: solid 30px rgb(200,30,50);  
+         border-bottom: solid 30px transparent;
+         border-top: solid 30px transparent;
+    }
+    
+    
+    .option {
+        list-style-type: none;
+        margin: 5px;
+        padding: 8px 10px;
+        text-align: left;
+        border: 1px solid transparent;
+        border-radius: 4px;
+    }
+    .option .col-sm-4 {
+            border: 1px solid #52aef7;
+            cursor: pointer;
+        }
+    .sortable {
+        list-style-type: none;
+        margin: 5px;
+        padding: 8px 10px;
+        text-align: left;
+        color: #ffffff;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        cursor: move;
+    }
+    .not-sortable {
+        list-style-type: none;
+        margin: 5px;
+        padding: 8px 10px;
+        text-align: left;
+        color: #ffffff;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        cursor: move;
+    }
+    .sortable {
+        background-color: #52aef7;
+        cursor: move;
+    }
+    .not-sortable {
+        background-color: #8E8E8E;
+        opacity: 0.5;
+    }
+    .placeholder {
+        border: 1px dashed #ccc;
+        background-color: #fff;
+        color: #333;
+    }
+    .hint {
+        opacity: 0.4;
+    }
+    .conflict {
+        background-color: #751919;
+    }
+
+
+    .lblForSubMaterialName{
+        font-size:12px;
+    }

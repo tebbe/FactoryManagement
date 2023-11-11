@@ -1,0 +1,43 @@
+﻿@model IEnumerable<FactoryManagement.Models.View_DisItemReturnDetails>
+    @{ int count = 0;}
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-top:1%;">
+    <div class="col-sm-11 col-xs-11">
+        <table class="table table-hover table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>SL.</th>
+                    <th>Voucher Name</th>
+                    <th>
+                        Transaction Name
+                    </th>
+                    <th>Product Name</th>
+                    <th>Quantity</th>
+                    <th>Return From</th>
+                    <th>Return Date</th>
+                    <th>Return By</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var data in Model) {
+                    count++;
+                    <tr>
+                        <td>
+                            @count
+                        </td>
+                        <td>@data.VoucherName</td>
+                        <td>@data.ReturnTransactionName</td>
+                        <td>@data.ProductName</td>
+                        <td>@data.Quantity</td>
+                        <td>@data.ReturnFrom</td>
+                        <td>@data.ReturnDateName</td>
+                        <td>@data.ReturnUserName</td>
+                        <td>
+                            <span class="btn green btn_Return_item_acpt" data-dispatchedid="@data.DispatchedId" data-id="@data.Id" data-name="@data.ProductName" data-toggle="tooltip" title="Receive Item"><i class="fa fa-check"></i></span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,179 @@
+﻿
+
+
+@************************************** Created By Jerin Jahan (Date:24.08.2016)  ***************************************@
+
+@model FactoryManagement.ModelView.HR.HolidayListModelView
+
+<input id="DateValidate" name="DateValidate" type="hidden" class="k-valid">
+
+<div class="editor-label"><label for="HolidayName">Name</label></div>
+<div class="editor-field">
+    @Html.EditorFor(model => model.HolidayName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+    @Html.ValidationMessageFor(model => model.HolidayName, "", new { @class = "text-danger" })
+</div>
+
+<div class="editor-label"><label></label></div>
+<div class="editor-field">
+    @Html.CheckBox("ChForMultiple", new { @onchange = "chkMultipleDays(this);" }) Multiple Days
+</div>
+
+<div id="DivForSingleDate">
+    <div class="editor-label"><label for="Date">Date</label></div>
+    <div class="editor-field">
+        @(Html.Kendo().DatePicker().Name("Date").Min(DateTime.Now).HtmlAttributes(new { style = "width: 100%" }))
+        @Html.ValidationMessageFor(model => model.Date, "", new { @class = "text-danger" })
+    </div>
+</div>
+
+<div id="DivForMultipleDate" style="display:none;">
+    <div class="editor-label"><label for="DeptAcronym">Date</label></div>
+    <div class="editor-field">
+        <div class="col-sm-6" style="margin-right:0px!important;padding:0px!important;">
+            <div style="width:80%;float:left;margin-right:15px;">
+                @(Html.Kendo().DatePicker().Name("StartDate").Min(DateTime.Now).HtmlAttributes(new { style = "width: 100%" }))
+                <span class="field-validation-valid text-danger" data-valmsg-for="StartDate" data-valmsg-replace="true"></span>
+            </div>
+            <span style="width:10%;float:left;">To</span>
+        </div>
+        <div class="col-sm-5">
+            @(Html.Kendo().DatePicker().Name("EndDate").Min(DateTime.Now).HtmlAttributes(new { style = "width: 100%" }))
+            <span class="field-validation-valid text-danger" data-valmsg-for="EndDate" data-valmsg-replace="true"></span>
+        </div>
+        <span class="field-validation-valid text-danger" data-valmsg-for="DateValidate" data-valmsg-replace="true"></span>
+    </div>
+</div>
+
+<div class="col-sm-11 col-xs-11">
+    <div class="k-edit-buttons k-state-default">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_Holiday_Create"><span class="k-icon k-update"></span>Create</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_Holiday_Refresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_Holiday_Cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        if ('@(Model.IsMultipleDay)' === 'True') {
+            $("#ChForMultiple").prop("checked", true);
+            $("#DivForSingleDate").hide();
+            $("#DivForMultipleDate").show();
+            $("#btn_Holiday_Create").val("Update");
+        }
+    });
+
+    function chkMultipleDays(cb) {
+        if (cb.checked === false) {
+            $("#DivForMultipleDate").hide();
+            $("#DivForSingleDate").show();
+        } else {
+            $("#DivForSingleDate").hide();
+            $("#DivForMultipleDate").show();
+        }
+    }
+    $("#btn_Holiday_Create").click(function () {
+        var validation = $("#DivForHolidayCreate").kendoValidator({
+            rules: {
+                singleDate: function (input) {
+                    if (input.attr('name') === "Date" && $("#Date").val() === '' && $("#ChForMultiple").prop("checked") === false) {
+                        return false;
+                    }
+                    return true;
+                },
+                StartDate: function (input) {
+                    if (input.attr('name') === "StartDate" && $("#ChForMultiple").prop("checked") === true && $("#StartDate").val() === '') {
+                        return false;
+                    }
+                    return true;
+                },
+                EndDate: function (input) {
+                    if (input.attr('name') === "EndDate" && $("#ChForMultiple").prop("checked") === true && $("#EndDate").val() === '') {
+                        return false;
+                    }
+                    return true;
+                },
+                DateValidate: function (input) {
+                    if ($("#ChForMultiple").prop("checked") === true && input.attr('name') === "DateValidate") {
+                        var startTime = $("#StartDate").val();
+                        var endTime = $("#EndDate").val();
+                        if (new Date(startTime) >= new Date(endTime)) {
+                            return false;
+                        }
+                        return true;
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                singleDate: "Please select one date",
+                StartDate: "Please select start date",
+                EndDate: "Please select end date",
+                DateValidate: "Start date can not greater than end date"
+            }
+        }).data("kendoValidator");
+
+
+        if (validation.validate()) {
+            if ('@(Model.Id)' === '0') {
+                notification.show({ message: "New holiday creating...", showTime: startTime() }, "upload-progress");
+            }
+            else {
+                notification.show({ message: "Holiday information updating...", showTime: startTime() }, "upload-progress");
+            }
+
+            var sendData = {
+                HolidayPackId:HolidayPackId,
+                Id: '@(Model.Id)', HolidayName: $("#HolidayName").val(),
+                IsMultipleDay: $("#ChForMultiple").prop("checked"),
+                Date: $("#Date").val(),
+                StartDate: $("#StartDate").val(),
+                EndDate: $("#EndDate").val(),
+                CreatedBy: userId
+            };
+
+            $.ajax({
+                url: '@Url.Action("SaveNewHoliday", "Holiday")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === "Success") {
+                        if ('@(Model.Id)' === '0') {
+                            notification.show({ message: "New holiday '" + sendData.HolidayName + "' has been successfully created.", showTime: startTime() }, "upload-success");
+                        } else {
+                            notification.show({ message: "Holiday '" + sendData.HolidayName + "' information has been successfully updated.", showTime: startTime() }, "upload-success");
+                        }
+
+                        var data = { HolidayPackId: HolidayPackId };
+                        $("#div_holiday_list").empty();
+                        $("#div_holiday_list").append('<div class="loading_half"></div>');
+                        $("#div_holiday_list").load('@Url.Action("_AllHolidayList", "Holiday")', data);
+                    }
+                    else {
+                        if ('@(Model.Id)' === '0') {
+                            notification.show({ message: "Holiday '" + sendData.HolidayName + "' information update was unsuccessful.", showTime: startTime() }, "upload-error");
+
+                        } else {
+                            notification.show({ message: "New holiday '" + sendData.HolidayName + "' create was unsuccessful.", showTime: startTime() }, "upload-error");
+                        }
+
+                    }
+                    $("#btn_Holiday_Create").closest(".k-window-content").data("kendoWindow").close();
+                },
+                error: function (err) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+    $("#btn_Holiday_Refresh").click(function () {
+        $("#DivForHolidayCreate").empty();
+        $("#DivForHolidayCreate").append('<div class="win_loading_half"></div>');
+        $("#DivForHolidayCreate").load('@Url.Action("_HolidayCreate", "Holiday")');
+    });
+
+    $("#btn_Holiday_Cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

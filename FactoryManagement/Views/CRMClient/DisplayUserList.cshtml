@@ -1,0 +1,143 @@
+﻿@model IEnumerable<FactoryManagement.ModelView.CRM.Client_User_ListsModelView>
+<div class="row">
+    <div class="loading" id="divForLoading"></div>
+    <div class="col-xs-12" style="display:none;" id="DivForUserList">
+        <table class="table table-bordered" style="margin-bottom:0px!important;margin-top:10px!important;border-bottom:none!important;">
+            <tr>
+                <td colspan="6">
+                    <span class="k-textbox k-space-right" style="width:50%!important;">
+                        <input type="text" id="textForSearch" style="max-width:100% !important;width:100%!important;height: 2.3em!important;"
+                               placeholder="Type client name" />
+                        <a href="#" class="k-icon k-i-search">&nbsp;</a>
+                    </span>
+                </td>
+            </tr>
+        </table>
+        <h1>Client User List</h1>
+        <hr />
+        <table class="table table-bordered tableForUserList">
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+<div id="loading" style="display:none"></div>
+<script>
+    var showCount = 20, inCallback = false;
+    var page = 0;
+    var content = '';
+    $(document).ready(function () {
+        $("#liForCRM").addClass('active');
+        $("#liForVendorList").addClass('sublistActive');
+         $("table.tableForUserList > tbody").empty();
+        $("table.tableForUserList > tbody").load('@Url.Action("_DisplayUserList", "CRMClient")');
+        $("#divForLoading").hide();
+        $("#DivForUserList").show();
+    });
+    $(window).scroll(function () {
+        var totalCount = '@ViewBag.TotalUser';
+        if ($(window).scrollTop() >= $(document).height() - $(window).height() - 300) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    $("#loading").show();
+                    inCallback = true;
+                    page++;
+                    $.ajax({
+                        type: 'GET',
+                        url: '/CRMClient/GetDisplayUserList',
+                        data: { page: page },
+                        success: function (data) {
+                            var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                            if (data != '') {
+                                for (var i = 0; i < data.length; i++) {
+                                    var date = new Date(data[i].CreatedDate);
+                                    var getdate = (monthNames[date.getMonth()]) + " " + date.getDate() + "," + date.getFullYear();
+                                    $("table.tableForUserList > tbody").append('<tr><th scope="row">' + parseInt(showCount + 1) + '</th><td>' +
+                                        data[i].UserName + '</td>' +
+                                        '<td>' + data[i].Designation + '</td><td>' +
+                                        '<a href="#" id="userDetailsEdit" class="userDetailsEdit" data-userid="'  + data[i].UserId + '">' +
+                                        '<span class="fa fa-pencil"></span>' + '</a>' + ' ' +
+                                        '<a class="fa fa-trash deleteUser" data-userid="' + data[i].UserId + '"></a>' + '</a></td></tr>');
+                                }
+                                showCount = (page + 1) * 20;
+                            }
+                            else {
+                                page = -1;
+                            }
+                            inCallback = false;
+                            $("#loading").hide();
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            alert(error);
+                        }
+                    });
+
+                }
+            }
+        }
+    });
+    $(function () {
+        $("#textForSearch").autocomplete({
+            minLength: 0,
+            source: function (request, response) {
+                content = $.trim(request.term);
+                $.ajax({
+                    url: '@Url.Action("SearchUserList", "CRMClient")',
+                    type: "POST",
+                    dataType: "json",
+                    data: { prefix: content },
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return { label: item.UserName, value: item.UserName, id: item.UserId };
+                        }))
+                    }
+                })
+            },
+            minLength: 1,
+            select: function (event, ui) {
+                isloadFirstTime = true;
+                var selectTextId = ui.item.id;
+                $("table.tableForUserList > tbody").load('@Url.Action("_DisplayUserList", "CRMClient")?UserId=' + selectTextId);
+            },
+        })
+    .keyup(function () {
+        if ($.trim($("#textForSearch").val()) == "") {
+            showCount = 20; page = 0;
+            $("table.tableForUserList > tbody").load('@Url.Action("_DisplayUserList", "CRMClient")');
+        }
+    })
+    .autocomplete("instance")._renderItem = function (ul, item) {
+        var term = $.trim(this.term);
+
+        var re = new RegExp("(" + term + ")", "gi"),
+                   cls = "bold-text",
+                   template = "<span class='" + cls + "'>$1</span>",
+                   label = item.label.replace(re, template),
+                   $li = $("<li/>").appendTo(ul);
+                   $("<a/>").attr("href", "#")
+                   .html(label)
+                   .appendTo($li);
+        return $li;
+         };
+    });
+
+    $(".tableForUserList").on("click", ".deleteUser", function (e) {
+        e.preventDefault();
+        var UserId = $(this).data('userid');
+        if (confirm('Are you sure want to delete this user?')) {
+            var url = "/CRMClient/DeleteUser";
+            $.post(url, { UserId: UserId }, function (data) {
+                if (data === "Success") {
+                    location.reload();
+                    notification.show({ message: "User successfully deleted", showTime: startTime()},"upload-success");
+                }
+                else {
+                    notification.show({
+                        message: "Deletion unsuccessful", showTime: startTime()},"upload-error");
+                }
+            })
+        }
+    });
+</script>
+
+
+

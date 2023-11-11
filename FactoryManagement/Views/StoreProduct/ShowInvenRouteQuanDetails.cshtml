@@ -1,0 +1,349 @@
+﻿@******************************** Created By Jerin Jahan (Date: 24.01.2017) ******************************************************@
+
+@model IEnumerable<FactoryManagement.Models.View_Dispacth_Item_Details>
+@{
+    int count = 0;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int userCount = 0;
+    int storeWareId =-1;
+    if (ViewBag.locationId > 0) {
+        storeWareId = ViewBag.locationId;
+    }
+}
+@if (ViewBag.locationId > 0)
+{
+    if (ViewBag.hasdisId == true)
+    {
+        <table class="table table-bordered table-condensed">
+            <tr>
+                <th>#</th>
+                <th>Quantity</th>
+                <th>Return Quantity</th>
+                <th>Assigned With</th>
+                <th>Routed By</th>
+                <th>Routed Date</th>
+                <th>Received By</th>
+                <th></th>
+            </tr>
+            @foreach (var item in Model.Where(x=>x.StoreId==storeWareId || x.WareId==storeWareId).ToList())
+            {
+                var remain_quan = Convert.ToDouble(item.Quantity) - Convert.ToDouble(item.ReturnQuantity);
+                userCount = 0;
+                count++;
+                string assignedWith = "";
+                var receivedUserList = db.DispatchedItemAssignUsers.Where(m => m.DispatchItemId == item.Id).ToList();
+                if (item.StoreId > 0)
+                {
+                    assignedWith = "Store : " + db.StoreLists.Where(d => d.Id == item.StoreId).Select(d => d.StoreName).FirstOrDefault();
+                }
+                if (item.WareId > 0)
+                {
+                    assignedWith = "Warehouse : " + db.WarehouseLists.Where(d => d.Id == item.WareId).Select(d => d.WarehouseName).FirstOrDefault();
+                }
+                <tr>
+                    <td>@count. </td>
+                    <td>@item.Quantity @item.UnitName</td>
+                    <td>@item.ReturnQuantity @item.UnitName</td>
+                    <td>@assignedWith</td>
+                    <td>@item.DispatchedUserName</td>
+                    <td>@item.DispatchedDateName</td>
+                    <td>
+                        @if (receivedUserList.Count() == 0)
+                        {
+                            receivedUserList = db.DispatchedItemAssignUsers.Where(m => m.DispatchId == item.DispatchedId).ToList();
+                        }
+                        @foreach (var u in receivedUserList)
+                        {
+                            userCount++;
+                            var userInfo = db.View_UserLists.Where(m => m.UserId == u.UserId).FirstOrDefault();
+                            <label style="width:100%!important;font-weight:normal;">@userCount. @userInfo.UserName</label>
+                        }
+                    </td>
+                    <td>
+                        @if (!item.IsAlreadyUsed && item.Quantity != item.ReturnQuantity)
+                        {
+                            @*<span data-toggle="tooltip" title="Edit Quantity" class="btn btn-success btn_item_quan_edit" data-id="@item.Id" data-proname="@item.ProductName"><i class="fa fa-pencil"></i></span>*@
+                            <span data-toggle="tooltip" title="Return Quantity" class="btn btn-success btn_item_quan_return" data-id="@item.Id" data-proname="@item.ProductName"><i class="fa fa-undo"></i></span>
+                            <span data-toggle="tooltip" title="Approve/Recieve" class="btn btn-success btn_item_quan_approve" data-inven="@item.InventoryId" data-id="@item.Id"
+                                  data-proname="@item.ProductName" data-quan="@remain_quan" data-storeid="@item.StoreId"
+                                  data-wareid="@item.WareId"data-vouname="@item.VoucherName"><i class="fa fa-check"></i></span>
+                        }
+                    </td>
+                </tr>
+            }
+        </table>
+    }
+    else
+    {
+        <table class="table table-bordered table-condensed">
+            <tr>
+                <th>#</th>
+                <th>Voucher Name</th>
+                <th>Quantity</th>
+                <th>Assigned With</th>
+                <th>Routed By</th>
+                <th>Routed Date</th>
+                <th>Received By</th>
+            </tr>
+            @foreach (var item in Model.Where(x=>x.LocationId== ViewBag.locationId).ToList())
+            {
+                userCount = 0;
+                count++;
+                string assignedWith = "";
+                var receivedUserList = db.DispatchedItemAssignUsers.Where(m => m.DispatchItemId == item.Id).ToList();
+                if (item.StoreId > 0)
+                {
+                    assignedWith = "Store : " + db.StoreLists.Where(d => d.Id == item.StoreId).Select(d => d.StoreName).FirstOrDefault();
+                }
+                if (item.WareId > 0)
+                {
+                    assignedWith = "Warehouse : " + db.WarehouseLists.Where(d => d.Id == item.WareId).Select(d => d.WarehouseName).FirstOrDefault();
+                }
+                <tr>
+                    <td>@count. </td>
+                    <td><a href="/StoreProduct/DispatchHistoryDetails?id=@item.DispatchedId">@item.VoucherName</a></td>
+                    <td>@item.Quantity @item.UnitName</td>
+                    <td>@assignedWith</td>
+                    <td>@item.DispatchedUserName</td>
+                    <td>@item.DispatchedDateName</td>
+                    <td>
+                        @if (receivedUserList.Count() == 0)
+                        {
+                            receivedUserList = db.DispatchedItemAssignUsers.Where(m => m.DispatchId == item.DispatchedId).ToList();
+                        }
+                        @foreach (var u in receivedUserList)
+                        {
+                            userCount++;
+                            var userInfo = db.View_UserLists.Where(m => m.UserId == u.UserId).FirstOrDefault();
+                            <label style="width:100%!important;font-weight:normal;">@userCount. @userInfo.UserName</label>
+                        }
+                    </td>
+                </tr>
+            }
+        </table>
+    }
+    <script id="temp_win_site_edit" type="text/x-kendo-template">
+        <div style="padding:1em;">
+            <p style="font-size: 14px; padding: 10px">#=message#</p>
+            <div style="text-align: right;">
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_edit_quan_ok"><span class="k-icon k-update"></span>OK</button>
+                <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_edit_quan_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+            </div>
+        </div>
+    </script>
+}
+else
+{
+<div class="k-edit-form-container col-md-10 col-sm-10 col-xs-10" style="margin-bottom:4%;">
+    @if (ViewBag.hasdisId == true)
+    {
+        <table class="table table-bordered table-condensed">
+            <tr>
+                <th>#</th>
+                <th>Quantity</th>
+                <th>Return Quantity</th>
+                <th>Assigned With</th>
+                <th>Routed By</th>
+                <th>Routed Date</th>
+                <th>Received By</th>
+                <th></th>
+            </tr>
+            @foreach (var item in Model)
+            {
+                var remain_quan = Convert.ToDouble(item.Quantity) - Convert.ToDouble(item.ReturnQuantity);
+                userCount = 0;
+                count++;
+                string assignedWith = "";
+                var receivedUserList = db.DispatchedItemAssignUsers.Where(m => m.DispatchItemId == item.Id).ToList();
+                if (item.StoreId > 0)
+                {
+                    assignedWith = "Store : " + db.StoreLists.Where(d => d.Id == item.StoreId).Select(d => d.StoreName).FirstOrDefault();
+                }
+                if (item.WareId > 0)
+                {
+                    assignedWith = "Warehouse : " + db.WarehouseLists.Where(d => d.Id == item.WareId).Select(d => d.WarehouseName).FirstOrDefault();
+                }
+                <tr>
+                    <td>@count. </td>
+                    <td>@item.Quantity @item.UnitName</td>
+                    <td>@item.ReturnQuantity @item.UnitName</td>
+                    <td>@assignedWith</td>
+                    <td>@item.DispatchedUserName</td>
+                    <td>@item.DispatchedDateName</td>
+                    <td>
+                        @if (receivedUserList.Count() == 0)
+                        {
+                            receivedUserList = db.DispatchedItemAssignUsers.Where(m => m.DispatchId == item.DispatchedId).ToList();
+                        }
+                        @foreach (var u in receivedUserList)
+                        {
+                            userCount++;
+                            var userInfo = db.View_UserLists.Where(m => m.UserId == u.UserId).FirstOrDefault();
+                            <label style="width:100%!important;font-weight:normal;">@userCount. @userInfo.UserName</label>
+                        }
+                    </td>
+                    <td>
+                        @if (!item.IsAlreadyUsed && item.Quantity != item.ReturnQuantity)
+                        {
+                            @*<span data-toggle="tooltip" title="Edit Quantity" class="btn btn-success btn_item_quan_edit" data-id="@item.Id" data-proname="@item.ProductName"><i class="fa fa-pencil"></i></span>*@
+                            <span data-toggle="tooltip" title="Return Quantity" class="btn btn-success btn_item_quan_revert" data-id="@item.Id" data-proname="@item.ProductName"><i class="fa fa-undo"></i></span>
+                            <span data-toggle="tooltip" title="Approve/Recieve" class="btn btn-success btn_item_quan_insert" data-inven="@item.InventoryId" data-id="@item.Id"
+                                  data-proname="@item.ProductName" data-quan="@remain_quan" data-storeid="@item.StoreId"
+                                  data-wareid="@item.WareId"><i class="fa fa-check"></i></span>
+                        }
+                    </td>
+                </tr>
+            }
+        </table>
+    }
+    else
+    {
+        <table class="table table-bordered table-condensed">
+            <tr>
+                <th>#</th>
+                <th>Voucher Name</th>
+                <th>Quantity</th>
+                <th>Assigned With</th>
+                <th>Routed By</th>
+                <th>Routed Date</th>
+                <th>Received By</th>
+            </tr>
+            @foreach (var item in Model)
+            {
+                userCount = 0;
+                count++;
+                string assignedWith = "";
+                var receivedUserList = db.DispatchedItemAssignUsers.Where(m => m.DispatchItemId == item.Id).ToList();
+                if (item.StoreId > 0)
+                {
+                    assignedWith = "Store : " + db.StoreLists.Where(d => d.Id == item.StoreId).Select(d => d.StoreName).FirstOrDefault();
+                }
+                if (item.WareId > 0)
+                {
+                    assignedWith = "Warehouse : " + db.WarehouseLists.Where(d => d.Id == item.WareId).Select(d => d.WarehouseName).FirstOrDefault();
+                }
+                <tr>
+                    <td>@count. </td>
+                    <td><a href="/StoreProduct/DispatchHistoryDetails?id=@item.DispatchedId">@item.VoucherName</a></td>
+                    <td>@item.Quantity @item.UnitName</td>
+                    <td>@assignedWith</td>
+                    <td>@item.DispatchedUserName</td>
+                    <td>@item.DispatchedDateName</td>
+                    <td>
+                        @if (receivedUserList.Count() == 0)
+                        {
+                            receivedUserList = db.DispatchedItemAssignUsers.Where(m => m.DispatchId == item.DispatchedId).ToList();
+                        }
+                        @foreach (var u in receivedUserList)
+                        {
+                            userCount++;
+                            var userInfo = db.View_UserLists.Where(m => m.UserId == u.UserId).FirstOrDefault();
+                            <label style="width:100%!important;font-weight:normal;">@userCount. @userInfo.UserName</label>
+                        }
+                    </td>
+                </tr>
+            }
+        </table>
+    }
+</div>
+}
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+    //******************************* QUANTITY EDIT FUNCTION *****************************************
+    $(".btn_item_quan_return").click(function (e) {
+        e.preventDefault();
+        var id = $(this).data("id");
+        var proname = $(this).data("proname");
+
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        message = "Are you sure you want to return quantity?";
+        var template = kendo.template($("#temp_win_site_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        kendoWindow.find("#btn_edit_quan_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_edit_quan_ok").click(function () {
+            editQuan(id, proname);
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+    });
+
+
+    //******************************* QUANTITY EDIT FUNCTION *****************************************
+    $(".btn_item_quan_insert").click(function (e) {
+        e.preventDefault();
+        var id = $(this).data("id");
+        var inven = $(this).data("inven");
+        var proname = $(this).data("proname");
+        var quan = $(this).data("quan");
+        var storeid = $(this).data("storeid");
+        var wareid = $(this).data("wareid");
+        var vouname = $(this).data("vouname");
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        message = "Are you sure you receive this quantity?";
+        var template = kendo.template($("#temp_win_site_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        kendoWindow.find("#btn_edit_quan_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_edit_quan_ok").click(function () {
+            insertQuan(id, inven, proname, quan, storeid, wareid, vouname);
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+    });
+
+    function editQuan(id, proname) {
+        $("#win_item_quan_edit").empty();
+        $("#win_item_quan_edit").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            position: { top: '20%' },
+            title: proname + ' Dispatch Quantity Edit'
+        });
+        $("#win_item_quan_edit").html('<div class="win_loading_half"></div>');
+        var win_item_quan_edit = $("#win_item_quan_edit").data("kendoWindow");
+        win_item_quan_edit.refresh({ url: "/StoreProduct/DispatchItemQuanEditMain?id=" + id });
+        win_item_quan_edit.center().open();
+    }
+    function insertQuan(id, inven, proname, quan, storeid, wareid,vouname) {
+
+        var sendData = {
+            Id: id, inven: inven, Quantity: quan,
+            proname: proname, voucher: vouname,
+            storeid: storeid, wareid: wareid, UserId: userId
+        };
+        $.ajax({
+            url: '@Url.Action("RouteItemInsertSave", "StoreProduct")',
+            type: 'Post',
+            data: sendData,
+            success: function (data) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                if (data === "Success") {
+                    notification.show({ message: "Routed item quantity has been successfully received.", showTime: startTime() }, "upload-success");
+                    location.reload();
+                } else {
+                    notification.show({ message: "Routed item quantity receive was unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+            },
+            error: function (xhr) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occured.", showTime: startTime() }, "upload-warning");
+            }
+        });
+    }
+</script>

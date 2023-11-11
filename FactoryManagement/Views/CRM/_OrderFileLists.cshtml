@@ -1,0 +1,160 @@
+﻿
+
+
+
+
+@********************************************* Created By (JERIN JAHAN)(07.09.2016) *******************************@
+@using FactoryManagement.Helpers
+@model IEnumerable<FactoryManagement.Models.View_BusinessOrder_File>
+@{
+    var count = 1;
+    bool? isPrint = ViewBag.IsPrint;
+    //FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+
+<style>
+    label {
+        font-size: 13px !important;
+    }
+
+    .td_Buttons {
+        text-align: right !important;
+    }
+
+    .lbl_btn_span {
+        padding-left: 0px !important;
+        padding-right: 0px !important;
+        text-align: right;
+        font-size: 13px !important;
+    }
+
+    .lbl_date_span {
+        /*padding-left: 0px !important;*/
+        padding-right: 0px !important;
+        text-align: left;
+    }
+
+    .lbl_sendby_span {
+        padding-left: 0px !important;
+        padding-right: 0px !important;
+        text-align: left;
+    }
+
+    .table th {
+         border-top: none !important;
+         border-right: none !important;
+        padding: 5px 0 5px 5px !important;
+        font-size: 13px !important;
+    }
+    .table td {
+        border-top: none !important;
+        border-right: none !important;
+        padding: 5px 0 0px 5px !important;
+        font-size: 13px !important;
+    }
+</style>
+@if (Model.Count() > 0 )
+{
+    <table class="table table-hover table-bordered table-striped table-condensed" style="padding-left:0px!important;padding-right:0px!important; border:none!important;">
+        <tr>
+            <th width="45%">File Name</th>
+            @if (isPrint == true)
+            {
+                <th width="20%">User</th>
+            }
+            <th width="10%">Type</th>
+            <th width="15%">Date</th>
+            @if (isPrint != true)
+            {
+                <th width="25%" class="td_Buttons"></th>
+            }
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            string s = item.FileOriginalName;
+            int idx = s.LastIndexOf('.');
+            string fileName = s.Substring(0, idx);
+            string extension = s.Substring(idx);
+            <tr id="th_order_file-@item.FileId">
+                <td width="45%" class="divForSubEventFile" data-extension="@extension">
+                    <span style="padding-left:0px!important;padding-right:0px!important; display:inline-flex;">
+                        @count.<img style="width:20px;height:20px;" src="" />
+
+                        @if (item.IsMainFile && isPrint != true)
+                        {
+                            <label class="lblFileName" id="lblforFileNameDiaplay-@item.FileId" data-fileid="@item.FileId" data-filename="@fileName" style="color:green;font-weight:bold;">@fileName</label>
+                        }
+                        else
+                        {
+                            <label class="lblFileName" id="lblforFileNameDiaplay-@item.FileId" data-fileid="@item.FileId" data-filename="@fileName">@fileName</label>
+                        }
+                        @*<label id="lblforFileNameEdit-@item.FileId"
+                   style="display:none;padding-left:0px!important;padding-right:0px!important;">
+                <input type="text"
+                       class="k-textbox subEventMatRename"
+                       data-val-required="*"
+                       data-val-length="Maximum lentgh is 50" data-val-length-max="50"
+                       id="txtMateName-@item.FileId"
+                       name="txtMateName-@item.FileId"
+                       value="@fileName" style="width:70%!important;" />
+                <span class="field-validation-valid text-danger" data-valmsg-for="txtMateName-@item.FileId" data-valmsg-replace="true"></span>
+                <span id="span_btn_edit-@item.FileId" style="display:none;">
+                    <span class="k-icon k-i-tick FileRenameTickUpdate" data-fileid="@item.FileId" data-extension="@extension" data-contype="@item.FileContentType"></span>
+                    <span class="k-icon k-i-close FileRenameUpdateTickClose" data-fileid="@item.FileId"></span>
+                </span>
+            </label>*@
+                    </span>
+                </td>
+
+                @if (isPrint == true)
+                {
+                    <td width="20%">
+                        @item.ClientUserName
+                    </td>
+                }
+                <td width="10%">
+                    <label class="lbl_sendby_span">
+                       @item.FileSend
+                    </label>
+                </td>
+                <td width="15%">
+                    <label class="lbl_date_span">
+                        @Convert.ToDateTime(item.CreatedDate).ToString("MMM dd, yyyy")
+                    </label>
+                </td>
+                @if (isPrint != true)
+                {
+                    <td width="25%" class="td_Buttons" style="padding-left:0px!important;padding-right: 1px!important;">
+                        <span class="lbl_btn_span" id="lbl_btn_span-@item.FileId">
+                            <span class="fa fa-pencil-square-o btnFileEdit" data-toggle="tooltip" title="Edit File" data-fileid="@item.FileId" data-filename="@fileName" id="btnFileEdit-@item.FileId" data-type="@item.FileType"></span>
+                            <span class="fa fa-trash-o btnFileDelete" data-toggle="tooltip" title="Delete File" data-fileid="@item.FileId" id="btnFileDelete-@item.FileId" data-filetype="@item.FileType"></span>
+                            <a href="@Html.EncodedParam("DownloadMaterial", "CRM", new { fileName = item.FileName, contentType = item.FileContentType }, null)">
+                                <span class="fa fa-download" data-toggle="tooltip" title="Download File"></span>
+                            </a>
+                            <a href="@Html.EncodedParam("DownloadMaterial", "CRM", new { fileName = item.FileName, contentType = item.FileContentType, isPrint = true }, null)" target="_blank">
+                                <span class="fa fa-print" data-toggle="tooltip" title="Print File"></span>
+                            </a>
+                            <span class="fa fa-info-circle btnFileDetails" data-toggle="tooltip" title="File Details" data-fileid="@item.FileId"></span>
+                        </span>
+                    </td>
+                }
+            </tr>
+                count++;
+        }
+    </table>
+}
+<script>
+    $(document).ready(function () {
+        $('.divForSubEventFile').each(function () {
+            var extension = $(this).data("extension");
+            var t = addExtensionFormaterial(extension);
+            $(this).children('span').children('img').attr('src', t);
+        });
+        if ("@isPrint" == "True") {
+            $("table").removeClass("table-striped");
+            $("table").removeClass("table-hover")
+        }
+    });
+    $('[data-toggle="tooltip"]').tooltip();
+</script>

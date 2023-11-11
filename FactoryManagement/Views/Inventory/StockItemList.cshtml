@@ -1,0 +1,28 @@
+﻿
+
+
+@****************************** Created By Jerin Jahan Date(21.11.2016) *************************************@
+@{
+    ViewBag.Title = "StockItemList";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+
+<h2>Stock</h2><hr />
+
+<div class="row" id="Div_stock" style="display:none;">
+    <div class="loading_partial"></div>
+</div>
+@if (db.StockItemLists.Any())
+{
+    <script>
+        $("#Div_stock").show();
+        $("#Div_stock").load("@Url.Action("_StockItemList", "Inventory")");
+    </script>
+}
+<script>
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $("#liForStock").addClass('sublistActive');
+    });
+</script>

@@ -1,0 +1,95 @@
+﻿
+@************************************** Created By Jerin Jahan (Date:21.12.2016)  ***************************************@
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="div_Salary_trans_edit">
+    <div id="div_leave_partial"><div class="win_loading_half"></div></div>
+    <div class="k-edit-buttons k-state-default col-xs-11">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_Leave_Save"><span class="k-icon k-update"></span>OK</button>
+        <button type="reset" class="k-button k-button-icontext k-grid-cancel" id="btn_Leave_Cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+<script>
+    console.log('sdfd');
+    $("#div_leave_partial").load('@Url.Action("_LeaveTypePartial", "Attendance")');
+    $("#btn_Leave_Cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#btn_Leave_Save").click(function () {
+        var validation = $("#div_leave_partial").kendoValidator({
+            rules: {
+                option: function (input) {
+                    if (input.attr('name') === "LeaveType" && $("#LeaveType").val() === '') {
+                        return false;
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                option: "Please select one",
+            }
+        }).data("kendoValidator");
+
+        if (validation.validate()) {
+            if (parseInt(atttype) > 0) {
+                var sendData = { Id: attid, UserId: '@ViewBag.SelectedUserId', LeaveType: $("#LeaveType").val(), AttType: value, InsertedBy: userId };
+                notification.show({ message: "Data is saving...", showTime: startTime(), }, "upload-progress");
+
+                $.ajax({
+                    url: '@Url.Action("UpdateAttendance", "Attendance")',
+                    type: 'Post',
+                    data: sendData,
+                    success: function (response) {
+                        if (response === "Success") {
+                            notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                            notification.show({ message: "Attendence has been successfully changed.", showTime: startTime() }, "upload-success");
+
+                            showCount = 0, totalCount = 0, page = 0;
+                            $("#Div_All_Usr").empty();
+                            $("#Div_All_Usr").append('<div class="loading_partial"></div>');
+                            $("#Div_All_Usr").load('@Url.Action("_Attendance", "Attendance")');
+                        }
+                        else {
+                            notification.show({ message: "Attendence change was unsuccessful.", showTime: startTime() }, "upload-error");
+                        }
+                        $("#btn_Leave_Cancel").click();
+                    },
+                    error: function (err) {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        notification.show({ message: "Error occured.", showTime: startTime() }, "upload-waring");
+                    }
+                });
+            }
+            else {
+                var sendData = { UserId: '@ViewBag.SelectedUserId', AttType: value, LeaveType: $("#LeaveType").val(), InsertedBy: userId };
+                notification.show({ message: "Data is saving...", showTime: startTime(), }, "upload-progress");
+
+                $.ajax({
+                    url: '@Url.Action("SaveAttendance", "Attendance")',
+                    type: 'Post',
+                    data: sendData,
+                    success: function (response) {
+                        if (response === "Success") {
+                            notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                            notification.show({ message: "Attendence has been successfully saved.", showTime: startTime() }, "upload-success");
+                            $("#Div_All_Usr").empty();
+                            $("#Div_All_Usr").append('<div class="loading_partial"></div>');
+                            $("#Div_All_Usr").load('@Url.Action("_Attendance", "Attendance")');
+                        }
+                        else {
+                            notification.show({ message: "Attendence save was unsuccessful.", showTime: startTime() }, "upload-error");
+                        }
+                        $("#btn_Leave_Cancel").click();
+                    },
+                    error: function (err) {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        notification.show({ message: "Error occured.", showTime: startTime() }, "upload-waring");
+                        $("#btn_Leave_Cancel").click();
+                    }
+                });
+
+            }
+
+        }
+    });
+</script>
+

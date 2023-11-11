@@ -1,0 +1,25 @@
+﻿
+
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;">
+    <div id="unit_edit_popup"></div>
+    <div class="k-edit-buttons k-state-default">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnUnitEditSave"><span class="k-icon k-update"></span>Update</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnUnitEditRefresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnUnitEditCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $("#unit_edit_popup").empty().append('<div class="partial_loading_half"><div/>')
+        $("#unit_edit_popup").load('@Url.Action("_SiteUnitDisplayEdit","Configuration")?unitid=' + '@ViewBag.unitId');
+    });
+
+    $("#btnUnitEditRefresh").click(function () {
+        $("#unit_edit_popup").empty();
+        $("#unit_edit_popup").append('<div class="partial_loading_half"></div>');
+        $("#unit_edit_popup").load('@Url.Action("_SiteUnitDisplayEdit","Configuration")?unitid=' + '@ViewBag.unitId');
+        $("#unit_edit_popup").show();
+    });
+   
+</script>

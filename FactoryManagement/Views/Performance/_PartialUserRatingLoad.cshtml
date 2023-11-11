@@ -1,0 +1,48 @@
+﻿
+<span id="jRate" data-step="1"></span><span>&nbsp;(<span id="spnRating">@ViewBag.Rating</span>/5)</span>
+ <span style="float:right;margin-right:20px;">
+     @(Html.Kendo().DropDownList().Name("ReviewFilter").DataTextField("Text").DataValueField("Value").BindTo(new List<SelectListItem>() {
+
+                                          new SelectListItem() {
+                                              Text = "Newest review",
+                                              Value = "1"
+                                          },
+                                          new SelectListItem(){
+                                              Text = "My review",
+                                              Value = "2"
+}
+                                      })
+                                      .Value("1")
+                                      .Events(e => e.Change("ReviewPatternChange"))
+     )
+    </span>
+
+<script>
+    var bookrating = '';
+    $("#jRate").jRate({
+        rating: '@ViewBag.Rating',
+        count: 5,
+        startColor: 'orange',
+        endColor: 'orange',
+        backgroundColor: 'gray',
+        min: 0,
+        max: 5,
+        width: 15,
+        height: 15,
+        precision: 0.5,
+        onSet: function (rating) {
+            bookrating = rating;
+            $('#spnRating').text(rating);
+            $.ajax({
+                url: '@Url.Action("RateUserSubmit", "Performance")',
+                type: 'Post',
+                data: { selectedUserId: EmpId, userId: userId, rating: bookrating },
+                success: function (data) {
+                    $("#divForUserRatingLoad").load('@Url.Action("_PartialUserRatingLoad", "Performance")?&selectedUserId=' +EmpId +'&userId='+userId);
+                }
+            });
+        }
+    });
+
+  
+</script>

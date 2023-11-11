@@ -1,0 +1,69 @@
+﻿@model IEnumerable<FactoryManagement.ModelView.Inventory.Store.DispatchedItemListModelView>
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int count = 0;
+    var proName = Model.Select(m => m.Productname).FirstOrDefault();
+}
+
+<table class="table table-bordered" >
+    <tr>
+        <td colspan="2"><b>Product Name:</b></td>
+        <td colspan="3"><b>@proName</b></td>
+    </tr>
+      <tr>
+            <th width="5%">#SL</th>
+            <th width="20%">Location</th>
+            <th width="10%">Available Quantity</th>
+            <th width="10%">Minimum Quantity</th>
+            <th width="25%">Status</th>
+        </tr>
+ 
+ @foreach (var item in Model)
+ {
+   
+     count++;
+         <tr >
+            <td>@count .</td>
+            <td>
+                @if (item.StoreId > 0)
+                {
+                    <span>@item.Storename</span><br />
+                }
+                else
+                {
+                    <span>@item.Warename</span><br />
+                }
+              
+            </td>
+             <td> <span>@item.Quantity @item.Unitname</span><br /></td>
+             <td> <span>@item.MinimumQuantity @item.Unitname</span><br /></td>
+             <td>
+                  @if (item.Quantity < item.MinimumQuantity)
+                  {
+                     <spam style="color:#ff0000;">Minimum quantity is bigger</spam>
+                  }
+                  else if ((item.Quantity == item.MinimumQuantity) &&(item.Quantity >0))
+                  {
+                    <spam style="color:#f8dd08;">Both quantity are equal</spam>
+                  }
+                  else if (item.Quantity == 0 )
+                  {
+                    <spam style="color:#ff0000;">Available  quantity is zero</spam>
+                  }
+                  else
+                  {
+                    <spam style="color:#6aba10;">Available quantity is bigger</spam>
+                  }
+              </td>
+          </tr>      
+   }
+
+     <tr>
+         <td colspan="2">Total Quantity </td>
+         
+         <td colspan="3">
+             <span><b></b>@Model.Sum(c => c.Quantity)</span>
+         </td>
+        
+     </tr>
+</table>

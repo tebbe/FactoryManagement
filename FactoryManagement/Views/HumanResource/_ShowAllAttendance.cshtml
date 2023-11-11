@@ -1,0 +1,57 @@
+﻿
+
+
+@******************************** Created By Jerin Jahan (Date:09.12.2016) *********************************@
+@model IEnumerable<FactoryManagement.Models.View_AllAttendance>
+@{
+    var count = 0;
+}
+<table class="table table-bordered table-condensed" id="tableForSparePartsList">
+    <tr>
+        <th>#</th>
+        <th>User Name</th>
+        <th>Site Name</th>
+        <th>Date & Time<span class="" id="btn_date_up"></span></th>
+        <th>Status<span class="" id="btn_icon"></span></th>
+    </tr>
+    @foreach (var item in Model)
+    {
+        count++;
+        <tr>
+            <td>@count.</td>
+            <td><img src="/Images/UserPicture/thumb/@item.Picture" class="user-photo"> @item.UserName</td>
+            <td>@item.SiteName</td>
+            <td>@item.EntryDate</td>
+            <td>@item.CardInsertStatus</td>
+        </tr>
+    }
+</table>
+<script>
+    $(document).ready(function () {
+        totalCount = '@(ViewBag.TotalAttendance)';
+        showCount = '@count';
+        if (up) {
+            $("#btn_icon").addClass('k-icon k-i-arrow-n');
+        }
+        else {
+            $("#btn_icon").addClass('k-icon k-i-arrow-s');
+        }
+    });
+    $("#btn_icon").click(function () {
+        if (up) {
+            page = 0, showCount = 0, totalCount = 0;
+            $("#Div_All_Usr").empty();
+            $("#Div_All_Usr").append('<div class="loading_half"></div>');
+            var sendData = {status: "out" };
+            $("#Div_All_Usr").load('@Url.Action("_ShowAllAttendance", "HumanResource")', sendData);
+            up = false;
+        } else {
+            page = 0, showCount = 0, totalCount = 0;
+            $("#Div_All_Usr").empty();
+            $("#Div_All_Usr").append('<div class="loading_half"></div>');
+            var sendData = {status: "in" };
+            $("#Div_All_Usr").load('@Url.Action("_ShowAllAttendance", "HumanResource")', sendData);
+            up = true;
+        }
+    });
+</script>

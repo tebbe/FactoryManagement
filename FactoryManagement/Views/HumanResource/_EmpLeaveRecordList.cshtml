@@ -1,0 +1,39 @@
+﻿
+
+
+@************************************** Created By Jerin Jahan (Date:19.02.2017)  ***************************************@
+
+@model IEnumerable<FactoryManagement.Models.EmployeeLeaveRecord>
+@{
+    var count = 0;
+}
+<style>
+    .table td {border: none !important;
+    }
+    .table th {
+        border: none !important;
+        border-bottom: 1px solid #dddddd !important;
+    }
+</style>
+@if (Model.Count() > 0)
+{
+    <h3 style="margin-top:0px!important;">All Leave Record Lists</h3><hr />
+    <table class="table table-condensed">
+        <tr>
+            <th width="4%">#</th>
+            <th width="12%">Date</th>
+        </tr>
+        @foreach (var list in Model)
+        {
+            count++;
+            <tr>
+                <td>@count .</td>
+                <td>@Convert.ToDateTime(list.Date).ToString("MMMM dd, yyyy")</td>
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <p>No leave record.</p>
+}

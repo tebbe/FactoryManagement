@@ -1,0 +1,498 @@
+﻿@model FactoryManagement.ModelView.CRM.Client_Vehicle_ListsModelView
+@Html.HiddenFor(m => m.ClientId)
+@Html.HiddenFor(m => m.VehicleId)
+@Html.HiddenFor(m => m.PictureOriginalName)
+@Html.HiddenFor(m => m.PictureName)
+
+<div id="DivForEditVehicleDetails">
+  <div class="k-edit-form-container" style="margin-bottom:4%;">
+        <div class="form-horizontal col-sm-7">
+            <span class="fa fa-pencil editVehicleBasicInfo" id="editVehicleBasicInfo" style="cursor:pointer;float:right;"></span>
+            <div class="k-edit-form-container" id="DivForVehicleBasicInformationDisplay">
+                <div class="editor-label"><label for="VehicleName">Name</label></div>
+                <div class="editor-field" style="padding-top:6px;">
+                    @Html.DisplayFor(model => model.VehicleName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+                @if (Model.RegisterNo != null)
+                {
+                    <div class="editor-label"><label for="RegisterNo">RegisterNo</label></div>
+                    <div class="editor-field" style="padding-top:6px;">
+                        @Html.DisplayFor(model => model.RegisterNo, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                    </div>
+                }
+                @if (Model.Description != null)
+                {
+                    <div class="editor-label"><label for="Description">Description</label></div>
+                    <div class="editor-field" style="padding-top:6px;">
+                        @Html.DisplayFor(model => model.Description, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                    </div>
+                }
+                @if (Model.Address != null)
+                {
+                    <div class="editor-label"><label for="Address">Address</label></div>
+                    <div class="editor-field" style="padding-top:6px;">
+                        @Html.DisplayFor(model => model.Address, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                    </div>
+                }
+                @if (Model.AddressLine1 != null)
+                {
+                    <div class="editor-label"><label for="AddressLine1">Address Line1</label></div>
+                    <div class="editor-field" style="padding-top:6px;">
+                        @Html.DisplayFor(model => model.AddressLine1, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                    </div>
+                }
+                @if (Model.Country != null)
+                {
+                    <div class="editor-label"><label for="Country">Country</label></div>
+                    <div class="editor-field" style="padding-top:6px;">
+                        @Html.DisplayFor(model => model.CountryName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                    </div>
+                }
+                @if (Model.DivisionName != null)
+                {
+                    <div id="DivForDivision">
+                        <div class="editor-label"><label for="DivisionId">Division</label></div>
+                        <div class="editor-field" style="padding-top:6px;">
+                            @Html.DisplayFor(model => model.DivisionName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                        </div>
+                    </div>
+                }
+                @if (Model.State != null)
+                {
+                    <div id="DivForState" class=".DivForState" style="display:none;">
+                        <div class="editor-label"><label for="State">State</label></div>
+                        <div class="editor-field" style="padding-top:6px;">
+                            @Html.DisplayFor(model => model.State, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                        </div>
+                    </div>
+                }
+
+                @if (Model.City != null)
+                {
+                    <div class="editor-label"><label for="City">City</label></div>
+                    <div class="editor-field" style="padding-top:6px;">
+                        @Html.DisplayFor(model => model.City, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                    </div>
+                }
+                @if (Model.PostalCode != null && Model.PostalCode != "")
+                {
+                    <div class="editor-label"><label for="PostalCode">Postal Code</label></div>
+                    <div class="editor-field" style="padding-top:6px;">
+                        @Html.DisplayFor(model => model.PostalCode, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                    </div>
+                }
+            </div>
+            <div class="k-edit-form-container" id="DivForVehicleBasicInformationEdit" style="display:none;">
+                <div class="editor-label"><label for="VehicleName">Name</label></div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.VehicleName, new { htmlAttributes = new { @class = "k-textbox", style = "width:100%" } })
+                    @Html.ValidationMessageFor(model => model.VehicleName, "", new { @class = "text-danger" })
+                </div>
+                <div class="editor-label"><label for="RegisterNo">RegisterNo</label></div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.RegisterNo, new { htmlAttributes = new { @class = "k-textbox", style = "width:100%" } })
+                    @Html.ValidationMessageFor(model => model.RegisterNo, "", new { @class = "text-danger" })
+                </div>
+                <div class="editor-label"><label for="Description">Description</label></div>
+                <div class="editor-field">
+                    @Html.TextAreaFor(model => model.Description, new { cols = 60, rows = 4, @class = "form-control k-textbox" })
+                    @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+                </div>
+                <div class="editor-label"><label for="Address">Address</label></div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "k-textbox", style = "width:100%" } })
+                    @Html.ValidationMessageFor(model => model.Address, "", new { @class = "text-danger" })
+                </div>
+                <div class="editor-label"><label for="AddressLine1">Address Line1</label></div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.AddressLine1, new { htmlAttributes = new { @class = "k-textbox", style = "width:100%" } })
+                    @Html.ValidationMessageFor(model => model.AddressLine1, "", new { @class = "text-danger" })
+                </div>
+                <div class="editor-label"><label for="Country">Country</label></div>
+                <div class="editor-field">
+                   @(Html.Kendo().DropDownListFor(model => model.Country)
+                                 .Name("VehicleCountryId")                                
+                                 .OptionLabel("----Select Country-----")                              
+                                 .Events(e => e.Change("onChangeOfVehicleCountry"))
+                                 .BindTo(ViewBag.CountryId)
+                                 .HtmlAttributes(new { style = "width: 100%" })
+                    )
+                </div>
+             
+                <div id="DivFoVehicleDivision">
+                    <div class="editor-label"><label for="DivisionId">Division</label></div>
+                    <div class="editor-field">
+                        @(Html.Kendo().DropDownListFor(model=>model.DivisionId)
+                          .Name("VehicelDivisionId")
+                          .OptionLabel("----Select Division-----")
+                          .BindTo(ViewBag.DivisionList)
+                          .HtmlAttributes(new { style = "width: 100%" })
+                        )
+                        @Html.ValidationMessageFor(model => model.DivisionId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                
+                <div id="DivForUserState" class="DivForState" style="display:none;">
+                    <div class="editor-label"><label for="State">State</label></div>
+                    <div class="editor-field">
+                        @Html.EditorFor(model => model.State, new { htmlAttributes = new { @class = "k-textbox", style = "width:100%" } })
+                        @Html.ValidationMessageFor(model => model.State, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="editor-label"><label for="City">City</label></div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.City, new { htmlAttributes = new { @class = "k-textbox", style = "width:100%" } })
+                    @Html.ValidationMessageFor(model => model.City, "", new { @class = "text-danger" })
+                </div>
+                <div class="editor-label"><label for="PostalCode">Postal Code</label></div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.PostalCode, new { htmlAttributes = new { @class = "k-textbox", style = "width:100%" } })
+                    @Html.ValidationMessageFor(model => model.PostalCode, "", new { @class = "text-danger" })
+                </div>
+                <div class="k-edit-buttons k-state-default col-xs-11">
+                    <button type="button" class="k-button k-button-icontext k-primary k-grid-update btnVehicleInfoUpdate" id="btnVehicleInfoUpdate"><span class="k-icon k-update"></span>Update</button>
+                    <button type="reset" class="k-button k-button-icontext k-grid-cancel btnVehicleInfoReset" id="btnVehicleInfoReset"><span class="k-icon k-i-refresh"></span>Reset</button>
+                    <button type="button" class="k-button k-button-icontext k-grid-cancel btnVehicleCancel" id="btnVehicleCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-4" id="DivForVehiclePic">
+            <div id="divPic-0" class="col-md-10 col-sm-10">
+                <span id="UserImgClose" style="display:none;">
+                    <img src="/Content/Icon/modal_close.png" class="previewImgClose" id="UserImgClose" />
+                </span>
+                <span id="UserImgEdit" class="previewImgEdit">
+                    <span class="fa fa-pencil" id="btn_img_change"></span>
+                </span>
+                <div id="Div_Pre_Pic_Hold" class="imgPreview">
+                    <img src="~/Images/Client/ClientVehicleImage/Original/@Model.PictureName" />
+                </div>
+                <div id="DivForEvtCvrHold" class="imgPreview" style="display:none;">
+                    <img src="~/Images/Client/ClientVehicleImage/Original/@Model.PictureName" />
+                </div>
+                <div id="DivForEvtCvrUp" class="image-uploader" style="display:none;">
+                    <input type="file" name="files" id="file1" class="inputfile inputfile-4" style="display:none;" />
+                    <label for="file1" id="lblfile1" class="lblForPics">
+                        <span style="font-size: 26px;padding-top:1.5em;display:block;" id="pic">+</span>
+                        <span style="font-size: 15px;font-weight:bold;">Add Photos</span>
+                    </label>
+                </div>
+                @Html.ValidationMessageFor(model => model.PictureName, "", new { @class = "text-danger" })
+                <div class=" k-edit-buttons k-state-default col-md-10" id="DivForvehiclePicBtn">
+                    <button type="button" class="k-button k-button-icontext k-primary k-grid-update btn_vehicle_pic_Update" id="btn_vehicle_pic_Update_@Model.VehicleId"><span class="k-icon k-update"></span>Update</button>
+                    <button type="button" class="k-button k-button-icontext k-primary k-grid-update btn_vehicle_pic_Cancel" id="btn_vehicle_pic_Cancel_@Model.VehicleId"><span class="k-icon k-update"></span>Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="k-edit-buttons k-state-default col-xs-11">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-cancel btnVehicleWindowCancel" id="btnVehicleWindowCancel"><span class="k-icon k-cancel"></span>Close</button>
+        </div>
+    </div>
+</div>
+<script id="temp_win_vehiclePicture_edit" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">Are you sure you want to delete this picture ?</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_editUnit_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_editUnit_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    var clientId = '@Model.ClientId';  
+    var logUserVId = loginUserId;
+    $(document).ready(function () {
+        $("#DivForvehiclePicBtn").hide();
+    });
+    if ('@Model.Country' != 'BD') {
+        $("#DivFoVehicleDivision").hide();
+    }
+    $("#DivForEditVehicleDetails").on("click", ".editVehicleBasicInfo", function () {
+        $("#DivForVehicleBasicInformationDisplay").hide();
+        $("#DivForVehicleBasicInformationEdit").show();
+        $("#editVehicleBasicInfo").hide();
+    });
+    $("#DivForEditVehicleDetails").on("click", ".btnVehicleInfoReset", function () {
+        $("#DivForVehicleBasicInformationEdit").hide();
+        $("#DivForVehicleBasicInformationDisplay").show();
+        $("#editVehicleBasicInfo").show();
+    });
+    $("#DivForEditVehicleDetails").on("click", ".btnVehicleCancel", function (e) {
+        e.preventDefault();
+        $("#UpdateNewVehicelPopUp").empty();
+        $("#UpdateNewVehicelPopUp").data("kendoWindow").close();
+        $("#div_ryt_panel").load('@Url.Action("VehicleList", "CRMClient")?Id=' + clientId + '&isDisplay=' + isDisplay);
+    });
+    var validation = $("#DivForVehicleBasicInformationEdit").kendoValidator({
+        rules: {
+            VehicleName: function (input) {
+                if (input.is("[name=VehicleName]") && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            RegisterNo: function (input) {
+                if (input.is("[name=RegisterNo]") && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Address: function (input) {
+                if (input.is("[name=Address]") && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Country: function (input) {
+                if (input.is("[name=Country]") && input.val() === "") {
+
+                    return false;
+
+                } else {
+                    return true;
+                }
+            },
+            City: function (input) {
+                if (input.is("[name=City]") && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            PostalCode: function (input) {
+                if (input.is("[name=PostalCode]") && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        },
+        messages: {
+            UserName: "Please enter user name",
+            RegisterNo: "Please enter designation",
+            Address: "Please enter address",
+            Country: "Please select country",
+            City: "Please enter City",
+            PostalCode: "Please enter postal code"
+        }
+    }).data("kendoValidator");
+
+    $("#btnVehicleInfoUpdate").click(function () {
+        if (validation.validate()) {
+            notification.show({ message: "Vehicle inforamtion updating...", showTime: startTime() }, "upload-progress");
+            var dataSend = {
+                VehicleId: $("#VehicleId").val(),
+                VehicleName: $("#VehicleName").val(),
+                RegisterNo: $("#RegisterNo").val(),
+                ClientId: clientId,
+                Description: $("#Description").val(),
+                Address: $("#Address").val(),
+                AddressLine1: $("#AddressLine1").val(),
+                Country: $("#VehicleCountryId").val(),
+                DivisionId: $("#VehicelDivisionId").val(),
+                State: $("#State").val(),
+                City: $("#City").val(),
+                PostalCode: $("#PostalCode").val(),
+                PictureName: $("#PictureName").val(),
+                CreatedBy: logUserVId
+            };
+            $.ajax({
+                url: '@Url.Action("UpdateVehicleInfo", "CRMClient")',
+                type: 'Post',
+                data: dataSend,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({
+                        autoHideAfter: 5000
+                    });
+                    if (data === "success") {
+                        notification.show({ message: "Vehicel info successfully updated", showTime: startTime() }, "upload-success");
+                    }
+                    else {
+                        notification.show({ message: "Update unsuccessful", showTime: startTime(), }, "upload-error");
+                    }
+                    $("#divForVehicleTotalInfoLoad").empty();
+                    $("#divForVehicleTotalInfoLoad").load('@Url.Action("_EditVehicleDetails","CRMClient")?VehicleId=' + '@Model.VehicleId');
+                    $("#DivForVehicleBasicInformationEdit").hide();
+                }
+            });
+        }
+    });
+@***************************Image Upload******************************@
+    var allMainFile = [];
+    $("#UserImgEdit").click(function () {
+        $("#UserImgEdit").hide();
+        $("#UserImgClose").show();
+        $("#Div_Pre_Pic_Hold").hide();
+        $("#DivForEvtCvrHold").show();
+        $("#DivForvehiclePicBtn").show();
+    });
+    $("#file1").change(function (e) {
+        var countFiles = $("#file1")[0].files.length;
+        var imgPath = $("#file1")[0].value;
+        var extn = imgPath.substring(imgPath.lastIndexOf('.') + 1).toLowerCase();
+        var image_holder = $("#DivForEvtCvrHold");
+        var files = e.target.files;
+        image_holder.empty();
+        if (extn == "gif" || extn == "png" || extn == "jpg" || extn == "jpeg") {
+            if (typeof (FileReader) != "undefined") {
+                allMainFile[0] = files[0];
+                var reader = new FileReader();
+                reader.onload = function (e) { $("<img />", { "src": e.target.result }).appendTo(image_holder); }
+                $("#DivForEvtCvrUp").hide();
+                $("#DivForEvtCvrHold").show();
+                $("#UserImgClose").show();
+                image_holder.show();
+                $("#PictureName").val($("#file1")[0].files[0]);
+                reader.readAsDataURL($("#file1")[0].files[0]);
+                $("#lbl_Span_plus").text("+");
+
+            } else {
+                alert("This browser does not support FileReader.");
+            }
+        } else {
+            alert("Pls select only images");
+        }
+    });
+    $("#UserImgClose").click(function () {
+        $("#DivForEvtCvrHold").empty();
+        $("#DivForEvtCvrHold").hide();
+        $("#UserImgClose").hide();
+        $("#DivForEvtCvrUp").show();
+        $("#btn_img_Upload").show();
+    });
+
+    $("#btn_img_change").click(function () {
+        $("#DivForvehiclePicBtn").show();
+    });
+    $(".btn_vehicle_pic_Cancel").click(function () {
+        $("#UserImgClose").hide();
+        $("#btn_img_Upload").hide();
+        $("#DivForEvtCvrUp").hide();
+        $("#DivForEvtCvrHold").hide();        
+        $("#DivForvehiclePicBtn").hide();
+        $("#Div_Pre_Pic_Hold").show();
+        $("#UserImgEdit").show();
+    });
+//*******************************Update vehicle Image****************************
+    $(".btn_vehicle_pic_Update").click(function () {
+        if (allMainFile.length == 0) {
+            alert("You didn't select any picture");
+        } else {
+            notification.show({ message: "Vehicle image uploading...", showTime: startTime() }, "upload-success");
+            var sendData = new FormData();
+            sendData.append("VehicleId", $("#VehicleId").val());
+            sendData.append("ClientId", '@Model.ClientId');
+            sendData.append("files", allMainFile[0]);
+            sendData.append("CreatedBy", logUserVId);
+            $.ajax({
+                url: '@Url.Action("UpdateVehiclePicture", "CRMClient")',
+                type: 'Post',
+                data: sendData,
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 2000 });
+                    if (data != null) {
+                        if (data === 'Error') {
+                            notification.show({ message: "Vehicle image change unsuccessful.", showTime: startTime() }, "upload-error");
+                        }
+                        else {
+                            notification.show({ message: "Vehicle image successfully changed.", showTime: startTime() }, "upload-success");
+                            $("#Div_Pre_Pic_Hold").empty();
+                            $("#Div_Pre_Pic_Hold").append('<img src="/Images/Client/ClientVehicleImage/Original/' + data + '" />');
+                            $("#UserImgClose").hide();
+                            $("#btn_img_Upload").hide();
+                            $("#DivForEvtCvrUp").hide();
+                            $("#DivForEvtCvrHold").hide();
+                            $("#btn_vehicle_pic_Update").hide();
+                            $("#DivForvehiclePicBtn").hide();
+                            $("#Div_Pre_Pic_Hold").show();
+                            $("#UserImgEdit").show(); 
+                        }
+                    }
+                },
+                error: function (error) {
+                    notification.show({ message: "Unsuccessful", showTime: startTime() }, "upload-error");
+                }
+            });
+        }
+    });
+</script>
+<style>
+    .image-uploader {
+        width: 100%;
+        height: 160px;
+        display: block;
+        text-align: center;
+    }
+
+    .imgPreview {
+        background-color: #e8e4d0;
+        margin-bottom: 20px;
+        position: relative;
+        width: 100%;
+        height: 160px;
+        border: 1px solid #808080;
+        overflow: hidden;
+    }
+
+
+        .imgPreview img {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+    .lblForPics {
+        text-align: center;
+        max-width: 100%;
+        width: 100%;
+        height: 160px;
+        vertical-align: middle;
+        border: 1px dashed blue;
+        cursor: pointer;
+    }
+
+
+        .lblForPics span {
+            color: #083bb5 !important;
+        }
+
+    .previewImgClose {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        float: right;
+        right: -1.8em;
+        bottom: -1.8em;
+        z-index: 9999;
+        margin-top: -3em;
+    }
+
+    .previewImgEdit {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        float: right;
+        right: -2.2em;
+        bottom: -1.8em;
+        z-index: 9999;
+        margin-top: -3em;
+    }
+</style>
+

@@ -1,0 +1,356 @@
+﻿
+
+
+@*********************** Created By Jerin Jahan Date(20.11.2016) *******************************************@
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+@model IEnumerable<FactoryManagement.Models.View_Inventory_TmpOrderList>
+<style>
+    #div_tbl_selected_item {
+        box-shadow:inset 0 0 5px #CCC;
+        background-color:#f5f5f5!important;
+        border-radius:3px!important;
+    }
+</style>
+<div style="float:left;width:100%;">
+    @if (db.StoreItemDispatchedHistories.Any())
+    {
+        <div class="col-sm-12" style="text-align:right;"><span class="btn blue" id="btn_Show_Vou_Name"><i class="fa fa-list-ul"></i> All Voucher Name</span></div>
+    }
+    <div class="col-sm-3" id="div_tbl_selected_item">
+        <table class="table" id="tbl_selected_item">
+            <tr>
+                <th width="3%">#</th>
+                <th width="60%">Name</th>
+                <th width="37%">Quantity</th>
+            </tr>
+        </table>
+    </div>
+    <div class="col-sm-9" style="width:70%!important;">
+        <div style="float:left;width:100%;">
+            <div class="editor-label" style="width:15%!important;"><label>Voucher Name/No </label></div>
+            <div class="editor-field" style="padding-top:2px;">
+                <input class="k-textbox" data-val="true" data-val-length="Type atleast one character"
+                       data-val-length-max="500"
+                       data-val-length-min="1"
+                       data-val-required="Please enter voucher name"
+                       id="txtVname" name="txtVname"
+                       style="width:80%" type="text" value="">
+                <span class="field-validation-valid text-danger" data-valmsg-for="txtVname" data-valmsg-replace="true"></span>
+            </div>
+        </div>
+        <div style="float:left;width:100%;">
+            <div class="editor-label" style="width:15%!important;"><label for="PackageName">Item Dispatch For</label></div>
+            <div class="editor-field" style="padding-top:2px;">
+                <div style="width:100%;">
+                    <input id="ChkMachine" name="AssignType" type="radio" value="Machine" class="k-valid"> Machine
+                    <input id="ChkPlace" name="AssignType" type="radio" value="Place" class="k-valid"> Place
+                </div>
+                <span class="field-validation-valid text-danger" data-valmsg-for="AssignType" data-valmsg-replace="true"></span>
+            </div>
+        </div>
+        <div id="Div_for_Order" style="display:block;width:100%;float:left;"></div>
+        <div style="display:none;width:100%;float:left;" id="div_Chk_Single">
+            <div class="editor-label" style="width:15%!important;float:left;"><label for="Equipment"></label></div>
+            <div class="editor-field" style="float:left;width:70%!important;">
+                <input id="ChkSingleUser" name="ChkSingleUser" type="checkbox" value="true"><input name="ChkAllPartsSame" type="hidden" value="false"> Same User 
+            </div>
+        </div>
+        <div style="display:none;width:100%;float:left;" id="div_Single_User"></div>
+        <div id="Div_Selected_Order_List" style="display:block;width:100%;float:left;"></div>
+    </div>
+</div>
+<div id="Win_vou_name_list"></div>
+<script>
+    console.log("_CartItemLocation.cshtml line 66");
+    for (var i = 0; i < alllocId.length; i++) {
+        $("#tbl_selected_item").append('<tr id="Partial_Tr_' + alllocId[i] + '"><td>' + (i + 1) + '.</td><td><p>' + allName[i] + '</p><p style="font-size: 11px!important;margin-top: -10px!important;color:#0074b8;">Location :' + alllname[i] + '</p></td>' +
+             '<td><span class="Partail_cartItemDown" data-locationid="' + alllocId[i] + '" style="cursor:pointer;margin-right:5px;" id="Partail_cartItemDown_' + alllocId[i] + '">' +
+                '<i class="fa fa-caret-down"></i></span>' +
+                 '<span id="partail_cart_' + alllocId[i] + '">' + allquan[i] + '  </span><span>  ' + allunit[i] + '</span>' +
+                 '<span class="Partail_cartItemUp" data-locationid="' + alllocId[i] + '" style="cursor:pointer;margin-left:5px;" id="Partail_cartItemUp_' + alllocId[i] + '">' +
+                     '<i class="fa fa-caret-up "></i>' +
+                 '</span></td></tr>');
+    }
+    $("#ChkSingleUser").click(function () {
+        if ($(this).is(':checked')) {
+            if ($("#ChkMachine").is(':checked')) {
+                $(".tr_user_machine").hide();
+            }
+            if ($("#ChkOrder").is(':checked')) {
+                $(".tr_user_order").hide();
+            }
+            if ($("#ChkPlace").is(':checked')) {
+                $(".tr_user_dept").hide();
+            }
+            $("#div_Single_User").empty();
+            $("#div_Single_User").show();
+            $("#div_Single_User").append('<div class="editor-label" style="width:15%!important;float:left;"><label for="Equipment">Select User</label></div>' +
+            '<div class="editor-field" style="float:left;width:50%!important;">' +
+                '<input id="SingleUser" name="SingleUser" class="SingleUser" style="width: 75%;" />' +
+                '<span class="field-validation-valid text-danger" data-valmsg-for="SingleUser" data-valmsg-replace="true"></span>' +
+            '</div>');
+
+            @*$("#SingleUser").kendoMultiSelect({
+                placeholder: "Select users...",
+                dataTextField: "Username",
+                dataValueField: "UserId",
+                headerTemplate: '<div class="dropdown-header k-widget k-header"><span>Photo</span><span>User info</span></div>',
+                itemTemplate: '<span class="k-state-default" style="background-image: url(\'/Images/UserPicture/thumb/#: data.Picture #\')"></span>' +
+                          '<span class="k-state-default"><h3>#: data.Username #</h3><p>#: data.UserEmpId #      #:data.UserType#</p></span>',
+                tagTemplate: '<span class="selected-value" style="background-image: url(\'/Images/UserPicture/thumb/#: data.Picture #\')"></span><span>#:data.Username#</span>',
+
+                dataSource: { transport: { read: { url: "@Url.Action("GetUserListToAssigncart", "Inventory")?orderId=0", type: "GET" } } }
+            });*@
+        }
+        else {
+            $("#div_Single_User").hide();
+            $("#div_Single_User").empty();
+            if ($("#ChkMachine").is(':checked')) {
+                $(".tr_user_machine").show();
+            }
+            if ($("#ChkOrder").is(':checked')) {
+                $(".tr_user_order").show();
+            }
+            if ($("#ChkPlace").is(':checked')) {
+                $(".tr_user_dept").show();
+            }
+        }
+    });
+
+
+    // *************************  Machine Check *******************
+    $("#ChkMachine").click(function () {
+        if ($(this).is(":checked")) {
+            previous = "", current = "";
+            $("#Div_Selected_Order_List").empty();
+            $("#Div_Selected_Order_List").hide();
+            $("#Div_for_Order").empty();
+            $("#Div_Selected_Order_List").empty();
+            $("#div_Chk_Single").hide(); $("#div_Single_User").hide(); $("#ChkSingleUser").prop('checked', false);
+            $("#Div_for_Order").append('<div><div class="editor-label" style="width:15%!important;">' +
+            '<label for="Equipment">Select Machine</label></div>' +
+            '<div class="editor-field" style="float:left;width:75%!important;">' +
+                '<div style="width:50%;float:left;" id="Div_For_machine_Equipment">' +
+                    '<input id="txt_equipment" name="txt_equipment" style="width: 100%;">' +
+                    '<span class="field-validation-valid text-danger" data-valmsg-for="txt_equipment" data-valmsg-replace="true"></span>' +
+                '</div>' +
+                '<div style="width:48%;float:left;">' +
+                    '<div class="editor-label" style="width:30%!important;float:left;">' +
+                        '<label for="MachineType">Machine Type</label>' +
+                    '</div>' +
+                    '<div class="editor-field" style="float:left;width:60%!important;">' +
+                        '<input id="txt_Machine" name="txt_Machine" style="width: 100%;">' +
+                    '</div>' +
+                '</div></div>');
+
+            $("#txt_equipment").kendoMultiSelect({
+                placeholder: "Select order...",
+                dataTextField: "MachineAcronym",
+                dataValueField: "MachineId",
+                select: onMachineSelect,
+                change: onMachineSelectChange,
+                dataSource: { transport: { read: { url: "@Url.Action("MachineEupi", "Inventory")", type: "GET" } } }
+            });
+
+            $("#txt_Machine").kendoDropDownList({
+                dataTextField: "Acroynm",
+                dataValueField: "Id",
+                optionLabel: "All",
+                change: onMachineChange,
+                dataSource: { transport: { read: { url: "@Url.Action("AllMachine", "Inventory")", type: "GET" } } }
+            });
+            $("#Div_for_Order").show();
+        }
+    });
+
+    // *************************  Place Check *******************
+    $("#ChkPlace").click(function () {
+        if ($(this).is(":checked")) {
+            previous = "", current = "";
+            $("#Div_Selected_Order_List").empty();
+            $("#Div_Selected_Order_List").hide();
+            $("#Div_for_Order").empty();
+            $("#Div_Selected_Order_List").empty();
+            $("#div_Chk_Single").hide(); $("#div_Single_User").hide(); $("#ChkSingleUser").prop('checked', false);
+
+            $("#Div_for_Order").append('<div class="editor-label" style="width:15%!important;float:left;"><label>Select Site</label></div>' +
+                '<div class="editor-field" style="float:left;width:38%!important;"><input id="SiteId" name="SiteId" />' +
+                '<span class="field-validation-valid text-danger" data-valmsg-for="SiteId" data-valmsg-replace="true"></span></div>');
+
+            $("#SiteId").kendoDropDownList({
+                optionLabel: "Select One Site",
+                dataTextField: "SiteName",
+                dataValueField: "Id",
+                change: onSiteChange,
+                dataSource: { transport: { read: { url: "@Url.Action("AllSiteName", "Inventory")" } } }
+            });
+            $("#Div_for_Order").show();
+        }
+    });
+
+    // *************************  Order Check *******************
+
+    $("#ChkOrder").click(function () {
+        if ($(this).is(":checked")) {
+            previous = "", current = "";
+            $("#div_Chk_Single").hide();
+            $("#div_Single_User").hide();
+            $("#ChkSingleUser").prop('checked', false);
+            $("#Div_Selected_Order_List").empty();
+            $("#Div_for_Order").empty();
+            $("#Div_for_Order").append('<div class="editor-label" style="width:15%!important;float:left;"><label for="Equipment">Select Order</label></div>' +
+                '<div class="editor-field" style="float:left;width:50%!important;"><input id="Bus_Order" name="Bus_Order" style="width: 75%;" />' +
+                '<span class="field-validation-valid text-danger" data-valmsg-for="Bus_Order" data-valmsg-replace="true"></span></div>');
+
+            $("#Bus_Order").kendoMultiSelect({
+                placeholder: "Select order...",
+                dataTextField: "OrderName",
+                dataValueField: "BusinessOrderId",
+                select: onOrderSelect,
+                change: onOrderSelectChange,
+                dataSource: { transport: { read: { url: "@Url.Action("AllApprovedOrder", "Inventory")" } } }
+            });
+            $("#Div_for_Order").show();
+        }
+    });
+</script>
+<script>
+    //*********************** Partail cart quantity increase ******************************************************
+    $("#tbl_selected_item").on("click", ".Partail_cartItemUp", function () {
+        var id, addcart, unitname, quantity, showPlus, name, invenid, locid, multiple = 0;
+        loid = $(this).data("locationid");
+        invenid = $('#addIcon_' + loid).data("id");
+        multiple = $('#addIcon_' + loid).data("multiple");
+        id = loid;
+        showPlus = $('#addIcon_' + loid).data("showplus");
+        name = $("#lbl_Proname_" + invenid).data("name");
+        unitname = $("#lbl_Proname_" + invenid).data("unitname");
+        quantity = $("#btnOrder_" + id).data("quan");
+        addcart = $('#quentityInArrow_' + id).text();
+        addcart = parseInt(addcart) + 1;
+
+        if (addcart <= parseInt(quantity)) {
+            if (addcart === parseInt(quantity)) {
+                $('#addIcon_' + id).hide();
+                $("#Partail_cartItemUp_" + loid).hide();
+                showPlus = false;
+            }
+            else {
+                showPlus = true;
+            }
+            if ($('#cart_' + id).length === 1) {
+                $('#cart_' + id).text(addcart);
+                $('#partail_cart_' + id).text(addcart);
+                $('#txt_quan_' + id).val(addcart);
+                if (!isCartShow) {
+                    $("#Div_without_Cart").removeClass('form-horizontal col-lg-12 col-md-12 col-sm-12 col-xs-12');
+                    $("#Div_without_Cart").addClass('form-horizontal col-lg-10 col-md-10 col-sm-9 col-xs-12');
+                    $("#divForAddtoCart").addClass('col-md-2 col-sm-3 col-xs-12 noPadding');
+                    $("#divForAddtoCart").show();
+                    $("#DivForCartList").show();
+                    $("#OrderForPurchase").show();
+                    $("#showCart").hide();
+                    isCartShow = true;
+                }
+            }
+            $('#quentityInArrow_' + id).text(addcart);
+            $("#itemCount").text(alllocId.length);
+        }
+        else {
+            $('#addIcon_' + id).hide();
+            showPlus = false;
+        }
+        for (var i = 0; i < alllocId.length; i++) {
+            if (loid === alllocId[i]) {
+                allquan[i] = (addcart);
+            }
+        }
+        $("." + loid).each(function () {
+            $(this).val('');
+        });
+    });
+
+    //*********************** Partail cart quantity decrease ******************************************************
+    $("#tbl_selected_item").on("click", ".Partail_cartItemDown", function () {
+        var id, removecart, quantity, showPlus, invenid, locid, multiple = 0;
+        loid = $(this).data("locationid");
+        invenid = $("#minusIcon_" + loid).data("id");
+        multiple = $("#minusIcon_" + loid).data("multiple");
+        id = loid;
+        name = $("#lbl_Proname_" + invenid).data("name");
+        unitname = $("#lbl_Proname_" + invenid).data("unitname");
+        removecart = $('#quentityInArrow_' + id).text();
+        showPlus = $("#minusIcon_" + loid).data("showplus");
+        removecart = parseInt(removecart) - 1;
+        $("#Partail_cartItemUp_" + loid).show();
+        if (removecart === 0) {
+            for (var j = 0; j < alllocId.length; j++) {
+                if (loid === alllocId[j]) {
+                    alllocId.splice(j, 1);
+                    allId.splice(j, 1);
+                    allName.splice(j, 1);
+                    allquan.splice(j, 1);
+                    allunit.splice(j, 1);
+                    $("#dynTRforCart_" + id).remove();
+                    $("#Partial_Tr_" + id).remove();
+                }
+            }
+            $("#btnOrder_" + id).show();
+            $("#divForOrder_" + id).hide();
+            $("#itemCount").text(allId.length);
+        }
+        else {
+            $('#addIcon_' + id).show();
+            if ($('#cart_' + id).length === 1) {
+                $('#cart_' + id).text(removecart);
+                $('#partail_cart_' + id).text(removecart);
+                $('#txt_quan_' + id).val(removecart);
+                if (!isCartShow) {
+                    $("#Div_without_Cart").removeClass('form-horizontal col-lg-12 col-md-12 col-sm-12 col-xs-12');
+                    $("#Div_without_Cart").addClass('form-horizontal col-lg-10 col-md-10 col-sm-9 col-xs-12');
+                    $("#divForAddtoCart").addClass('col-md-2 col-sm-3 col-xs-12 noPadding');
+                    $("#divForAddtoCart").show();
+                    $("#DivForCartList").show();
+                    $("#OrderForPurchase").show();
+                    $("#showCart").hide();
+                    isCartShow = true;
+                }
+            }
+            $('#forQuentity_' + id).text(removecart);
+            $('#quentityInArrow_' + id).text(removecart);
+            for (var i = 0; i < alllocId.length; i++) {
+                if (loid === alllocId[i]) {
+                    allquan[i] = (removecart);
+                }
+            }
+        }
+        if (alllocId.length === 0) {
+            $("#btnPurchaseOrder").hide();
+            $("#btn_CartDis_Save").closest(".k-window-content").data("kendoWindow").close();
+        }
+        $("." + loid).each(function () {
+            $(this).val('');
+        });
+    });
+
+    //************************* Showing All Voucher Name ***********************************************************
+    $("#btn_Show_Vou_Name").click(function () {
+        $("#Win_vou_name_list").empty();
+        $("#Win_vou_name_list").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '60%',
+            title: 'Showing All Voucher Name List',
+            overflow: 'hidden'
+        });
+        $("#Win_vou_name_list").html('<div class="loading_partial"></div>');
+        var Win_vou_name_list = $("#Win_vou_name_list").data("kendoWindow");
+        Win_vou_name_list.refresh({ url: "/Inventory/_ShowVouName" });
+        Win_vou_name_list.center().open();
+    });
+</script>

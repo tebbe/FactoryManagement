@@ -1,0 +1,131 @@
+﻿
+@******************************** Created By Mabia Mishu (Date:27.07.2016) *********************************@
+@{
+    ViewBag.Title = "All WareHouse Lists";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    long loginUserId = Convert.ToInt32(Request.Cookies["CookieAdminInfo"].Values["userid"].ToString());
+}
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-gears"></i>
+            <span>Configuaration</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Inventory/AllWareHouseLists">All Warehouse List</a>
+        </li>
+    </ul>
+</div>
+@if (loginUserId < 1)
+{
+    <p><a data-toggle="tooltip" title="Add New Warehouse" href="/Inventory/AddNewWarehouse"><span class="btn green"><i class="fa fa-plus"></i> Add New Warehouse</span></a></p>
+}
+ 
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase"> All Warehouse Lists</span>
+                </div>
+
+            </div>
+            <div class="portlet-body">
+                <div id="Div_All_Ware"><div class="loading_partial"></div></div>
+                @if (db.WarehouseLists.Any())
+                {
+                    <script>
+                        $("#Div_All_Ware").show();
+                        $("#Div_All_Ware").load('@Url.Action("_ShowAllWareHouseList", "Inventory")');
+                    </script>
+                }
+                else
+                {
+                    <script>
+                        $("#Div_All_Ware").append('<h4> Ther is no record to display.</h4>');
+                    </script>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<script id="temp_win_site_edit" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px"> Are you sure want to delete this warehouse? </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_editSite_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_editSite_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $('#liForInvenConfig').addClass('open');
+        $('#liForInvenConfig .sub-menu').show();
+        $("#liForWareList").addClass('sublistActive');
+
+        $("#top_header_link").append('<span>Inventory</span><span><i class="fa fa-angle-right fa-2x"></i></span>' +
+              '<span class="current"><a href="/Inventory/AllWareHouseLists"> All WareHouse Lists</a></span>');
+    });
+
+    //****************************************************** Warehouse Delete Function ********************************************************************************
+
+    function deleteWareHouse(houseId, name) {
+        notification.show({ message: "Warehouse is deleting...", showTime: startTime() }, "upload-progress");
+
+        $.ajax({
+            url: '@Url.Action("DeleteWarehouse", "Inventory")',
+            type: 'Post',
+            data: { houseId: houseId, UserId: userId },
+            success: function (data) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 2000 });
+
+                if (data === "Success") {
+                    notification.show({ message: "Warehouse '" + name + "' has been successfully deleted.", showTime: startTime() }, "upload-success");
+                    location.reload();
+                } else {
+                    if (data === "error") {
+                        notification.show({ message: "Warehouse '" + name + "' deletion was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                    else {
+                        notification.show({ message: data, showTime: startTime() }, "upload-error");
+                    }
+                }
+            }
+        });
+    }
+    $(document).on("click", ".btnWarehouseDelete", function (e) {
+        e.preventDefault();
+        var houseId = $(this).data("id");
+        var name = $(this).data('name');
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose
+        });
+        var template = kendo.template($("#temp_win_site_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        kendoWindow.find("#btn_editSite_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_editSite_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            deleteWareHouse(houseId, name);
+            document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+            document.body.scroll = "no"; // ie only
+        }).end();
+    });
+</script>

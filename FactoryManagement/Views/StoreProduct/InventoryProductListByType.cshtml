@@ -1,0 +1,68 @@
+﻿
+@if (ViewBag.page == 2)
+{
+    <div class="portlet box green">
+        <div class="portlet-title">
+            <div class="caption">
+                <i class="fa fa-list-ul"></i> 
+                @if (ViewBag.productTypeId > 0)
+                {
+                    <span>All @(ViewBag.name)'s Item Lists</span>
+                }
+                else
+                {
+                    <span>All Inventory Item Lists</span>
+                }
+                
+            </div>
+        </div>
+        <div class="portlet-body" style="overflow-y:scroll" id="table_data_height">         
+                <div class="col-sm-12" id="search_bar" style="margin-bottom:1em;padding:0px!important;">
+                    <span class="autocomplete-wrapper">
+                        <input class="text-field" id="pro_search" name="country" placeholder="Start typing item name" type="text" autocomplete="off" />
+                        <span class="k-icon k-i-search" style="margin-top:-25px;float:right;margin-right:10px">&nbsp;</span>
+                    </span>
+                </div>
+            <div id="inventoy_product_list_div" ></div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="portlet box green">
+        <div class="portlet-title">
+            <div class="caption">
+                <i class="fa fa-list-ul"></i>
+                @if (ViewBag.productTypeId > 0)
+                {
+                    <span>All @(ViewBag.name)'s Item Lists</span>
+                }
+                else
+                {
+                    <span>All Inventory Item Lists</span>
+                }
+
+            </div>
+        </div>
+        <div class="portlet-body">
+            <div class="col-sm-12" id="search_bar" style="margin-bottom:1em;padding:0px!important;">
+                <span class="autocomplete-wrapper">
+                    <input class="text-field" id="pro_search" name="country" placeholder="Start typing item name" type="text" autocomplete="off" />
+                    <span class="k-icon k-i-search" style="margin-top:-25px;float:right;margin-right:10px">&nbsp;</span>
+                </span>
+            </div>
+            <div id="inventoy_product_list_div"></div>
+        </div>
+    </div>    
+    
+}
+<script>
+    console.log('Inventory ProductList By Type.cshtml');
+
+    $(document).ready(function () {
+        $("#table_data_height").css("max-height", $(window).height() - 330 + "px");
+        $("#inventoy_product_list_div").empty();
+        $("#inventoy_product_list_div").append('<div class="partial_loading_half"></div>');
+        $("#inventoy_product_list_div").load('@Url.Action("InventoryProductListByTypePartial", "StoreProduct")?productTypeId=@ViewBag.productTypeId&page=@ViewBag.page')
+    });   
+</script>

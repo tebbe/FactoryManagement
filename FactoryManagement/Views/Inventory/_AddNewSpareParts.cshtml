@@ -1,0 +1,158 @@
+﻿
+
+
+
+
+@************************************** Created By Jerin Jahan (Date:27.07.2016)  ***************************************@
+@model FactoryManagement.ModelView.Inventory.SparePartsListModelView
+
+<div class="k-edit-form-container col-md-11 col-sm-11 col-xs-12" style="margin-bottom:4%;" id="DivForAddNewParts">
+    <div class="editor-label" style="float:left;padding-left:0px;"><label for="PartsName">Name</label></div>
+    <div class="editor-field" style="float:left;">
+        <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;">
+            @Html.EditorFor(model => model.PartsName, new { htmlAttributes = new { @class = "k-textbox", style = "width:100%" } })
+        </div>
+    </div>
+
+    <div class="editor-label" style="float:left;padding-left:0px;"><label for="Type">Type</label></div>
+    <div class="editor-field" style="float:left;">
+        <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;">
+            @(Html.Kendo().DropDownListFor(m => m.Type)
+                       .DataTextField("Text")
+                       .DataValueField("Value")
+                       .OptionLabel("--Select One Type--")
+                       .HtmlAttributes(new { style = "width:100%" })
+                       .Events(e=> e.Change("onChangeType"))
+                       .BindTo(new List<SelectListItem>() {
+                          new SelectListItem() {
+                              Text = "Replaceable",
+                              Value = "1"
+                          },
+                          new SelectListItem() {
+                              Text = "Perishable",
+                              Value = "2"
+                          },
+                      })
+            )
+            @Html.ValidationMessageFor(model => model.Type, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div id="DivForExpire">
+        <div class="editor-label" style="float:left;padding-left:0px;"><label for="ReplaceDate">Replace Date</label></div>
+        <div class="editor-field" style="float:left;">
+            <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;">
+                @Html.EditorFor(model => model.ExpireDate, new { htmlAttributes = new { @class = "k-textbox", style = "width:100%" , onkeypress = "return isNumber(event,this.value)" } })
+            </div>
+        </div>
+    </div>
+
+    <div class="editor-label" style="float:left;padding-left:0px;"><label for="Description">Description</label></div>
+    <div class="editor-field" style="float:left;">
+        <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;">
+            <textarea class="form-control k-textbox valid k-valid" cols="65" id="Description" name="Description" rows="5"></textarea>
+        </div>
+    </div>
+
+    <div class="k-edit-buttons k-state-default">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnAddParts"><span class="k-icon k-update"></span>Save</button>
+        <button type="reset" class="k-button k-button-icontext k-grid-cancel" id="btnAddNewPartsCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function(){
+        $("#DivForExpire").hide();
+    });
+    $("#btnAddNewPartsCancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#btnAddParts").click(function () {
+        var validation = $("#DivForAddNewParts").kendoValidator({
+            rules: {
+                remote: function (input) {
+                    var errormessage;
+                    var remoteAttr = input.attr("data-val-remote-url");
+                    if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                        return true;
+                    }
+                    var isInvalid;
+                    var data = {};
+                    var PartsId = $("#PartsId").val();
+                    var PartsName = $("#PartsName").val();
+                    if (input.attr('name') === "PartsName") {
+                        data = { PartsId: PartsId, PartsName: PartsName };
+                    }
+                    $.ajax({
+                        url: remoteAttr,
+                        mode: "abort",
+                        port: "validate" + input.attr('name'),
+                        dataType: "json",
+                        type: input.attr("data-val-remote-type"),
+                        data: data,
+                        async: false,
+                        success: function (response) {
+                            isInvalid = response;
+                            if (isInvalid === true) {
+                                isInvalid = true;
+                            }
+                            else {
+                                isInvalid = false;
+                            }
+                        }
+                    });
+                    return isInvalid;
+                },
+                replace: function (input) {
+                    if (input.attr('name') === "ExpireDate" && $("#Type").val() === '1' && $("#ExpireDate").val() === "") {
+                        return false;
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                remote: function (input) {
+                    return input.data('val-remote');
+                },
+                replace:"Please enter replace date"
+            }
+        }).data("kendoValidator");
+        if (validation.validate()) {
+            $("#DivForAddNewParts").closest(".k-window-content").data("kendoWindow").close();
+            notification.show({ message: "New spare parts creating....", showTime: startTime() }, "upload-progress");
+
+            var sendData = { PartsName: $("#PartsName").val(), Type: $("#Type").val(),ExpireDate:$("#ExpireDate").val(), Description: $("#Description").val(),CreatedBy: userId};
+            $.ajax({
+                url: '@Url.Action("AddNewSpareParts", "Inventory")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+
+                    $("#DivForAddNewParts").closest(".k-window-content").data("kendoWindow").close();
+                    if(data === "Error"){
+                        notification.show({message: "New spare parts creation unsuccessful.", showTime: startTime()}, "upload-error");
+                    }
+                    else{
+                        notification.show({ message: "New spare parts successfully created.", showTime: startTime() }, "upload-success");
+                        var alreadySelected = $("#SpareParts").data("kendoMultiSelect").value().join(",");
+
+                        $("#DivForSpareParts").empty();
+                        $("#DivForSpareParts").append('<input id="SpareParts" name="SpareParts" style="width: 100%;" />' +
+                            '<span class="field-validation-valid text-danger" data-valmsg-for="SpareParts" data-valmsg-replace="true"></span>');
+                        var multiselect = $("#SpareParts").kendoMultiSelect({
+                            placeholder: "Select order...",
+                            dataTextField: "Name",
+                            dataValueField: "PartsId",
+                            select: onSparePartsSelect,
+                            change: onSparePartsChange,
+                            dataSource: { transport: { read: { url: "@Url.Action("GetAllSpareParts", "Inventory")", type: "GET" } } }
+                        });
+                        $("#SpareParts").getKendoMultiSelect().value([alreadySelected]);
+                    }
+                }
+            });
+    }
+    });
+</script>

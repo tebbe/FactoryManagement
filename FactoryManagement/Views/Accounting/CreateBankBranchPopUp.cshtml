@@ -1,0 +1,23 @@
+﻿
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="Div_For_Branch_Create">
+    <div id="create_bank_branch"></div>
+    <div class="k-edit-buttons k-state-default">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnCreateBranch"><span class="k-icon k-update"></span>Create</button>
+        <button type="reset" class="k-button k-button-icontext k-grid-update" id="btnBranchRefresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnBranchCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $("#create_bank_branch").empty();
+        $("#create_bank_branch").append('<div class="win_loading_half"></div>');
+        $("#create_bank_branch").load('@Url.Action("CreateBankBranch", "Accounting")?BankId=' + '@ViewBag.BankId');
+    });
+    $("#btnBranchRefresh").click(function () {
+        $("#create_bank_branch").empty();
+        $("#create_bank_branch").append('<div class="win_loading_half"></div>');
+        $("#create_bank_branch").show();
+        $("#create_bank_branch").load('@Url.Action("CreateBankBranch", "Accounting")?BankId=' + '@ViewBag.BankId');
+    })
+</script>

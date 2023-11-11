@@ -1,0 +1,141 @@
+﻿@model IEnumerable<FactoryManagement.Models.View_All_Loan_History>
+@using FactoryManagement.Helpers
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    var count = 0;
+}
+@if (Model.Count() > 0)
+{
+    <h4>Loan history</h4>
+    <table class="table table-bordered" id="tbl_loan_history_show_bank">
+        <tr>
+            <th>#</th>
+            <th>Payment Type</th>
+            <th>Paid to</th>
+            <th>Amount</th>
+            <th>Return Amount</th>
+            <th>Status</th>
+            <th>Paid by</th>
+            <th>Paid Date</th>
+            <th>Loan received by</th>
+            <th>Loan received date</th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            count++;
+            <tr>
+                <th>@count.</th>
+                <td>
+                    @if (item.PayType == 1)
+                    {
+                        <span style="color:#428bca;cursor:pointer;" class="loanpayType" data-id="@item.LoanId">Cash</span>
+                    }
+                    else if (item.PayType == 2)
+                    {
+                        <span style="color:#428bca;cursor:pointer;" class="loanpayType" data-id="@item.LoanId">Cheque</span>
+                    }
+                    else
+                    {
+                        <span style="color:#428bca;cursor:pointer;" class="loanpayType" data-id="@item.LoanId">Account</span>
+                    }
+                </td>
+                <td>
+                    @if (item.UserId > 0)
+                    {
+                        <img class="user-photo" src="/Images/UserPicture/thumb/@item.Picture">
+                        <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = item.UserId,isDisplay = true }, null)">@item.UserName </a>
+                    }
+                    else
+                    {
+                        <img class="user-photo" src="/Images/UserPicture/thumb/@item.Picture">
+                        <span>@item.UserName</span>
+                    }
+                </td>
+                <td>@currency @item.Amount </td>
+                <td>
+                    @if (item.PaidAmount != null)
+                    {
+                        <span>@currency @item.PaidAmount</span>
+                    }
+                    else
+                    {
+                        <span>Not yet paid</span>
+                    }
+                </td>
+                <td>
+                    @if (item.PaidStatus == 0)
+                    {
+                        <span>Due</span>
+                    }
+                    else
+                    {
+                        <span>Paid</span>
+                    }
+                </td>
+                <td>
+                    @if (item.LoanPaidBy > 0)
+                    {
+                        <img class="user-photo" src="/Images/UserPicture/thumb/@item.LoanPaidUserPic">
+                        <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = item.LoanPaidBy,isDisplay = true }, null)">@item.LoanPaidUser </a>                 
+                    }
+                    else
+                    {
+                        <img class="user-photo" src="/Images/UserPicture/thumb/@item.LoanPaidUserPic">
+                        <span>@item.LoanPaidUser</span>
+                    }
+                </td>
+                <td>@item.LoanPaidDateFormate</td>
+                <td>
+                    @if (item.LoanReceivedBy != null)
+                    {
+                        if (item.LoanReceivedBy > 0)
+                        {
+                            <img class="user-photo" src="/Images/UserPicture/thumb/@item.LoanReceivedPaidUserPic">
+                            <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = item.LoanReceivedBy,isDisplay = true }, null)">@item.LoanReceivedPaidUser </a>
+                        }
+                        else
+                        {
+                            <img class="user-photo" src="/Images/UserPicture/thumb/@item.LoanReceivedPaidUserPic">
+                            <span>@item.LoanReceivedPaidUser</span>
+                        }
+                    }
+                    else
+                    {
+                        <span>Not Received Yet</span>
+                    }
+                </td>
+                <td>
+                    @if (item.LoanReceivedDate != null)
+                    {
+                        <span>@item.LoanReceivedDateFormate</span>
+                    }
+                    else
+                    {
+                        <span>Not Received yet</span>
+                    }
+                </td>
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <h4> There is no record to show.</h4>
+}
+
+@*<style>
+        .table td {
+            border: none !important;
+        }
+    </style>*@
+
+<script>
+    @*totalCount = '@(ViewBag.Count)';
+    showCount = '@count';*@
+    showCountLoan = '@count';
+    totalCountLoan = '@(ViewBag.Count)';
+</script>
+
+

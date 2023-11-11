@@ -1,0 +1,414 @@
+﻿@model FactoryManagement.ModelView.Accounting.BankAccountListModelView
+@using FactoryManagement.Helpers
+@{
+    ViewBag.Title = "BankAccountHistory";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+@Html.HiddenFor(m => m.BankAccountId)
+@Html.HiddenFor(m => m.BranchId)
+<h3 class="page-title">
+    Account Details
+</h3>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-calculator"></i>
+            <span> Finance</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list" aria-hidden="true"></i>
+            <span>Bank</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+
+        <li>
+            <i class="fa fa-th-list" aria-hidden="true"></i>
+            <a href="/Accounting/AllBankList">Bank List</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list" aria-hidden="true"></i>
+            <a href="@Html.EncodedParam("BankBranchDetails", "Accounting", new { BankId = Model.BankId, forDisplay = Model.ForAccountDisplay }, null)">Branches List</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list" aria-hidden="true"></i>
+            <a href="@Html.EncodedParam("BankAccountDetails", "Accounting", new { Id = Model.BranchId, forDisplay = Model.ForAccountDisplay }, null)">Account List</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list" aria-hidden="true"></i>
+            <a href="@Html.EncodedParam("BankAccountHistory", "Accounting", new { BankAccountId = Model.BankAccountId }, null)">History List</a>
+  
+        </li>
+    </ul>
+</div>
+<div class="row" id="DivForBankAccountDisplay">
+    <div class="col-md-12">
+        <div class=" portlet light bordered">
+            <div class="caption font-green ">
+                <i class="fa fa-info-circle font-green"></i>
+                <span class="caption-subject bold uppercase">Account Information</span>
+            </div>
+            <hr />
+            <div id="DivForBankAccountInfo">
+                <div class="loading_half"></div>
+                <script>
+                    $("#DivForBankAccountInfo").load('@Url.Action("DisplayAccountInfo", "Accounting")?BankAccountId=' + '@(Model.BankAccountId)');
+                </script>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-12">       
+    
+            <div>
+                <span class="btn green" data-toggle="tooltip" data-placement="bottom" data-original-title="Create New Voucher" id="btn_add_invoice_with_bank_account"><i class="fa fa-plus"></i> Create New Voucher</span>
+            </div>
+    
+        <br />
+        <div class="portlet box green">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list"></i><span id="headr_title" style="margin-top: 0px!important">Showing Account Details With History List</span>
+                </div>
+            </div>
+            <div class="portlet-body">
+
+                <div style="padding-left:0px!important;padding-right:0px!important;">
+                    <div class="panel with-nav-tabs panel-default">
+                        <div class="panel-heading">
+                            <ul class="nav nav-tabs">
+                                <li class="active"><a href="#tab1Pck" data-toggle="tab">Transaction History</a></li>
+                                <li id="liBankSalaryPay"><a href="#tab2BankSalaryPay" data-toggle="tab">Salary Pay History</a></li>
+                                <li id="liBankLoanHistory"><a href="#tab3BankLoan" data-toggle="tab">Loan History</a></li>
+                            </ul>
+                        </div>
+                        <div class="panel-body" style="border:none!important;">
+                            <div class="tab-content">
+                                <div class="tab-pane fade in active" id="tab1Pck"><div class="loading_half"></div></div>
+                                <div class="tab-pane fade" id="tab2BankSalaryPay"><div class="loading_half"></div></div>
+                                <div class="tab-pane fade" id="tab3BankLoan"><div class="loading_half"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="win_tran_info"></div>
+<div id="win_Bank_Salary_Pay_details"></div>
+<div id="win_Bank_Loan_History"></div>
+<div id="loading" style="display:none;"></div>
+<script>
+    var showCount = 0, totalCount = 0, page = 0, inCallback = false, days = 0;
+    var showCountSalary = 0, totalCountSalary = 0, page1 = 0, inCallbackSalary = false;
+    var showCountLoan = 0, totalCountLoan = 0, page2 = 0, inCallbackLoan = false;
+    var tabno = 0;
+
+    $(document).ready(function () {
+        $("#liForAccounting").addClass('active');
+        $("#liForBankList").addClass('sublistActive');
+        $("#tab1Pck").empty();
+        $("#tab1Pck").load('@Url.Action("_TransactionforBankAccount", "Accounting")?BankAccountId=' + '@Model.BankAccountId');
+        showCount = 0, totalCount = 0, page = 0, inCallback = false;
+        tabno = 1;
+
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+    $("#liBankSalaryPay").click(function () {
+        $("#tab2BankSalaryPay").empty();
+        $("#tab2BankSalaryPay").load('@Url.Action("DisplaySalaryPay", "Accounting")?BankAccountId=' + '@(Model.BankAccountId)');
+        showCountSalary = 0, totalCountSalary = 0, page1 = 0, inCallbackSalary = false;
+        tabno = 2;
+    });
+    $("#liBankLoanHistory").click(function () {
+        $("#tab3BankLoan").empty();
+        $("#tab3BankLoan").load('@Url.Action("DisplayLoanList", "Accounting")?BankAccountId=' + '@(Model.BankAccountId)');
+        showCountLoan = 0, totalCountLoan = 0, page2 = 0, inCallbackLoan = false;
+        tabno = 3;
+    });
+    $("#btn_add_invoice_with_bank_account").click(function () {
+        location.href = '@Url.Action("CreateVoucher","Voucher")?q='+ getDataEncrypted("IsAccSelect=true?type=2?accId="+'@(Model.BankAccountId)'+"");
+    });
+    $("#tab1Pck").on("click", ".btn_tran_receive", function (e) {
+        e.preventDefault();
+        var id = $(this).data('id');
+        var bankId = $(this).data('bankid');
+        var voucherType = $(this).data('vouchertype');
+        var amount = $(this).data('amount');
+        var sendData = {
+            id: id,
+            bankId: bankId,
+            voucherType: voucherType,
+            amount: amount,
+            CreatedBy: userId
+        };
+        $.ajax({
+            url: '@Url.Action("TransactionReceiveCalculation", "Accounting")',
+            type: 'Post',
+            data: sendData,
+            success: function (data) {
+                notification.hide();
+                notification.setOptions({ autoHideAfter: 5000 });
+                if (data === "Error") {
+                    notification.show({ message: "Transaction receive was unsuccessful.", showTime: startTime() }, "upload-error");
+                } else {
+                    notification.show({ message: "Transaction has been successfully received.", showTime: startTime() }, "upload-success");
+                }
+                $("#DivForBankAccountInfo").load('@Url.Action("DisplayAccountInfo", "Accounting")?BankAccountId=' + '@(Model.BankAccountId)');
+                $("#tab1Pck").load('@Url.Action("_TransactionforBankAccount", "Accounting")?BankAccountId=' + '@Model.BankAccountId');
+            },
+            error: function (err) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+            }
+        });
+    })
+    $("#tab1Pck").on("click", ".tranname", function (e) {
+        e.preventDefault();
+        var id = $(this).data("id");
+        var name = $(this).data("name");
+        $("#win_tran_info").empty();
+        $("#win_tran_info").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '40%',
+            title: "Transaction '" + name + "' Details",
+            close: onWindowClose
+        });
+        $("#win_tran_info").html('<div class="win_loading_half"></div>');
+        var win_tran_info = $("#win_tran_info").data("kendoWindow");
+        win_tran_info.refresh({ url: "/Voucher/InvoiceTranDetails?id=" + id });
+        win_tran_info.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+    $("#tab2BankSalaryPay").on("click", ".payType", function (e) {
+        e.preventDefault();
+        var id = $(this).data("id");
+        // var name = $(this).data("name");
+        $("#win_Bank_Salary_Pay_details").empty();
+        $("#win_Bank_Salary_Pay_details").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '45%',
+            height: '30%',
+            title: "Salary Pay Details",
+            close: onWindowClose
+        });
+        $("#win_Bank_Salary_Pay_details").html('<div class="win_loading_half"></div>');
+        var win_salary_Pay_details = $("#win_Bank_Salary_Pay_details").data("kendoWindow");
+        win_salary_Pay_details.refresh({ url: "/Voucher/SalaryPayDetails?id=" + id });
+        win_salary_Pay_details.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+    $("#tab3BankLoan").on("click", ".loanpayType", function (e) {
+        e.preventDefault();
+        var id = $(this).data("id");
+        var name = $(this).data("name");
+        $("#win_Bank_Loan_History").empty();
+        $("#win_Bank_Loan_History").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '40%',
+            title: "Salary Pay Details",
+            close: onWindowClose
+        });
+        $("#win_Bank_Loan_History").html('<div class="win_loading_half"></div>');
+        var win_salary_Pay_details = $("#win_Bank_Loan_History").data("kendoWindow");
+        win_salary_Pay_details.refresh({ url: "/Accounting/AccLoanHistory?id=" + id });
+        win_salary_Pay_details.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+    //$("#tab3BankLoan").on("click", ".loanpayType", function (e) {
+    //    e.preventDefault();
+    //    var id = $(this).data("id");
+    //    // var name = $(this).data("name");
+    //    $("#win_Bank_Loan_History").empty();
+    //    $("#win_Bank_Loan_History").kendoWindow({
+    //        actions: ["Close"],
+    //        draggable: false,
+    //        modal: true,
+    //        visible: false,
+    //        width: '60%',
+    //        height: '60%',
+    //        title: "Salary Pay Details"
+
+    //    });
+    //    $("#win_Bank_Loan_History").html('<div class="win_loading_half"></div>');
+    //    var win_Bank_Loan_History = $("#win_Bank_Loan_History").data("kendoWindow");
+    //    win_Bank_Loan_History.refresh({ url: "/Accounting/AccLoanHistory?id=" + id });
+    //    win_Bank_Loan_History.center().open();
+    //});
+    $(window).scroll(function () {
+        var countBytype, result;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (tabno == 1) {
+                if (parseInt(showCount) < parseInt(totalCount)) {
+                    if (page > -1 && !inCallback) {
+                        inCallback = true;
+                        page++;
+                        $("div#loading").show();
+                        loadMoreData(page);
+                    }
+                }
+            }
+            if (tabno == 2) {
+                if (page1 > -1 && !inCallbackSalary) {
+                    inCallbackSalary = true;
+                    page1++;
+                    $("div#loading").show();
+                    loadMoreSalayData(page1);
+                }
+            }
+            if (tabno == 3) {
+                if (page2 > -1 && !inCallbackLoan) {
+                    inCallbackLoan = true;
+                    page2++;
+                    $("div#loading").show();
+                    loadBankLoanHistory(page2);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/Accounting/GetVouTranForBank',
+            data: { page: page },
+            success: function (data) {
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        $("table#tbl_trans_BankAccount").append('<tr><th>' + showCount + '.</th>' +
+                           ' <td><span style="color:#428bca;cursor:pointer;" class="tranname" data-id="' + data[i].Id + '" data-name="' + data[i].TranName + '">' + data[i].TranName + '</span></td>' +
+                           '<td>' + Currency + '' + data[i].Amout + '</td>' +
+                           '<td>' + data[i].VoucherTypeName + '</td>' +
+                           '<td>' + ((data[i].ApprovedBy != null) ? ((data[i].ApprovedBy > 0) ? '<img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].ApprovedUserPic + '">' +
+                            '<a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].ApprovedBy + "?isDisplay=True") + '">' + data[i].ApprovedUserName + '</a>' : '<img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].ApprovedUserPic + '">' +
+                           '<span>' + data[i].ApprovedUserName + '</span>') : '<span>Not approved yet</span>') +
+                           '</td>' +
+                           '<td>' + data[i].ApproveFormate + '</td>' +
+                           '<td style="font-weight:bold;">' + ((data[i].ApproveStatus == 0) ? '<span class="text-warning">Not approved yet</span>' : +
+                           '' + (data[i].ApproveStatus == 1) ? '<span class="text-info">Approved but not received yet</span>' : +
+                           '' + (data[i].ApproveStatus == 2) ? '<span class="text-success">Received</span>' : '<span class="text-danger">Rejected</span>') +
+                           '</td>' +
+                           '<td style="font-weight:bold;">' +
+                   ((data[i].ApproveStatus == 1) ? '<span class="btn btn-success btn_tran_receive" data-toggle="tooltip"  data-original-title="Receive Transaction" data-vouchertype="' + data[i].VoucherTypeId + '"data-amount="' + data[i].Amout + '" data-accid="' + data[i].InternalAccId + '"  data-id="' + data[i].Id + '" data-name="' + data[i].TranName + '" ><i class="fa fa-check"></i></span>' : '') +
+                    '</td></tr>');
+                    }
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+    function loadMoreSalayData(page1) {
+        $.ajax({
+            type: 'GET',
+            url: '/Accounting/GetSalaryPayForBank',
+            data: { page1: page1 },
+            success: function (data) {
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCountSalary++;
+                        $("table#tbl_for_salaryBank").append('<tr><th>' + showCountSalary + '.</th>' +
+                        ' <td>' + ((data[i].PayType == 1) ? '<span style="color:#428bca;cursor:pointer;" class="payType" data-id="' + data[i].Id + '">Cash</span>' : +
+                        '' + (data[i].PayType == 2) ? ' <span style="color:#428bca;cursor:pointer;" class="payType" data-id="' + data[i].Id + '">Cheque</span>' : +
+                        '<span style="color:#428bca;cursor:pointer;" class="payType" data-id="' + data[i].Id + '">Account</span></td>') +
+                        '<td>' + ((data[i].UserId > 0) ? '<img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].Picture + '">' +
+                         '<a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].UserId + "?isDisplay=True") + '">' + data[i].UserName + '</a>' : +
+                        '<img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].Picture + '"><span>' + data[i].UserName + '</span>') +
+                        '</td>' +
+                        '<td>' + Currency + '' + data[i].Amount + '</td>' +
+                        '<td>' + ((data[i].InsertBy > 0) ? '<img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].InsertUserPic + '">' +
+                        '<a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].InsertBy + "?isDisplay=True") + '">' + data[i].InsertUser + '</a>' : +
+                        '<img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].InsertUserPic + '"><span>' + data[i].InsertUser + '</span>') +
+                        '</td>' +
+                         '<td>' + data[i].InsertedDateFormate + '</td>' +
+                        '</tr>');
+                    }
+                }
+                else {
+                    page1 = -1;
+                }
+                inCallbackSalary = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+    function loadBankLoanHistory(page2) {
+        $.ajax({
+            type: 'GET',
+            url: '/Accounting/GetLoanHistoryForBank',
+            data: { page2: page2 },
+            success: function (data) {
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCountLoan++;
+                        $("table#tbl_loan_history_show_bank").append('<tr><th>' + showCountLoan + '.</th>' +
+                        ' <td>' + ((data[i].PayType == 1) ? '<span style="color:#428bca;cursor:pointer;" class="loanpayType" data-id="' + data[i].LoanId + '">Cash</span>' : +
+                        '' + (data[i].PayType == 2) ? ' <span style="color:#428bca;cursor:pointer;" class="loanpayType" data-id="' + data[i].LoanId + '">Cheque</span>' : +
+                        '<span style="color:#428bca;cursor:pointer;" class="loanpayType" data-id="' + data[i].LoanId + '">Account</span></td>') +
+                        '<td>' + ((data[i].UserId > 0) ? '<img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].Picture + '">' +
+                        '<a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].UserId + "?isDisplay=True") + '">' + data[i].UserName + '</a>' : +
+                        '<img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].Picture + '"><span>' + data[i].UserName + '</span>') +
+                        '</td>' +
+                        '<td>' + Currency + '' + data[i].Amount + '</td>' +
+                        '<td>' + ((data[i].PaidAmount != null) ? '<span>' + data[i].PaidAmount + '</span>' : '<span>Not yet paid</span>') +
+                        '</td>' +
+                        '<td>' + ((data[i].PaidStatus == 0) ? '<span>Due</span>' : '<span>Paid</span>') +
+                        '</td>' +
+                        '<td>' + ((data[i].LoanPaidBy > 0) ? '<img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].LoanPaidUserPic + '">' +
+                        '<a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].LoanPaidBy + "?isDisplay=True") + '">' + data[i].LoanPaidUser + '</a>' : +
+                        '<img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].LoanPaidUserPic + '"><span>' + data[i].LoanPaidUser + '</span>') +
+                        '</td>' +
+                        '<td>' + data[i].LoanPaidDateFormate + '</td>' +
+                        '<td>' + ((data[i].LoanReceivedBy != null) ? ((data[i].LoanReceivedBy > 0) ? '<img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].LoanReceivedPaidUserPic + '">' +
+                        '<a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].LoanReceivedBy + "?isDisplay=True") + '">' + data[i].LoanReceivedPaidUser + '</a>' : '<img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].LoanReceivedPaidUserPic + '"><span>' + data[i].LoanReceivedPaidUser + '</span>') : '<span>Not Received Yet</span>') +
+                        '</td>' +
+                        '<td>' + ((data[i].LoanReceivedDate != null) ? '<span>' + data[i].LoanReceivedDateFormate + '</span>' : '<span>Not Received yet</span>') +
+                        '</td>' +
+                        '</tr>');
+                    }
+                }
+                else {
+                    page2 = -1;
+                }
+                inCallbackLoan = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+</script>
+
+
+

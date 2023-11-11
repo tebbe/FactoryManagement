@@ -1,0 +1,69 @@
+﻿
+
+
+
+
+@************************************** Created By Jerin Jahan (Date:29.01.2017)  ***************************************@
+@model IEnumerable<FactoryManagement.Models.StoreList>
+@using FactoryManagement.Helpers;
+@{
+    ViewBag.Title = "All Product Type List";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    int count = 0;
+}
+
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-gears"></i>
+            <span>Configuration</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/StoreProduct/AllStoreNameList">  Store List</a>
+        </li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">Store List</span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div id="divForAll_Pro_type">
+                    <table class="table table-hover table-bordered table-condensed table-striped tableForProductTypeList">
+                        <tbody>
+                            <tr>
+                                <th width="90%">Store Name</th>
+                                <th width="10%"></th>
+                            </tr>
+                            @foreach (var item in Model)
+                            {
+                                count++;
+                                <tr>
+                                    <td>@item.StoreName</td>
+                                    <td>
+                                        <a href="@Html.EncodedParam("AllStoreCatagoryList", "StoreProduct", new { storeid = item.Id }, null)" target="_blank">
+                                            <span class="btn blue" data-toggle="tooltip" title="Show all goods"><i class="fa fa-list-ul"></i></span>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

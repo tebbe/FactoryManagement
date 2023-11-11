@@ -1,0 +1,222 @@
+﻿
+@**************************** Created By Jerin Jahan (Date: 17.12.2016) ***************************************************************@
+
+@{
+    ViewBag.Title = "Transactions";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<h3>All Paid History</h3><hr />
+
+<div class="row">
+    <div class="col-sm-12">
+        <span class="btn btn-info" id="btn_today"><i class="fa fa-list-ul"></i> Today</span>
+        <span class="btn btn-info" id="btn_last_seven"><i class="fa fa-list-ul"></i> Last 7 Days</span>
+        <span class="btn btn-info" id="btn_last_thirty"><i class="fa fa-list-ul"></i> Last 30 Days</span>
+        <span class="btn btn-info" id="btn_All"><i class="fa fa-list-ul"></i> All</span>
+    </div>
+    <div class="col-xs-12" id="div_User_List">
+        <table class="table table-bordered" style="margin-bottom:0px!important;margin-top:10px!important;border-bottom:none!important;">
+            <tr>
+                <td>
+                    <span class="col-sm-9" style="padding-left:0px!important;">
+                        <span class="autocomplete-wrapper">
+                            <input class="text-field" id="textForSearch" name="country" placeholder="Type employee name or designation" type="text" autocomplete="off">
+                            <span class="k-icon k-i-search" style="margin-top:-25px;margin-right:10px;float:right;">&nbsp;</span>
+                        </span>
+                    </span>
+                    <span class="col-sm-3">
+                        @(Html.Kendo().DropDownList().Name("SiteId")
+                            .OptionLabel("All")
+                            .BindTo(ViewBag.AllSiteList as SelectList)
+                            .Events(e => e.Change("onSitenameChange"))
+                            .HtmlAttributes(new { style = "width:100%" })
+                        )
+                    </span>
+                </td>
+            </tr>
+        </table>
+        <div id="Div_AllPaid_His" style="display:none;"><div class="loading_partial"></div></div>
+        @if (db.View_Transaction.Any())
+        {
+            <script>
+                $("#Div_AllPaid_His").show();
+                $("#Div_AllPaid_His").load("_AllTransactions", "HumanResource");
+            </script>
+        }
+    </div>
+</div>
+<div id="loading" style="display:none;"></div>
+<div id="WinForTransactionDetails"></div>
+
+<script>
+    var showCount = 0, totalCount = 0, inCallback = false;
+    var page = 0;
+    var content = '';
+    var siteId = '';
+    $(document).ready(function () {
+        $("#liForHR").addClass('active');
+        $("#liForHRSalary").addClass('sublistActive');
+    });
+    function onSitenameChange() {
+        showCount = 0, totalCount = 0, page = 0;
+        if (this.value() === '') {
+            siteId = this.value();
+            $("#Div_AllPaid_His").empty();
+            $("#Div_AllPaid_His").append('<div class="loading_partial"></div>');
+            $("#Div_AllPaid_His").load("_AllTransactions", "HumanResource");
+        } else {
+            $("#Div_AllPaid_His").empty();
+            $("#Div_AllPaid_His").append('<div class="loading_partial"></div>');
+            siteId = this.value();
+            $("#Div_AllPaid_His").load('@Url.Action("_AllTransactions", "HumanResource")?siteId=' + this.value());
+        }
+    }
+
+    @******************************** OnScroll Bind Table Data *************************@
+    $(window).scroll(function () {
+        var countBytype, result;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/HumanResource/GetTransactions',
+            data: { page: page },
+            success: function (data) {
+                var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+
+                        $("table#tbl_AllPaid_His > tbody").append('<tr>' +((data[i].TranTypeId == 4) ? '<th class="in">' + showCount + '.</th>' : '<th class="out">' + showCount + '.</th>') +'<td><span class="tranDetails" data-id="' + data[i].TranId + '">' + data[i].TranName + '</span></td>' +
+                            '<td>' + data[i].Name + '</td>' +
+                            '<td><img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].Picture + '" />' +
+                            '<a href="/HumanResource/DisplayEmployeeDetails?UserId=' + data[i].UserId + '&isDisplay=true">' + data[i].UserName + '</a></td>' +
+
+                            '<td>' + Currency + ' ' + data[i].Amount + '</td>' +
+                            '<td><img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].InsertUserPic + '" />' +
+                            '<a href="/HumanResource/DisplayEmployeeDetails?UserId=' + data[i].UserId + '&isDisplay=true">' + data[i].InsertUser + '</a></td>' +
+                            '<td>' + data[i].InsertedDateFormate + '</td>' +
+                            '</tr>');
+
+                    }
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+    $("#textForSearch").autocomplete({
+        minLength: 0,
+        source: function (request, response) {
+            content = $.trim(request.term);
+            $.ajax({
+                url: '@Url.Action("SearchTransaction", "HumanResource")',
+                type: "POST",
+                dataType: "json",
+                data: { prefix: content },
+                success: function (data) {
+                    response($.map(data, function (item) {
+                        return { label: item.UserName, value: item.UserName, id: item.UserId };
+                    }))
+                }
+            })
+        },
+        minLength: 1,
+        select: function (event, ui) {
+            isloadFirstTime = true;
+            var selectTextId = ui.item.id;
+            showCount = 0, totalCount = 0, page = 0;
+            $("#Div_AllPaid_His").empty();
+            $("#Div_AllPaid_His").append('<div class="loading_partial"></div>');
+            $("#Div_AllPaid_His").load('@Url.Action("_AllTransactions", "HumanResource")?userId=' + selectTextId);
+        },
+    })
+ .keyup(function () {
+     if ($.trim($("#textForSearch").val()) == "") {
+         showCount = 0, totalCount = 0, page = 0;
+         $("#Div_AllPaid_His").empty();
+         $("#Div_AllPaid_His").append('<div class="loading_partial"></div>');
+         $("#Div_AllPaid_His").load('@Url.Action("_AllTransactions", "HumanResource")');
+     }
+ })
+ .autocomplete("instance")._renderItem = function (ul, item) {
+     var term = $.trim(this.term);
+     var re = new RegExp("(" + term + ")", "gi"),
+                cls = "bold-text",
+                template = "<span class='" + cls + "'>$1</span>",
+                label = item.label.replace(re, template),
+                $li = $("<li/>").appendTo(ul);
+     $("<span>").html(label).appendTo($li);
+     return $li;
+ };
+
+
+
+    //************************ Date Wise Filter ******************************
+
+    $("#btn_today").click(function () {
+        showCount = 0, totalCount = 0, page = 0;
+        $("#Div_AllPaid_His").empty();
+        $("#Div_AllPaid_His").append('<div class="loading_partial"></div>');
+        var sendData = { siteId: siteId, days: 1 };
+        $("#Div_AllPaid_His").load('@Url.Action("_AllTransactions", "HumanResource")', sendData);
+    });
+
+    $("#btn_last_seven").click(function () {
+        showCount = 0, totalCount = 0, page = 0;
+        $("#Div_AllPaid_His").empty();
+        $("#Div_AllPaid_His").append('<div class="loading_partial"></div>');
+        var sendData = { siteId: siteId, days: 7 };
+        $("#Div_AllPaid_His").load('@Url.Action("_AllTransactions", "HumanResource")', sendData);
+    });
+    $("#btn_last_thirty").click(function () {
+        showCount = 0, totalCount = 0, page = 0;
+        $("#Div_AllPaid_His").empty();
+        $("#Div_AllPaid_His").append('<div class="loading_partial"></div>');
+        var sendData = { siteId: siteId, days: 30 };
+        $("#Div_AllPaid_His").load('@Url.Action("_AllTransactions", "HumanResource")', sendData);
+    });
+    $("#btn_All").click(function () {
+        showCount = 0, totalCount = 0, page = 0;
+        $("#Div_AllPaid_His").empty();
+        $("#Div_AllPaid_His").append('<div class="loading_partial"></div>');
+        var sendData = { siteId: siteId};
+        $("#Div_AllPaid_His").load('@Url.Action("_AllTransactions", "HumanResource")', sendData);
+    });
+</script>
+<script>
+    //*******************************  SHOW SALARY PACKAGE DETAILS *****************************************
+    $("#Div_AllPaid_His").on("click", ".tranDetails", function (e) {
+        e.preventDefault();
+        var id = $(this).data("id");
+        $("#WinForTransactionDetails").empty();
+        $("#WinForTransactionDetails").kendoWindow({
+            actions: ["Close"],
+            visible: false,
+            modal: true,
+            position: { top: '50%', left: '50%' },
+            title: 'Salary Paid Transaction Details',
+            width: "50%",
+            minHeight: 100,
+            content: "/HumanResource/_TransDetailsMain?id=" + id
+        });
+        $("#WinForTransactionDetails").data("kendoWindow").center().open();
+    });
+</script>

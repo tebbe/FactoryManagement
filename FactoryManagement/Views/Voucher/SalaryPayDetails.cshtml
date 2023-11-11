@@ -1,0 +1,55 @@
+﻿
+
+@************************************** Created By Tasnim Tuli (Date: 26.02.2017)  ***************************************@
+
+@model FactoryManagement.Models.View_All_Salary_Pay_His
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;">
+    <dl class="dl-horizontal col-sm-offset-2 col-sm-8">
+        <dt>Pay Type</dt>
+        <dd>
+        @if (Model.PayType == 1)
+        {
+            <span>Cash</span>
+        }
+        else if (Model.PayType == 2)
+        {
+            <span>Cheque</span>
+        }
+        else
+        {
+            <span>Account</span>
+        }
+        </dd>
+        <dt>User Name</dt>
+        <dd>
+            <span><img src="~/Images/UserPicture/thumb/@Model.Picture" class="user-photo" /></span>
+            <span>@Model.UserName</span>
+        </dd>
+        <dt>Designation</dt>
+        <dd>
+            <span>@Model.DesignationName</span>
+        </dd>
+
+        <dt>Amount</dt>
+        <dd>
+            <span>@Model.Amount</span>
+        </dd>
+        <dt>Paid By</dt>
+        <dd>
+            <span><img src="~/Images/UserPicture/thumb/@Model.InsertUserPic" class="user-photo" /></span>
+            <span>@Model.InsertUser</span>
+        </dd>
+        <dt>Paid Date</dt>
+        <dd>
+            <span>@Model.InsertedDateFormate</span>
+        </dd>
+    </dl>
+</div>
+
+
+
+

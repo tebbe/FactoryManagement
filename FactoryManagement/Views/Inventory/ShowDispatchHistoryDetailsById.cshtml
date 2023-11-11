@@ -1,0 +1,33 @@
+﻿@model IEnumerable<FactoryManagement.Models.View_Dispacth_Item_Details>
+    @{ int count = 0;}
+<div class="k-edit-form-container col-md-10 col-sm-10 col-xs-10" style="margin-bottom:4%;">
+    <table class="table table-bordered table-condensed">
+        <tr>
+            <th>#</th>
+            <th>Product Name</th>
+            <th>Quantity</th>
+            <th>Return From</th>
+            <th>Return Date</th>
+            <th>Received By</th>
+            <th></th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            count++;
+           // var receivedUserList = db.DispatchedItemAssignUsers.Where(m => m.DispatchItemId == item.Id).ToList();
+            <tr>
+                <td>@count. </td>
+                <td>
+                 @*   @Html.EncodedActionLink(item.ProductName, "StoreProductDetails", "StoreProduct", new { id = item.InventoryId }, null)*@
+                </td>
+                <td>@item.Quantity @item.UnitName</td>
+               @* <td>@item.ReturnFrom</td>*@
+                <td>@item.ReturnDateName</td>
+                <td>@item.ReturnUserName</td>
+                <td>
+                    <span class="btn green btn_Return_item_acpt" data-id="@item.Id" data-name="@item.ProductName" data-toggle="tooltip" title="Receive Item"><i class="fa fa-check"></i></span>
+                </td>
+            </tr>
+        }
+    </table>
+</div>

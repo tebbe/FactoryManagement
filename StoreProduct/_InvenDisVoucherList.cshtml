@@ -1,0 +1,51 @@
+﻿
+@************************* Created By Jerin Jahan (Date : 24.01.2017) ***************************************@
+
+
+@using FactoryManagement.Helpers;
+@model IEnumerable<FactoryManagement.Models.View_Inven_Dis_Voucher_List>
+@{
+    var count = 0;
+}
+
+@if(Model.Count() > 0)
+{
+    <table class="table table-hover table-bordered table-striped table-condensed" id="tbl_inven_vou_lit">
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Dispatched Date</th>
+            <th>Dispatched By</th>
+        </tr>
+        @foreach (var list in Model)
+        {
+            count++;
+            <tr>
+                <th>@count.</th>
+                <td><a href="@Html.EncodedParam("DispatchHistoryDetails", "StoreProduct", new { id = list.Id }, null)" target="_blank" >@list.VoucherName</a></td>
+                <td>@list.DispatchedDateName</td>
+                <td>
+                    @if (list.DispatchedBy > 0)
+                    {
+                        <img class="img-circle" src="/Images/UserPicture/thumb/@list.DispatchedUserPic">
+                        <a href="/HumanResource/DisplayEmployeeDetails?UserId=@list.DispatchedBy&isDisplay=true">@list.DispatchedUserName</a>
+                    }
+                    else
+                    {
+                        <img class="img-circle" src="/Images/UserPicture/thumb/@list.DispatchedUserPic">
+                        <span>@list.DispatchedUserName</span>
+                    }
+                </td>
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <h4>There is no record to display</h4>
+}
+<script>
+    totalCount = '@(ViewBag.Count)';
+    showCount = '@count';
+</script>
+

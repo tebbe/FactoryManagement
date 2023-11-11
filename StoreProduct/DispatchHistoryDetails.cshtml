@@ -1,0 +1,274 @@
+﻿
+
+
+@**************************** Created By Jerin Jahan (Date:04.12.2016) *****************************************@
+@using FactoryManagement.Helpers
+@model FactoryManagement.ModelView.Inventory.StoreItemDispatchedHistoryModelView
+@{
+    ViewBag.Title = "Dispatch Details";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int count = 0;
+    var list = db.View_Dispacth_Item_Details.Where(m => m.DispatchedId == Model.Id).ToList();
+    var lists = (from bs in list
+             group bs by bs.LocationId into g
+             orderby g.Sum(x => x.Quantity)
+             select new FactoryManagement.ModelView.Inventory.Store.View_Dispacth_Item_DetailsModelView
+             {
+                 Id = g.FirstOrDefault().Id,
+                 DispatchedId = g.FirstOrDefault().DispatchedId,
+                 Name = g.FirstOrDefault().Name,
+                 VoucherName = g.FirstOrDefault().VoucherName,
+                 ProductName = g.FirstOrDefault().ProductName,
+                 InventoryId = g.FirstOrDefault().InventoryId,
+                 LocationId = g.FirstOrDefault().LocationId,
+                 Quantity = g.FirstOrDefault().Quantity,
+                 UnitId = g.FirstOrDefault().UnitId.Value,
+                 UnitName = g.FirstOrDefault().UnitName,
+                 ReturnQuantity = g.FirstOrDefault().ReturnQuantity,
+                 OrderId = g.FirstOrDefault().OrderId,
+                 MachineId = g.FirstOrDefault().MachineId,
+                 Site_Unit_Id = g.FirstOrDefault().Site_Unit_Id,
+                 DeptId = g.FirstOrDefault().DeptId,
+                 LineId = g.FirstOrDefault().LineId,
+                 DispatchedDate = g.FirstOrDefault().DispatchedDate.Value,
+                 DispatchedBy = g.FirstOrDefault().DispatchedBy.Value,
+                 DispatchedDateName = g.FirstOrDefault().DispatchedDateName,
+                 DispatchedUserName = g.FirstOrDefault().DispatchedUserName,
+                 DispatchedUserPic = g.FirstOrDefault().DispatchedUserPic,
+                 Total_Quantity = g.Sum(x => x.Quantity),
+                 Total_Return = g.Sum(x => x.ReturnQuantity.Value),
+                 Total_UsedQuan = g.Sum(x => x.UsedQuan.Value)
+             }).OrderBy(o => o.DispatchedDate).ToList();
+}
+<h3 class="page-title">
+    Dispatched
+    <small>Details</small>
+    <a href="@Html.EncodedParam("DispatchHistoryDetailsPrint","StoreProduct",new {id=Model.Id },null)" target="_blank" style="float:right;cursor:pointer;">
+        <small style="color:#3C8DBC"> <i class="fa fa-print"></i> Print </small>
+    </a>
+</h3>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/StoreProduct/InvenDisVoucherList">All Dispatch History</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="@Html.EncodedParam("DispatchHistoryDetails","StoreProduct",new {id=Model.Id },null)">Dispatch Details</a>
+        </li>
+    </ul>
+</div>
+<div class="portlet light bordered">
+    <div class="portlet-title">
+        <div class="caption font-green">
+            <i class="fa fa-info-circle font-green"></i>
+            <span class="caption-subject bold uppercase">Dispatch Details</span>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-horizontal">
+            <div class="form-body">
+                <dl class="dl-horizontal">
+                    <dt>Name :</dt>
+                    <dd>@Model.VoucherName</dd>
+
+                    <dt>Dispatched Date :</dt>
+                    <dd>@Convert.ToDateTime(Model.DispatchedDate).ToString("MMM dd, yyyy hh:mm:tt")</dd>
+
+                    <dt>Dispatched By :</dt>
+                    <dd>
+                        <a href="@Html.EncodedParam("DisplayEmployeeDetails","HumanResource",new {UserId=Model.DispatchedBy,isDisplay=true },null)">
+                            <img class="img-circle" src="/Images/UserPicture/thumb/@Model.DispatchUserPic">
+                            @Model.DispatchUserName
+                        </a>
+                    </dd>
+
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="portlet box green">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-list-ul"></i>Item Lists
+        </div>
+    </div>
+    <div class="portlet-body">
+        <table class="table table-hover table-bordered table-striped table-condensed" id="tbl_all_item">
+            <tr>
+                <th width="3%">#</th>
+                <th width="35%">Name</th>
+                <th width="10%">Dis Qty</th>
+                <th width="10%">Return Qty</th>
+                <th width="15%">Total Used Qty</th>
+                <th width="10%">Available Qty</th>
+            </tr>
+            @foreach (var m in lists)
+            {
+                string impname = m.ProductName;
+                count++;
+                var receivedUserList = db.DispatchedItemAssignUsers.Where(d => d.DispatchItemId == m.Id).ToList();
+                var allUser = (from d in db.DispatchedItemAssignUsers
+                               join u in db.View_UserLists on d.UserId equals u.UserId
+                               where d.DispatchId == Model.Id && (d.MachineId == m.MachineId || d.OrderId == m.OrderId)
+                               select new
+                               {
+                                   UserId = d.UserId,
+                                   Username = db.View_UserLists.Where(o => o.UserId == d.UserId).Select(o => o.UserName).FirstOrDefault(),
+                                   Userpic = db.View_UserLists.Where(o => o.UserId == d.UserId).Select(o => o.Picture).FirstOrDefault()
+                               }).ToList();
+                if (db.Inventory_Item_Location.Where(i => i.LocationId == m.LocationId && i.ImportId > 0).Any())
+                {
+                    var impId = db.Inventory_Item_Location.Where(i => i.LocationId == m.LocationId).Select(i=> i.ImportId).FirstOrDefault();
+                    impname =impname+" ( L/C : "+ db.Import_History.Where(imp=> imp.ImportId == impId).Select(imp=> imp.L_C).FirstOrDefault()+" )";
+                }
+                double avail_qty = m.Total_Quantity - Convert.ToDouble(m.Total_Return) - Convert.ToDouble(m.Total_UsedQuan);
+                <tr>
+                    <td>@count.</td>
+                    <td><a href="@Html.EncodedParam("StoreProductWithLCDetails", "StoreProduct", new { id = m.LocationId }, null)"> @impname</a></td>
+                    <td>@m.Total_Quantity @m.UnitName</td>
+                    <td>
+                        @if (m.Total_Return > 0)
+                        {
+                            <span class="itemReQuan" style="color:#428bca;cursor:pointer;" data-invenid="@m.LocationId" data-proname="@impname">
+                                @m.Total_Return @m.UnitName
+                            </span>
+                        }
+                        else
+                        {
+                            <span>@m.Total_Return @m.UnitName</span>
+                        }
+                    </td>
+                    <td>
+                        @if (m.Total_UsedQuan > 0)
+                        {
+                            <span class="" style="color:#428bca;cursor:pointer;" data-invenid="@m.LocationId" data-proname="@m.ProductName">
+                                @m.Total_UsedQuan @m.UnitName
+                            </span>
+                        }
+                        else
+                        {
+                            <span>@m.Total_UsedQuan @m.UnitName</span>
+                        }
+                    </td>
+                    <td><span class="itemQuan" style="color:#428bca;cursor:pointer;" data-invenid="@m.LocationId" data-proname="@impname">@avail_qty @m.UnitName</span></td>
+                </tr>
+            }
+        </table>
+    </div>
+</div>
+
+<div id="win_item_quan_info"></div>
+<div id="win_item_requan_info"></div>
+<div id="win_item_quan_edit"></div>
+
+<script id="temp_win_site_edit" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">#=message#</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_edit_quan_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_edit_quan_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    $("#liForInventory").addClass('active');
+    $("#liForDisVouHis").addClass('sublistActive');
+
+
+    $(document).on("click", "#btn_page_back", function () {
+        window.history.back();
+    });
+</script>
+<script>
+    //*******************************  SHOW INVENTORY ITEM DISPATCH QUANTITY DETIALS *****************************************
+    $("#tbl_all_item").on("click", ".itemQuan", function (e) {
+        e.preventDefault();
+        var invenid = $(this).data("invenid");
+        var proname = $(this).data("proname");
+        $("#win_item_quan_info").empty();
+        $("#win_item_quan_info").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            title: proname + ' Dispatch Details',
+            width: '80%',
+            height: '50%'
+        });
+        $("#win_item_quan_info").html('<div class="win_loading_half"></div>');
+        var win_item_quan_info = $("#win_item_quan_info").data("kendoWindow");
+        win_item_quan_info.refresh({ url: "/StoreProduct/ShowInvenDispacthQuanDetails?invenid=" + invenid + '&DisId=' + '@(Model.Id)' });
+        win_item_quan_info.center().open();
+    });
+
+    $("#tbl_all_item").on("click", ".itemReQuan", function (e) {
+        e.preventDefault();
+        var invenid = $(this).data("invenid");
+        var proname = $(this).data("proname");
+        $("#win_item_requan_info").empty();
+        $("#win_item_requan_info").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '70%',
+            position: { top: '20%' },
+            title: proname + ' Dispatch Details'
+        });
+        $("#win_item_requan_info").html('<div class="win_loading_half"></div>');
+        var win_item_requan_info = $("#win_item_requan_info").data("kendoWindow");
+        win_item_requan_info.refresh({ url: "/StoreProduct/ShowInvenDispacthReQuanDetails?invenid=" + invenid + '&DisId=' + '@(Model.Id)' });
+        win_item_requan_info.center().open();
+    });
+
+    //******************************* QUANTITY EDIT FUNCTION *****************************************
+    $("#win_item_quan_info").on("click", ".btn_item_quan_edit", function (e) {
+        e.preventDefault();
+        var id = $(this).data("id");
+        var proname = $(this).data("proname");
+
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        message = "Are you sure you want to edit this quantity?";
+        var template = kendo.template($("#temp_win_site_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        kendoWindow.find("#btn_edit_quan_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_edit_quan_ok").click(function () {
+            editQuan(id, proname);
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+    });
+    function editQuan(id, proname) {
+        $("#win_item_quan_edit").empty();
+        $("#win_item_quan_edit").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            position: { top: '20%' },
+            title: proname + ' Dispatch Quantity Edit'
+        });
+        $("#win_item_quan_edit").html('<div class="win_loading_half"></div>');
+        var win_item_quan_edit = $("#win_item_quan_edit").data("kendoWindow");
+        win_item_quan_edit.refresh({ url: "/StoreProduct/DispatchItemQuanEditMain?id=" + id });
+        win_item_quan_edit.center().open();
+    }
+</script>

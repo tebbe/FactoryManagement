@@ -1,0 +1,58 @@
+﻿
+
+
+@************************ Created By Jerin Jahan Date(24.11.2016) *******************************@
+@model IEnumerable<FactoryManagement.Models.BusinessOrderProductList>
+@{
+    int count = 1;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+
+@if (Model.Count() > 0)
+{
+    <style>
+        #tbl_Rsv_Deatails th, #tbl_Rsv_Deatails td {
+            border: none !important;
+        }
+    </style>
+    <table class="table" id="tbl_Rsv_Deatails">
+        <tr>
+            <th width="3%">#</th>
+            <th width="20%">Order Name</th>
+            <th width="10%">Quantity</th>
+            <th width="25%">Received Quntity</th>
+            <th width="20%">Assigned Quantity</th>
+        </tr>
+        @foreach (var list in Model)
+        {
+            string ordername = db.Acquisition_List.Where(m => m.AcquisitionOrderId == list.AcquisitionOrderId).Select(m => m.Name).FirstOrDefault();
+            var proDetail = db.View_All_InventoryList.Where(m => m.InventoryId == list.ProductId).FirstOrDefault();
+            <tr>
+                <th>@count.</th>
+                <td>@ordername</td>
+                <td>@list.Quantity @proDetail.UnitName</td>
+                <td>
+                    @*@if (list.CreatedBy == 1)
+                        {
+                            <img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" />
+                            <span>Super Admin</span>
+                        }
+                        else
+                        {
+                            var userName = db.View_UserLists.Where(m => m.UserId == list.CreatedBy).FirstOrDefault();
+                            <a href="/HumanResource/DisplayEmployeeDetails?UserId=@list.CreatedBy&userType=1">
+                                <img src="~/Images/UserPicture/thumb/@userName.Picture" class="user-photo" /> @userName.UserName
+                            </a>
+                        }*@
+                </td>
+                <td></td>
+            </tr>
+            count++;
+        }
+    </table>
+}
+else
+{
+    <center><label>There is no record.</label></center>
+}
+

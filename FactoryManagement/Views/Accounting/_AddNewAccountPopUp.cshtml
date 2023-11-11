@@ -1,0 +1,33 @@
+﻿
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="divForNewBankAccount">
+    <div id="div_add_new_account"><div class="win_loading_half"></div></div>
+    <div class="k-edit-buttons k-state-default">
+        @if (ViewBag.BankAccountId > 0)
+        {
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnAddAccount"><span class="k-icon k-update"></span>Update</button>
+
+        }
+        else
+        {
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnAddAccount"><span class="k-icon k-update"></span>Create</button>
+
+        }
+        <button type="button" class="k-button k-button-icontext k-grid-update" id="btnRefreshAccount"><span class="k-icon k-i-refresh"></span>Refresh</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnCancelAccount"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $("#div_add_new_account").load('@Url.Action("_AddNewAccount", "Accounting")?BranchId=' + '@ViewBag.BranchId' + '&BankAccountId=' + '@(ViewBag.BankAccountId)');
+    });
+    $("#btnRefreshAccount").click(function () {
+        $("#div_add_new_account").empty();
+        $("#div_add_new_account").append('<div class="win_loading_half"></div>');
+        $("#div_add_new_account").show();
+        $("#div_add_new_account").load('@Url.Action("_AddNewAccount", "Accounting")?BranchId=' + '@(ViewBag.BranchId)' + '&BankAccountId=' + '@(ViewBag.BankAccountId)');
+    })
+    $("#btnAddAccountCancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

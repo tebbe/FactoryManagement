@@ -1,0 +1,31 @@
+﻿
+
+
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;">
+    <div id="DivForSiteDetails"></div>
+ 
+    <div class="k-edit-buttons k-state-default">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnSiteInfoUpdate"><span class="k-icon k-update"></span>Update</button>
+        <button type="reset" class="k-button k-button-icontext k-grid-update" id="btnSiteDetailsRefresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnSiteUpdateCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        $("#DivForSiteDetails").append('<div class="loading_30"></div>');
+        $("#DivForSiteDetails").show();
+        $("#DivForSiteDetails").load('@Url.Action("_ShowSiteDetails", "Configuration")?siteId=' + '@ViewBag.SiteId' + "&view=win" );
+    });
+    $("#btnSiteDetailsRefresh").click(function () {
+        $("#DivForSiteDetails").empty();
+        $("#DivForSiteDetails").append('<div class="loading_30"></div>');
+        $("#DivForSiteDetails").show();
+        $("#DivForSiteDetails").load('@Url.Action("_ShowSiteDetails", "Configuration")?siteId=' + '@ViewBag.SiteId' + "&view=win");
+    });
+    $("#btnDeptCreateCancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

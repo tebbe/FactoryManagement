@@ -1,0 +1,94 @@
+﻿
+@model FactoryManagement.ModelView.HR.UserInformationModelView
+
+<style>
+     #DivForOrginalImg {
+            background-color: #d9d8d8;
+            margin-bottom: 20px;
+            position: relative;
+            max-width:100%;
+            height:auto;
+            max-height:500px!important;
+        }  
+     #DivForOrginalImg img {
+                margin: auto;
+                max-width:100%; 
+                height:auto;
+                display: block;
+            }
+     #DivForCropImg label {
+                display: block !important;
+            } 
+     #DivForCropImg img {
+                margin: auto;
+                max-width: 100% !important;
+                height: auto !important;
+                min-height: 50px !important;
+                max-height: 150px !important;
+                display: block;
+                padding-top: 6em;
+                padding-bottom: 6em;
+            }
+     .k-edit-buttons {
+            padding: 1.2em !important;
+        }
+</style>
+
+<input type="hidden" id="x1" value="" />
+<input type="hidden" id="y1" value="" />
+<input type="hidden" id="x2" value="" />
+<input type="hidden" id="y2" value="" />
+<input type="hidden" id="w" value="" />
+<input type="hidden" id="h" value="" />
+
+<div class="k-edit-form-container col-md-11 col-sm-11 col-xs-12" style="margin-bottom:4%;" id="DivForImgeChange">
+    <div class="col-xs-6" style="border-right:2px solid #d9d8d8;padding:30px;">
+        <div id="DivForOrginalImg">
+            <img src="~/Images/UserPicture/Original/@Model.Picture" id="imgOrginal" />
+        </div>
+        <p>Drag frame to adjust picture</p>
+        <p><a href="#">Upload a different picture</a></p>
+    </div>
+    <div class="col-xs-4" id="DivForCropImg" >
+         <div>
+            <label>Your profile portrait</label>
+            <img src="~/Images/UserPicture/thumb/@Model.Picture" />
+        </div>
+        <p>Must be an actual picture of you!Logos,clip art,group picture and digitally-altered images are not allowed.</p>
+        <div class="k-edit-buttons k-state-default">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnPicUpload"><span class="k-icon k-update"></span>Upload</button>
+            <button type="reset" class="k-button k-button-icontext k-grid-cancel" id="btnPicUploadCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>   
+</div>
+
+<link href="~/Content/imgareaselect/jquery.imgareaselect-0.9.10/css/imgareaselect-animated.css" rel="stylesheet" />
+<link href="~/Content/imgareaselect/jquery.imgareaselect-0.9.10/css/imgareaselect-default.css" rel="stylesheet" />
+<script src="~/Content/imgareaselect/jquery.imgareaselect-0.9.10/scripts/jquery.imgareaselect.pack.js"></script>
+<script>
+    $('#imgOrginal').imgAreaSelect({
+        x1: 30, y1: 0, x2: 229, y2: 206,
+        handles: true,
+        onSelectEnd: function (img, selection) {
+            if (!selection.width || !selection.height) {
+                return;
+            }
+            $('#x1').val(selection.x1);
+            $('#y1').val(selection.y1);
+            $('#x2').val(selection.x2);
+            $('#y2').val(selection.y2);
+            $('#w').val(selection.width);
+            $('#h').val(selection.height);
+        }
+    });
+
+    $("#btnPicUpload").click(function () {
+        var x1=$('#x1').val();
+        var y1 = $('#y1').val();
+        var x2 = $('#x2').val();
+        var y2 = $('#y2').val();
+        var w = $('#w').val();
+        var h = $('#h').val();
+        alert(x1 + " : " + y1 + " : " + x2 + " :" + y2 + " : " + w + " : " + h);
+    });
+</script>

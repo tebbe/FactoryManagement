@@ -1,0 +1,79 @@
+﻿@************************************ Created By Jerin Jahan (Date: 02.02.2017) ****************************************************************@
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10">
+    <div id="div_acc_name_edit"><div class="partial_loading_half"></div></div>
+    <script>
+        $("#div_acc_name_edit").load('@Url.Action("_EditAccountNameWin", "Accounting")?AccId=' + '@(ViewBag.AccId)');
+    </script>
+    <div class="col-sm-11 col-xs-11" style="float:right">
+        <div class="k-edit-buttons k-state-default">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_acc_name_updated"><span class="k-icon k-update"></span>Update</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_acc_name_Refresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_acc_name_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var AccId = '@(ViewBag.AccId)';
+    $("#btn_acc_name_cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#btn_acc_name_Refresh").click(function () {
+        $("#div_acc_name_edit").empty();
+        $("#div_acc_name_edit").append('<div class="tiny_loading"></div>');
+        $("#div_acc_name_edit").load('@Url.Action("_EditAccountNameWin", "Accounting")?AccId=' + '@(ViewBag.AccId)');
+    });
+
+    var validation = $("#div_acc_name_edit").kendoValidator({
+        rules: {
+            HolidayPackName: function (input) {
+                if (input.is("[name=AccountName]") && $("#AccountName").val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        },
+        messages: {
+            HolidayPackName: "Please enter account name"
+        }
+    }).data("kendoValidator");
+
+
+    //************************************* Holiday Package  Update Function ************************************************
+    $("#btn_acc_name_updated").click(function () {
+        if (validation.validate()) {
+            var sendData = {
+                AccId: AccId,
+                AccountName: $("#AccountName").val(),
+                UpdatedBy: userId,
+            };
+            $.ajax({
+                url: '@Url.Action("UpdateAccName", "Accounting")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    $("#btn_acc_name_updated").closest(".k-window-content").data("kendoWindow").close();
+                    if (data == "Success") {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        notification.show({ message: "Account name '" + sendData.AccountName + "' has been successfully updated.", showTime: startTime() }, "upload-success");
+
+                        location.reload();
+                    }
+                    if (data == "Error") {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        notification.show({ message: "Account name '" + sendData.AccountName + "' update was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+
+                },
+                error: function (err) {
+                    $("#btn_acc_name_updated").closest(".k-window-content").data("kendoWindow").close();
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+</script>

@@ -1,0 +1,23 @@
+﻿
+@model FactoryManagement.Models.View_All_AcquisitionList
+
+@{
+    ViewBag.Title = "Acquisition Details";
+}
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;" id="Div_Salary_Dup_Name">
+    <div class="loading" id="divForLoading"></div>
+    <div class="col-md-6 col-sm-6 col-xs-12" id="DivAcquisitionBasicInfo">
+        <div class="loading_partial"></div>
+    </div>
+    <div class="col-md-5 col-sm-5 col-xs-12" id="DivAcquisitionImages">
+        <div class="loading_partial"></div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function(){
+        $("#DivAcquisitionBasicInfo").load('@Url.Action("_AcquisitionBasicInfo", "Acquisition")?AcqId='+@Model.AcquisitionId);
+        $("#DivAcquisitionImages").load('@Url.Action("_AcquisitionImages", "Acquisition")?AcqId='+@Model.AcquisitionId);
+        $("#divForLoading").hide();
+    });
+</script>

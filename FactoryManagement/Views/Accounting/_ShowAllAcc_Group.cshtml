@@ -1,0 +1,95 @@
+﻿@******************************** Created By Jerin Jahan (Date:25.10.2016) *********************************@
+
+@model IEnumerable<FactoryManagement.Models.AccountName>
+@using FactoryManagement.Helpers
+@{
+    var count = 1;
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+
+<table class="table table-bordered">
+    <tbody>
+        <tr>
+            <th width="3%">#</th>
+            <th width="10%">Name</th>
+            <th width="10%">Type</th>
+            <th width="10%">Balance</th>
+            <th width="15%">Created By</th>
+            <th width="14%">Created Date</th>
+            <th width="15%">Last Updated By</th>
+            <th width="13%">Last Updated Date</th>
+            <th width="10%"></th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <th scope="row">@count . </th>
+                <td><span class="btn_acc_grp_info" data-id="@item.AccId" data-name="@item.AccountName1" style="cursor:pointer;color: #428bca;"> @item.AccountName1</span> </td>  @*added zubayed 8/1/17*@
+                <td>
+                    @if (item.Acc_CashType == 1)
+                    { <span>Payable</span>}
+                    else if (item.Acc_CashType == 2)
+                    {<span>Receivable</span>}
+                    else
+                    {<span>Payable & Receivable</span> }
+                </td>
+                <td>@currency @item.Balance</td>
+                <td>
+                    @if (item.CreatedBy > 0)
+                    {
+                        FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+                        var user = db.View_UserLists.Where(m => m.UserType == 1 && m.UserId == item.CreatedBy).FirstOrDefault();
+                        <img src="~/Images/UserPicture/thumb/@user.Picture" class="user-photo" />
+                        <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = item.CreatedBy, isDisplay = true }, null)">@user.UserName</a>
+
+                    }
+                    else
+                    {
+                        <img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" /><span>Super Admin</span>
+                    }
+                </td>
+                <td>@Convert.ToDateTime(item.CreatedDate).ToString("MMM dd,yyyy hh:mm tt")</td>
+                <td>
+                    @if (item.UpdatedBy != null)
+                    {
+                        if (item.UpdatedBy > 0)
+                        {
+                            FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+                            var user = db.View_UserLists.Where(m => m.UserType == 1 && m.UserId == item.UpdatedBy).FirstOrDefault();
+                            <img src="~/Images/UserPicture/thumb/@user.Picture" class="user-photo" />
+                            <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = item.UpdatedBy, isDisplay = true }, null)">@user.UserName</a>
+                            
+        }
+        else
+        {
+        <img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" /><span>Super Admin</span>
+        }
+        }
+        else
+        {
+        <span>Not yet updated</span>
+        }
+</td>
+                <td>
+                    @if (item.UpdatedBy != null)
+                    {
+                        <span>@Convert.ToDateTime(item.UpdatedDate).ToString("MMM dd,yyyy hh:mm tt")</span>
+                    }
+                    else
+                    {
+                        <span>Not yet updated</span>
+                    }
+                </td>
+                <td>
+                    @*<span class="btn btn-success btn_acc_grp_edit" data-id="@item.AccId" data-name="@item.AccountName1"><i class="fa fa-pencil"></i></span>*@
+                    <span class="btn blue btn_acc_grp_details" data-id="@item.AccId" data-name="@item.AccountName1" data-toggle="tooltip" data-original-title="Account Details"><i class="fa fa-info-circle"></i></span>
+                    <span data-id="@item.AccId" data-name="@item.AccountName1" class="btn btn-danger btn_acc_grp_delete" data-toggle="tooltip" data-original-title="Delete Account"><i class="fa fa-trash"></i></span>
+                </td>
+            </tr>
+            count++;
+        }
+    </tbody>
+</table>
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+</script>

@@ -1,0 +1,99 @@
+﻿@using FactoryManagement.Helpers;
+@model IEnumerable<FactoryManagement.Models.View_ProList_WithLC>
+@{
+    int count = 0;
+    int? tab = ViewBag.tab ?? 1;
+}
+@if (Model.Count() > 0)
+{
+    if (ViewBag.page == 2)
+    {
+        <table class="table table-bordered table-striped table-condensed table-hover" id="invenlist_table@(tab)">
+            <tr>
+                <th width="10%">SL.</th>
+                <th width="40%">@Html.DisplayNameFor(model => model.ProductName)</th>
+                <th width="20%">Type</th>
+                @if (tab != 3)
+                {
+                    <th width="30%"></th>
+                }
+            </tr>
+            @foreach (var item in Model)
+            {
+                count++;
+                <tr>
+                    <td>@count .</td>
+                    <td>@Html.DisplayFor(modelItem => item.ProductName) @(tab == 3 ? "(L/C : " + item.LC + ")" : "")</td>
+                    <td>@item.ProductType</td>
+                    @if (tab != 3)
+                    {
+                        <td>
+                            <a href="@Html.EncodedParam("StoreProductDetails", "StoreProduct", new { id = item.LocationId }, null)">
+                                <span type="button" class="btn blue" data-toggle="tooltip" title="Show Details" data-container="body"><i class="fa fa-list-ul"></i></span>
+                            </a>
+                            <span class="btn green btn-sm btn_import_pro" data-id="@item.InventoryId" data-toggle="tooltip" title="Import Product" data-placement="top" data-container="body"><i class="fa fa-reply-all"></i></span>
+                            <span class="btn blue btn-sm btn_import_his" data-id="@item.InventoryId" data-toggle="tooltip" title="Import History" data-placement="top" data-container="body"><i class="fa fa-history"></i></span>
+                            <span class="btn purple btn-sm btn_LC_his" data-id="@item.InventoryId" data-toggle="tooltip" title="LC Details" data-placement="top" data-container="body"><i class="fa fa-jpy"></i></span>
+                            <span class="btn yellow btn-sm btn_dis_his"  data-id="@item.InventoryId" data-toggle="tooltip" title="Dispatched History" data-placement="top" data-container="body"><i class="fa fa-outdent"></i></span>
+                            <span class="btn grey-cascade btn-sm btn_route_his" data-id="@item.InventoryId" data-toggle="tooltip" title="Routed History" data-placement="top" data-container="body"><i class="fa fa-random"></i></span>
+                        </td>
+                    }
+                </tr>
+            }
+        </table>
+    }
+    else
+    {
+        <table class="table  table-bordered table-condensed table-responsive" id="invenlist_table">
+            <tr>
+                <th width="10%">SL.</th>
+                <th width="90%">
+                    <input type="checkbox" id="checkAll" />  @Html.DisplayNameFor(model => model.ProductName)
+                </th>
+            </tr>
+            @foreach (var item in Model)
+            {
+                count++;
+                <tr>
+                    <td>@count .</td>
+                    <td>
+                        <span><input type="checkbox" data-invenid="@item.InventoryId" class="chkInven" /></span>
+                        @Html.DisplayFor(modelItem => item.ProductName)
+                    </td>
+                </tr>
+            }
+        </table>
+    }
+    <script>
+        $(document).ready(function () {
+            var allChecked = true;
+            $(".chkInven").each(function () {
+                var invenId = $(this).data("invenid");
+                for (var i = 0; i < AllId.length; i++) {
+                    if (AllId[i] == invenId) {
+                        $(this).prop("checked", true);
+                    }
+                }
+                if (!$(this).is(":checked")) {
+                    allChecked = false;
+                }
+            });
+            if (allChecked) {
+                $("#checkAll").prop('checked', true);
+            }
+        });
+    </script>
+}
+else
+{
+    <h4>There is no record to display</h4>
+}
+
+<script>
+    totalCount = '@ViewBag.totalCount';
+    showCount = '@count';
+
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>

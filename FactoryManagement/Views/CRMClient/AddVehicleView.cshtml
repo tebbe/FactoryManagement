@@ -1,0 +1,16 @@
+﻿@model FactoryManagement.ModelView.CRM.Client_Vehicle_ListsModelView
+<div class="k-edit-form-container">
+ <div id="addVehicelViewLoad"></div>
+ <div class="k-edit-buttons k-state-default">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnAddVehicle"><span class="k-icon k-update"></span>Save</button>
+        <button type="button" class="k-button k-button-icontext k-grid-update" id="btnRefreshAddVehicle"><span class="k-icon k-update"></span>Refresh</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnAddVehicleCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+  </div>
+</div>
+<script>
+    var vClientId = '@Model.ClientId';
+    $(document).ready(function () {
+        $("#addVehicelViewLoad").empty();
+        $("#addVehicelViewLoad").load('@Url.Action("_AddNewVehicle", "CRMClient")?ClientId=' + vClientId);
+    });  
+</script>

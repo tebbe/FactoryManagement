@@ -1,0 +1,267 @@
+﻿@************************************** Created By Tasnim Tuli (Date:18.08.2016)  ***************************************@
+
+    @model FactoryManagement.ModelView.Accounting.BankAccountListModelView
+
+    @*@Html.HiddenFor(m => m.BankAccountId)*@
+    @Html.HiddenFor(m => m.BranchId)
+    @Html.HiddenFor(m => m.Acc_Type)
+
+<div class="editor-label"><label for="Acc_Type">Account Type</label></div>
+<div class="editor-field">
+    <div>
+        <input data-val="true" data-val-required="Please Select One Type" id="debit" name="AccType" type="radio" value="1" class="k-valid"> Debit
+        <input data-val="true" data-val-required="Please Select One Type" id="credit" name="AccType" type="radio" value="2" class="k valid"> Credit
+    </div>
+    <div>
+        @Html.ValidationMessageFor(model => model.Acc_Type, "", new { @class = "text-danger" })
+    </div>
+</div>
+<div class="editor-label"><label for="AccountName">Account Name</label></div>
+<div class="editor-field">
+    @Html.EditorFor(model => model.AccountName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+    @Html.ValidationMessageFor(model => model.AccountName, "", new { @class = "text-danger" })
+</div>
+<div class="editor-label"><label for="AccountNumber">Account Number</label></div>
+<div class="editor-field">
+    @Html.EditorFor(model => model.AccountNumber, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+    @Html.ValidationMessageFor(model => model.AccountNumber, "", new { @class = "text-danger" })
+</div>
+<div class="editor-label" id="div_for_cash_balance" style="display:none;"><label for="Balance">Cash Balance</label></div>
+<div class="editor-label" id="div_for_cashCredit_balance"><label for="Balance">Credit Balance</label></div>
+<div class="editor-field">
+    <input class="form-control k-textbox "
+           id="Balance" name="Balance" type="text"
+           min="1"
+           value=""
+           data-val-regex="Invalid. Use only digits. After decimal point use only two digits"
+           data-val-regex-pattern="\d+(\.\d{1,2})?"
+           data-val-length="Invalid number"
+           data-val-length-max="13"
+           data-val-required="Please enter balance">
+    <span class="field-validation-valid text-danger" data-valmsg-for="Balance" data-valmsg-replace="true" style="display: none;"></span>
+</div>
+<div id="div_for_credit_balance" style="display:none;">
+    <div class="editor-label"><label for="TotalCreditLimit">Total Credit Limit</label></div>
+    <div class="editor-field">
+        <input class="form-control k-textbox "
+               id="TotalCreditLimit" name="TotalCreditLimit" type="text"
+               min="1"
+               value=""
+               data-val-regex="Invalid. Use only digits. After decimal point use only two digits"
+               data-val-regex-pattern="\d+(\.\d{1,2})?"
+               data-val-length="Invalid number"
+               data-val-length-max="13">
+        <span class="field-validation-valid text-danger" data-valmsg-for="TotalCreditLimit" data-valmsg-replace="true" style="display: none;"></span>
+    </div>
+</div>
+<div class="editor-label"><label for="NoOfTransaction">No Of Transaction</label></div>
+<div class="editor-field">
+    <input class="form-control k-textbox "
+           id="NoOfTransaction" name="NoOfTransaction" type="text"
+           min="1"
+           value=""
+           data-val-regex="Invalid. Use only digits. After decimal point use only two digits"
+           data-val-regex-pattern="\d+(\.\d{1,2})?"
+           data-val-length="Invalid number"
+           data-val-length-max="13"
+           data-val-required="Please enter no of transaction">
+    <span class="field-validation-valid text-danger" data-valmsg-for="NoOfTransaction" data-valmsg-replace="true" style="display: none;"></span>
+</div>
+<div class="editor-label"><label for="HighestAmntPerTansaction">Highest Amount Per Tansaction</label></div>
+<div class="editor-field">
+    <input class="form-control k-textbox "
+           id="HighestAmntPerTansaction" name="HighestAmntPerTansaction" type="text"
+           min="1"
+           value=""
+           data-val-regex="Invalid. Use only digits. After decimal point use only two digits"
+           data-val-regex-pattern="\d+(\.\d{1,2})?"
+           data-val-length="Invalid number"
+           data-val-length-max="13"
+           data-val-required="Please enter highest amount per transaction">
+    <span class="field-validation-valid text-danger" data-valmsg-for="HighestAmntPerTansaction" data-valmsg-replace="true" style="display: none;"></span>
+</div>
+<div class="editor-label"><label for="Description">Description</label></div>
+<div class="editor-field">
+    @Html.TextAreaFor(model => model.Description, new { cols = 60, rows = 6, @class = "form-control k-textbox" })
+    @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+</div>
+    <script>
+    var str=0;
+    $(document).ready(function () {
+        if ('@Model.BankAccountId' > 0) {
+            $("#TotalCreditLimit").val('@Model.TotalCreditLimit');
+            $("#NoOfTransaction").val('@Model.NoOfTransaction');
+            $("#HighestAmntPerTansaction").val('@Model.HighestAmntPerTansaction');
+            $("#Balance").val('@Model.Balance');
+            if('@Model.Acc_Type' == 1){
+                $("#debit").prop("checked", true);
+                $("#div_for_cash_balance").show();
+                $("#div_for_credit_balance").hide();
+                $("#div_for_cashCredit_balance").hide();
+                $("#Acc_Type").val(1);
+            }else{
+                $("#credit").prop("checked", true);
+                $("#div_for_cash_balance").hide();
+                $("#div_for_credit_balance").show();
+                $("#div_for_cashCredit_balance").show();
+                $("#Acc_Type").val(2);
+            }
+            $("#Acc_Type").val('@Model.Acc_Type');
+        }
+        else {
+            $("#TotalCreditLimit").val('');
+            $("#NoOfTransaction").val('');
+            $("#HighestAmntPerTansaction").val('');
+            $("#Balance").val('');
+        }
+    });
+    $('input:radio[name="AccType"]').change(function () {
+        str = this.value;
+        $("#Acc_Type").val(str);
+        if(str === "1"){
+            $("#div_for_cash_balance").show();
+            $("#div_for_credit_balance").hide();
+            $("#div_for_cashCredit_balance").hide();
+            $("#TotalCreditLimit").val('');
+            $("#Acc_Type").val(1);
+
+        }else{
+            $("#div_for_cash_balance").hide();
+            $("#div_for_credit_balance").show();
+            $("#div_for_cashCredit_balance").show();
+            $("#Acc_Type").val(2);
+        }
+    });
+    var validation = $("#div_add_new_account").kendoValidator({
+        rules: {
+            TotalCreditLimit: function (input) {
+                if (input.is("[name=TotalCreditLimit]") && str == "2" && (input.val() === "0" || input.val() === "")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            AccountType:function(input){
+                if (input.is("[name=Acc_Type]") && input.val() === ""  ) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        },
+        messages: {
+            TotalCreditLimit: "Please enter credit limit",
+            AccountType:"Please select  account type"
+        }
+    }).data("kendoValidator");
+    $("#btnAddAccount").click(function () {
+        if (validation.validate()) {
+            var sendData = { BankAccountId: '@Model.BankAccountId',
+                Acc_Type:$("#Acc_Type").val(),
+                AccountName: $("#AccountName").val(),
+                AccountNumber : $("#AccountNumber").val(),
+                CreatedBy: userId,
+                BranchId: '@Model.BranchId',
+                Balance: $("#Balance").val(),
+                TotalCreditLimit: $("#TotalCreditLimit").val(),
+                NoOfTransaction: $("#NoOfTransaction").val(),
+                HighestAmntPerTansaction: $("#HighestAmntPerTansaction").val(),
+                Description: $("#Description").val(),
+            };
+            $.ajax({
+                url: '@Url.Action("AddNewAccount", "Accounting")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    if (data != null) {
+                        if (data === 'Success') {
+                            if(@Model.BankAccountId > 0){
+                                notification.show({ message: "Account '" + sendData.AccountName + "' has been successfully updated.", showTime: startTime() }, "upload-success");
+                            }else{
+                                notification.show({ message: "Account '" + sendData.AccountName + "' has been successfully created.", showTime: startTime() }, "upload-success");
+                            }
+                        }
+                        else {
+                            if(@Model.BankAccountId > 0){
+                                notification.show({ message: "Account '" + sendData.AccountName + "' update was unsuccessful.", showTime: startTime() }, "upload-error");
+                            }else{
+                                notification.show({ message: "Account '" + sendData.AccountName + "' creation was unsuccessful.", showTime: startTime() }, "upload-error");
+                            }
+                        }
+                        $("#DivForAccount").load('@Url.Action("AccountList", "Accounting")?Id=' + '@(Model.BranchId)' + '&forDisplay=0');
+                        $("#DivForAccount").show();
+                        $("#btnAddAccount").closest(".k-window-content").data("kendoWindow").close();
+                    }
+                },
+                error: function (error) {
+                    notification.show({
+                        message: "Upload unsuccessful", showTime: startTime(),
+                    }, "upload-error");
+                }
+            });
+        }
+    });
+    $("#btnCancelAccount").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+
+    </script>
+    <style>
+        .image-uploader {
+            width: 100%;
+            height: 260px;
+            display: block;
+            text-align: center;
+        }
+
+        .imgPreview {
+            background-color: #e8e4d0;
+            margin-bottom: 20px;
+            position: relative;
+            width: 100%;
+            height: 260px;
+            border: 1px solid #808080;
+            display: none;
+            overflow: hidden;
+        }
+
+            .imgPreview img {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                margin: auto;
+                display: block;
+                max-width: 100%;
+                height: auto;
+            }
+
+        .lblForPics {
+            text-align: center;
+            max-width: 100%;
+            width: 100%;
+            height: 260px;
+            vertical-align: middle;
+            border: 1px dashed blue;
+        }
+
+            .lblForPics span {
+                color: #083bb5 !important;
+            }
+
+        .previewImgClose {
+            position: relative;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            float: right;
+            right: -1.8em;
+            bottom: -1.8em;
+            z-index: 9999;
+            margin-top: -3em;
+        }
+    </style>
+

@@ -1,0 +1,37 @@
+﻿
+
+
+
+@model FactoryManagement.ModelView.Acquisition.AcquisitionViewModel
+
+<h4>Basic Information</h4>
+<hr />
+<dl class="dl-horizontal col-sm-12 col-xs-12"  id="Div_Acquisition_Dis">
+    <dt>Product Name</dt><dd>@Model.ProductName</dd>
+
+    <dt>Product Type</dt>
+    <dd>@Model.ProductTypeName</dd>
+
+    <dt>Brand</dt>
+    <dd>@Model.Brand</dd>
+
+    <dt>Model</dt>
+    <dd>@Model.Model</dd>
+
+    <dt>Country of Origin</dt>
+    <dd>@Model.CountryName</dd>
+
+    <dt>Quantity</dt>
+    <dd>@Model.Quantity @Model.UnitName</dd>
+
+    <dt>Required Date</dt>
+    <dd>@Model.RequiredDateName
+    @if (Model.RequiredTime != null)
+    {
+        <span>@Model.RequiredTime</span>
+    }
+    </dd>
+
+    <dt>Created By</dt>
+    <dd><img class="user-photo" src="~/Images/UserPicture/thumb/@Model.PictureName"> @Model.UserName</dd>
+</dl>

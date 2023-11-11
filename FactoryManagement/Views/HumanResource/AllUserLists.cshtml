@@ -1,0 +1,662 @@
+﻿
+@model IEnumerable<FactoryManagement.ModelView.HR.UserInformationModelView>
+@{
+    ViewBag.Title = "User Lists";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-users fa-fwt"></i>
+            <span>Human Resource</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list" aria-hidden="true"></i>
+            <a href="/HumanResource/AllUserLists">Employee/s</a>
+        </li>
+    </ul>
+</div>
+<div class="note note-success"><p id="h4title">All User List/s</p></div>
+<div class="row">
+    <div class="col-md-12">
+        <div id="Div_Upper_Portion" style="display:none;">
+            <div style="margin-bottom:.5em;padding:0px!important;">
+
+                <span class="btn green" style="cursor:pointer" id="btn_addEmployee" data-toggle="tooltip" title="Add New User"><i class="fa fa-plus"></i> Add New User</span>
+                @*<div style="float:right;">
+                        <span class="btn blue" data-container="body" id="btn_All" data-toggle="tooltip" title="All User List"><i class="fa fa-list-ul"></i> All</span>
+                        <span class="btn green" data-container="body" id="btn_active" data-toggle="tooltip" title="Active User List"><i class="fa fa-list-ul"></i> Active</span>
+                        <span class="btn btn-danger" data-container="body" id="btn_Inactive" data-toggle="tooltip" title="Inactive User List"><i class="fa fa-list-ul"></i> Inactive</span>
+                    </div>*@
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green" aria-hidden="true"></i>
+                    <span class="caption-subject font-green bold uppercase">User Lists</span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel with-nav-tabs panel-default">
+                            <div class="panel-heading">
+                                <ul class="nav nav-tabs">
+                                    <li class="active" id="liForAll"><a href="#tab1liForAll" data-toggle="tab">All</a></li>
+                                    <li id="liForActive"><a href="#tab2liForActive" data-toggle="tab">Active</a></li>
+                                    <li id="liForInactive"><a href="#tab3InactiveList" data-toggle="tab">Inactive</a></li>
+                                    <li id="liForDelete"><a href="#tab4DeleteList" data-toggle="tab">Deleted</a></li>
+                                </ul>
+                            </div>
+                            <div class="panel-body" style="border:none!important;" id="div_for_panel_body">
+                                <div class="row" style="margin-bottom:10px" id="div_filter_Options">
+                                    <div class="col-sm-9" style="">
+                                        @*<span class="autocomplete-wrapper">
+                                            <input class="text-field" id="textForSearch" name="country" placeholder="Type employee name or designation" type="text" autocomplete="off">
+                                            <span class="k-icon k-i-search" style="margin-top:-25px;margin-right:10px;float:right;">&nbsp;</span>
+                                        </span>*@
+                                        @(Html.Kendo().MultiSelect()
+        .AutoClose(false)
+        
+                  .Name("UserLists")
+                  .DataTextField("UserName")
+                  .DataValueField("UserId")
+                  .Placeholder("Type user name")
+                  .AutoBind(false)
+                  .Events(e => e.Change("onUserChange"))
+                  .DataSource(source =>
+                  {
+                      source.Read(read =>
+                      {
+                          read.Action("GetAllUsersList", "HumanResource");
+                      })
+                      .ServerFiltering(false);
+                  })
+                                        )
+                                    </div>
+                                    <div class="col-sm-3">
+                                        @(Html.Kendo().DropDownList().Name("SiteId")
+                            .OptionLabel("All")
+                            .BindTo(ViewBag.AllSiteList as SelectList)
+                            .Events(e => e.Change("onSitenameChange"))
+                            .HtmlAttributes(new { style = "width:100%" })
+                                        )
+                                    </div>
+                                </div>
+                                <div class="tab-content">
+                                    <div class="tab-pane fade in active" id="tab1liForAll">
+                                        <div id="Div_All_Usr"></div>                                        
+                                    </div>
+                                    <div id="tab2liForActive" class="tab-pane fade">
+                                        <div id="div_Active_User"></div>
+                                    </div>
+                                    <div id="tab3InactiveList">
+                                        <div id="div_Inactive_User"></div>
+                                    </div>
+                                    <div id="tab4DeleteList">
+                                        <div id="div_Deleted_User"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+                <div class="row" id="DivForUserList"></div>
+                <div id="WinForSalaryPack"></div>
+<div id="win_pass_reset"></div>
+                <script id="temp_win_site_edit" type="text/x-kendo-template">
+                    <div style="padding:1em;">
+                        <p style="font-size: 14px; padding: 10px">#=message#</p>
+                        <div style="text-align: right;">
+                            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_editUnit_ok"><span class="k-icon k-update"></span>OK</button>
+                            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_editUnit_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+                        </div>
+                    </div>
+                </script>
+  <script>
+    var showCount = 0,totalCount=0, inCallback = false,tab=1,typeSort=1,siteId='';
+    var page = 0;
+    var content = '';
+    var status = 2;
+    $(document).ready(function () {
+        $("#liForHR").addClass('active');
+        $("#liForUserLists").addClass('sublistActive');
+        $("#liForHR").addClass('active');
+        $("#liForUserLists").addClass('sublistActive');
+
+        if ('@ViewBag.status' == '' || '@ViewBag.status' == null) {
+            $("#liForAll").click();
+        } else if ('@ViewBag.status' == 0) {
+            $("#liForAll").removeClass("active");
+            $("#liForInactive").addClass("active");
+            $("#liForInactive").click();
+        } else if ('@ViewBag.status' == 1) {
+            $("#liForActive").addClass("active");
+            $("#liForAll").removeClass("active");
+            $("#liForActive").click();
+        }
+    });
+      function clearBeforeClick() {
+          showCount = 0, totalCount = 0, page = 0, inCallback = false;
+          // $("#SiteId").data("kendoDropDownList").text($("#SiteId").data("kendoDropDownList").options.optionLabel);
+          $("#SiteId").data("kendoDropDownList").value("");
+          siteId = '';
+          $("#textForSearch").val("");
+          $("#Div_All_Usr").empty();
+          $("#div_Active_User").empty();
+          $("#div_Inactive_User").empty();
+          $("#div_Deleted_User").empty();
+          $("#Div_Upper_Portion").show();
+          $("#no_record_div").remove();
+      }
+    $("#liForAll").click(function () {
+        tab = 1; status = 2;
+        clearBeforeClick();
+        $("#Div_All_Usr").append('<div class="win_loading_half"></div>');
+        $("#Div_All_Usr").load('@Url.Action("_AllUserLists", "HumanResource")?siteId=' + siteId + "&typeSort=" + typeSort);
+        $("#h4title").text("Showing All User List/s");
+    });
+
+      $("#liForActive").click(function () {
+          clearBeforeClick();
+        tab = 2; status = 1;
+        var passdata = '';
+        passdata = { status: 1, siteId: siteId, typeSort: typeSort };
+        $("#div_Active_User").append('<div class="win_loading_half"></div>');
+        $("#h4title").text("Showing All Active User List/s");
+        $("#div_Active_User").load('@Url.Action("_AllUserListsStatusWise", "HumanResource")', passdata);
+    });
+
+      $("#liForInactive").click(function () {
+          clearBeforeClick();
+        tab = 3; status = 0;
+        var passdata = '';
+        passdata = { status: 0, siteId: siteId, typeSort: typeSort };
+        $("#div_Inactive_User").append('<div class="win_loading_half"></div>');
+        $("#h4title").text("Showing All Inactive User List/s");
+        $("#div_Inactive_User").load('@Url.Action("_AllUserListsStatusWise", "HumanResource")', passdata);
+      });
+      $("#liForDelete").click(function () {
+          clearBeforeClick();
+          tab = 4; status = -1;
+        var passdata = '';
+        passdata = { status: -1, siteId: siteId, typeSort: typeSort };
+        $("#div_Deleted_User").append('<div class="win_loading_half"></div>');
+        $("#h4title").text("Showing All Deleted User List/s");
+        $("#div_Deleted_User").load('@Url.Action("_AllUserListsStatusWise", "HumanResource")', passdata);
+      });
+      $("#Div_All_Usr,#div_Active_User,#div_Inactive_User,#div_Deleted_User").on("click", ".sortbytype", function () {
+        typeSort = $(this).data("sort");
+        typeSort = (typeSort == null || typeSort == '' || typeSort==1) ? 2 : 1;
+        if (tab == 1) {
+            $("#Div_All_Usr").empty();
+            $("#Div_All_Usr").append('<div class="loading_partial"></div>');
+            $("#Div_All_Usr").load('@Url.Action("_AllUserLists", "HumanResource")?siteId=' + siteId + "&typesort=" + typeSort);
+        }
+        else if (tab == 2) {
+            $("#div_Active_User").empty();
+            $("#div_Active_User").append('<div class="loading_partial"></div>');
+            $("#div_Active_User").load('@Url.Action("_AllUserListsStatusWise", "HumanResource")?status=2&siteId=' + siteId + "&typesort=" + typeSort);
+        } else if (tab == 3) {
+            showCount = 0, totalCount = 0, page = 0, inCallback = false;
+            $("#div_Inactive_User").empty();
+            $("#div_Inactive_User").append('<div class="loading_partial"></div>');
+            $("#div_Inactive_User").load('@Url.Action("_AllUserListsStatusWise", "HumanResource")?status=0&siteId=' + siteId + "&typesort=" + typeSort);
+        } else if (tab==4){
+            $("#div_Deleted_User").empty();
+            $("#div_Deleted_User").append('<div class="win_loading_half"></div>');
+            $("#div_Deleted_User").load('@Url.Action("_AllUserListsStatusWise", "HumanResource")?status=-1&siteId=' + siteId + "&typesort=" + typeSort);
+        }
+    });
+
+    function onSitenameChange() {
+        siteId = this.value();
+        $("#no_record_div").remove();
+        if (tab == 1) {
+            if (this.value() === '') {
+                $("#liForAll").click();
+            } else {
+                $("#h4title").text("Showing All User List/s from site : " + $("#SiteId").data("kendoDropDownList").text());
+                showCount = 0, totalCount = 0, page = 0, inCallback = false;
+             $("#Div_All_Usr").empty();
+             $("#Div_All_Usr").append('<div class="loading_partial"></div>');
+             $("#Div_All_Usr").load('@Url.Action("_AllUserLists", "HumanResource")?siteId=' + siteId + "&typesort=" + typeSort);
+            }
+        } else if (tab == 2) {
+            if (this.value() === '') {
+                $("#liForActive").click();
+            } else {
+                $("#h4title").text("Showing All Active User List/s from site : " + $("#SiteId").data("kendoDropDownList").text());
+                $("#div_Active_User").empty();
+                $("#div_Active_User").append('<div class="loading_partial"></div>');
+                $("#div_Active_User").load('@Url.Action("_AllUserListsStatusWise", "HumanResource")?status=1&siteId=' + siteId + "&typesort=" + typeSort);
+            }
+        } else if (tab==3){
+            if (this.value() === '') {
+                $("#liForInactive").click();
+            } else {
+                showCount = 0, totalCount = 0, page = 0, inCallback = false;
+                $("#h4title").text("Showing All Inactive User List/s from site : " + $("#SiteId").data("kendoDropDownList").text());
+    $("#div_Inactive_User").empty();
+    $("#div_Inactive_User").append('<div class="loading_partial"></div>');
+    $("#div_Inactive_User").load('@Url.Action("_AllUserListsStatusWise", "HumanResource")?status=0&siteId=' + siteId + "&typesort=" + typeSort);
+            }
+        }
+        else if (tab==4){
+            if (this.value() === '') {
+                $("#liForDelete").click();
+            } else {
+                showCount = 0, totalCount = 0, page = 0, inCallback = false;
+                $("#h4title").text("Showing All Deleted User List/s from site : " + $("#SiteId").data("kendoDropDownList").text());
+      $("#div_Deleted_User").empty();
+      $("#div_Deleted_User").append('<div class="loading_partial"></div>');
+      $("#div_Deleted_User").load('@Url.Action("_AllUserListsStatusWise", "HumanResource")?status=-1&siteId=' + siteId + "&typesort=" + typeSort);
+            }
+        }
+    }
+    $("#btn_addEmployee").click(function () {
+        location.href = '@Url.Action("AddEmployee", "HumanResource")';
+    });
+
+    @******************************** OnScroll Bind Table Data *************************@
+    $(window).scroll(function () {
+        var countBytype, result;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/HumanResource/GeUserList',
+            data: { page: page },
+            success: function (data) {
+                var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        var date = new Date(data[i].JoinDateName);
+                        var getdate = (monthNames[date.getMonth()]) + " " + date.getDate() + "," + date.getFullYear();
+                        if (data[i].AssginSalary) {
+                            $("table#tbl_AllUser > tbody").append('<tr><th scope="row">' + showCount + '.</th>' +
+                            '<td><img class="img-circle" src="/Images/UserPicture/thumb/' + data[i].Picture + '">' +
+                                '<a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].UserId +"?isDisplay=true") + '">' +
+                                '' + data[i].UserName + '</a></td><td>' + data[i].UserTypeName + '</td><td>' + data[i].Designation + '</td><td>' + getdate + '</td><td>' +
+                                '<a class="btn green" data-toggle="tooltip" title="Edit User Info" style="margin-right:2%;" href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].UserId +"?isDisplay=false")  + '">' +
+                            '<i class="fa fa-pencil"></i></a>' +
+                            '<span class="btn btn-danger deleteUser" data-toggle="tooltip" title="Delete User" style="margin-right:2%;" data-userid="' + data[i].UserId + '" data-usertype="' + data[i].UserId + '">' +
+                            '<i class="fa fa-trash"></i></span>' +
+                            '<span class="btn blue showPckDetails" data-toggle="tooltip" title="Show Package Details" style="margin-right:2%;" data-userid="' + data[i].UserId + '" ' +
+                            ' data-pckid="' + data[i].SalaryPackageId + '" data-usertype="' + data[i].UserId + '">' +
+                            '<i class="fa fa-info-circle"></i></span>' +
+                            '<span class="btn yellow chngSalaryPck" data-toggle="tooltip" title="Change Salary Package" style="margin-right:2%;" data-userid="' + data[i].UserId + '" ' +
+                            'data-pckid="' + data[i].SalaryPackageId + '" data-usertype="' + data[i].UserId + '">' +
+                            '<i class="fa fa-edit"></i></span>' +
+                            '</td></tr>');
+                        } else {
+                            $("table#tbl_AllUser > tbody").append('<tr><th scope="row">' + showCount + '.</th>' +
+                                '<td><img class="img-circle" src="/Images/UserPicture/thumb/' + data[i].Picture + '">' +
+                                '<a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].UserId +"?isDisplay=true") + '">' +
+                            '' + data[i].UserName + '</a></td><td>' + data[i].UserTypeName + '</td><td>' + data[i].Designation + '</td><td>' + getdate + '</td><td>' +
+
+                                '<a class="btn green" data-toggle="tooltip" title="Edit user info" style="margin-right:2%;" href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].UserId +"?isDisplay=false")  + '">' +
+                            '<i class="fa fa-pencil"></i></a>' +
+                            '<span class="btn btn-danger deleteUser" data-toggle="tooltip" title="Delete User" style="margin-right:2%;" data-userid="' + data[i].UserId + '" data-usertype="' + data[i].UserId + '">' +
+                            '<i class="fa fa-trash"></i></span>' +
+
+                            '<span class="btn btn-primary assingSalaryPck" data-toggle="tooltip" title="Assign Salary Package" style="margin-right:2%;" data-userid="' + data[i].UserId + '"data-usertype="' + data[i].UserType + ' ">' +
+                            '<i class="fa fa-gear"></i></span>' +
+                            '</td></tr>');
+                        }
+                        $('[data-toggle="tooltip"]').tooltip();
+                    }
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+
+    @*$("#textForSearch").autocomplete({
+        minLength: 0,
+        source: function (request, response) {
+            content = $.trim(request.term);
+            $.ajax({
+                url: '@Url.Action("SearchUserList", "HumanResource")',
+                type: "POST",
+                dataType: "json",
+                data: { prefix: content },
+                success: function (data) {
+                    response($.map(data, function (item) {
+                        return { label: item.UserName, value: item.UserName, id: item.UserId };
+                    }))
+                }
+            })
+        },
+        minLength: 1,
+        select: function (event, ui) {
+            isloadFirstTime = true;
+            var selectTextId = ui.item.id;
+            $("#no_record_div").remove();
+            if (tab == 1) {
+            $("#Div_All_Usr").empty();
+            $("#Div_All_Usr").append('<div class="loading_partial"></div>');
+            $("#Div_All_Usr").load('@Url.Action("_AllUserLists", "HumanResource")?userId=' + selectTextId);
+            } else if (tab == 2) {
+                $("#div_Active_User").empty();
+                $("#div_Active_User").append('<div class="loading_partial"></div>');
+                $("#div_Active_User").load('@Url.Action("_AllUserLists", "HumanResource")?userId=' + selectTextId);
+            } else if (tab == 3) {
+
+                $("#div_Inactive_User").empty();
+                $("#div_Inactive_User").append('<div class="loading_partial"></div>');
+                $("#div_Inactive_User").load('@Url.Action("_AllUserLists", "HumanResource")?userId=' + selectTextId);
+            } else if (tab == 4) {
+                $("#div_Deleted_User").empty();
+                $("#div_Deleted_User").append('<div class="loading_partial"></div>');
+                $("#div_Deleted_User").load('@Url.Action("_AllUserListsStatusWise", "HumanResource")?status=-1&siteId=' + siteId + "&typesort=" + typeSort);
+
+            }
+        },
+    })
+ .keyup(function () {
+     if ($.trim($("#textForSearch").val()) == "") {
+         showCount = 20; page = 0;
+         if (tab == 1) {
+             $("#liForAll").click();
+         } else if (tab == 2) {
+             $("#liForActive").click();
+         } else if (tab == 3) {
+             $("#liForInactive").click();
+         } else if (tab == 4) {
+             $("#").click();
+         }
+     }
+ })
+ .autocomplete("instance")._renderItem = function (ul, item) {
+     var term = $.trim(this.term);
+     var re = new RegExp("(" + term + ")", "gi"),
+                cls = "bold-text",
+                template = "<span class='" + cls + "'>$1</span>",
+                label = item.label.replace(re, template),
+                $li = $("<li/>").appendTo(ul);
+     $("<span>").html(label).appendTo($li);
+     return $li;
+ };*@
+
+    //*******************************  SHOW SALARY PACKAGE DETAILS *****************************************
+
+      $("#Div_All_Usr,#div_Active_User,#div_Inactive_User,#div_Deleted_User").on("click", ".showPckDetails", function (e) {
+        e.preventDefault();
+        var UserId = $(this).data("userid");
+        var UserType = $(this).data("usertype");
+        var PackageId = $(this).data("pckid");
+        $("#WinForSalaryPack").empty();
+        $("#WinForSalaryPack").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '40%',
+            title: 'Assign Salary Package Details',
+            close: onWindowClose
+        });
+        $("#WinForSalaryPack").html('<div class="partial_loading_half"></div>');
+        var WinForSalaryPack = $("#WinForSalaryPack").data("kendoWindow");
+        WinForSalaryPack.refresh({ url: "/HumanResource/ShowSalaryPackageDetails?UserId=" + UserId + "&UserType=" + UserType + "&PackageId=" + PackageId + "&option=win"});
+        WinForSalaryPack.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+      $("#Div_All_Usr,#div_Active_User,#div_Inactive_User,#div_Deleted_User").on("click", ".resetPassword", function (e) {
+          e.preventDefault();
+          var selectedUId = $(this).data('id');
+          var kendoWindow = $("<div/>").kendoWindow({
+              actions: ["Close"],
+              title: "Alert",
+              resizable: false,
+              width: "30%",
+              modal: true,
+              close: onWindowClose
+          });
+          message = "Are you sure you want to reset password for this user?";
+          var template = kendo.template($("#temp_win_site_edit").html());
+          kendoWindow.data("kendoWindow").content(template).center().open();
+          document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+          document.body.scroll = "no"; // ie only
+
+          kendoWindow.find("#btn_editUnit_cancel").click(function () {
+              kendoWindow.data("kendoWindow").close();
+          }).end();
+          kendoWindow.find("#btn_editUnit_ok").click(function () {
+              kendoWindow.data("kendoWindow").close();
+             resetUserCredential(selectedUId);
+          }).end();
+      });
+      function resetUserCredential(userId) {
+          $("#win_pass_reset").empty();
+          $("#win_pass_reset").kendoWindow({
+              actions: ["Close"],
+              draggable: false,
+              modal: true,
+              visible: false,
+              width: '60%',
+              height: '40%',
+              title: 'Reset Employee Password',
+              close: onWindowClose
+          });
+          $("#win_pass_reset").html('<div class="partial_loading_half"></div>');
+          var win_pass_reset = $("#win_pass_reset").data("kendoWindow");
+          win_pass_reset.refresh({ url: "/HumanResource/PasswordResetPartial?UserId=" + userId});
+          win_pass_reset.center().open();
+          document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+          document.body.scroll = "no"; // ie only
+      }
+      $("#Div_All_Usr,#div_Active_User,#div_Inactive_User,#div_Deleted_User").on("click",".activateUser,.inactivateUser",function () {
+          notification.show({ message: "User status  is changing...", showTime: startTime() }, "upload-progress");
+          var userId = $(this).data("userid");
+          var status = $(this).data("isactive");
+          var sendData = {
+              userId: userId,
+              status: status
+          };
+          $.ajax({
+              url:'/HumanResource/ChangeUserStatus',
+              method:'POST',
+              data:sendData,
+              success: function (res) {
+                  notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                  if (res == "Success") {
+                      var aa=status==1?"Activated":"Inactivated"
+                      notification.show({ message: "User has been successfully "+aa+".", showTime: startTime() }, "upload-success");
+if (tab == 1) {
+    $("#liForAll").click();
+                    } else if (tab == 2) {
+                        $("#liForActive,").click();
+                    } else if (tab == 3) {
+                        $("#liForInactive,").click();
+                    } else if (tab == 4) {
+                        $("#liForDelete").click();
+                    }
+                  }
+              }, error: function (err) {
+
+              }
+          });
+      });
+    //*******************************  CHANGE SALARY PACKAGE  *****************************************
+
+      $("#Div_All_Usr,#div_Active_User,#div_Inactive_User,#div_Deleted_User").on("click", ".chngSalaryPck", function () {
+        var userId = $(this).data("userid");
+        var userType = $(this).data("usertype");
+        var packageId = $(this).data("pckid");
+        location.href = "/SalaryConfig/AssignSalaryPackage?q=" + getDataEncrypted("userId=" + userId + "?userType=" + userType + "?PackageId=" + packageId);
+       // location.href = '@Url.Action("AssignSalaryPackage", "SalaryConfig")?userId=' + userId + '&userType=' + userType + '&PackageId=' + packageId
+    });
+
+    //******************************* ASSIGN SALARY PACKAGE *****************************************
+
+      $("#Div_All_Usr,#div_Active_User,#div_Inactive_User,#div_Deleted_User").on("click", ".assingSalaryPck", function () {
+        var userId = $(this).data("userid");
+        var userType = $(this).data("usertype");
+        location.href = "/SalaryConfig/AssignSalaryPackage?q=" + getDataEncrypted("userId=" + userId + "?userType=" + userType);
+        //location.href = '@Url.Action("AssignSalaryPackage", "SalaryConfig")?userId=' + userId + '&userType=' + userType;
+    });
+
+    //******************************* USER DELETE FUNCTION *****************************************
+      $("#Div_All_Usr,#div_Active_User,#div_Inactive_User,#div_Deleted_User").on("click", ".deleteUser", function (e) {
+        e.preventDefault();
+        var selectedUId = $(this).data('userid');
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close:onWindowClose
+        });
+        message = "Are you sure you want to delete this user? It may cause problem in your system";
+        var template = kendo.template($("#temp_win_site_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+
+        kendoWindow.find("#btn_editUnit_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_editUnit_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            deleteUser(selectedUId);
+        }).end();
+    });
+    function deleteUser(selectedUId) {
+        notification.show({ message: "User is deleting...", showTime: startTime() }, "upload-progress");
+        $.ajax({
+            url: '@Url.Action("DeleteUser", "HumanResource")',
+            type: 'Post',
+            data: { Id: selectedUId, CreatedBy: userId },
+            success: function (data) {
+                notification.hide();notification.setOptions({autoHideAfter: 5000});
+                if (data === "Error") {
+                    notification.show({ message: "User deletion was unsuccessful", showTime: startTime() }, "upload-error");
+                }
+                else {
+                    notification.show({ message: "User deletion was successful.", showTime: startTime() }, "upload-success");
+                    if (tab == 1) {
+                        $("#Div_All_Usr").click();
+                    } else if (tab == 2) {
+                        $("#div_Active_User").click();
+                    } else if (tab == 3) {
+                        $("#div_Inactive_User").click();
+                    }
+                }
+            }
+        });
+    };
+
+</script>
+<script>
+    function onUserSelect(e) {
+       var previous = this._savedOld;
+       var current = this.value();
+        var diff = [];
+        if (previous) {
+            diff = $(previous).not(current).get();
+        }
+        this._savedOld = current.slice(0);
+        if (diff.length > 0 && current != '') {
+
+        } else {
+            var dataItem = this.dataSource.view()[e.item.index()];
+            var id = dataItem.Id;
+            var unic_id = dataItem.IdWithChar;
+            //var sendData = {
+            //    inventoryId: inventoryId,
+            //    storewareId: id,
+            //    isStore: dataItem.IsStore,
+            //};
+            @*$.ajax({
+                url: '@Url.Action("GetMinimumQuantity", "StoreProduct")',
+                type: 'get',
+                data: sendData,
+                success: function (data) {
+                    if (data != "Error") {
+                        $("#txt_min_quan_" + dataItem.IdWithChar).val(data.MinimumQuantity);
+                    }
+                },
+                error: function (error) { }
+            });*@
+        }
+    }
+    function onUserChange(e) {
+        var current = this.value();
+        if (current.length > 0) {
+            if (tab == 1) {
+                $("#Div_All_Usr").empty();
+                $("#Div_All_Usr").append('<div class="loading_partial"></div>');
+                $("#Div_All_Usr").load('@Url.Action("_AllUserLists", "HumanResource")?userId=' + current + "&siteId=" + siteId);
+            } else if (tab == 2) {
+                $("#div_Active_User").empty();
+                $("#div_Active_User").append('<div class="loading_partial"></div>');
+                $("#div_Active_User").load('@Url.Action("_AllUserLists", "HumanResource")?userId=' + JSON.stringify(current) + "&status=1&siteId=" + siteId);
+            } else if (tab == 3) {
+                $("#div_Inactive_User").empty();
+                $("#div_Inactive_User").append('<div class="loading_partial"></div>');
+                $("#div_Inactive_User").load('@Url.Action("_AllUserLists", "HumanResource")?userId=' + JSON.stringify(current) + "&status=0&siteId=" + siteId);
+            } else if (tab == 4) {
+                $("#div_Deleted_User").empty();
+                $("#div_Deleted_User").append('<div class="loading_partial"></div>');
+                $("#div_Deleted_User").load('@Url.Action("_AllUserListsStatusWise", "HumanResource")?userId=' + JSON.stringify(current) + "&status=-1&siteId=" + siteId + "&typesort=" + typeSort);
+
+            }
+        } else {
+            if (tab == 1) {
+                $("#Div_All_Usr").empty();
+                $("#Div_All_Usr").append('<div class="loading_partial"></div>');
+                $("#Div_All_Usr").load('@Url.Action("_AllUserLists", "HumanResource")?siteId=' + siteId);
+            } else if (tab == 2) {
+                $("#div_Active_User").empty();
+                $("#div_Active_User").append('<div class="loading_partial"></div>');
+                $("#div_Active_User").load('@Url.Action("_AllUserLists", "HumanResource")?status=1&siteId=' + siteId);
+            } else if (tab == 3) {
+                $("#div_Inactive_User").empty();
+                $("#div_Inactive_User").append('<div class="loading_partial"></div>');
+                $("#div_Inactive_User").load('@Url.Action("_AllUserLists", "HumanResource")?status=0&siteId=' + siteId);
+            } else if (tab == 4) {
+                $("#div_Deleted_User").empty();
+                $("#div_Deleted_User").append('<div class="loading_partial"></div>');
+                $("#div_Deleted_User").load('@Url.Action("_AllUserListsStatusWise", "HumanResource")?status=-1&siteId=' + siteId + "&typesort=" + typeSort);
+
+            }
+        }
+    }
+
+</script>
+

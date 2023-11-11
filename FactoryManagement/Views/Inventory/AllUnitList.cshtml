@@ -1,0 +1,264 @@
+﻿@************************************** Created By Mabia Mishu (Date:08.09.2016)  ***************************************@
+
+@{
+    ViewBag.Title = "All Unit List";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-gears"></i>
+            <span>Configuration</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Inventory/AllUnitList">All Unit List</a>
+        </li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <p><span data-toggle="tooltip" title="Add New Unit Type" class="btn green" id="btn_unit_create"><i class="fa fa-plus"></i> Add New Unit Type</span></p>
+
+        <div class="portlet box green">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul"></i>All Unit Type List
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div id="divForAll_Unit">
+                    <div class="loading_partial"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="win_Unit_create"></div>
+<div id="win_Unit_child_add"></div>
+<div id="win_unit_edit"></div>
+
+<script id="temp_win_site_edit" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px"> Are you sure want to delete this unit? </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_editSite_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_editSite_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $('#liForInvenConfig').addClass('open');
+        $('#liForInvenConfig .sub-menu').show();
+        $("#liForUnitList").addClass('sublistActive');
+        $("#divForAll_Unit").load('@Url.Action("_ShowAllUnitList", "Inventory")');
+    });
+
+    $("#divForAll_Unit").on("click", ".btn_expandUnit", function (e) {
+        e.preventDefault();
+        var typeId = $(this).data("id");
+        $(this).find('i').toggleClass('fa-plus-square-o fa-2 fa-minus-square-o fa-2');
+        if ($(this).data("isclick") == "0") {
+
+            $(this).data("isclick", "1");
+            $(this).attr("dataisclick", "1");
+
+            $.ajax({
+                url: '@Url.Action("GetAllUnitForList", "Inventory")',
+                type: 'Post',
+                data: { ParentId: typeId },
+                success: function (data) {
+                    if (data) {
+                        $(".trforchild_" + typeId).empty();
+                        $(".trforchild_" + typeId).show();
+                        var crntSpan = $("#spanForName_" + typeId);
+                        var getPadValue = parseInt(crntSpan.css('padding-left'));
+                        var sub_count = data.length;
+                        for (var i in data) {
+                            $('<tr id="tr_' + data[i].UnitId + '" class="trforchild_' + typeId + '" data-unitsid="' + data[i].UnitId + '" data-unitchild="' + data[i].HasChild + '">' +
+                                '<td><span id="spanForName_' + data[i].UnitId + '"><span style="font-weight:bold;">' + sub_count + '. </span>' +
+                                ((data[i].HasChild == 'True') ? '<span class="btn_expandUnit" id="newtrForAp_' + data[i].UnitId + '" data-id="' + data[i].UnitId +
+                                '" data-isclick="0" style="margin-right:.5em;">' +
+                                '<i class="fa fa-plus-square-o fa-2"></i></span>' : '') + data[i].UnitName +
+                                '</span></td>' +
+                                '<td><img class="img-circle" src="/Images/UserPicture/thumb/admin.jpg">' +
+                                ((data[i].CreatedBy == 0) ? ' <span>Super admin</span>' :
+                                '<a href="/HumanResource/DisplayEmployeeDetails?UserId=' + data[i].CreatedBy + '&isDisplay=true">' + ' ' + data[i].UserName + '</a>') +
+                                 '</td>' +
+                                '<td>' + data[i].CreatedDateName + '</td>' +
+                                '<td>' +
+                                    '<span data-toggle="tooltip" title="Update Information" class="btn green btn_unit_Edit" data-id="' + data[i].UnitId + '"><i class="fa fa-pencil"></i></span> ' + ' ' +
+                                    '<span data-toggle="tooltip" title="Add Sub Unit Type" class="btn blue btn_unit_child_add" data-id="' + data[i].UnitId + '" data-name="' + data[i].UnitName + '" style="margin-right:5px;">' +
+                                    '<i class="fa fa-plus-circle fa-2"></i></span>' +
+                                ((data[i].HasChild == 'False') ? '<span data-toggle="tooltip" title="Delete Unit Type" class="btn btn-danger btn_unit_Delete" data-id="' + data[i].UnitId + '" data-name="' + data[i].ParentName + '"><i class="fa fa-trash"></i></span>' : '') + ' ' +
+                                '</td></tr>').insertAfter("#tr_" + typeId);
+
+                            $("#spanForName_" + data[i].UnitId).css("padding-left", (getPadValue + 10) + "%");
+                            sub_count--;
+
+                        }
+                        $('[data-toggle="tooltip"]').tooltip();
+                    }
+                }
+            });
+        }
+        else {
+            $(this).data("isclick", "0");
+            $(this).attr("dataisclick", "0");
+            $(".trforchild_" + typeId).each(function () {
+                var id = $(this).data("unitsid");
+                var haschild = $(this).data("unitchild");
+                if (haschild == "True") {
+                    childremove(id);
+                }
+            });
+            $(".trforchild_" + typeId).remove();
+        }
+    });
+    function childremove(id) {
+        $(".trforchild_" + id).each(function () {
+            var nextChild = $(this).data("unitsid");
+            var haschild = $(this).data("unitchild");
+            if (haschild == "True") {
+                childremove(nextChild);
+            }
+        });
+        $(".trforchild_" + id).remove();
+    }
+
+    $("#btn_unit_create").click(function () {
+
+        $("#win_Unit_create").empty();
+        $("#win_Unit_create").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '25%',
+            title: 'Create New Unit',
+            close: onWindowClose
+        });
+        $("#win_Unit_create").html('<div class="tiny_loading"></div>');
+        var win_Unit_create = $("#win_Unit_create").data("kendoWindow");
+        win_Unit_create.refresh({ url: "/Inventory/UnitCreate" });
+        win_Unit_create.center().open();
+
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+
+    $("#divForAll_Unit").on("click", ".btn_unit_child_add", function (e) {
+        e.preventDefault();
+        var parent = $(this).data("id");
+        var typeName = $(this).data("name");
+
+        $("#win_Unit_child_add").empty();
+        $("#win_Unit_child_add").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '25%',
+            title: 'Add New Sub Unit',
+            close: onWindowClose
+        });
+        $("#win_Unit_child_add").html('<div class="tiny_loading"></div>');
+        var win_Unit_child_add = $("#win_Unit_child_add").data("kendoWindow");
+        win_Unit_child_add.refresh({ url: "/Inventory/UnitCreate?ParentId=" + parent + '&ParentName=' + typeName });
+        win_Unit_child_add.center().open();
+
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+    $("#divForAll_Unit").on("click", ".btn_unit_Edit", function (e) {
+        e.preventDefault();
+
+        var typeId = $(this).data("id");
+
+        $("#win_unit_edit").empty();
+        $("#win_unit_edit").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '25%',
+            title: 'Update Unit Information',
+            close: onWindowClose
+        });
+        $("#win_unit_edit").html('<div class="tiny_loading"></div>');
+        var win_unit_edit = $("#win_unit_edit").data("kendoWindow");
+        win_unit_edit.refresh({ url: "/Inventory/UnitCreate?UnitId=" + typeId });
+        win_unit_edit.center().open();
+
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+
+    function deleteUnit(typeId, parentName) {
+        notification.show({ message: "Deleting unit.....", showTime: startTime() }, "upload-progress");
+
+        $.ajax({
+            url: '@Url.Action("UnitDestroy", "Inventory")',
+            type: 'Post',
+            data: { UnitId: typeId, UserId: userId, ParentName: parentName },
+            success: function (data) {
+
+                notification.hide();
+                notification.setOptions({ autoHideAfter: 2000 });
+
+                if (data === "Success") {
+                    notification.show({ message: "Unit successfully deleted", showTime: startTime() }, "upload-success");
+
+                    $("#divForAll_Unit").empty();
+                    $("#divForAll_Unit").append('<div class="loading_partial"></div>');
+                    $("#divForAll_Unit").load('@Url.Action("_ShowAllUnitList", "Inventory")');
+
+                    document.documentElement.style.overflow = 'auto';
+                    document.body.scroll = "yes";
+                }
+                else {
+                    var msg = (data === "Error") ? "Unit delete attempt unsuccessful" : "Unit delete attempt unsuccessful, " + data;
+                    notification.show({ message: "Unit delete attempt unsuccessful, " + data, showTime: startTime() }, "upload-error");
+                }
+            }
+        });
+    }
+    $("#divForAll_Unit").on("click", ".btn_unit_Delete", function () {
+
+        var typeId = $(this).data("id");
+        var parentName = $(this).data("name");
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose
+        });
+        var template = kendo.template($("#temp_win_site_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        kendoWindow.find("#btn_editSite_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_editSite_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+
+            deleteUnit(typeId, parentName);
+            document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+            document.body.scroll = "no"; // ie only
+        }).end();
+    });
+</script>

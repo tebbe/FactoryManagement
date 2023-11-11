@@ -1,0 +1,239 @@
+﻿
+@{
+    ViewBag.Title = "User Lists";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-users fa-fwt"></i>
+            <span>Human Resource</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list" aria-hidden="true"></i>
+            <a href="/Attendance/AllAttendanceBCR">Attendence( Using BCR)</a>
+        </li>
+    </ul>
+</div>
+
+<div class="note note-success"><p id="h4title">Showing Attendence of All User</p></div>
+<div class="row">
+   <div class="col-md-12">
+       <div class="portlet light bordered">
+           <div class="portlet-title">
+               <div class="caption font-green">
+                   <i class="fa fa-list-ul font-green" aria-hidden="true"></i>
+                   <span class="caption-subject bold uppercase">All User Lists</span>
+               </div>
+           </div>
+           <div class="portlet-body">
+               <div id="div_User_List">
+                   <table class="table table-bordered" style="margin-bottom:0px!important;margin-top:10px!important;border-bottom:none!important;">
+                       <tr>
+                           <td>
+                               <span class="col-sm-9" style="padding-left:0px!important;">
+                                   <span class="autocomplete-wrapper">
+                                       <input class="text-field" id="textForSearch" name="country" placeholder="Type employee name or designation" type="text" autocomplete="off">
+                                       <span class="k-icon k-i-search" style="margin-top:-25px;margin-right:10px;float:right;">&nbsp;</span>
+                                   </span>
+                               </span>
+                               <span class="col-sm-3">
+                                   @(Html.Kendo().DropDownList().Name("SiteId")
+                            .OptionLabel("All")
+                            .BindTo(ViewBag.AllSiteList as SelectList)
+                            .Events(e => e.Change("onSitenameChange"))
+                            .HtmlAttributes(new { style = "width:100%" })
+                                   )
+                               </span>
+                           </td>
+                       </tr>
+                   </table>
+                   <div id="Div_All_Usr" style="display:none;"><div class="loading_partial"></div></div>
+                   @if (db.View_UserLists.Where(m => m.Status == 1).Any())
+                   {
+                       <script>
+                           $("#Div_All_Usr").show();
+                           $("#Div_All_Usr").load("_AllAttendanceBCR", "Attendance");
+                       </script>
+                   }
+               </div>
+
+           </div>
+       </div>
+   </div>
+</div>
+<div id="loading" style="display:none;"></div>
+@*@(Html.Kendo().Window()
+       .Name("Win_Atten_His")
+       .Visible(false)
+       .Modal(true)
+       .Draggable(true)
+       .Title("All Attendance History")
+)*@
+<div id="Win_Atten_His"></div>
+<script>
+    var showCount = 0,totalCount=0, inCallback = false;
+    var page = 0,partial_page=0;
+    var content = '';
+
+    var total_spec_user_atten = 0, show_spec_user_atten = 0;
+    $(document).ready(function () {
+        $("#liForHR").addClass('active');
+        $("#liForAttendanceBCR").addClass('sublistActive');
+    });
+    function onSitenameChange() {
+        $("#h4title").text("Showing Attendence of All User.");
+        if (this.value() === '') {
+            $("#Div_All_Usr").empty();
+            $("#Div_All_Usr").append('<div class="loading_partial"></div>');
+            $("#Div_All_Usr").load("_AllAttendanceBCR", "Attendance");
+        } else {
+            $("#h4title").text("Showing Attendence of All User From Site : " + this.text())
+            $("#Div_All_Usr").empty();
+            $("#Div_All_Usr").append('<div class="loading_partial"></div>');
+            $("#Div_All_Usr").load('@Url.Action("_AllAttendanceBCR", "Attendance")?siteId=' + this.value());
+        }
+    }
+
+
+    @******************************** OnScroll Bind Table Data *************************@
+    $(window).scroll(function () {
+        var countBytype, result;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/Attendance/GetAttendanceListBCR',
+            data: { page: page },
+            success: function (data) {
+                var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        var date = new Date(data[i].JoinDate);
+                        var getdate = (monthNames[date.getMonth()]) + " " + date.getDate() + "," + date.getFullYear();
+
+                        $("table#tbl_AllUser > tbody").append('<tr><th scope="row">' + showCount + '.</th>' +
+                            '<td><img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].Picture + '">' +
+                            '<a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].UserId+"?isDisplay=true")+'">' +
+                            '' + data[i].UserName + '</a></td>' +
+                            '<td>' + data[i].UserTypeName + '</td>' +
+                            '<td>' + data[i].DesignationName + '</td>' +
+                            '<td>' + data[i].DeptName + '</td>' +
+                            '<td>' + data[i].JoinDateFormate + '</td>' +
+                            '<td>'+data[i].EntryType+'</td>'+
+                            '<td>' +
+                             '<span data-toggle="tooltip" title="View History" class="btn blue allAttHis" style="margin-right:2%;" data-userid="' + data[i].UserId + '" >' +
+                            '<i class="fa fa-list-ul"></i> History</span>' +
+                            '</td></tr>');
+                    }
+                    $('[data-toggle="tooltip"]').tooltip();
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+    $("#Win_Atten_His").scroll(function () {
+        if ($("#Win_Atten_His").scrollTop() == $("#div_Spec_Attend").height() - $("#Win_Atten_His").height()) {
+            alert(parseInt(show_spec_user_atten));
+            if (parseInt(show_spec_user_atten) < parseInt(total_spec_user_atten)) {
+                if (partial_page > -1 && !inCallback) {
+                    inCallback = true;
+                    partial_page++;
+                    //loadMoreData(page);
+                }
+            }
+        }
+    });
+
+    $("#textForSearch").autocomplete({
+        minLength: 0,
+        source: function (request, response) {
+            content = $.trim(request.term);
+            $.ajax({
+                url: '@Url.Action("SearchUserAttendanceListBCR", "Attendance")',
+                type: "POST",
+                dataType: "json",
+                data: { prefix: content },
+                success: function (data) {
+                    response($.map(data, function (item) {
+                        return { label: item.UserName, value: item.UserName, id: item.UserId };
+                    }))
+                }
+            })
+        },
+        minLength: 1,
+        select: function (event, ui) {
+            isloadFirstTime = true;
+            var selectTextId = ui.item.id;
+            $("#h4title").text("Showing attendence of " + ui.item.value);
+            $("#Div_All_Usr").empty();
+            $("#Div_All_Usr").append('<div class="loading_partial"></div>');
+            $("#Div_All_Usr").load('@Url.Action("_AllAttendanceBCR", "Attendance")?userId=' + selectTextId);
+        },
+    })
+ .keyup(function () {
+     if ($.trim($("#textForSearch").val()) == "") {
+         $("#h4title").text("Showing attendence of all user");
+         showCount = 20; page = 0;
+         $("#Div_All_Usr").empty();
+         $("#Div_All_Usr").append('<div class="loading_partial"></div>');
+         $("#Div_All_Usr").load('@Url.Action("_AllAttendanceBCR", "Attendance")');
+     }
+ })
+ .autocomplete("instance")._renderItem = function (ul, item) {
+     var term = $.trim(this.term);
+
+     var re = new RegExp("(" + term + ")", "gi"),
+                cls = "bold-text",
+                template = "<span class='" + cls + "'>$1</span>",
+                label = item.label.replace(re, template),
+                $li = $("<li/>").appendTo(ul);
+     $("<span>").html(label).appendTo($li);
+     return $li;
+ };
+
+
+
+    //*******************************  SHOW SALARY PACKAGE DETAILS *****************************************
+
+    $("#Div_All_Usr").on("click", ".allAttHis", function (e) {
+        e.preventDefault();
+        var id = $(this).data("userid");
+        total_spec_user_atten = 0, show_spec_user_atten = 0;
+        $("#Win_Atten_His").empty();
+        $("#Win_Atten_His").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            title: 'All Attendence History',
+            close: onWindowClose
+        });
+        $("#Win_Atten_His").html('<div class="partial_loading_half"></div>');
+        var Win_unit_Add = $("#Win_Atten_His").data("kendoWindow");
+        Win_unit_Add.refresh({ url: "/Attendance/_SpecificUserHistory?UserId=" + id });
+        Win_unit_Add.maximize().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+</script>

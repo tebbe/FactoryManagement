@@ -1,0 +1,75 @@
+﻿
+
+@******************************************* JERIN JAHAN (Date:24.09.201) ***************************************************@
+
+@{
+    ViewBag.Title = "Store Item List";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<h2>@ViewBag.Title</h2>
+<div class="row" id="div_All_List">
+    @if (db.View_All_InventoryList.Any())
+    {
+        <div class="col-md-12 col-sm-12 col-xs-12 row">
+            <div class="col-xs-12" id="div_acquisition">
+                <table class="table table-bordered" style="margin-bottom:0px!important;margin-top:10px!important;border-bottom:none!important;display:none;">
+                    <tr>
+                        <td colspan="6">
+                            <span class="k-textbox k-space-right" style="width:50%!important;">
+                                <input type="text" id="textForSearch" style="max-width:100% !important;width:100%!important;height: 2.3em!important;"
+                                       placeholder="Type atleast two character of acquisition name (e.g. order)" />
+                                <a href="#" class="k-icon k-i-search">&nbsp;</a>
+                            </span>
+                            @*<div style="float:right;width:10%!important;">
+                                @(Html.Kendo().DropDownList().Name("listType")
+                                .OptionLabel("--Select One Type--")
+                                .BindTo(ViewBag.OrderStatus as SelectList)
+                                .Events(e => e.Change("onListTypechange"))
+                                .HtmlAttributes(new { style = "width:100%" })
+                                )
+                            </div>*@
+                        </td>
+                    </tr>
+                </table>
+                <div id="div_inven_lists">
+                    <div class="loading_partial"></div>
+                </div>
+            </div>
+        </div>
+        <script>
+            $("#div_inven_lists").load('@Url.Action("_StoreProList", "StoreProduct")');
+        </script>
+    }
+</div>
+<script>
+    //***************************** ACQUISITION ORDER DELETE FUNCTION ************************************
+    $("#div_inven_lists").on("click", ".btn_pro_delete", function (e) {
+        if (confirm('Are you sure want to delete this item from store?')) {
+            e.preventDefault();
+            var id = $(this).data("id");
+            notification.show({ message: "Deleting store item...", showTime: startTime() }, "upload-progress");
+
+            $.ajax({
+                url: '@Url.Action("DeleteStoreProduct", "StoreProduct")',
+                type: 'Post',
+                data: { id: id, UserId: userId},
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 2000 });
+
+                    if(data === "Success"){
+                        notification.show({ message: "Store item successfully deleted", showTime: startTime() }, "upload-success");
+
+                        $("#div_inven_lists").empty();
+                        $("#div_inven_lists").append('<div class="loading_partial"></div>');
+                        $("#div_inven_lists").load('@Url.Action("_StoreProList", "StoreProduct")');
+
+                    }else{
+                        notification.show({ message: "Store item order deletion unsuccessful", showTime: startTime() }, "upload-error");
+                    }
+                }
+            });
+        }
+    });
+</script>

@@ -1,0 +1,155 @@
+﻿@*******************************  Created By Jerin Jahan Date(12.12.2016) ************************************@
+
+
+@model FactoryManagement.Models.MachinePartsNotInstalledList
+<style>
+    .k-edit-form-container .editor-label {
+        width: 30% !important;
+    }
+
+    .k-edit-form-container .editor-field {
+        width: 55% !important;
+    }
+</style>
+@using (Html.BeginForm())
+{
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <br />
+    <div class="k-edit-form-container" id="Div_parts_restore">
+
+        <div class="editor-label"><label for="Quantity">Voucher</label></div>
+        <div class="editor-field">
+            <div style="width:50%!important;float:left;padding-right:15px;">
+                @*<input class="form-control k-textbox text-box single-line k-invalid"
+                       required="" data-required-msg="Please Select Voucher"
+                       id="txt_re_voucher" name="txt_re_voucher"
+                       type="text" value=""
+                       aria-invalid="true">*@
+                @(Html.Kendo().DropDownList()
+          .Name("Vouchers")
+          .OptionLabel("Select voucher....")
+          .DataTextField("VoucherName")
+          .DataValueField("AvailableQuantity")
+          .Events(e=>e.Change("onVoucherChange"))
+          .DataSource(source =>
+          {
+              source.Read(read =>
+              {
+                  read.Action("GetVouchersForReturn", "Inventory").Data("additionalMachineId");
+              });
+          })
+          .HtmlAttributes(new { style = "width: 100%" })
+                )
+                <span class="field-validation-valid text-danger" data-valmsg-for="Vouchers" data-valmsg-replace="true"></span>
+            </div>
+            @*<span style="font-weight:bold;">Out of @ViewBag.total_quan @ViewBag.unitname</span>*@
+        </div>
+
+
+        <div class="editor-label"><label for="Quantity">Quantity</label></div>
+        <div class="editor-field">
+            <div style="width:50%!important;float:left;padding-right:15px;">
+                <input class="form-control k-textbox text-box single-line k-invalid"
+                       required="" data-required-msg="Please enter quantity" disabled
+                       id="txt_re_quan" name="txt_re_quan"
+                       type="text" value=""
+                       aria-invalid="true" onkeypress="return isNumber(event,this.value)">
+                <span class="field-validation-valid text-danger" data-valmsg-for="txt_re_quan" data-valmsg-replace="true"></span>
+            </div>
+            <span style="font-weight:bold;"><span id="available_quan"></span> @ViewBag.unitname</span>
+        </div>
+
+
+        <div class="editor-label"><label>Edit Reason</label></div>
+        <div class="editor-field">
+            @(Html.Kendo().DropDownList().Name("ReasonId")
+            .OptionLabel("--Select One--")
+            .BindTo(ViewBag.ReasonId)
+            .HtmlAttributes(new { style = "width:100%" })
+            )
+            <span class="field-validation-valid text-danger" data-valmsg-for="ReasonId" data-valmsg-replace="true"></span>
+        </div>
+
+        <div class="k-edit-buttons k-state-default">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_Restore_quan"><span class="k-icon k-update"></span>Restore</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_Restore_quan_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+    <br />
+}
+<script>
+   
+    var msg = "";
+    var validation = $("#Div_parts_restore").kendoValidator({
+        rules: {
+            option: function (input) {
+                if (input.attr('name') === "ReasonId" && ($("#ReasonId").val() === '0' || $("#ReasonId").val() === '')) {
+                    return false;
+                }
+                return true;
+            },
+            EntryDate: function (input) {
+                if (input.is("[name=txt_re_quan]") && parseFloat($("#txt_re_quan").val()) < 1) {
+                    return false;
+                } else
+                    return true;
+            },
+            Quantity: function (input) {
+                if (input.is("[name=txt_re_quan]") && $("#txt_re_quan").val() !== '') {
+                    if (parseFloat($("#txt_re_quan").val()) > parseFloat($("#Vouchers").val().split('-')[0])) {
+                        return false;
+                    }
+                    return true;
+                } else
+                    return true;
+            }
+        },
+        messages: {
+            option: "Please select one",
+            EntryDate: "Quantity must be greater than 0 ",
+            Quantity: "Quantity can not be greater than available quantity." 
+        }
+    }).data("kendoValidator");
+
+    $("#btn_Restore_quan_cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#btn_Restore_quan").click(function () {
+        if (validation.validate()) {
+            var sendData = {
+                id: '@(Model.Id)', quan: $("#txt_re_quan").val(),
+                invenId: '@(Model.InvenLocId)', assignedId: '@(Model.MachineId)',
+                reasonId: $("#ReasonId").val(),
+                proName: '@(ViewBag.proname)', unitName: '@(ViewBag.unitname)', userId: userId, voucherId: $("#Vouchers").val().split('-')[1]
+            };
+            $.ajax({
+                url: '@Url.Action("SparePartsRestore", "Inventory")',
+                type: 'Post',
+                data: sendData,
+                success: function (response) {
+                    if (response === "Success") {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        msg = "Machine spare parts '" + '@(ViewBag.proname)' + "'  has been successfully returned.";
+                        notification.show({ message: msg, showTime: startTime() }, "upload-success");
+
+                        $("#Div_Not_Installed").empty();
+                        $("#Div_Not_Installed").append('<div class="loading_half"></div>');
+                        $("#Div_Not_Installed").load('@Url.Action("NotInstalledParts", "Inventory")?machineId=' + MachineId);
+                        $("#btn_Restore_quan").closest(".k-window-content").data("kendoWindow").close();
+                    }
+                    else {
+                        msg = "Machine spare parts '" + '@(ViewBag.proname)' + "' return unsuccessful.";
+                        notification.show({ message: msg, showTime: startTime() }, "upload-error");
+                    }
+                    $(this).closest(".k-window-content").data("kendoWindow").close();
+                },
+                error: function () {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    msg = "Error occured!";
+                    notification.show({ message: msg, showTime: startTime() }, "upload-warning");
+                }
+            });
+
+        }
+    });
+</script>

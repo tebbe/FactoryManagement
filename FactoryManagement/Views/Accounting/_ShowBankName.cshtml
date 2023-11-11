@@ -1,0 +1,19 @@
+﻿@model FactoryManagement.ModelView.Accounting.BankListModelView
+
+<dl class="dl-horizontal col-md-12 col-sm-12" id="showBankInfo">
+    @if (Model.BankName != null)
+    {
+        <dt>Name </dt>
+        <dd>
+            <span>@Html.DisplayFor(model => model.BankName)</span>
+            <span class="btn green editBank" id="editBank" data-toggle="tooltip" data-original-title="Edit Bank" style="margin-left:2%;margin-top:-1em;"><i class="fa fa-pencil"></i></span>
+        </dd>
+    }
+</dl>
+<script>
+    $(document).ready(function () {
+        if ('@Model.ForDisplay' > 0) {
+            $("#editBank").hide();
+        }
+    });
+</script>

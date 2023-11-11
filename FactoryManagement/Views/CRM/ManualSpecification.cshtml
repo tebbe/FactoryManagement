@@ -1,0 +1,34 @@
+﻿@model FactoryManagement.ModelView.CRM.BusinessOrderListModelView
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int? BusinessOrderId = ViewBag.BusinessOrderId;
+    bool? isPrint = ViewBag.IsPrint;
+    bool hasAcquisition = db.Acquisition_List.Where(m => m.AcquisitionType == 2 && m.BusinessOrderId == BusinessOrderId).Any();
+}
+<div class="col-md-12 col-sm-12 col-xs-12">
+    <div class="col-md-12" id="Div_For_Manual_Spec" style="border:1px solid #ddd;margin-bottom:1em;margin-top:1em; min-height:100px;">
+        <h4>
+            Manual Specification
+            @if (isPrint != true)
+            {
+                <span style="float:right;" id="btn_Create_Spec" data-toggle="tooltip" title="Add Manual Specification"><i class="fa fa-plus"></i></span>
+            }
+        </h4><hr />
+        <div id="Div_all_manual_spec" style="overflow:auto;"></div>
+    </div>
+    <script>
+        $("#Div_all_manual_spec").append('<div class="loading_partail"></div>');
+        $("#Div_all_manual_spec").load('@Url.Action("AddedManualSpec","CRM")?BusinessOrderId=' +@Model.BusinessOrderId + "&IsPrint=" + '@ViewBag.IsPrint');
+    </script>
+    @if (!hasAcquisition && isPrint != true)
+    {
+        <div class="row" style="margin-bottom:30px!important;">
+            <div class="col-md-3 col-sm-3 col-xs-6">
+                <input type="button" value="Acquisition" class="k-button k-state-default" id="btn_Create_Aqui" />
+            </div>
+        </div>
+    }
+</div>
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+</script>

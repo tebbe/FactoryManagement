@@ -1,0 +1,394 @@
+﻿@********************************************* Created By Jerin Jahan Date(13.11.2016) ****************************************************@
+@{
+    ViewBag.Title = "Equipment Dashboard";
+    Layout = "~/Views/Shared/_LayoutPagedashboard.cshtml";
+    DateTime today = DateTime.Today.AddDays(-7);
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    var u_list = db.Site_Unit_Lists.Where(m => m.UnitStatus == 1).ToList();
+    var AllList = db.View_Dispacth_Item_Details.Where(m => m.DispatchedDate > today).ToList();
+    int u_count = 0;
+    int offset = Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["localTime"]);
+    DateTime now = DateTime.UtcNow.AddMinutes(offset);
+    DateTime countDate = now.Date.AddDays(-7);
+    var last7daysMaintenance = db.View_Maintenance_Log.Where(m => m.MaintenanceDate > countDate).Count();
+    var availableParts = db.View_Dispacth_Item_Details.Where(m => m.AssignType == 1 && m.MachineId > 0).OrderByDescending(m => m.DispatchedDate).ToList();
+    availableParts = (from bs in availableParts
+                      group bs by new { bs.MachineId, bs.InventoryId } into g
+                      select new FactoryManagement.Models.View_Dispacth_Item_Details
+                      {
+                          Id = g.FirstOrDefault().Id,
+                          DispatchedId = g.FirstOrDefault().DispatchedId,
+                          Name = g.FirstOrDefault().Name,
+                          MachineId = g.FirstOrDefault().MachineId,
+                          MachineName = g.FirstOrDefault().MachineName,
+                          ProductName = g.FirstOrDefault().ProductName,
+                          InventoryId = g.FirstOrDefault().InventoryId,
+                          LocationId = g.FirstOrDefault().LocationId,
+                          UnitName = g.FirstOrDefault().UnitName,
+                          Quantity = g.Sum(x => x.Quantity),
+                          UsedQuan = g.Sum(x => x.UsedQuan),
+                          ReturnQuantity = g.Sum(x => x.ReturnQuantity),
+                      }).OrderBy(o => o.MachineName).ToList();
+}
+<style>#div_for_btn .more{font-weight: 600 !important;font-size: 14px !important;}</style>
+<div id="Win_Ord_Info"></div>
+@*<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-home"></i>
+            <a href="/Home/Dashboard">Dashboard</a>
+        </li>
+    </ul>
+</div>*@
+<h3 class="page-title">Dashboard <small>reports & statistics</small></h3>
+<div class="row" id="div_for_btn">
+    <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="dashboard-stat blue">
+            <a class="more" href="/Inventory/AllPartsList">
+                All Spare Parts Lists <i class="m-icon-swapright m-icon-white"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="dashboard-stat purple box">
+            <a class="more" href="/Inventory/AllMachineList">
+                All Machine Lists <i class="m-icon-swapright m-icon-white"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="dashboard-stat green-haze">
+            <a class="more" href="/Inventory/AllEquipmentList">
+                All Equipment Lists <i class="m-icon-swapright m-icon-white"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="dashboard-stat yellow">
+            <a class="more" href="/Inventory/MachineMaintanence">
+                Machine Maintenance <i class="m-icon-swapright m-icon-white"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="dashboard-stat red">
+            <a class="more" href="/Inventory/AllAcceptLogWithclick">
+                Return Parts Accept Log <i class="m-icon-swapright m-icon-white"></i>
+            </a>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="dashboard-stat blue-madison">
+            <div class="visual"><i class="fa fa-building"></i></div>
+            <div class="details">
+                <div class="number">@db.MachineLists.Where(m => m.AssignStatus == true).Count()</div>
+                <div class="desc">No. of machines in used</div>
+            </div>
+            <a class="more" href="/Inventory/MachineMaintanence">
+                View more <i class="m-icon-swapright m-icon-white"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="dashboard-stat yellow">
+            <div class="visual"><i class="fa fa-bug"></i></div>
+            <div class="details">
+                <div class="number">@(availableParts.Sum(x=>x.Quantity)-(availableParts.Sum(x=>x.UsedQuan)+availableParts.Sum(x=>x.ReturnQuantity)))</div>
+                <div class="desc">No. of available parts</div>
+            </div>
+            <a class="more" href="/Inventory/SparePartsDisList">
+                View more <i class="m-icon-swapright m-icon-white"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="dashboard-stat grey-cascade">
+            <div class="visual"><i class="fa fa-bug"></i></div>
+            <div class="details">
+                <div class="number">@last7daysMaintenance</div>
+                <div class="desc">Maintenance in last 7 Days</div>
+            </div>
+            <a class="more" href="/Inventory/AllMaintenanceLog">
+                View more <i class="m-icon-swapright m-icon-white"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+        <div class="dashboard-stat red-intense">
+            <div class="visual">
+                <i class="fa fa-shopping-cart"></i>
+            </div>
+            <div class="details">
+                <div class="number">@db.View_Machine_Parts.Where(m => m.Left_Day < 14).Count() Parts</div>
+                <div class="desc">Critical Maintenance</div>
+            </div>
+            <a class="more" href="/Inventory/MachineMaintanence">View more <i class="m-icon-swapright m-icon-white"></i></a>
+        </div>
+    </div>
+    @*@foreach (var u in u_list)
+    {
+        u_count++;
+        var clas = "";
+        if (u_count == 1)
+        {
+            clas = "green-haze";
+        }
+        else if (u_count == 2)
+        {
+            clas = "red-pink";
+        }
+        else if (u_count == 3)
+        {
+            clas = "blue-soft";
+        }
+        else if (u_count == 4)
+        {
+            clas = "purple-soft";
+        }
+        else if (u_count == 5)
+        {
+            clas = "grey-cascade";
+        }
+        else if (u_count == 6)
+        {
+            clas = "green-turquoise";
+        }
+        var dept = db.DepartmentLists.Where(m => m.UnitId == u.UnitId).Select(m => m.DeptId).ToList();
+        var line = db.LineInfoes.Where(m => dept.Contains(m.DeptId)).Select(m => m.LineId).ToList();
+        var machine_count = db.LineMachineLists.Where(m => line.Contains(m.LineId)).Count();
+        <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="dashboard-stat @clas">
+                <div class="visual">
+                    <i class="fa fa-list-ul"></i>
+                </div>
+                <div class="details">
+                    <div class="number">@machine_count </div>
+                    <div class="desc">No. of mahcine in @u.UnitAcryonm</div>
+                </div>
+            </div>
+        </div>
+    }
+</div>*@
+<div class="clearfix"></div>
+<div class="row">
+    <div class="col-md-6 col-sm-6">
+        <div class="portlet light ">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-share font-blue-steel hide"></i>
+                    <span class="caption-subject font-blue-steel bold uppercase">Critical Maintenance</span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="scroller" style="height: 300px;" data-always-visible="1" data-rail-visible="0" id="div_Recent_import"></div>
+                <div class="scroller-footer">
+                    <div class="btn-arrow-link pull-right">
+                        <a href="/Inventory/MachineMaintanence">See All Records</a>
+                        <i class="icon-arrow-right"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-sm-6">
+        <div class="portlet light tasks-widget">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-share font-green-haze hide"></i>
+                    <span class="caption-subject font-green-haze bold uppercase">Available Spare Parts</span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="task-content">
+                    <div class="scroller" style="height: 305px;" data-always-visible="1" data-rail-visible1="1" id="div_dis_his"></div>
+                </div>
+                <div class="task-footer">
+                    <div class="btn-arrow-link pull-right">
+                        <a href="/Inventory/SparePartsDisList">See All Records</a>
+                        <i class="icon-arrow-right"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="clearfix"></div>
+<div class="row">
+    <div class="col-md-6 col-sm-6">
+        <div class="portlet light ">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-share font-purple-steel hide"></i>
+                    <span class="caption-subject font-purple-intense bold uppercase">Voucher Dispatch</span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="scroller" style="height: 300px;" data-always-visible="1" data-rail-visible="0" id="div_item_stock"></div>
+                <div class="scroller-footer">
+                    <div class="btn-arrow-link pull-right">
+                        <a href="/StoreProduct/InvenDisVoucherList">See All Records</a>
+                        <i class="icon-arrow-right"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-sm-6">
+        <div class="portlet light ">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-equalizer font-purple-plum hide"></i>
+                    <span class="caption-subject font-red-sunglo bold uppercase">Maintenance Log</span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="scroller" style="height: 300px;" data-always-visible="1" data-rail-visible="0" id="div_finished_pro"></div>
+                <div class="scroller-footer">
+                    <div class="btn-arrow-link pull-right">
+                        <a href="/Inventory/AllMaintenanceLog">See All Records</a>
+                        <i class="icon-arrow-right"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="clearfix"></div>
+<script>
+    var hieght = 0;
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $("#liEquipments").addClass("sublistActive");
+        var windowHeight = $(window).height() - $(".navbar-fixed-top").height();
+        hieght = (parseInt(windowHeight) / 2) + 50;
+        panel_height = (parseInt(windowHeight) / 2);
+        $(".child").css({ "min-height": hieght });
+        $("#div_Recent_import").append('<div class="loading_15"></div>');
+        $("#div_dis_his").append('<div class="loading_15"></div>');
+        $("#div_item_stock").append('<div class="loading_15"></div>');
+        $("#div_finished_pro").append('<div class="loading_15"></div>');
+
+
+        $("#div_Recent_import").load('@(Url.Action("_CriticalMaintenance", "Home"))');
+        $("#div_dis_his").load('@(Url.Action("_AvailableMachine", "Home"))');
+        $("#div_item_stock").load('@(Url.Action("_MachinVoucherList", "Home"))');
+        $("#div_finished_pro").load('@(Url.Action("_DailyMaintenanceMain", "Home"))');
+    });
+</script>
+<script>
+    $("#div_bus_order").on("click", ".bus_ord_name", function () {
+        var id = $(this).data('id');
+        $("#Win_Ord_Info").empty();
+        $("#Win_Ord_Info").kendoWindow({
+            actions: ["Close"],
+            draggable: true,
+            modal: true,
+            visible: false,
+            pinned: false,
+            position: { top: 100, left: 100 },
+            title: 'Business Order Details',
+            content: "/Home/OrderDetails?BusinessOrderId=" + id + "&OrderType=1"
+        });
+        $("#Win_Ord_Info").data("kendoWindow").maximize().open();
+    });
+    function ProTypeChange() {
+        if (this.value() > 0) {
+            $("#div_load_inven").empty();
+            $("#div_load_inven").load('@Url.Action("_InvenList", "Home")?ProductTypeId=' + this.value());
+        } else {
+            $("#div_load_inven").empty();
+            $("#div_load_inven").load('@Url.Action("_InvenList", "Home")');
+        }
+    }
+</script>
+<script>
+    function isvalidnumber(e, v) {
+        e = (e) ? e : window.event;
+        var charCode = (e.which) ? e.which : e.keyCode;
+        if (charCode > 31 && (charCode < 41 || charCode > 57 || charCode == 47)) {
+            return false;
+        }
+        if (v.indexOf('.') > -1 && charCode == 46) {
+            return false;
+        }
+        return true;
+    }
+    var keys = document.querySelectorAll('#calculator span');
+    var operators = ['+', '-', 'x', '÷'];
+    var decimalAdded = false;
+    for (var i = 0; i < keys.length; i++) {
+        keys[i].onclick = function (e) {
+            var input = document.querySelector('.screen');
+            var inputVal = input.value;
+            var btnVal = this.innerHTML;
+            if (btnVal == 'C') {
+                input.value = '';
+                decimalAdded = false;
+            }
+            else if (btnVal == '=') {
+                var equation = inputVal;
+                var lastChar = equation[equation.length - 1];
+                equation = equation.replace(/x/g, '*').replace(/÷/g, '/');
+                if (operators.indexOf(lastChar) > -1 || lastChar == '.')
+                    equation = equation.replace(/.$/, '');
+
+                if (equation)
+                    input.value = eval(equation);
+
+                decimalAdded = false;
+            }
+            else if (operators.indexOf(btnVal) > -1) {
+                var lastChar = inputVal[inputVal.length - 1];
+                if (inputVal != '' && operators.indexOf(lastChar) == -1)
+                    input.value += btnVal;
+                else if (inputVal == '' && btnVal == '-')
+                    input.value += btnVal;
+                if (operators.indexOf(lastChar) > -1 && inputVal.length > 1) {
+                    input.value = inputVal.replace(/.$/, btnVal);
+                }
+
+                decimalAdded = false;
+            }
+            else if (btnVal == '.') {
+                if (!decimalAdded) {
+                    input.value += btnVal;
+                    decimalAdded = true;
+                }
+            }
+            else {
+                input.value += btnVal;
+            }
+            e.preventDefault();
+        }
+    }
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        setInterval(function () {
+            var seconds = new Date().getSeconds();
+            var sdegree = seconds * 6;
+            var srotate = "rotate(" + sdegree + "deg)";
+
+            $("#sec").css({ "-moz-transform": srotate, "-webkit-transform": srotate });
+
+        }, 1000);
+        setInterval(function () {
+            var hours = new Date().getHours();
+            var mins = new Date().getMinutes();
+            var hdegree = hours * 30 + (mins / 2);
+            var hrotate = "rotate(" + hdegree + "deg)";
+
+            $("#hour").css({ "-moz-transform": hrotate, "-webkit-transform": hrotate });
+
+        }, 1000);
+        setInterval(function () {
+            var mins = new Date().getMinutes();
+            var mdegree = mins * 6;
+            var mrotate = "rotate(" + mdegree + "deg)";
+            $("#min").css({ "-moz-transform": mrotate, "-webkit-transform": mrotate });
+        }, 1000);
+    });
+</script>

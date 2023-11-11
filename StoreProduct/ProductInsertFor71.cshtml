@@ -1,0 +1,389 @@
+﻿@************************************** Created By Jerin Jahan (Date:04.09.2016)  ***************************************@
+
+@model FactoryManagement.Models.ProductItemList
+
+@{
+    ViewBag.Title = "Product Insert";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+<h2>Inventory Create</h2>
+<link href="~/Content/MultipleImgUpload/css/component.css" rel="stylesheet" />
+<script src="~/Content/MultipleImgUpload/js/custom-file-input.js"></script>
+<link href="~/Content/StoreProCreate.css" rel="stylesheet" />
+@using (Html.BeginForm())
+{
+    <div id="div_Inv_Pro">
+        @Html.HiddenFor(m => m.ItemId)
+        @Html.HiddenFor(m => m.CategoryId)
+        <hr />
+        <div class="form-horizontal  col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div class="form-group">
+                @Html.LabelFor(model => model.ProductName, "Product Name", htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" })
+                <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7">
+                    @Html.EditorFor(model => model.ProductName, new { htmlAttributes = new { @class = "form-control k-textbox", @type = "text"} })
+                </div>
+            </div>
+            <div id="divForProductCatagory">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CategoryId, "Category Name", htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" })
+                    <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" id="dynDivForProCat-1">
+                        @(Html.Kendo().DropDownList().Name("productCatType-1")
+                            .OptionLabel("--Select One Type--")
+                            .BindTo(ViewBag.CategoryId as SelectList)
+                            .Events(e => e.Change("onProductChange"))
+                            .HtmlAttributes(new { style = "width:100%" })
+                        )
+                        @Html.ValidationMessageFor(model => model.CategoryId, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" style="display:none;padding-top:7px;" id="divForCatLbl-1">
+                        <label id="lblForCatagoryName-1"></label>
+                        <span class="k-icon k-i-close" id="btnCloseForCat-1" data-id="1"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(model => model.Price, "Price", htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" })
+                <div class="col-md-4 col-sm-5 col-xs-7">
+                    @Html.EditorFor(model => model.Price, new { htmlAttributes = new { @class = "form-control k-textbox col-lg-2 col-md-2" } })
+                    @Html.ValidationMessageFor(model => model.Price, "", new { @class = "text-danger" })
+                </div>
+                <div class="col-md-4 col-sm-4 col-xs-3">
+                    <span> ৳ </span>
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(model => model.Quantity, "Quantity", htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" })
+                <div class="col-md-4 col-sm-5 col-xs-7">
+                    @Html.EditorFor(model => model.Quantity, new { htmlAttributes = new { @class = "form-control k-textbox", @type = "text", @onkeypress = "return isNumber(event)"} })
+                    @Html.ValidationMessageFor(model => model.Quantity, "", new { @class = "text-danger" })
+                </div>
+                <div class="col-md-4 col-sm-4 col-xs-3"><span> Piece/s </span></div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" })
+                <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7">
+                    @Html.TextAreaFor(model => model.Description, new { @class = "form-control k-textbox", rows = 5 })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(model => model.ImageName, "Upload Picture", htmlAttributes: new { @class = "control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" })
+                <div class="col-md-9 col-sm-8 col-xs-12" style="padding-left:0px!important;" id="divForPic">
+                    <div class="col-md-3 col-xs-3" id="divPic-0">
+                        <span id="divForpic-0"></span>
+                        <div id="imgPreview-0" class="imgPreview"></div>
+                        <div id="imgUpload-0" class="image-uploader">
+                            <input type="file" name="files" id="file-0" class="inputfile inputfile-4" data-count="0" />
+                            <label for="file-0" id="lbl-0" class="lblForPics">
+                                <span style="font-size: 25px;padding-top:1.8em;display:block;">+</span>
+                                <span style="font-size: 15px;font-weight:bold;">Add Photos</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-offset-3 col-md-9 col-sm-offset-4 col-sm-8 col-xs-12">
+                    <input type="button" value="Save" class="k-button k-state-default" id="btnProInsert" />
+                    <input type="Reset" value="Refresh" class="k-button k-state-default" id="btnRefresh" />
+                    <input type="button" value="Cancel" class="k-button k-state-default" id="btnCancel" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<script>
+    var BrandName,count = 1,unitCount=1,brandCount=1,subunitCount=1,allMainFile = [],allFileCount = [];
+
+    $(document).ready(function () {
+        $("#Quantity").val('');
+    });
+
+    function isNumber(e) {
+        e = (e) ? e : window.event;
+        var charCode = (e.which) ? e.which : e.keyCode;
+        if ((charCode != 46 || $(this).val().indexOf('.') != -1) && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+        return true;
+    }
+    //**************************** PRODUCT TYPE CHANGE ************************************************
+    function onProductChange() {
+       // alert(this.value());
+        if(this.value() === ""){
+            $("#CategoryId").val(0);
+        }
+        else{
+            var id = this.value();
+            var ProductTypeName= this.text();
+            $.ajax({
+                url: '@Url.Action("ProductTypeHasChildern", "StoreProduct")',
+                type: 'Post',
+                data: { id: id },
+                success: function (data) {
+                    if(data)
+                    {
+                        $("#CategoryId").val(0);
+                        $("#lblForCatagoryName-"+count).text(ProductTypeName);
+                        $("#divForCatLbl-"+count).show();
+                        $("#dynDivForProCat-"+count).hide();
+                        count++;
+                        $("#divForProductCatagory").append('<div class="form-group dynDivForProCat" id="divForcat-' + count + '">' +
+                            '<label class="control-label col-lg-3 col-md-3 col-sm-4 col-xs-12" for="ProductType-'+count+'">Sub Catagory</label>'+
+                            '<div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" id="dynDivForProCat-' + count + '">' +
+                            '<label id="productCatType-'+count+'" style="width:100%;"></label>'+
+                            '<span class="field-validation-valid text-danger" data-valmsg-for="CategoryId" data-valmsg-replace="true"></span></div>' +
+                            '<div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" style="display: none; padding-top: 7px;" id="divForCatLbl-'+count+'">'+
+                            '<label id="lblForCatagoryName-'+count+'"></label> '+
+                            '<span class="k-icon k-i-close" id="btnCloseForCat-'+count+'" data-id="'+count+'"></span></div></div>');
+
+                        $("#productCatType-"+count).kendoDropDownList({
+                            dataTextField: "ProductTypeName",
+                            dataValueField: "ProductTypeId",
+                            change: onProductChange,
+                            optionLabel: "--Select One--",
+                            dataSource: {
+                                transport: {
+                                    read: { url: "@Url.Action("GetAllProductType", "StoreProduct")?ParentId=" + id, type: "GET" }
+                                }
+                            }
+                        });
+
+                    } else { $("#CategoryId").val(id); }
+                }
+            });
+        }
+    }
+    
+    $("#divForProductCatagory").on("click", ".k-i-close", function (e) {
+        var id = $(this).data("id");
+        $("#productCatType-" + id).data("kendoDropDownList").value(null);
+        $("#divForCatLbl-" + id).hide();
+        $("#dynDivForProCat-" + id).show();
+        $("#ProductTypeId").val(0);
+        $("#div_Chk_Rep_Spare").hide();
+        $("#div_Chk_topup_Spare").hide();
+
+        if (count > id) {
+            for (var i = id; i <= count; i++) {
+                $("#divForcat-" + (i + 1)).remove();
+                count--;
+            }
+        }
+    });
+    $("#btnCloseForProduct").click(function () {
+        $("#div_slected_pro_info").empty();
+        $("#div_slected_pro_info").hide();
+        $("#div_pro_select").hide();
+        $("#Div_for_NewExpiredDate").hide();
+        $("#NewExpiredDate").val('');
+        $("#Div_For_Mini_Quan").show();
+        $(".div_hide_display").show();
+        $("#div_Pro_AutoCom").show();
+        $("#divForUnitList").show();
+        $("#lbl_Pro_Name").text('');
+        $("#InventoryId").val(0);
+        $("#Country").val('');
+        $("#Price").val('');
+        $("#ProductName").val('');
+        $("#UnitId").val('');
+        $("#lbl_select_pro_unitname").text('');
+    });
+    $('#btnRefresh').click(function () {
+        location.reload();
+    });
+    //**************************  UPLOAD IMAGE AND REMOVE UPLOADED IMAGE FUNCTION (START) *******************************************
+
+    $("#divForPic").on('change', '.inputfile-4', function (e) {
+        var id = $(this).data("count");
+        var imgPath = $("#file-" + id)[0].value;
+        var extn = imgPath.substring(imgPath.lastIndexOf('.') + 1).toLowerCase();
+        var image_holder = $("#imgPreview-" + id);
+        var files = e.target.files;
+
+        if (extn == "gif" || extn == "png" || extn == "jpg" || extn == "jpeg") {
+            if (typeof (FileReader) != "undefined") {
+                allFileCount.push(id);
+                allMainFile[id] = files[0];
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $("<img />", { "src": e.target.result }).appendTo(image_holder);
+                }
+                $("#divForpic-" + id).append('<img src="/Content/Icon/modal_close.png" class="previewImgClose" data-count="' + id + '" />');
+                $("#imgUpload-" + id).hide();
+                image_holder.show();
+                $("#divForpic-" + id).show();
+
+                $("#ProductImageName").val($("#file-" + id)[0].files[0]);
+                reader.readAsDataURL($("#file-" + id)[0].files[0]);
+            } else {
+                alert("This browser does not support FileReader.");
+            }
+        } else {
+            alert("Pls select only images");
+        }
+    });
+    $("#divForPic").on('click', '.previewImgClose', function (e) {
+        var id = $(this).data("count");
+        $("#imgPreview-" + id).hide();
+        $("#imgPreview-" + id).empty();
+        $("#divForpic-" + id).empty();
+        $("#divForpic-" + id).hide();
+        $("#imgUpload-" + id).show();
+        for (var i = 0; i < allFileCount.length; i++) {
+            if (id == allFileCount[i]) {
+                allMainFile.splice(i, 1);
+                allFileCount.splice(i, 1);
+            }
+        }
+        if (allFileCount.length == 0) {
+            allMainFile = allFileCount = [];
+            closeUp = 1;
+        }
+    });
+    $("#btnProInsert").click(function () {
+        var validatable;
+        if ($("#ItemId").val() > 0) {
+            validatable = $("#div_Inv_Pro").kendoValidator({
+                rules: {
+                    StoreId: function (input) {
+                        if (input.is("[name=StoreId]") && isStore == 'True' && $("#StoreId").val() === "") {
+                            return false;
+                        }
+                        return true;
+                    },
+                    WareId: function (input) {
+                        if (input.is("[name=WareId]") && isware == 'True' && $("#WareId").val() === "") {
+                            return false;
+                        }
+                        return true;
+                    },
+                    unit: function (input) {
+                        if (input.is("[name=UnitId]") && $("#UnitId").val() === "0") {
+                            return false;
+                        }
+                        return true;
+                    },
+                    chkSubQuantity: function (input) {
+                        if (input.is("[name=SubQuantity]")) {
+                            if ($('#HasSubUnit').is(":checked") === true && $('#SubQuantity').val() === '') {
+                                return false;
+                            }
+                            else {
+                                return true;
+                            }
+                        }
+                        else
+                            return true;
+                    },
+                    chkSubUnit: function (input) {
+                        if (input.is("[name=SubUnits]")) {
+                            if ($('#HasSubUnit').is(":checked") === true && $('#SubUnits').val() === '') {
+                                return false;
+                            }
+                            else {
+                                return true;
+                            }
+                        }
+                        else
+                            return true;
+                    },
+                    NewExpiredDate: function (input) {
+                        if (input.is("[name=NewExpiredDate]")  && $("#NewExpiredDate").val() === "") {
+                            return false;
+                        }
+                        return true;
+                    }
+                },
+                messages: {
+                    StoreId:"Please select store",
+                    WareId:"Please select ware-house",
+                    unit: "Please select unit",
+                    chkSubQuantity:"Please enter quantity",
+                    chkSubUnit:"Please select one",
+                    NewExpiredDate:"Please enter expired date"
+                }
+            }).data("kendoValidator");
+        }else{
+            validatable = $("#div_Inv_Pro").kendoValidator({
+                rules: {
+                    productName: function (input) {
+                        if (input.is("[name=ProductName]") && $("#ProductName").val() === "") {
+                            return false;
+                        }
+                        return true;
+                    },
+                    productType: function (input) {
+                        if (input.is("[name=CategoryId]") && $("#CategoryId").val() === "0") {
+                            return false;
+                        }
+                        return true;
+                    },
+                    Quantity: function (input) {
+                        if (input.is("[name=Quantity]") && $("#Quantity").val() === "") {
+                            return false;
+                        }
+                        return true;
+                    },
+                    Price: function (input) {
+                        if (input.is("[name=Price]") && $("#Price").val() === "") {
+                            return false;
+                        }
+                        return true;
+                    }
+                },
+                messages: {
+                    productName:"Please enter product name",
+                    productType: "Please select product type",
+                    Price:"Please enter price",
+                    Quantity: "Please enter quantity",
+                }
+            }).data("kendoValidator");
+        }
+        if(validatable.validate())
+        {
+            notification.show({ message: "New product information saving...", showTime: startTime() }, "upload-progress");
+            var url = '';
+            var sendData = new FormData();
+            sendData.append("ItemId", $("#ItemId").val());
+            sendData.append("ProductName", $("#ProductName").val());
+            sendData.append("CategoryId", $("#CategoryId").val());
+            sendData.append("Price", $("#Price").val());
+            sendData.append("Quantity", $("#Quantity").val());
+            sendData.append("Description", $("#Description").val());
+            sendData.append("CreatedBy", userId);
+
+            if ($("#ItemId").val() > 0) {
+                url='@Url.Action("ExistingProQunatityChange", "StoreProduct")';
+            }else{
+                for (var i = 0; i < allMainFile.length; i++) {sendData.append("files[" + i + "]", allMainFile[i]);}
+                url='@Url.Action("ProductSaveFor71", "StoreProduct")';
+            }
+            $.ajax({
+                url: url,
+                type: 'Post',
+                data: sendData,
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    notification.hide();notification.setOptions({autoHideAfter: 5000});
+                    if (data != null) {
+                        if (data === 'Error') {
+                            notification.show({ message: "Inventory product details insert unsuccessful.", showTime: startTime() }, "upload-error");
+                        }
+                        else {
+                            notification.show({ message: "Inventory product details successfully saved.", showTime: startTime()}, "upload-success");
+                            location.reload();
+                        }
+                    }
+                },
+                error: function (error) {
+                    notification.hide();
+                    notification.setOptions({autoHideAfter: 5000});
+                    notification.show({ message: "Unsuccessful", showTime: startTime() }, "upload-error");
+                }
+            });
+        }
+    });
+    
+</script>

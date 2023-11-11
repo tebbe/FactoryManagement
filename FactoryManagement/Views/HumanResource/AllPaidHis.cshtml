@@ -1,0 +1,429 @@
+﻿
+
+@**************************** Created By Jerin Jahan (Date: 17.12.2016) ***************************************************************@
+@using FactoryManagement.Helpers
+@{
+    ViewBag.Title = "All Salary Paid History";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-calculator"></i>
+            <span> Finance</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-money" aria-hidden="true"></i>
+            <a href="/HumanResource/PaySalary">Payroll</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-history"></i>
+            <a href="/HumanResource/AllPaidHis">History</a>
+        </li>
+    </ul>
+</div>
+<div class="note note-success"><p id="h4title">Showing List of All Paid History</p></div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-settings font-blue"></i>
+                    <span class="caption-subject font-blue bold uppercase">All Paid History</span>
+                </div>
+                <div class="actions">
+                    <div class="btn-group btn-group-devided" data-toggle="buttons">
+                        <label class="btn btn-transparent blue btn-outline btn-circle btn-sm active" id="btn_All" data-toggle="tooltip" title="All History" data-container="body">
+                            <input type="radio" name="options" class="toggle">All
+                        </label>
+                        <label class="btn btn-transparent blue btn-outline btn-circle btn-sm" id="btn_today" data-toggle="tooltip" title="Today History" data-container="body">
+                            <span><input type="radio" name="options" class="toggle">Today</span>
+                        </label>
+                        <label class="btn btn-transparent blue btn-outline btn-circle btn-sm" id="btn_last_seven" data-toggle="tooltip" title="Last 7 days History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 7 Days
+                        </label>
+                        <label class="btn btn-transparent blue btn-outline btn-circle btn-sm" id="btn_last_thirty" data-toggle="tooltip" title="Last 30 day History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 30 Days
+                        </label>
+                        <label class="btn btn-transparent blue btn-outline btn-circle btn-sm" id="btn_All_Revert" data-toggle="tooltip" title="Show All Revert Transaction" data-container="body">
+                            <input type="radio" name="options" class="toggle"> Reverted Transaction
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div id="div_User_List">
+                    <table class="table table-bordered" style="margin-bottom:0px!important;margin-top:10px!important;border-bottom:none!important;">
+                        <tr>
+                            <td>
+                                <span class="col-sm-9" style="padding-left:0px!important;">
+                                    <span class="autocomplete-wrapper">
+                                        <input class="text-field" id="textForSearch" name="country" placeholder="Type employee name or designation" type="text" autocomplete="off">
+                                        <span class="k-icon k-i-search" style="margin-top:-25px;margin-right:10px;float:right;">&nbsp;</span>
+                                    </span>
+                                </span>
+                                <span class="col-sm-3">
+                                    @(Html.Kendo().DropDownList().Name("SiteId")
+                            .OptionLabel("All")
+                            .BindTo(ViewBag.AllSiteList as SelectList)
+                            .Events(e => e.Change("onSitenameChange"))
+                            .HtmlAttributes(new { style = "width:100%" })
+                                    )
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                    <div id="Div_AllPaid_His" style="display:none;"><div class="loading_partial"></div></div>
+                    @if (db.View_All_Salary_Pay_His.Any())
+                    {
+                        <script>
+                            $("#Div_AllPaid_His").show();
+                            $("#Div_AllPaid_His").load("_AllPaidHis", "HumanResource");
+                        </script>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="WinForTransactionDetails"></div>
+@(Html.Kendo().Window()
+.Name("Win_Revert_Tran")
+.Visible(false)
+.Modal(true)
+.Draggable(false)
+)
+@(Html.Kendo().Window()
+.Name("Win_Edit_Tran")
+.Visible(false)
+.Modal(true)
+.Draggable(false)
+)
+
+
+<script id="temp_win_For_Alert" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px"> #=data# </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="temp_win_Ok"><span class="k-icon k-update"></span>OK</button>
+        </div>
+    </div>
+</script>
+<script id="temp_for_confirmation" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px"> #=message# </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_confirm_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_confirm_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+
+
+<script>
+    var showCount = 0, totalCount = 0, inCallback = false,total_amount= 0;
+    var page = 0;
+    var content = '';
+    var siteId = '';
+    $(document).ready(function () {
+        $("#liForAccounting").addClass('active');
+        $("#liForHRSalary").addClass('sublistActive');
+    });
+    function onSitenameChange() {
+        showCount = 0, totalCount = 0, page = 0;
+        if (this.value() === '') {
+            $("#Div_AllPaid_His").empty();
+            $("#Div_AllPaid_His").append('<div class="loading_partial"></div>');
+            $("#Div_AllPaid_His").load("_AllPaidHis", "HumanResource");
+        } else {
+            $("#Div_AllPaid_His").empty();
+            $("#Div_AllPaid_His").append('<div class="loading_partial"></div>');
+            siteId = this.value();
+            $("#Div_AllPaid_His").load('@Url.Action("_AllPaidHis", "HumanResource")?siteId=' + this.value());
+        }
+    }
+
+    @******************************** OnScroll Bind Table Data *************************@
+    $(window).scroll(function () {
+        var countBytype, result;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/HumanResource/GetSalaryPaidHis',
+            data: { page: page },
+            success: function (data) {
+                var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        total_amount = parseFloat(total_amount) + parseFloat(data[i].Amount);
+                        $("table#tbl_AllPaid_His > tbody").append('<tr><th scope="row">' + showCount + '.</th>' +
+                            '<td><span class="tranDetails" data-id="' + data[i].Id + '">' + data[i].Id + '</span></td>' +
+                            '<td><img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].Picture + '" />' +
+                            '<a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].UserId + "?isDisplay=True") + '">' + data[i].UserName + '</a>' +
+                            ' </td>' +
+                            '<td>' + data[i].DesignationName + '</td>' +
+                            '<td>' + Currency + ' ' + data[i].Amount + '</td>' +
+                            '<td><img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].InsertUserPic + '" />' +
+                            '<a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].UserId + "?isDisplay=True") + '">' + data[i].InsertUser + '</a>'+
+                            '</td>' +
+                            '<td>' + data[i].InsertedDateFormate + '</td>' +
+                            '<td><span class="btn green editTran" data-toggle="tooltip"  data-original-title="Salary Transaction Edit" data-userid="' + data[i].UserId + '" data-id="' + data[i].Id + '" style="margin-right:2%!important;"><i class="fa fa-pencil"></i></span>' +
+                            '<span class="btn yellow revertTran" data-toggle="tooltip"  data-original-title="Revert Transaction" data-userid="' + data[i].UserId + '" data-id="' + data[i].Id + '"><i class="fa fa-mail-forward"></i></span></td>' +
+                            '</tr>');
+                        $('[data-toggle="tooltip"]').tooltip();
+                    }
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+                $("#show_total").text(Currency + ' ' + parseFloat(total_amount).toFixed(2));
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+    $("#textForSearch").autocomplete({
+        minLength: 0,
+        source: function (request, response) {
+            content = $.trim(request.term);
+            $.ajax({
+                url: '@Url.Action("SearchUserPaidHis", "HumanResource")',
+                type: "POST",
+                dataType: "json",
+                data: { prefix: content },
+                success: function (data) {
+                    response($.map(data, function (item) {
+                        return { label: item.UserName, value: item.UserName, id: item.UserId };
+                    }))
+                }
+            })
+        },
+        minLength: 1,
+        select: function (event, ui) {
+            isloadFirstTime = true;
+            var selectTextId = ui.item.id;
+            showCount = 0, totalCount = 0, page = 0;
+            $("#Div_AllPaid_His").empty();
+            $("#Div_AllPaid_His").append('<div class="loading_partial"></div>');
+            $("#Div_AllPaid_His").load('@Url.Action("_AllPaidHis", "HumanResource")?userId=' + selectTextId);
+        },
+    })
+ .keyup(function () {
+     if ($.trim($("#textForSearch").val()) == "") {
+         showCount = 0, totalCount = 0, page = 0;
+         $("#Div_AllPaid_His").empty();
+         $("#Div_AllPaid_His").append('<div class="loading_partial"></div>');
+         $("#Div_AllPaid_His").load('@Url.Action("_AllPaidHis", "HumanResource")');
+     }
+ })
+ .autocomplete("instance")._renderItem = function (ul, item) {
+     var term = $.trim(this.term);
+     var re = new RegExp("(" + term + ")", "gi"),
+                cls = "bold-text",
+                template = "<span class='" + cls + "'>$1</span>",
+                label = item.label.replace(re, template),
+                $li = $("<li/>").appendTo(ul);
+     $("<span>").html(label).appendTo($li);
+     return $li;
+ };
+
+
+
+    //************************ Date Wise Filter ******************************
+
+    $("#btn_today").click(function () {
+        $("#btn_today").removeClass("active");
+        $("#btn_last_seven").removeClass("active");
+        $("#btn_last_thirty").removeClass("active");
+        $("#btn_All").removeClass("active");
+        $("#btn_All_Revert").removeClass("active");
+        $(this).addClass("active");
+
+        showCount = 0, totalCount = 0, page = 0;
+        $("#Div_AllPaid_His").empty();
+        $("#Div_AllPaid_His").append('<div class="loading_partial"></div>');
+        var sendData = { siteId: siteId, days: 1 };
+        $("#Div_AllPaid_His").load('@Url.Action("_AllPaidHis", "HumanResource")', sendData);
+    });
+
+    $("#btn_last_seven").click(function () {
+        $("#btn_today").removeClass("active");
+        $("#btn_last_seven").removeClass("active");
+        $("#btn_last_thirty").removeClass("active");
+        $("#btn_All").removeClass("active");
+        $("#btn_All_Revert").removeClass("active");
+        $(this).addClass("active");
+
+        showCount = 0, totalCount = 0, page = 0;
+        $("#Div_AllPaid_His").empty();
+        $("#Div_AllPaid_His").append('<div class="loading_partial"></div>');
+        var sendData = { siteId: siteId, days: 7 };
+        $("#Div_AllPaid_His").load('@Url.Action("_AllPaidHis", "HumanResource")', sendData);
+    });
+    $("#btn_last_thirty").click(function () {
+        $("#btn_today").removeClass("active");
+        $("#btn_last_seven").removeClass("active");
+        $("#btn_last_thirty").removeClass("active");
+        $("#btn_All").removeClass("active");
+        $("#btn_All_Revert").removeClass("active");
+        $(this).addClass("active");
+
+        showCount = 0, totalCount = 0, page = 0;
+        $("#Div_AllPaid_His").empty();
+        $("#Div_AllPaid_His").append('<div class="loading_partial"></div>');
+        var sendData = { siteId: siteId, days: 30 };
+        $("#Div_AllPaid_His").load('@Url.Action("_AllPaidHis", "HumanResource")', sendData);
+    });
+
+    $("#btn_All").click(function () {
+        $("#btn_today").removeClass("active");
+        $("#btn_last_seven").removeClass("active");
+        $("#btn_last_thirty").removeClass("active");
+        $("#btn_All").removeClass("active");
+        $("#btn_All_Revert").removeClass("active");
+        $(this).addClass("active");
+
+        showCount = 0, totalCount = 0, page = 0;
+        $("#Div_AllPaid_His").empty();
+        $("#Div_AllPaid_His").append('<div class="loading_partial"></div>');
+        var sendData = { siteId: siteId };
+        $("#Div_AllPaid_His").load('@Url.Action("_AllPaidHis", "HumanResource")', sendData);
+    });
+    $("#btn_All_Revert").click(function () {
+        $("#btn_today").removeClass("active");
+        $("#btn_last_seven").removeClass("active");
+        $("#btn_last_thirty").removeClass("active");
+        $("#btn_All").removeClass("active");
+        $("#btn_All_Revert").removeClass("active");
+        $(this).addClass("active");
+        @*$("#Div_AllPaid_His").load('@Url.Action("AllRevertTran", "HumanResource")');*@
+        location.href = '@Url.Action("AllRevertTran","HumanResource")';
+    });
+
+</script>
+<script>
+
+    //*******************************  SHOW SALARY PACKAGE DETAILS *****************************************
+    $("#Div_AllPaid_His").on("click", ".tranDetails", function (e) {
+        var id = $(this).data("id");
+        e.preventDefault();
+        $("#WinForTransactionDetails").empty();
+        $("#WinForTransactionDetails").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '50%',
+            title: 'Transaction Details',
+            close: onWindowClose
+        });
+        $("#WinForTransactionDetails").append('<div class="loading_half"></div>');
+        var TransactionDetails = $("#WinForTransactionDetails").data("kendoWindow");
+        TransactionDetails.refresh({ url: "/HumanResource/_SalaryTransDetailsMain?id=" + id });
+        TransactionDetails.center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = 'no';
+    });
+
+
+    //********************************* Revert Transaction ***************************************************
+    $("#Div_AllPaid_His").on("click", ".revertTran", function (e) {
+        var id = $(this).data("id");
+        e.preventDefault();
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose
+        });
+        message = "Are you sure want to revert this transaction?";
+        var template = kendo.template($("#temp_for_confirmation").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+        kendoWindow.find("#btn_confirm_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_confirm_ok").click(function () {
+            var windowRvt = $("#Win_Revert_Tran").data("kendoWindow");
+            windowRvt.setOptions({
+                actions: ["Close"],
+                title: "Alert",
+                resizable: false,
+                modal: true,
+                width: '50%',
+                title: 'Salary Paid Transaction Revert',
+                close: onWindowClose
+            });
+            $("#Win_Revert_Tran").html('<div class="win_loading_half"></div>');
+            windowRvt.refresh({ url: "/HumanResource/_SalaryRevertTran?id=" + id });
+            windowRvt.center().open();
+            kendoWindow.data("kendoWindow").close();
+            document.documentElement.style.overflow = 'hidden';
+            document.body.scroll = "no";
+        }).end();
+    });
+
+    //********************************* Transaction Edit ***************************************************
+    $("#Div_AllPaid_His").on("click", ".editTran", function (e) {
+        e.preventDefault();
+        var id = $(this).data("id");
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose
+        });
+        message = "Are you sure want to edit this transaction?";
+        var template = kendo.template($("#temp_for_confirmation").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+        kendoWindow.find("#btn_confirm_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_confirm_ok").click(function () {
+            var window = $("#Win_Edit_Tran").data("kendoWindow");
+            window.setOptions({
+                actions: ["Close"],
+                title: "Alert",
+                resizable: false,
+                modal: true,
+                width: '50%',
+                title: 'Salary Paid Transaction Edit',
+                close: onWindowClose
+            });
+            $("#Win_Edit_Tran").html('<div class="win_loading_half"></div>');
+            window.refresh({ url: "/HumanResource/_SalaryTranEdit?id=" + id });
+            window.center().open();
+            kendoWindow.data("kendoWindow").close();
+            document.documentElement.style.overflow = 'hidden';
+            document.body.scroll = "no";
+        }).end();
+    });
+</script>

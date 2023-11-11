@@ -1,0 +1,63 @@
+﻿@************************************** Created By Jerin Jahan (Date:30.10.2016)  ***************************************@
+@model IEnumerable<FactoryManagement.Models.AllSalaryPayList>
+@using FactoryManagement.Helpers
+@{
+    int pretranid = 0;
+    var count = 1;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;">
+    <table class="table table-bordered">
+        <tr>
+            <td>#</td>
+            <td>Transaction Id</td>
+            <td>Payment Type</td>
+            <td>Paid By</td>
+            <td>Paid Date & Time</td>
+            <td>Amount</td>
+        </tr>
+        @foreach (var list in Model)
+        {
+            double amount = Convert.ToDouble(list.Amount);
+            <tr>
+                <td>@count .</td>
+                <td>
+                    @if (list.EmpSalaryPayId == 0)
+                    {
+                        pretranid = pretranid + 1;
+                        <span href="javascript:"><span>@list.Id@pretranid ( Due)</span></span>
+                    }
+                    else
+                    {
+                        pretranid = list.EmpSalaryPayId;
+                        <span href="javascript:"><span>@list.Id@list.EmpSalaryPayId (Monthly Salary)</span></span>
+                    }
+                </td>
+                <td>
+                    @if (list.PayType == 1){<span>Cash</span>}else if (list.PayType == 2){<span>Check</span>}else{<span>Account</span>   }
+                </td>
+                <td>
+                    @if (list.InsertBy == 0)
+                    {
+                        <img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" /> <span>Super admin</span>
+                    }
+                    else
+                    {
+                        var user = db.View_UserLists.Where(m => m.UserType == 1 && m.UserId == list.InsertBy).FirstOrDefault();
+                        <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = list.InsertBy, isDisplay = true }, null)">
+                            <img src="~/Images/UserPicture/thumb/@user.Picture" class="user-photo" /><span> @user.UserName</span>
+                        </a>
+                    }
+                </td>
+                <td>@Convert.ToDateTime(list.InsertedDate).ToString("MMMM dd,yyyy  hh:mm tt")</td>
+                <td>@currency @list.Amount </td>
+            </tr>
+            count++;
+        }
+    </table>
+    <hr />
+    <div style="float:right;width:100%;text-align:right;">
+        <div id="div_total_selectedAmnt" style="margin-right:5%;"><span>Total Paid Amount = @currency @ViewBag.total_paid_amnt </span></div>
+    </div>
+</div>

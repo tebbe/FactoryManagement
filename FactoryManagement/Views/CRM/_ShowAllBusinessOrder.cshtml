@@ -1,0 +1,94 @@
+﻿@using FactoryManagement.Helpers;
+@{
+    var count = 0;
+    int? OrderStatus = ViewBag.OrderStatus;
+    int OrderType = ViewBag.OrderType;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<style>
+    .tdLeft {
+        text-align: left;
+    }
+</style>
+@if (((IEnumerable<FactoryManagement.Models.BusinessOrderList>)ViewBag.list).Count() > 0)
+{
+    <table class="table table-striped table-bordered table-hover" id="tbl_AllUser">
+        <tbody>
+            <tr>
+                <th width="5%">#</th>
+                <th width="30%">Order Name</th>
+                @if (OrderStatus == null)
+                {
+                    <th>Order Status</th>
+                }
+                <th width="25%">Created By</th>
+                <th width="15%">Created Date</th>
+                <th width="20%"></th>
+            </tr>
+            @foreach (var item in ViewBag.list as IEnumerable<FactoryManagement.Models.BusinessOrderList>)
+            {
+                count++;
+                <tr>
+                    <th scope="row">@count .</th>
+                    <td><a href="@Html.EncodedParam("OrderDetails", "CRM", new { BusinessOrderId = item.BusinessOrderId, OrderType = item.OrderType }, null)">@item.OrderName</a></td>
+                    @if (OrderStatus == null)
+                    {
+                        if (item.OrderStatus == 0)
+                        {
+                            <td class="text-warning"><span>Pending</span></td>
+                        }
+                        else if (item.OrderStatus == 1)
+                        {
+                            <td class="text-success"><span>Approved</span></td>
+                        }
+                        else
+                        {
+                            <td class="text-success"><span>Complete</span></td>
+                        }
+                    }
+                    <td>
+                        @if (item.CreatedBy > 0)
+                        {
+                            var user = db.View_UserLists.Where(m => m.UserType == 1 && m.UserId == item.CreatedBy).FirstOrDefault();
+                            <img src="~/Images/UserPicture/thumb/@user.Picture" class="user-photo" />
+                            <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = item.CreatedBy, isDisplay = true }, null)">
+                                <span>@user.UserName</span>
+                            </a>
+                        }
+                        else
+                        {
+                            <img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" /><span style="padding-left:3px!important;">Super Admin</span>
+                        }
+                    </td>
+                    <td>@Convert.ToDateTime(item.CreatedDate).ToString("MMM dd, yyyy")</td>
+                    <td>
+                        @if (item.OrderStatus == 0)
+                        {
+                            <span data-toggle="tooltip" title="Edit Order" id="btn_businessOrder_edit" data-placement="top" class="btn green btn_businessOrder_edit" data-id="@item.BusinessOrderId">
+                                <i class="fa fa-pencil"></i>
+                            </span>
+                        }
+                        @if (item.OrderStatus == 0)
+                        {
+                            <span class="btn green btn_app_businessOrder" data-toggle="tooltip" title="Approve Order" data-id="@item.BusinessOrderId"><i class="fa fa-check"></i></span>
+                        }
+                        @if (item.OrderStatus > -1 && item.OrderStatus < 3)
+                        {
+                            <span class="btn btn-danger btn_delete_businessOrder" data-id="@item.BusinessOrderId" data-toggle="tooltip" title="Delete Order"><i class="fa fa-trash"></i></span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>There is no record to display....</p>
+    <span class="btn btn-primary btn-small btn_Back_To_Tab" data-id="@ViewBag.OrderType" data-toggle="tooltip" title="Back To All"><i class="fa fa-arrow-left"></i></span>
+}
+
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+    showCount = '@count';
+</script>

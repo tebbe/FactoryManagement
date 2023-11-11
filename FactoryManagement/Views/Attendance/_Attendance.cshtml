@@ -1,0 +1,91 @@
+﻿@using FactoryManagement.Helpers
+@{
+    var count = 0;
+    int userCount = ViewBag.UserList.Count;
+}
+
+<link href="~/Content/build.css" rel="stylesheet" />
+<table class="table table-bordered table-hover table-responsive table-condensed table-striped" id="tbl_AllUser">
+    <tbody>
+        <tr>
+            <th width="4%">#</th>
+            <th width="20%">Name</th>
+            <th width="10%">User Type</th>
+            <th width="15%">Designation</th>
+            <th width="10%">Join Date</th>
+            <th width="20%"></th>
+        </tr>
+        @if (userCount > 0)
+        {
+            foreach (var item in ViewBag.UserList as IEnumerable<FactoryManagement.Models.View_User_Att_Input>)
+            {
+                count++;
+                <tr>
+                    <th>@count .</th>
+                    <td>
+                        <img class="img-circle" src="~/Images/UserPicture/thumb/@item.Picture" />
+                        <a href="@Html.EncodedParam("DisplayEmployeeDetails","HumanResource",new {UserId=item.UserId,isDisplay=true },null)">@Html.DisplayFor(modelItem => item.UserName)</a>
+                    </td>
+                    <td>@Html.DisplayFor(modelItem => item.UserTypeName)</td>
+                    <td>@Html.DisplayFor(modelItem => item.DesignationName)</td>
+                    <td>@item.JoinDate</td>
+                    <td>
+                        <div class="row">
+                            <div class="col-lg-4 col-xs-12">
+                                <div class="radio radio-success radio-inline" style="padding-left:20px">
+                                    <input type="radio" class="atten_radio" id="radioPresent_@item.UserId" value="1"
+                                           name="radioInline_@item.UserId" data-id="@item.UserId"
+                                           data-attid="@item.AttId" data-atttype="@item.AttType">
+                                    <label for="radioPresent_@item.UserId"> Present </label>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-xs-12">
+                                <div class="radio radio-danger radio-inline" style="padding-left:20px">
+                                    <input type="radio" class="atten_radio" id="radioAbsent_@item.UserId" value="2" name="radioInline_@item.UserId" data-id="@item.UserId" data-attid="@item.AttId" data-atttype="@item.AttType">
+                                    <label for="radioAbsent_@item.UserId"> Absent </label>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 col-xs-12">
+                                <div class="radio radio-warning radio-inline" style="padding-left:20px">
+                                    <input type="radio" class="atten_radio" id="radioLeave_@item.UserId" value="3" name="radioInline_@item.UserId" data-id="@item.UserId" data-attid="@item.AttId" data-atttype="@item.AttType">
+                                    <label for="radioLeave_@item.UserId"> Leave </label>
+                                </div>
+                            </div>
+                        </div>
+                        @if (item.AttType > 0)
+                    {
+                        if (item.AttType == 1)
+                        {
+                                <script>
+                                $("#radioPresent_" + '@(item.UserId)').prop('checked',true);
+                                </script>
+                            }
+                            else if (item.AttType == 2)
+                            {
+                                <script>
+                                $("#radioAbsent_" + '@(item.UserId)').prop('checked', true);
+                                </script>
+                            }
+                            else
+                            {
+                                <script>
+                                $("#radioLeave_" + '@(item.UserId)').prop('checked', true);
+                                </script>
+                            }
+                        }
+
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <h4>There is no record to display.</h4>
+        }
+        
+    </tbody>
+</table>
+<script>
+    totalCount = '@(ViewBag.TotalUser)';
+    showCount = '@count';
+</script>

@@ -1,0 +1,44 @@
+﻿
+
+
+@******************************** Created By (Jerin Jahan) Date (16.07.2016) *******************************@
+<div id="tvForMachineType" class="tvCustomClass" style="margin-top:0px!important;"></div>
+<script>
+    $(document).ready(function () {
+        var Machine = {
+            transport: { read: { url: "@Url.Action("GetAllMachine", "Configuration")", type: "GET" } },
+            schema: {
+                model: { hasChildren: false, id: "id" }
+            }
+        };
+        var MachineType = {
+            transport: {
+                read: {
+                    url: "/Configuration/GetAllMachineTypeList",
+                    type: "GET",
+                    data: function (e) {
+                        var tree = $("#tvForMachineType").getKendoTreeView();
+                        var item = tree.dataSource.get(e.id);
+                        if (item) {
+                            return { machineTypeId: item.id };
+                        }
+                    }
+                }
+            },
+            schema: { model: { hasChildren: "hasChild", id: "id", children: Machine } }
+        };
+        var MachineTypeName = {
+            transport: { read: { url: "@Url.Action("GetAllMachineTypeName", "Configuration")", type: "GET" } },
+            schema: { model: { hasChildren: "hasChild", id: "id", children: MachineType } }
+        };
+        $("#tvForMachineType").kendoTreeView({
+            //checkboxes: { checkChildren: true },
+            //check: onCheck,
+            template: kendo.template($("#templateForLeft").html()),
+            dataSource: MachineTypeName,
+            dragAndDrop: true,
+            drop: onDrop,
+    });
+
+    });
+</script>

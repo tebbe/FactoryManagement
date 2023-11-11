@@ -1,0 +1,67 @@
+﻿@*********************************************** Created By Jerin Jahan Date(13.05.2017) ************************@
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var allUnitList = db.Site_Unit_Lists.Where(m => m.UnitStatus == 1).ToList();
+    var width = (100 / (allUnitList.Count() + 1)) - 1;
+    var date = DateTime.Now;
+}
+<style>
+    .k-edit-field, .k-edit-form-container .editor-field {
+        width: 70% !important;
+    }
+</style>
+<div class="editor-label"><label for="HolidayName">Item Name</label></div>
+<div class="editor-field" style="padding-top:6px;">@ViewBag.name</div>
+<div class="editor-label"><label for="HolidayName">Quantity</label></div>
+<div class="editor-field">
+    <table>
+        <tr>
+            @foreach (var u in allUnitList)
+            {
+                <th><div class="col-xs-11">@u.UnitAcryonm</div></th>
+            }
+            <th></th>
+        </tr>
+        <tr>
+            @foreach (var u in allUnitList)
+            {
+                <td>
+                    <div class="col-xs-11">
+                        <input class="k-textbox txtUnitQuanI" data-val="true"
+                               data-val-length="Type atleast one character"
+                               data-val-length-max="100"
+                               data-val-length-min="1"
+                               data-val-required="*" data-uid="@u.UnitId"
+                               id="txtU_@u.UnitId" name="txtU_@u.UnitId"
+                               style="width:100%!important" type="text" value="" aria-invalid="true">
+                        @*<span class="field-validation-valid text-Danger" data-valmsg-for="txtU_@u.UnitId" data-valmsg-replace="true"></span>*@
+                    </div>
+                </td>
+            }
+            <td>
+                <div class="col-xs-11" id="dropdownContainer">
+                    @(Html.Kendo().DropDownList().Name("UnitId")
+                            .OptionLabel("--Select One Type--")
+                            .BindTo(ViewBag.UnitId as SelectList)
+                            .HtmlAttributes(new { style = "width:100%" })
+                    )
+                </div>
+            </td>
+        </tr>
+        <tr>
+            @foreach (var u in allUnitList)
+            {
+                <td>
+                    <div class="col-xs-11">
+                        <span class="field-validation-valid text-Danger" data-valmsg-for="txtU_@u.UnitId" data-valmsg-replace="true"></span>
+                    </div>
+                </td>
+            }
+            <td>
+                <div class="col-xs-11" id="dropdownContainer">
+                    <span class="field-validation-valid text-danger" data-valmsg-for="UnitId" data-valmsg-replace="true"></span>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>

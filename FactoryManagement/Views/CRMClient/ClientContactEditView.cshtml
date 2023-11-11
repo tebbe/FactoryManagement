@@ -1,0 +1,75 @@
+﻿@model FactoryManagement.ModelView.CRM.ClientListModelView
+@Html.HiddenFor(m => m.CientContactId)
+@Html.HiddenFor(m => m.ClientId)
+
+<div class="k-edit-form-container" id="divForNewContactAdd">
+    <div class="editor-label"><label for="Contact">Contact</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.Contact, new { htmlAttributes = new { @class = "k-textbox", style = "width:100%", @type = "tel" } })
+        @Html.ValidationMessageFor(model => model.Contact, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="ContactTypeId">Contact Type</label></div>
+    <div class="editor-field">
+        @(Html.Kendo().DropDownList()
+                  .Name("ContactTypeId")
+                  .DataTextField("Text")
+                  .DataValueField("Value")
+                  .OptionLabel("--Select Type--")
+                  .BindTo(new List<SelectListItem>() {
+                   new SelectListItem() {
+                    Text = "Land",
+                    Value = "1"
+                   },
+                   new SelectListItem() {
+                    Text = "Mobile",
+                    Value = "2"
+                   }
+                  })
+                 .HtmlAttributes(new { style = "width: 100%" })
+        )
+        @Html.ValidationMessageFor(model => model.ContactTypeId, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="Comments">Comments</label></div>
+    <div class="editor-field">
+        @Html.TextAreaFor(model => model.Comments, new { cols = 60, rows = 4, @class = "form-control k-textbox" })
+        @Html.ValidationMessageFor(model => model.Comments, "", new { @class = "text-danger" })
+    </div> 
+</div>
+<script>
+ $(document).ready(function () {
+        telInput = $("#Contact");
+        telInput.intlTelInput({
+            geoIpLookup: function (callback) {
+                $.get("http://ipinfo.io", function () { }, "jsonp").always(function (resp) {
+                    var countryCode = (resp && resp.country) ? resp.country : "";
+                    callback(countryCode);
+                });
+            },
+            initialCountry: "auto",
+            utilsScript: "../Scripts/intl-tel-input-master/build/js/utils.js"
+        });
+        var reset = function () {
+            telInput.removeClass("error");
+        };
+        telInput.on("keyup change", reset);
+    });
+//**************************Validation*************************************
+    var validation = $("#divForNewContactAdd").kendoValidator({
+        rules: {
+            Contact: function (input) {
+                if (input.is("[name=Contact]")) {
+                    if (!telInput.intlTelInput("isValidNumber")) {
+                        return false;
+                    }
+                    if (input.val() === "") {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        },
+        messages: {
+            Contact: "Please enter valid contact number",
+        }
+   }).data("kendoValidator");
+</script>

@@ -1,0 +1,44 @@
+﻿
+
+@*********************************************** Created By Jerin Jahan Date(13.05.2017) ************************@
+@model FactoryManagement.Models.Factory_Finished_Pro_Title
+@{
+    ViewBag.Title = "FinishedProTitleWise";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var All_Pro_list = db.View_Finished_Product_List.Where(m => m.TitleId == Model.Id).ToList();
+    var count = 0;
+}
+
+<center>
+    <h3>@Model.Title</h3>
+    <p>@Model.SubTitle</p>
+</center>
+<table class="table table-bordered table-condensed">
+    <tr>
+        <th width="5%">#</th>
+        <th width="15%">Name </th>
+        <th width="10%">M/C QTY</th>
+        <th width="10%">LOT</th>
+        <th width="20%">Lot Start Date</th>
+        <th width="10%">Bag</th>
+        <th width="7%">KG</th>
+        <th width="3%"></th>
+        <th width="20%">Remark</th>
+    </tr>
+    @foreach (var list in All_Pro_list)
+    {
+        count++;
+        <tr>
+            <td>@count.</td>
+            <td><a href="#">@list.Count_Name</a></td>
+            <td>@list.M_C_Qty</td>
+            <td>@list.Lot </td>
+            <td>@Convert.ToDateTime(list.Lot_StartedDate).ToString("dd-mm-yy")</td>
+            <td>@list.Bag</td>
+            <td>@list.KG </td><td>@list.UnitName</td>
+            <td>@list.Remark</td>
+        </tr>
+       
+    }
+</table>

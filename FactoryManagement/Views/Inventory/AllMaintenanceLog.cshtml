@@ -1,0 +1,151 @@
+﻿
+
+@************************************* Created by Jerin Jahan (Date: 21.06.2017) ******************************************@
+@{
+    ViewBag.Title = "Machine Maintenan";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<h3 class="page-title">All Routed History</h3>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <a href="/Home/EquipDash"> Equipment</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Inventory/AllMaintenanceLog"> All Machine Maintenance Logs</a>
+        </li>
+    </ul>
+</div>
+<div class="row" id="Div_Upper_Portion" style="display:none;margin-bottom:10px">
+    <div class="col-md-12">
+        <h4 id="h4title">Showing All Maintenance Log</h4>
+        <span data-toggle="tooltip" data-container="body" title="Today History" class="btn blue" id="btn_today"><i class="fa fa-list-ul"></i> Today</span>
+        <span data-toggle="tooltip" data-container="body" title="Last 7 days History" class="btn blue" id="btn_last_seven"><i class="fa fa-list-ul"></i> Last 7 Days</span>
+        <span data-toggle="tooltip" data-container="body" title="Last 30 day History" class="btn blue" id="btn_last_thirty"><i class="fa fa-list-ul"></i> Last 30 Days</span>
+        <span data-toggle="tooltip" data-container="body" title="All History" class="btn blue" id="btn_All"><i class="fa fa-list-ul"></i> All</span>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box green">
+            <div class="portlet-title">
+                <div class="caption"><i class="fa fa-list-ul"></i>All Machine Maintenance Log</div>
+            </div>
+            <div class="portlet-body">
+                <div id="Div_All_Log" style="display:none;"></div>
+                @if (db.View_Maintenance_Log.Any())
+                {
+                    <script>
+                        $("#Div_Upper_Portion").show();
+                        $("#Div_All_Log").append('<div class="loading_partial"></div>');
+                        $("#Div_All_Log").show();
+                        $("#Div_All_Log").load('@Url.Action("_AllMaintenanceLog", "Inventory")');
+                    </script>
+                }
+                else
+                {
+                    <script>
+                        $("#Div_All_Log").append(' <h3>There is no record to display...</h3>');
+                        $("#Div_All_Log").show();
+                    </script>
+                }
+                <div id="loading" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var showCount = 0, totalCount = 0, page = 0, inCallback = false,days = 0;
+    $(document).ready(function () {
+        //$("#liForInventory").addClass('active');
+        //$("#liForRouteVouHis").addClass('sublistActive');
+    });
+    @******************************** OnScroll Bind Table Data *************************@
+    $(window).scroll(function () {
+        var countBytype, result;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/Inventory/GetAllMaintenanceLog',
+            data: { page: page },
+            success: function (data) {
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        $("table#tbl_inven_vou_lit").append('<tr><th>' + showCount + '.</th>' +
+                            '<td>' + data[i].MachineAcronym + '</td>' +
+                            '<td>' + data[i].DispatchedDateName + '</td>' +
+                            '<td>'+((data[i].Type == 1) ? '<span>Replaced Date Changed</span>' + ' ' + data[i].DispatchedUserName + '</a>' : ' <span>Parts Replaced</span>')+'</td>' +
+                            '<td>' + data[i].Msg+ '</td>' +
+                            '</tr>');
+                    }
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+</script>
+<script>
+    $("#btn_today").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = { days: 1};
+        $("#Div_All_Log").empty();
+        $("#Div_All_Log").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Today's Maintenance Log");
+        $("#Div_All_Log").load('@Url.Action("_AllMaintenanceLogDayWise", "Inventory")', passdata);
+        days = 1;
+    });
+
+    $("#btn_last_seven").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = { days: 7};
+        $("#Div_All_Log").empty();
+        $("#Div_All_Log").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Last 7 Days Maintenance Logy");
+        $("#Div_All_Log").load('@Url.Action("_AllMaintenanceLogDayWise", "Inventory")', passdata);
+        days = 7;
+    });
+    $("#btn_last_thirty").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = { days: 30};
+        $("#Div_All_Log").empty();
+        $("#Div_All_Log").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Last 30 Days Maintenance Log");
+        $("#Div_All_Log").load('@Url.Action("_AllMaintenanceLogDayWise", "Inventory")', passdata);
+        days = 30;
+    });
+    $("#btn_All").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        $("#Div_All_Log").empty();
+        $("#Div_All_Log").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing All Maintenance Log");
+        $("#Div_All_Log").load('@Url.Action("_AllMaintenanceLog", "Inventory")');
+        days = 0;
+    });
+</script>

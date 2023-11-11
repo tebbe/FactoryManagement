@@ -1,0 +1,86 @@
+﻿
+
+
+@*----------------------Created By (Mabia Mishu)(18/08/2016)-----------------*@
+
+@model FactoryManagement.Models.View_All_InventoryList
+@*@{
+    double available = ((Model.ReservedQuantity) == null) ? Model.Quantity : Convert.ToInt32(Model.Quantity) - Convert.ToInt32(Model.ReservedQuantity);
+}*@
+<div class="form-group">
+    @Html.LabelFor(model => model.ProductTypeId, "Product Type Name", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4 col-xs-12" })
+    <div class="col-md-6 col-sm-7" style="padding-top:7px;">
+        @Html.DisplayFor(model => model.ProductType, new { htmlAttributes = new { } })
+    </div>
+</div>
+<div class="form-group">
+    @Html.LabelFor(model => model.CountryName, "Country", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4 col-xs-12" })
+    <div class="col-md-5 col-sm-6 col-xs-12" style="padding-top:7px;">
+        @Html.DisplayFor(model => model.CountryName, new { htmlAttributes = new { } })
+    </div>
+</div>
+@if (Model.BrandName != null)
+{
+    <div class="form-group">
+        @Html.LabelFor(model => model.BrandName, "Brand Name", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4 col-xs-12" })
+        <div class="col-md-5 col-sm-6 col-xs-12" style="padding-top:7px;">
+            @Html.DisplayFor(model => model.BrandName, new { htmlAttributes = new { } })
+        </div>
+    </div>
+}
+@if (Model.Model != null)
+{
+    <div class="form-group">
+        @Html.LabelFor(model => model.Model, htmlAttributes: new { @class = "control-label col-md-4 col-sm-4 col-xs-12" })
+        <div class="col-md-5 col-sm-6 col-xs-12" style="padding-top:7px;">
+            @Html.DisplayFor(model => model.Model, new { htmlAttributes = new { } })
+        </div>
+    </div>
+}
+
+@if (Model.Description != null)
+{
+    <div class="form-group">
+        @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-4 col-sm-4 col-xs-12" })
+        <div class="col-md-5 col-sm-6 col-xs-12" style="padding-top:7px;">
+            @Html.DisplayFor(model => model.Description, new { htmlAttributes = new { } })
+        </div>
+    </div>
+}
+<script>
+    $(document).ready(function () {
+        $("#InventoryId").val('@(Model.InventoryId)');
+        $("#ProductTypeId").val('@(Model.ProductTypeId)');
+        $("#Country").val('@(Model.Country)');
+        $("#BrandId").val('@(Model.BrandId)');
+        $("#Model").val('@(Model.Model)');
+        $("#Description").val('@(Model.Description)');
+        $("#div_quantity").removeClass('col-md-5 col-sm-6 col-xs-10');
+        $("#div_quantity").addClass('col-md-2 col-sm-3 col-xs-4');
+        $("#Span_Available_Quantity").show();
+        if (AcquisitionType === '2') {
+            if ('@(Model.CanbeBreakable)' === 'True') {
+                $("#div_SubUnit").show();
+                $("#txt_sub_unit").kendoDropDownList({
+                    dataTextField: "UnitName",
+                    dataValueField: "UnitId",
+                    select: on_Breakable,
+                    optionLabel: "--Select One--",
+                    dataSource: {
+                        transport: {
+                            read: {url: "@Url.Action("GetBreakableProUnit", "Acquisition")?id=" + @Model.InventoryId,type: "GET"}}
+                    }
+                });
+                breakable = true;
+            }
+            @*$("#Span_Available_Quantity").text(" (Available  " + '@(Model.Available_Quantity)' + " " + '@(Model.UnitName)' + " )");*@
+        } else {
+            @*$("#Span_Available_Quantity").text('@(Model.UnitName)');*@
+        }
+        $("#Span_Available_Quantity").text(" (Available  " + '@(Model.Available_Quantity)' + " " + '@(Model.UnitName)' + " )");
+        $("#UnitId").val('@(Model.UnitId)');
+        $("#divForUnitList").hide();
+        $("#AvailableQuantity").val('@(Model.Available_Quantity)');
+
+    });
+</script>

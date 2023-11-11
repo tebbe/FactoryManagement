@@ -1,0 +1,326 @@
+﻿@******************************** Created By Kaikubad (Date:24.01.2017) *********************************@
+@{
+    ViewBag.Title = "Working Schedule";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-users fa-fwt"></i>
+            <span>Human Resource</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list" aria-hidden="true"></i>
+            <a href="/HumanResource/Working_Schedule">Working Schedule</a>
+        </li>
+    </ul>
+</div>
+@*<div class="note note-success"><p id="h4title">Showing All Working Schedule List</p></div>*@
+<div class="row">
+    <div class="col-md-12">
+        <p><span class="btn green" id="btn_working_Schedule_Add" data-toggle="tooltip" title="Add New Working Schedule"><i class="fa fa-plus"></i> Add New Package</span></p>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green" aria-hidden="true"></i>
+                    <span class="caption-subject font-green bold uppercase">All Working Schedule List</span>
+                </div>
+            </div>
+            <div class="portlet-body">
+
+                    <div id="Div_Working_Schedule_List"></div>
+                    @if (db.WorkingScheduleLists.Any())
+                    {
+                        <script>
+            $("#Div_Working_Schedule_List").append('<div class="loading_partial"></div>');
+            $("#Div_Working_Schedule_List").load('@Url.Action("_WorkingSchedule", "HumanResource")');
+                        </script>
+                    }
+                    else
+                    {
+                        <script>
+                            $("#Div_Working_Schedule_List").append('<p>No Working Schedule has been created yet.</p>');
+                        </script>
+                    }
+               
+            </div>
+        </div>
+    </div>
+</div>
+<div id="work_schedule_add"></div>
+<div id="work_schedule_edit"></div>
+<div id="win_pck_info"></div>
+<script id="temp_win_indent_edit" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px"> #=msg# </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_holypck_noty_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_holypck_noty_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script id="temp_win_usr_cunt" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">
+            You cann't delete this working schedule.This schedule already assigned with #=data# users.
+            <span style="color:darkblue;cursor:pointer;" id="btn_See_All_Usr">See all user</span>
+        </p>
+        <div style="text-align: right">
+            <input type="button" value="Close" class="k-button k-state-default" id="cancel_User_Count" />
+        </div>
+    </div>
+</script>
+<script>
+    $(document).ready(function () {
+        $("#liForHR").addClass('active');
+        $("#liForworkingschedule").addClass('sublistActive');
+       
+    });
+    @************************* Working Schedule Create ************************************@
+    $("#btn_working_Schedule_Add").click(function (e) {
+        e.preventDefault();
+        $("#work_schedule_add").empty().show();
+        $("#work_schedule_edit").empty().clearQueue().hide();
+        $("#work_schedule_add").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '80%',
+            height:'78%',
+            title: 'Add working schedule package',
+            close:onWindowClose
+        });
+        $("#work_schedule_add").html('<div class="loading_40em"></div>');
+        var work_schedule_add = $("#work_schedule_add").data("kendoWindow");
+        work_schedule_add.refresh({ url: "/HumanResource/_WorkingScheduleCreateUpdate" });
+        work_schedule_add.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+    @************************* Working Schedule Edit ************************************@
+    $("#Div_Working_Schedule_List").on("click", ".btn_working_schedule_edit", function (e) {
+        e.preventDefault();
+        var id = $(this).data("id");
+        $("#work_schedule_add").empty().clearQueue().hide();
+        $("#work_schedule_edit").show();
+        $("#work_schedule_edit").empty();
+        $("#work_schedule_edit").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '80%',
+            height: '78%',
+            title: 'Edit working schedule package',
+            close: onWindowClose
+        });
+        $("#work_schedule_edit").html('<div class="loading_40em"></div>');
+        var work_schedule_edit = $("#work_schedule_edit").data("kendoWindow");
+        work_schedule_edit.refresh({ url: "/HumanResource/_WorkingScheduleCreateUpdate?id=" + id });
+        work_schedule_edit.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+        //******************************** Delete Working Schedule *****************************************************
+    $("#Div_Working_Schedule_List").on("click", ".btn_working_schedule_delete", function (e) {
+        e.preventDefault();
+        var id = $(this).data("id");
+        var name = $(this).data("name");
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose,
+
+
+        });
+        msg = "Are you sure want to delete this working schedule ? Deleting this schedule may occur problem on those modules dependent on it";
+        var template = kendo.template($("#temp_win_indent_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        kendoWindow.find("#btn_holypck_noty_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_holypck_noty_ok").click(function () {
+            $.ajax({
+                url: '@Url.Action("IsEligibleForDelete", "HumanResource")',
+                type: 'GET',
+                data: { id: id },
+                success: function (res)
+                {
+                    if (res!="Error" && res>0) {
+                        var kendo_Window = $("<div />").kendoWindow({
+                            actions: ["Close"],
+                            title: "Alert",
+                            resizable: false,
+                            modal: true
+                        });
+                        var template = kendo.template($("#temp_win_usr_cunt").html());
+                        kendo_Window.data("kendoWindow").content(template(res)).center().open();
+
+                        kendo_Window.find("#cancel_User_Count").click(function () {
+                            kendo_Window.data("kendoWindow").close();
+                        }).end();
+                        kendo_Window.find("#btn_See_All_Usr").click(function (f) {
+                            f.preventDefault();
+                            $("#work_schedule_add").empty();
+                            $("#work_schedule_edit").empty();
+                            $("#win_pck_info").empty();
+                            $("#win_pck_info").kendoWindow({
+                                actions: ["Close"],
+                                draggable: false,
+                                modal: true,
+                                visible: false,
+                                width: '60%',
+                                height: '55%',
+                                title: 'This Package Already Assigned With Following User/s.',
+                                close:onWindowClose
+                            });
+                            $("#win_pck_info").empty().html('<div class="win_loading_half"></div>');
+                            var win_pck_info = $("#win_pck_info").data("kendoWindow");
+                            win_pck_info.refresh({ url: "/HumanResource/_AllUserListForSpeficWorkingPack?PackageId=" + id });
+                            win_pck_info.center().open();
+                            document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+                            document.body.scroll = "no"; // ie only
+
+                            kendo_Window.data("kendoWindow").close();
+                        }).end()
+                        kendoWindow.data("kendoWindow").close();
+                    }
+                    if(!res) {
+                        kendoWindow.data("kendoWindow").close();
+                        DeleteHolidayPack(id, name);
+                    }
+                }, error: function (err) { }
+            });
+
+        }).end();
+    });
+
+        function DeleteHolidayPack(id, name) {
+            notification.show({ message: "Working Schedule  is deleting...", showTime: startTime() }, "upload-progress");
+            var sendData = {
+                WorkingScheduleId: id,
+                CreatedBy: userId
+            }
+            $.ajax({
+                url: '@Url.Action("DeleteWorkingSchedule", "HumanResource")',
+            type: 'Post',
+            data: sendData,
+            success: function (data) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                if (data == "Success") {
+                    notification.show({ message: "Working Schedule '" + name + "' has been successfully deleted.", showTime: startTime() }, "upload-success");
+
+                    $("#Div_Working_Schedule_List").load('@Url.Action("_WorkingSchedule", "HumanResource")');
+                } else {
+                    notification.show({ message: "Working Schedule '" + name + "' deletion was unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+            },
+            error: function (err) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+            }
+        });
+    }
+</script>
+<script>
+    function startChange() {
+        var startTime = this.value(),
+            endPicker = $("#EndTime").data("kendoTimePicker");
+        if (startTime) {
+            startTime = new Date(startTime);
+            endPicker.max(startTime);
+            startTime.setMinutes(startTime.getMinutes() + this.options.interval);
+            endPicker.min(startTime);
+            endPicker.value('');
+        }
+    }
+    function satStartChange() {
+
+        var startTime = this.value();
+            endPicker = $("#satEnd").data("kendoTimePicker");
+        if (startTime) {
+            startTime = new Date(startTime);
+            endPicker.max(startTime);
+            startTime.setMinutes(startTime.getMinutes() + this.options.interval);
+            endPicker.min(startTime);
+            endPicker.value('');
+        }
+    }
+    function sunStartChange() {
+        var startTime = this.value();
+        endPicker = $("#sunEnd").data("kendoTimePicker");
+        if (startTime) {
+            startTime = new Date(startTime);
+            endPicker.max(startTime);
+            startTime.setMinutes(startTime.getMinutes() + this.options.interval);
+            endPicker.min(startTime);
+            endPicker.value('');
+        }
+    }
+    function monStartChange() {
+        var startTime = this.value();
+        endPicker = $("#monEnd").data("kendoTimePicker");
+        if (startTime) {
+            startTime = new Date(startTime);
+            endPicker.max(startTime);
+            startTime.setMinutes(startTime.getMinutes() + this.options.interval);
+            endPicker.min(startTime);
+            endPicker.value('');
+        }
+    }
+    function tueStartChange() {
+        var startTime = this.value();
+        endPicker = $("#tueEnd").data("kendoTimePicker");
+        if (startTime) {
+            startTime = new Date(startTime);
+            endPicker.max(startTime);
+            startTime.setMinutes(startTime.getMinutes() + this.options.interval);
+            endPicker.min(startTime);
+            endPicker.value('');
+        }
+    }
+    function wedStartChange() {
+        var startTime = this.value();
+        endPicker = $("#wedEnd").data("kendoTimePicker");
+        if (startTime) {
+            startTime = new Date(startTime);
+            endPicker.max(startTime);
+            startTime.setMinutes(startTime.getMinutes() + this.options.interval);
+            endPicker.min(startTime);
+            endPicker.value('');
+        }
+    }
+    function thuStartChange() {
+        var startTime = this.value();
+        endPicker = $("#thuEnd").data("kendoTimePicker");
+        if (startTime) {
+            startTime = new Date(startTime);
+            endPicker.max(startTime);
+            startTime.setMinutes(startTime.getMinutes() + this.options.interval);
+            endPicker.min(startTime);
+            endPicker.value('');
+        }
+    }
+    function friStartChange() {
+        var startTime = this.value();
+        endPicker = $("#friEnd").data("kendoTimePicker");
+        if (startTime) {
+            startTime = new Date(startTime);
+            endPicker.max(startTime);
+            startTime.setMinutes(startTime.getMinutes() + this.options.interval);
+            endPicker.min(startTime);
+            endPicker.value('');
+        }
+    }
+</script>

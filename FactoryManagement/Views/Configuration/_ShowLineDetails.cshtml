@@ -1,0 +1,53 @@
+﻿
+
+@model FactoryManagement.ModelView.Configuration.LineInfoModelView
+<dl class="dl-horizontal">
+    <dt>Line Name</dt>
+    <dd>
+        <span>@Html.DisplayFor(model => model.LineName)</span>
+        <span class="label label-success hover-pointer" id="btnForLineEdit" data-toggle="tooltip" title="Edit Line" style="margin-left:2%;margin-top:-1em;"><i class="fa fa-pencil"></i></span>
+    </dd>
+    <dt>Line Acronym</dt>
+    <dd>@Html.DisplayFor(model => model.LineAcronym)</dd>
+    <dt>Line Status</dt>
+    <dd>
+        @if (Model.Status == 1)
+        {<span>Active</span> }
+        else
+        {<span>Inactive</span>}
+    </dd>
+    <dt>Department Name</dt>
+    <dd>
+        <span>@Model.DeptName</span>
+    </dd>
+    <dt>Created Date</dt>
+    <dd>@Convert.ToDateTime(Model.CreatedDate).ToString("MMMM dd,yyyy")</dd>
+    
+</dl>
+
+<div id="win_line_edit"></div>
+<script>
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+
+    $("#btnForLineEdit").click(function () {
+        $("#win_line_edit").empty();
+        $("#win_line_edit").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '30%',
+            title: 'Edit Line',
+            close: onWindowClose
+        });
+        $("#win_line_edit").html('<div class="win_loading_half"></div>');
+        var win_line_edit = $("#win_line_edit").data("kendoWindow");
+        win_line_edit.refresh({ url: "/Configuration/_EditLineInfoPopUp?id=" + '@Model.LineId' });
+        win_line_edit.center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no"; 
+    });
+</script>

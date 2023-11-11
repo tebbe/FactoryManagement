@@ -1,0 +1,137 @@
+﻿@model IEnumerable<FactoryManagement.Models.ClientContactList>
+@{var count = 1;}
+<style>
+    #tbl_all_cntact_list td {border: none !important;}
+</style>
+<script id="temp_win_clientContact_list" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        @if (Model.Count() > 1)
+        {
+            <p style="font-size: 14px; padding: 10px">Are you sure you want to delete this contact ?</p>
+            <div style="text-align: right;">
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_editUnit_ok"><span class="k-icon k-update"></span>OK</button>
+                <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_editUnit_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+            </div>
+        }
+        else
+        {
+            <p style="font-size: 14px; padding: 10px">One contact must be exist</p>
+            <div style="text-align: right;">
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_editUnit_cancel"><span class="k-icon k-update"></span>OK</button>
+            </div>
+        }
+    </div>
+</script>
+<h4>Contact Information</h4>
+<hr />
+@if (@ViewBag.isDisplay == false)
+{
+    <p class="IdForClientConatactAdd">
+        <a href="//" style="text-decoration: none !important;">
+            <span class="btn btn-success" style="cursor:pointer" id="btnForAddContact" data-toggle="tooltip" data-placement="bottom" title="Add New Contact"><i class="fa fa-plus"></i> Add New Contact</span>
+        </a>
+    </p>
+}
+<div id="clientContactDeletPopUp"></div>
+
+@if (Model.Count() > 0) {
+<table class="table" id="tbl_all_cntact_list" >
+    <tr>
+        <th class="col-md-2">#</th>
+        <th class="col-md-2">Contact</th>
+        <th class="col-md-2">Contact Type</th>
+        <th class="col-md-4">Comment</th>
+        <th class="col-md-2"></th>
+    </tr>
+    @foreach (var item in Model)
+    {        
+        <tr>
+            <td class="col-md-2"><label>Contact @count</label></td>
+            <td class="col-md-2"> @item.Contact </td>
+            <td class="col-md-2">@item.ContactTypeName</td>
+            <td class="col-md-4">@item.Comments</td>
+            @if (!ViewBag.isDisplay)
+            {
+                <td class="col-md-2 DivClientContactList" id="DivClientContactList">
+                    <span class="label label-success editClientContactInfo"
+                          data-contactid="@item.CientContactId"
+                          data-toggle="tooltip"
+                          title="Edit client contact info"
+                          id="editClientContactInfo-@item.CientContactId"
+                          style="cursor:pointer;margin-right:3px;">
+                        <i class="fa fa-pencil"></i>
+                    </span>
+                    <span class="label label-danger deleteClientContactInfo"
+                          data-id="@item.CientContactId"
+                          data-toggle="tooltip"
+                          title="Delete client contact"
+                          id="deleteClientContactInfo-@item.CientContactId"
+                          style="cursor:pointer;">
+                        <i class="fa fa-trash"></i>
+                    </span>
+                </td>
+            }
+            
+        </tr>
+        count++;
+    }
+</table>
+}
+else
+{
+  <h4>No record to show</h4>
+}
+<script>
+$(document).ready(function () {
+   $('[data-toggle="tooltip"]').tooltip(); 
+});
+
+//**************Delet client contact  popUp*******************************************
+    $(".deleteClientContactInfo").click(function (e) {
+        e.preventDefault();
+        var clientContactId = $(this).data('id');
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        var template = kendo.template($("#temp_win_clientContact_list").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+
+        kendoWindow.find("#btn_editUnit_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_editUnit_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            deleteUser(clientContactId);  
+        }).end();
+    });
+    function deleteUser(clientContactId) {
+        notification.show({ message: " Deleting client contact inforamtion...", showTime: startTime()}, "upload-progress");
+        $.ajax({
+            url: '@Url.Action("DeleteClientContact", "CRMClient")',
+            type: 'Post',
+            data: {ClientContactId:clientContactId},
+            success: function (Id) {
+                notification.hide();
+                notification.setOptions({autoHideAfter: 5000});
+                if (Id != '') {
+                    notification.show({ message: "Contact successfully deleted", showTime: startTime()},"upload-success");
+                }
+                else {
+                    notification.show({ message: "Deletion unsuccessful", showTime: startTime()},"upload-error");
+                }
+                $("#div_ryt_panel").empty();
+                $("#div_ryt_panel").append('<div class="loading_half"></div>');
+                $("#div_ryt_panel").load('@Url.Action("_ClientContactInfoDisplay", "CRMClient")?Id=' + CliId+'&isDisplay=' + isDisplay);
+            },
+            error: function () {
+                notification.hide();
+                notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occured!", showTime: startTime() }, "upload-warning");
+            }
+        });
+    };
+</script>

@@ -1,0 +1,131 @@
+﻿
+
+
+@********************* Created By Jerin Jahan (Date: 13-11-2016) ****************************@
+@model IEnumerable<FactoryManagement.ModelView.Inventory.InventoryListModelView>
+@{
+    int count = 1;
+    var db = new FactoryManagement.Models.FactoryManagementEntities();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    int seven = 1;
+    int all = 1;
+}
+<div class="col-sm-12" style="padding-left:0px!important;padding-right:0px!important;">
+    <div class="panel panel-default" id="RowCotton_panel">
+        <div class="panel-heading">
+            <h2><i class="fa fa-check"></i>Daily Raw Cotton Stock</h2>
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#tab_row_all" data-toggle="tab">All</a></li>
+                <li><a href="#tab_row_today" data-toggle="tab">Today</a></li>
+                <li><a href="#tab_row_seven" data-toggle="tab">Last 7 Days</a></li> 
+            </ul>
+        </div>
+        <div class="panel-body" id="panel_body_RowCotton">
+            <div class="tab-content">
+                <div class="tab-pane active" id="tab_row_all">
+                    <table class="table bootstrap-datatable datatable small-font dataTable no-footer" id="DataTables_Table_0" role="grid">
+                        <thead>
+                            <tr role="row">
+                                <th>SI.NO</th>
+                                <th>Name</th>
+                                <th>Staple</th>
+                                <th>L/C NO</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var list in ViewBag.all)
+                            {
+                                if (list.lcno > 0)
+                                {
+                                    int id = Convert.ToInt32(list.lcno);
+                                    var bus_id = db.BusinessOrderProductLists.Where(m => m.Id == id).Select(m => m.BusinessOrderId).FirstOrDefault();
+                                    if (bus_id > 0)
+                                    {
+                                        string lc_name = db.BusinessOrderLists.Where(m => m.BusinessOrderId == bus_id).Select(m => m.OrderName).FirstOrDefault();
+                            <tr role="row">
+                                <td>@all.</td>
+                                <td><span style="cursor:pointer;color:#428bca;">@list.ProductName</span></td>
+                                <td>@list.Description</td>
+                                <th>@lc_name</th>
+                                <td>@list.Recv_Quan @list.UnitName</td>
+                            </tr>
+                                        all++;
+                                    }
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="tab_row_today">
+                    <table class="table bootstrap-datatable datatable small-font dataTable no-footer" id="DataTables_Table_0" role="grid">
+                        <thead>
+                            <tr role="row">
+                                <th>SI.NO</th>
+                                <th>Name</th>
+                                <th>Staple</th>
+                                <th>L/C NO</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var list in Model)
+                            {
+                                int id = Convert.ToInt32(list.lcno);
+                                var bus_id = db.BusinessOrderProductLists.Where(m => m.Id == id).Select(m => m.BusinessOrderId).FirstOrDefault();
+                                string lc_name = db.BusinessOrderLists.Where(m => m.BusinessOrderId == bus_id).Select(m => m.OrderName).FirstOrDefault();
+                            <tr role="row">
+                                <td>@count.</td>
+                                <td><span style="cursor:pointer;color:#428bca;">@list.ProductName</span></td>
+                                <td>@list.Description</td>
+                                <th>@lc_name</th>
+                                <td>@list.Recv_Quan @list.UnitName</td>
+                            </tr>
+                                count++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="tab_row_seven">
+                    <table class="table bootstrap-datatable datatable small-font dataTable no-footer" id="DataTables_Table_0" role="grid">
+                        <thead>
+                            <tr role="row">
+                                <th>SI.NO</th>
+                                <th>Name</th>
+                                <th>Staple</th>
+                                <th>L/C NO</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var list in ViewBag.seven)
+                            {
+                                int id = Convert.ToInt32(list.lcno);
+                                var bus_id = db.BusinessOrderProductLists.Where(m => m.Id == id).Select(m => m.BusinessOrderId).FirstOrDefault();
+                                string lc_name = db.BusinessOrderLists.Where(m => m.BusinessOrderId == bus_id).Select(m => m.OrderName).FirstOrDefault();
+                            <tr role="row">
+                                <td>@seven.</td>
+                                <td><span style="cursor:pointer;color:#428bca;">@list.ProductName</span></td>
+                                <td>@list.Description</td>
+                                <th>@lc_name</th>
+                                <td>@list.Recv_Quan @list.UnitName</td>
+                            </tr>
+                                seven++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(".panel-body").css({ "height": panel_height });
+    $("#btn-minimize_RowCotton").click(function () {
+        $("#panel_body_RowCotton").slideToggle();
+        $(this).children('i').toggleClass("fa fa-chevron-up fa fa-chevron-down");
+    });
+    $("#btn-close_RowCotton").click(function () {
+        $("#div_row_cotton").remove();
+    });
+</script>

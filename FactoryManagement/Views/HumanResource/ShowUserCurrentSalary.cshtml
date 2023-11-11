@@ -1,0 +1,41 @@
+﻿
+
+@model FactoryManagement.ModelView.HR.EmpSalaryPaymentDetailModelView
+@{
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var user_details = db.View_UserLists.Where(m => m.UserId == Model.UserId && m.UserType == Model.UserType).FirstOrDefault();
+}
+<div style="float:left;width:100%;">
+    <div class="editor-label" style="margin-left:2em!important;width:30%!important;"><label for="PackageName">User Name</label></div>
+    <div class="editor-field" style="padding-top:5px;">
+        <span><img src="~/Images/UserPicture/thumb/@user_details.Picture" class="user-photo" /></span>@user_details.UserName
+    </div>
+</div>
+<div style="float:left;width:100%;">
+    <div class="editor-label" style="margin-left:2em!important;width:30%!important;"><label for="PackageName">Site name</label></div>
+    <div class="editor-field" style="padding-top:5px;">
+        @user_details.SiteName
+    </div>
+</div>
+<div style="float:left;width:100%;">
+    <div class="editor-label" style="margin-left:2em!important;width:30%!important;"><label for="PackageName">Dept. Name</label></div>
+    <div class="editor-field" style="padding-top:5px;">
+        @user_details.DeptName
+    </div>
+</div>
+<div style="float:left;width:100%;">
+    <div class="editor-label" style="margin-left:2em!important;width:30%!important;"><label for="PackageName">Designation</label></div>
+    <div class="editor-field" style="padding-top:5px;">
+        @user_details.DesignationName
+    </div>
+</div>
+<div style="float:left;width:100%;">
+    <div class="editor-label" style="margin-left:2em!important;width:30%!important;"><label for="PackageName">Total</label></div>
+    <div class="editor-field" style="padding-top:5px;">@currency @Model.TotalAmount </div>
+</div>
+<script>
+    $(document).ready(function () {
+        username = '@user_details.UserName';
+    });
+</script>

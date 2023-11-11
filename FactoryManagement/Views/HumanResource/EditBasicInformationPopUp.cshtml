@@ -1,0 +1,25 @@
+﻿
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:2%;margin-top:2%;" id="divForPersonalInfoedit">
+    <div id="show_user_basic_info"></div>
+    <div class="row">
+        <div class="col-xs-11" style="margin-top:-1%">
+            <div class="k-edit-buttons k-state-default">
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_EditUserBasicInfo"><span class="k-icon k-update"></span>Update</button>
+                <button type="reset" class="k-button k-button-icontext k-grid-update" id="btn_RefreshUserBasicInfo"><span class="k-icon k-i-refresh"></span>Refresh</button>
+                <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_CancelUserBasicInfo"><span class="k-icon k-cancel"></span>Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $("#show_user_basic_info").append('<div class="loading_30  "></div>')
+        $("#show_user_basic_info").load('@Url.Action("EditBasicInformation", "HumanResource")?UserId=' + '@ViewBag.UserId');
+    });
+    $("#btn_RefreshUserBasicInfo").click(function () {
+        $("#show_user_basic_info").empty();
+        $("#show_user_basic_info").append('<div class="loading_30"></div>');
+        $("#show_user_basic_info").load('@Url.Action("EditBasicInformation", "HumanResource")?UserId=' + '@ViewBag.UserId');
+        $("#show_user_basic_info").show();
+    });
+</script>

@@ -1,0 +1,54 @@
+﻿
+
+@{
+    var count = 0;
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+<style>
+    .tranDetails {
+        cursor: pointer;
+        color: #428bca;
+    }
+</style>
+<table class="table table-bordered table-condensed" id="tbl_AllPaid_His">
+    <tbody>
+        <tr>
+            <th width="4%">#</th>
+            <th width="10%">Transaction</th>
+            <th width="17%">Employee Name</th>
+            <th width="10%">Reason</th>
+            <th width="10%">Reverted Amount</th>
+            <th width="17%">Reverted By</th>
+            <th width="15%">Reverted Date</th>
+            <th width="12%"></th>
+        </tr>
+        @foreach (var item in ViewBag.UserList as IEnumerable<FactoryManagement.Models.View_All_Revert_Trans>)
+        {
+            count++;
+            <tr>
+                <th>@count .</th>
+                <td>
+                    <span class="tranDetails" data-id="@item.Id">@item.Id</span>
+                </td>
+                <td>
+                    <img class="user-photo" src="~/Images/UserPicture/thumb/@item.Picture" />
+                    <a href="/HumanResource/DisplayEmployeeDetails?UserId=@item.UserId&isDisplay=true">@Html.DisplayFor(modelItem => item.UserName)</a>
+                </td>
+                <td>@item.Reason</td>
+                <td>@currency @item.Amount</td>
+                <td>
+                    <img class="user-photo" src="~/Images/UserPicture/thumb/@item.RevertedUserPic" />
+                    <a href="/HumanResource/DisplayEmployeeDetails?UserId=@item.UserId&isDisplay=true">@Html.DisplayFor(modelItem => item.RevertedUserName)</a>
+                </td>
+                <td>@item.EditedDate</td>
+                <td>
+                    
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<script>
+    totalCount = '@(ViewBag.TotalUser)';
+    showCount = '@count';
+</script>

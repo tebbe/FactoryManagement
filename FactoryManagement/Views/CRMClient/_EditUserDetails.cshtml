@@ -1,0 +1,273 @@
+﻿@model FactoryManagement.ModelView.CRM.Client_User_ListsModelView
+
+@Html.HiddenFor(m => m.ClientId)
+@Html.HiddenFor(m => m.UserId)
+@Html.HiddenFor(m => m.Id)
+@Html.HiddenFor(m => m.PictureOriginalName)
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;" id="DivForUserUpdate">      
+    <div class="form-horizontal col-sm-6" id="DivForUserBasicInformation">
+            <div class="loading_partial"></div>
+    </div>
+        <br />
+        <div id="divPic-0" class="col-md-2 col-sm-2">
+            <span id="UserImgClose" style="display:none;">
+                <img src="/Content/Icon/modal_close.png" class="previewImgClose" id="UserImgClose" />
+            </span>
+            <span id="UserImgEdit" class="previewImgEdit">
+                <span class="fa fa-pencil" id="btn_img_change"></span>
+            </span>
+            <div id="Div_Pre_Pic_Hold" class="imgPreview">
+                <img src="~/Images/Client/ClientUserImage/Original/@Model.PictureName" />
+            </div>
+            <div id="DivForEvtCvrHold" class="imgPreview" style="display:none;">
+                <img src="~/Images/Client/ClientUserImage/Original/@Model.PictureName" />
+            </div>
+            <div id="DivForEvtCvrUp" class="image-uploader" style="display:none;">
+                <input type="file" name="files" id="file1" class="inputfile inputfile-4" style="display:none;" />
+                <label for="file1" id="lblfile1" class="lblForPics">
+                    <span style="font-size: 26px;padding-top:1.5em;display:block;" id="pic">+</span>
+                    <span style="font-size: 15px;font-weight:bold;">Add Photos</span>
+                </label>
+                
+            </div>
+            @Html.ValidationMessageFor(model => model.PictureName, "", new { @class = "text-danger" })
+            <div class="k-edit-buttons k-state-default " id="DivForUserImageBtn">
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update btnUserPicEdit" id="btnUserPicEdit-@Model.UserId" data-id="@Model.UserId"><span class="k-icon k-update"></span>Update</button>
+                <button type="button" class="k-button k-button-icontext k-grid-cancel btnUserPicCancel" id="btnUserPicCancel-@Model.UserId" data-id="@Model.UserId"><span class="k-icon k-cancel"></span>Cancel</button>
+            </div>
+        </div>
+     <div class="form-horizontal col-sm-4" id="divForUserContact">
+            <div class="loading_partial"></div>
+     </div>
+   <div class="k-edit-buttons k-state-default col-xs-11">
+    <button type="button" class="k-button k-button-icontext k-primary k-grid-cancel btnUserDetailsCancel" id="btnUserDetailsCancel"><span class="k-icon k-cancel"></span>Close</button>
+  </div>
+</div>
+<script id="temp_win_picture_edit" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">Are you sure you want to delete this picture ?</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_editPicture_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_editPicture_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    var allMainFile = [];
+    var PictureName;
+    var Id,logUserTwoId;
+    $(document).ready(function () {
+        logUserTwoId=loginUserId;
+        $("#DivForUserBasicInformation").empty();
+        $("#DivForUserBasicInformation").load('@Url.Action("_EditUserBasicInfo", "CRMClient")?UserId=' + '@Model.UserId');
+        $("#divForUserContact").empty();
+        $("#divForUserContact").load('@Url.Action("_EditUserContactList", "CRMClient")?UserId=' + '@Model.UserId');
+        $("#DivForUserImageBtn").hide();
+        Id = $(this).data("id");
+        type = $(this).data('ctype');
+        telInput = $("#UserCont_" + Id);
+        telInput.intlTelInput({
+            geoIpLookup: function (callback) {
+                $.get("http://ipinfo.io", function () { }, "jsonp").always(function (resp) {
+                    var countryCode = (resp && resp.country) ? resp.country : "";
+                    callback(countryCode);
+                });
+            },
+            initialCountry: "auto",
+            utilsScript: "../Scripts/intl-tel-input-master/build/js/utils.js"
+        });
+        var reset = function () {
+            telInput.removeClass("error");
+        };
+        telInput.on("keyup change", reset);
+        var data = [{ text: "Land", value: "1" }, { text: "Mobile", value: "2" }];
+        $("#UserContType_" + Id).kendoDropDownList({
+            dataTextField: "text",
+            dataValueField: "value",
+            dataSource: data,
+            index: type,
+            optionLabel: "--Select--"
+        });
+    });
+    $("#divForUserContact").on("click", ".btnUserContactRefreshEdit", function () {
+        Id = $(this).data('id');
+        $("#divForUserContact").empty();
+        $("#divForUserContact").load('@Url.Action("_EditUserContactList", "CRMClient")?UserId=' + '@Model.UserId');
+        $("#divforUserContactEdit-"+Id).show();
+    });
+//**********************User new Contact Add refresh and cancel btn***********************************
+$("#divForUserContact").on("click", "#btnRefreshUserContactAdd", function () {
+    $("#divForUserContact").load('@Url.Action("_EditUserContactList", "CRMClient")?UserId=' + '@Model.UserId');
+        $("#DivForUserContactAdd").show();
+    });
+
+    var validation = $("#DivForUserUpdate").kendoValidator({
+    }).data("kendoValidator");
+
+    $("#UserImgEdit").click(function () {
+        $("#UserImgEdit").hide();
+        $("#UserImgClose").show();
+        $("#Div_Pre_Pic_Hold").hide();
+        $("#DivForEvtCvrHold").show();
+        $("#DivForUserImageBtn").show();
+    });
+    $("#file1").change(function (e) {
+        var countFiles = $("#file1")[0].files.length;
+        var imgPath = $("#file1")[0].value;
+        var extn = imgPath.substring(imgPath.lastIndexOf('.') + 1).toLowerCase();
+        var image_holder = $("#DivForEvtCvrHold");
+        var files = e.target.files;
+        image_holder.empty();
+        if (extn == "gif" || extn == "png" || extn == "jpg" || extn == "jpeg") {
+            if (typeof (FileReader) != "undefined") {
+                allMainFile[0] = files[0];
+                var reader = new FileReader();
+                reader.onload = function (e) { $("<img />", { "src": e.target.result }).appendTo(image_holder); }
+                $("#DivForEvtCvrUp").hide();
+                $("#DivForEvtCvrHold").show();
+                $("#UserImgClose").show();
+                image_holder.show();
+                $("#PictureName").val($("#file1")[0].files[0]);
+                reader.readAsDataURL($("#file1")[0].files[0]);
+                $("#lbl_Span_plus").text("+");
+            } else {
+                alert("This browser does not support FileReader.");
+            }
+        } else {
+            alert("Pls select only images");
+        }
+    });
+
+    $("#UserImgClose").click(function () {
+        $("#DivForEvtCvrHold").empty();
+        $("#DivForEvtCvrHold").hide();
+        $("#UserImgClose").hide();
+        $("#DivForEvtCvrUp").show();
+        $("#btn_img_Upload").show();
+    });
+
+    $("#btn_img_change").click(function () {
+        $("#DivForUserImageBtn").show();
+    });
+    $(".btnUserPicCancel").click(function () {
+        $("#UserImgClose").hide();
+        $("#btn_img_Upload").hide();
+        $("#DivForEvtCvrUp").hide();
+        $("#DivForEvtCvrHold").hide();
+        $("#DivForUserImageBtn").hide();
+        $("#Div_Pre_Pic_Hold").show();
+        $("#UserImgEdit").show();
+
+    });
+    $(".btnUserPicEdit").click(function () {
+        var sendData = new FormData();
+        sendData.append("UserId", $("#UserId").val());
+        sendData.append("PictureOriginalName", $("#PictureOriginalName").val());
+        sendData.append("files", allMainFile[0]);
+        sendData.append("CreatedBy", logUserTwoId);
+        $.ajax({
+            url: '@Url.Action("UpdateUserPicture", "CRMClient")',
+            type: 'Post',
+            data: sendData,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                notification.hide();
+                notification.setOptions({ autoHideAfter: 2000 });
+                if (data != null) {
+                    if (data === 'Error') {
+                        notification.show({ message: "Unsuccessful", showTime: startTime() }, "upload-error");
+                    }
+                    else {
+                        $("#DivForUserPictureUplaodEdit").empty();
+                        $("#DivForUserPictureUplaodEdit").append('<div style="float:right;" id="DivForUserPictureDisplay">' +
+                            '<img src="/Images/Client/ClientUserImage/Original/' + data + '" />' +
+                            '<label><span class="k-icon k-i-close btnDeleteUploadedPicture" data-userid="@Model.UserId" style="cursor:pointer" data-picturename="@Model.PictureName" id="btnDeleteUploadedPicture"></span></label></div>');
+                        notification.show({ message: "Picture  successfully saved", showTime: startTime() }, "upload-success");
+                    }
+                }
+                $("#UserImgClose").hide();
+                $("#DivForUserImageBtn").hide();
+                $("#UserImgEdit").show();
+                $("#DivForEvtCvrHold").show();
+                $("#UserImgClose").hide();
+            },
+            error: function (error) {
+                notification.show({ message: "Upload unsuccessful", showTime: startTime() }, "upload-error");
+            }
+        });
+    });
+</script>
+<style>
+    .image-uploader {
+        width: 100%;
+        height: 160px;
+        display: block;
+        text-align: center;
+    }
+
+    .imgPreview {
+        background-color: #e8e4d0;
+        margin-bottom: 20px;
+        position: relative;
+        width: 100%;
+        height: 160px;
+        border: 1px solid #808080;
+        overflow: hidden;
+    }
+
+
+        .imgPreview img {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+    .lblForPics {
+        text-align: center;
+        max-width: 100%;
+        width: 100%;
+        height: 160px;
+        vertical-align: middle;
+        border: 1px dashed blue;
+        cursor: pointer;
+    }
+
+
+        .lblForPics span {
+            color: #083bb5 !important;
+        }
+
+    .previewImgClose {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        float: right;
+        right: -1.8em;
+        bottom: -1.8em;
+        z-index: 9999;
+        margin-top: -3em;
+    }
+
+    .previewImgEdit {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        float: right;
+        right: -2.2em;
+        bottom: -1.8em;
+        z-index: 9999;
+        margin-top: -3em;
+    }
+</style>
+
+
+

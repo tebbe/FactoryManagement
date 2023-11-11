@@ -1,0 +1,53 @@
+﻿body {
+     padding-top: 0px!important;
+     padding-bottom: 0px!important;
+}
+.uppersection table tr,.uppersection table th,
+.uppersection table td{border:none!important;}
+
+.uppersection table thead>tr>th, .uppersection 
+.table tbody>tr>th, .uppersection .table tfoot>tr>th, 
+.uppersection .table thead>tr>td, .uppersection 
+.table tbody>tr>td, .uppersection .table tfoot>tr>td {/*padding:0px!important;*/}
+
+.tdclass1st{padding:0px!important;padding-right:20px!important;width:35%!important;}
+.tdclass2nd{padding:0px!important;width:58%!important;}
+
+
+
+
+
+/****************** FOR MEDIA WIDTH ************************/
+@media only screen and (min-width : 320px) {#examples{padding-left:2em;padding-right:2em;}}
+
+/* Extra Small Devices, Phones */    
+@media only screen and (min-width : 480px) {#examples{padding-left:2em;padding-right:2em;}}
+
+/* Small Devices, Tablets */
+@media only screen and (min-width : 768px) {#examples{padding-left:2em;padding-right:22em;}}
+    
+/* Medium Devices, Desktops */ 
+@media only screen and (min-width : 992px) {#examples{padding-left:2em;padding-right:12em;}}
+
+    
+/* Large Devices, Wide Screens */
+@media only screen and (min-width : 1200px) {#examples{padding-left:2em;padding-right:2em;}}
+    
+
+/*==========  Non-Mobile First Method  ==========*/
+
+/* Large Devices, Wide Screens */
+@media only screen and (max-width : 1200px) {#examples{padding-left:5em;padding-right:5em;}}
+
+    
+/* Medium Devices, Desktops */
+ @media only screen and (max-width : 992px) {#examples{padding-left:2em;padding-right:2em;}}
+   
+/* Small Devices, Tablets */
+@media only screen and (max-width : 768px) {#examples{padding-left:4em;padding-right:4em;}}
+    
+/* Extra Small Devices, Phones */ 
+@media only screen and (max-width : 480px) {#examples{padding-left:4em;padding-right:4em;}}
+    
+/* Custom, iPhone Retina */ 
+@media only screen and (max-width : 320px) {#examples{padding-left:4em;padding-right:4em;}}

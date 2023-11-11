@@ -1,0 +1,262 @@
+﻿@***********************Created by : Tasnim Tuli (31.12.16)*@
+
+    @model FactoryManagement.ModelView.Accounting.Bank_BranchListModelView
+
+
+    @Html.HiddenFor(p => p.BranchId)
+    @Html.HiddenFor(p => p.BankId)
+    <div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="Div_For_Branch_Create">
+        <div class="editor-label"><label for="BranchName">Branch Name</label></div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.BranchName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.BranchName, "", new { @class = "text-danger" })
+        </div>
+        <div class="editor-label"><label for="Address">Address</label></div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.Address, "", new { @class = "text-danger" })
+        </div>
+        <div class="editor-label"><label for="AddressLine1">Address Line1</label></div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.AddressLine1, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.AddressLine1, "", new { @class = "text-danger" })
+        </div>
+        <div class="editor-label"><label for="Country">Country</label></div>
+        <div class="editor-field">
+            @(Html.Kendo().DropDownListFor(model => model.Country)
+                //.Name("Country")
+                      .OptionLabel("--Select One Country--")
+                      .Events(e => e.Change("onChangeOfCountry"))
+                      .BindTo(ViewBag.CountryId)
+                      .HtmlAttributes(new { style = "width:100%" })
+            )
+            @Html.ValidationMessageFor(model => model.Country, "", new { @class = "text-danger" })
+        </div>
+        <div id="DivForDivision">
+            <div class="editor-label"><label for="DivisionId">Division</label></div>
+            <div class="editor-field">
+                @(Html.Kendo().DropDownListFor(model => model.DivisonId)
+                    //.Name("DivisionId")
+                      .OptionLabel("--Select One Division--")
+                      .BindTo(ViewBag.DivisionList)
+                      .HtmlAttributes(new { style = "width:100%" })
+                )
+                @Html.ValidationMessageFor(model => model.DivisonId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div id="DivForState">
+            <div class="editor-label"><label for="State">State</label></div>
+            <div class="editor-field">
+                @Html.EditorFor(model => model.State, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                @Html.ValidationMessageFor(model => model.State, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="editor-label"><label for="City">City</label></div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.City, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.City, "", new { @class = "text-danger" })
+        </div>
+        <div class="editor-label"><label for="PostalCode">Postal Code</label></div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.PostalCode, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.PostalCode, "", new { @class = "text-danger" })
+        </div>
+        <div class="editor-label"><label for="PhoneNo">Phone no</label></div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.PhoneNo, new { htmlAttributes = new { @class = "form-control k-textbox", @type = "tel" } })
+            @Html.ValidationMessageFor(model => model.PhoneNo, "", new { @class = "text-danger" })
+        </div>
+        <div class="editor-label"><label for="MobileNo">Mobile no</label></div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.MobileNo, new { htmlAttributes = new { @class = "form-control k-textbox", @type = "tel" } })
+            @Html.ValidationMessageFor(model => model.MobileNo, "", new { @class = "text-danger" })
+        </div>
+        <div class="k-edit-buttons k-state-default">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnCreateBranch"><span class="k-icon k-update"></span>Update</button>
+            <button type="reset" class="k-button k-button-icontext k-grid-update" id="btnBranchRefresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnBranchCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+
+<script>
+    var telInput;
+    $(document).ready(function () {
+        if ('@Model.Country' == "BD") {
+                $("#DivForDivision").show();
+                $("#DivForState").hide();
+            }
+            else {
+                $("#DivForState").show();
+                $("#DivForDivision").hide();
+            }
+        //mobile
+        telInput = $("#MobileNo");
+        telInput.intlTelInput({
+            geoIpLookup: function (callback) {
+                $.get("http://ipinfo.io", function () { }, "jsonp").always(function (resp) {
+                    var countryCode = (resp && resp.country) ? resp.country : "";
+                    callback(countryCode);
+                });
+            },
+            initialCountry: "auto",
+            utilsScript: "../Scripts/intl-tel-input-master/build/js/utils.js"
+        });
+        var reset = function () {
+            telInput.removeClass("error");
+        };
+        telInput.on("keyup change", reset);
+
+        //Phone function
+        telInput1 = $("#PhoneNo");
+        telInput1.intlTelInput({
+            geoIpLookup: function (callback) {
+                $.get("http://ipinfo.io", function () { }, "jsonp").always(function (resp) {
+                    var countryCode = (resp && resp.country) ? resp.country : "";
+                    callback(countryCode);
+                });
+            },
+            initialCountry: "auto",
+            utilsScript: "../Scripts/intl-tel-input-master/build/js/utils.js"
+        });
+        var reset = function () {
+            telInput1.removeClass("error");
+        };
+        telInput1.on("keyup change", reset);
+    });
+
+    var validation = $("#Div_For_Branch_Create").kendoValidator({
+        rules: {
+            custom: function (input) {
+                var errormessage;
+                var remoteAttr = input.attr("data-val-remote-url");
+                if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                    return true;
+                }
+                var isInvalid;
+                var data = {};
+                var BankId = $("#BankId").val();
+                var BranchId = $("#BranchId").val();
+                var BranchName = $("#BranchName").val();
+                data = { BranchId: BranchId, BankId: BankId, BranchName: BranchName };
+                $.ajax({
+                    url: remoteAttr,
+                    mode: "abort",
+                    port: "validate" + input.attr('name'),
+                    dataType: "json",
+                    type: input.attr("data-val-remote-type"),
+                    data: data,
+                    async: false,
+                    success: function (response) {
+                        isInvalid = response;
+                        if (isInvalid === true) {
+                            isInvalid = true;
+                        }
+                        else {
+                            isInvalid = false;
+                        }
+                    }
+                });
+                return isInvalid;
+            },
+            Division: function (input) {
+                if (input.is("[name=DivisonId]") && $("#Country").val() == "BD" && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            State: function (input) {
+                if (input.is("[name=State]") && $("#Country").val() != "BD" && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            MobileNo: function (input) {
+                if (input.is("[name=MobileNo]")) {
+                    if (input.val() != "") {
+                        if (telInput.intlTelInput("isValidNumber")) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+                return true;
+            },
+            Phone: function (input) {
+                if (input.is("[name=PhoneNo]")) {
+                    if (telInput1.intlTelInput("isValidNumber")) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        },
+        messages: {
+            //custom: function (input) {
+            //    return "Branch Name Already Exist!";
+            //},
+            custom: function (input) { return input.data('val-remote'); },
+            Division: "Please enter division",
+            State: "Please enter state",
+            MobileNo: "Please enter valid contact number",
+            Phone: "Please enter valid contact number"
+        }
+    }).data("kendoValidator");
+
+    $("#btnCreateBranch").click(function () {
+        if (validation.validate()) {
+            notification.show({ message: "Branch information information saving...", showTime: startTime() }, "upload-progress");
+            var MobileNo = $("#MobileNo").intlTelInput("getNumber");
+            var PhoneNo = $("#PhoneNo").intlTelInput("getNumber");
+            var sendData = {
+                BranchId: $("#BranchId").val(),
+                BranchName: $("#BranchName").val(),
+                CreatedBy: userId,
+                BankId: $("#BankId").val(),
+                Address: $("#Address").val(),
+                AddressLine1: $("#AddressLine1").val(),
+                Country: $("#Country").val(),
+                DivisonId: $("#DivisonId").val(),
+                State: $("#State").val(),
+                City: $("#City").val(),
+                PostalCode: $("#PostalCode").val(),
+                PhoneNo: PhoneNo,
+                Status: $("#Status").val(),
+                MobileNo: MobileNo,
+            };
+            $.ajax({
+                url: '@Url.Action("BankBranchSave", "Accounting")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === "Error") {
+                        notification.show({ message: "Branch '" + data + "' update was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                    else {
+                        notification.show({ message: "Branch '" + data + "' has been successfully updated.", showTime: startTime() }, "upload-success");
+                    }
+                    $("#btnCreateBranch").closest(".k-window-content").data("kendoWindow").close();
+                    $("#DivForBankInfoDisplay").load('@Url.Action("_ShowBankInfo", "Accounting")?Id=' + '@(Model.BranchId)' + "&forDisplay=" + '@(Model.ForDisplay)');
+                },
+                error: function (error) {
+                    notification.show({
+                        message: "Branch creation was unsuccessful"
+                    }, "upload-error");
+                }
+            });
+        }
+    });
+   
+    $("#btnBranchCancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+
+</script>
+

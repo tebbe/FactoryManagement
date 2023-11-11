@@ -1,0 +1,76 @@
+﻿
+
+
+@using FactoryManagement.Helpers
+@model IEnumerable<FactoryManagement.ModelView.Inventory.Mahinaries.View_Machine_ListsModelView>
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var count = 0;
+    var GroupByAcronynm = (from m in Model
+                           group m by new { m.Id } into g
+                           select new 
+                           {
+                               Id = g.FirstOrDefault().Id,
+                               BrandName = g.FirstOrDefault().BrandName,
+                               ModelName = (g.FirstOrDefault().ModelName == null) ? "" : g.FirstOrDefault().ModelName,
+                               Acroynm = g.FirstOrDefault().Acroynm,
+                               Quantity = g.FirstOrDefault().Quantity,
+                               MachineType = g.FirstOrDefault().MachineType
+                           }).ToList();
+
+   
+    var GroupByMachinType = (from m in Model
+                group m by new { m.MachineType } into g
+                select new 
+                {
+                    MachineType = g.FirstOrDefault().MachineType,
+                    MachineTypeName = g.FirstOrDefault().MachineTypeName,
+                    CountryName = g.FirstOrDefault().CountryName,
+                    Mgf = g.FirstOrDefault().Mgf
+                }).ToList();
+
+
+}
+@if (GroupByMachinType.Count() > 0)
+{
+    foreach (var item in GroupByMachinType)
+    {
+        count++;
+        var typeid = Model.Where(m => m.MachineType == item.MachineType).Select(m => m.Id).Distinct().ToList();
+        string modelName = string.Join(" , ", GroupByAcronynm.Where(p => typeid.Contains(p.Id)).Select(p => p.ModelName.ToString()));
+        var GroupByBrandName = (from m in GroupByAcronynm
+                                group m by new { m.BrandName, m.Acroynm } into g
+                                select new
+                                {
+                                    Id = g.FirstOrDefault().Id,
+                                    MachineType = g.FirstOrDefault().MachineType,
+                                    BrandName = g.FirstOrDefault().BrandName,
+                                    Quantity = g.Sum(x => x.Quantity)
+                                }).ToList();
+
+        var machine_Type_List = (from m in GroupByBrandName
+                                 where m.MachineType == item.MachineType
+                                 group m by new { m.Id, m.BrandName } into g
+                                 select new
+                                 {
+                                     Id = g.FirstOrDefault().Id,
+                                     BrandName = g.FirstOrDefault().BrandName,
+                                     Quantity = g.Sum(x => x.Quantity),
+                                 }).ToList();
+        <div class="col-sm-3">
+            <p style="font-weight:600;font-size:16px;">@count. @item.MachineTypeName</p>
+            @foreach (var brand in machine_Type_List)
+            {
+                <p>@brand.BrandName</p>
+                <p>@modelName</p>
+                <p>Mgf. : @item.Mgf</p>
+                <p>Country of Origin : @item.CountryName</p>
+                <p>Total m/c no. : @brand.Quantity</p>
+            }
+        </div>
+    }
+}
+else
+{
+    <p>There is no record to display....</p>
+}

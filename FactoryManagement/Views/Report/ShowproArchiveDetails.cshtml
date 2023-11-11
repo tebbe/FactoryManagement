@@ -1,0 +1,65 @@
+﻿@*********************************************** Created By Jerin Jahan Date(21.05.2017) ************************@
+@model FactoryManagement.Models.Finished_Pro_Report_List
+@{
+    ViewBag.Title = "FinishedProTitleWise";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var title = db.Factory_Finished_Pro_Title.Find(Model.TitleId);
+    var All_Pro_list = db.View_Finished_Product_List.Where(m => m.TitleId == Model.Id).ToList();
+    var count = 0;
+
+    var path = String.Format("{0}XMLfile", AppDomain.CurrentDomain.BaseDirectory);
+    System.Xml.Linq.XDocument xmlDoc = System.Xml.Linq.XDocument.Load(path + "\\" + Model.ReportName);
+
+    System.Xml.XmlDocument doc = new System.Xml.XmlDocument();
+    doc.Load(path + "\\" + Model.ReportName);
+
+
+
+    var products = from person in xmlDoc.Descendants("product")
+                   select new
+                   {
+                       SL = person.Element("SL").Value,
+                       Count = person.Element("Count").Value,
+                       MC = person.Element("MC").Value,
+                       Lot = person.Element("Lot").Value,
+                       LotDate = person.Element("LotDate").Value,
+                       Bag = person.Element("Bag").Value,
+                       KG = person.Element("KG").Value,
+                       Unit = person.Element("Unit").Value,
+                       Remark = person.Element("Remark").Value
+                   };
+
+}
+<center>
+    <h3>@title.Title</h3>
+    <p>@title.SubTitle</p>
+</center>
+<table class="table table-bordered table-condensed">
+    <tr>
+        <th width="5%">#</th>
+        <th width="15%">Name </th>
+        <th width="10%">M/C QTY</th>
+        <th width="10%">LOT</th>
+        <th width="20%">Lot Start Date</th>
+        <th width="10%">Bag</th>
+        <th width="7%">KG</th>
+        <th width="3%"></th>
+        <th width="20%">Remark</th>
+    </tr>
+    @foreach (var list in products)
+    {
+        count++;
+        <tr>
+            <td>@count.</td>
+            <td>@list.Count</td>
+            <td>@list.MC</td>
+            <td>@list.Lot </td>
+            <td>@list.Lot</td>
+            <td>@list.Bag</td>
+            <td>@list.KG </td>
+            <td>@list.Unit</td>
+            <td>@list.Remark</td>
+        </tr>
+    }
+</table>

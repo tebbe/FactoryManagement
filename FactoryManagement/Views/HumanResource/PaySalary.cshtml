@@ -1,0 +1,620 @@
+﻿@**************************** Jerin Jahan (Created Date: 29-10.2016) **************************************@
+@using FactoryManagement.Helpers
+@{
+    ViewBag.Title = "PaySalary";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+
+<h3 class="page-title">Salary <small>List</small></h3>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-calculator"></i>
+            <span> Finance</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-money" aria-hidden="true"></i>
+            <a href="/HumanResource/PaySalary"> Payroll </a>
+        </li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col-md-12 col-xs-12" style="margin-bottom:10px!important;">
+        <span class="btn blue" id="btn_All_Salary" data-toggle="tooltip" data-container="body" data-original-title="Pay Salary All"><i class="fa fa-info-circle"></i> Pay Salary All</span>
+        <span class="btn blue" id="btn_All_Due" data-toggle="tooltip" data-container="body" data-original-title="Pay Due All"><i class="fa fa-pencil-square"></i> Pay Due All</span>
+        <span class="btn blue" id="btn_Salary_pck" data-toggle="tooltip" data-container="body" data-original-title="Salary Pakage"><i class="fa fa-info-circle"></i> Salary Pakage</span>
+        <span class="btn blue" id="btn_Assign_Salary" data-toggle="tooltip" data-container="body" data-original-title="Assign Salary Pakage"><i class="fa fa-info-circle"></i> Assign Salary Pakage</span>
+        <span class="btn blue" id="btn_All_History" data-toggle="tooltip" data-container="body" data-original-title="History"><i class="fa fa-history"></i> History</span>
+    </div>
+    <div class="col-xs-12">
+        <div class="portlet box green">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list"></i>    <span id="headr_title" style="margin-top: 0px!important">Showing List of All Salary Pay </span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <table class="table table-bordered" style="margin-bottom:0px!important;margin-top:10px!important;border-bottom:none!important;">
+                    <tr>
+                        <td>
+                            <span class="col-sm-9" style="padding-left:0px!important;">
+                                <span class="autocomplete-wrapper">
+                                    <input class="text-field" id="autocom_User" name="autocom_User" placeholder="Start typing user name" type="text" autocomplete="off">
+                                    <span class="k-icon k-i-search" style="margin-top:-25px;margin-right:10px;float:right;">&nbsp;</span>
+                                </span>
+                            </span>
+                            <span class="col-sm-3">
+                                @(Html.Kendo().DropDownList().Name("SiteId")
+                            .OptionLabel("All")
+                            .BindTo(ViewBag.AllSiteList as SelectList)
+                            .Events(e => e.Change("onSitenameChange"))
+                            .HtmlAttributes(new { style = "width:100%" })
+                                )
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+                <div id="Div_All_Usr" style="display:none;"><div class="loading_partial"></div></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@if (db.View_UserLists.Where(m => m.Status == 1 && m.AssginSalary == true).Any())
+{
+    <script>
+        $("#Div_All_Usr").show();
+        $("#Div_All_Usr").load("_UserListForSalary", "HumanResource");
+    </script>
+}
+
+<div id="Win_Pck_Details_anuual"></div>
+<div id="Win_Pck_Details_month"></div>
+<div id="Win_All_paid_his"></div>
+<div id="Win_due_list"></div>
+<div id="win_salary_pay"></div>
+<div id="win_due_pay"></div>
+
+<div id="Win_All_Salary_Pay"></div>
+<div id="Win_All_Due_Pay"></div>
+
+
+<script>
+    console.log("SHOW SALARY pay ");
+    var internal_AccId = 0, bankId = 0, banlAccId = 0
+    var totalCount = 0, inCallback = false, page = 0, showCount = 20;
+    var totalChkAmnt = 0, allChkId = [];
+    var selectedUserId = 0, selectedUserType = 0;
+    var SeletecUserCount = 0, username = '';
+    var allChkUserId = [], allUserType = [];
+    var highest_amnt = 0;
+    var isAbsent = false,hasPaidLeave=false;
+</script>
+<script>
+    $(document).ready(function () {
+        $("#liForAccounting").addClass('active');
+        $("#liForHRSalary").addClass('sublistActive');
+        $("#top_header_link").append('<span>Accounce</span>' +
+            '<span><i class="fa fa-angle-right fa-2x"></i></span>' +
+            '<span class="current"><a href="/HumanResource/PaySalary">Payroll</a></span>');
+    });
+
+    function isNumberForDecimal(e, v) {
+        e = (e) ? e : window.event;
+        var charCode = (e.which) ? e.which : e.keyCode;
+        var str = v.toString();
+        var c = String.fromCharCode(e.which);
+        if (charCode == 46) {
+            if (str.indexOf('.') != -1) {
+                return false;
+            }
+            if (v.length > 21) {
+                return false;
+            }
+        }
+        else {
+            if (str.indexOf('.') != -1) {
+                if ((charCode < 48 || charCode > 57) || v.split('.')[1].length > 1) {
+                    return false;
+                }
+            }
+            else {
+                if ((charCode < 48 || charCode > 57) || v.length > 17) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    };
+
+    function isNumber(e, v) {
+        e = (e) ? e : window.event;
+        var charCode = (e.which) ? e.which : e.keyCode;
+        var afterDot = v.substr(v.indexOf(".") + 1);
+        if (charCode > 31 && (charCode < 46 || charCode > 57 || charCode == 47)) {
+            return false;
+        }
+        if (v.indexOf('.') > -1 && charCode == 46) {
+            return false;
+        }
+        if (v.indexOf('.') > -1 && afterDot.length == 2) {
+            return false;
+        }
+        return true;
+    }
+    @********************************  OnScroll Bind Table Data   *************************@
+    $(window).scroll(function () {
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/HumanResource/GetUsrForSlary',
+            data: { page: page },
+            success: function (data) {
+                var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        var date = new Date(data[i].JoinDate);
+                        var getdate = (monthNames[date.getMonth()]) + " " + date.getDate() + "," + date.getFullYear();
+                        $("table#tbl_salary_usr > tbody").append(
+                            '<tr><th scope="row">' + parseInt(showCount + 1) + '</th>' +
+                            '<td><img src="/Images/UserPicture/thumb/' + data[i].Picture + '" class="user-photo"> ' +
+                            '<a href="/HumanResource/DisplayEmployeeDetails?q='+getDataEncrypted("UserId=" + data[i].UserId + "?userType=" + data[i].UserType + "")+'">'+ data[i].UserName + '</a>' +
+                            '</td>' +
+                            '<td width="5%">  ' + data[i].UserTypeName + '</td>' +
+                            '<td width="2%">' + data[i].Designation + '</td>' +
+                            '<td width="2%">' + data[i].getdate + '</td>' +
+
+                            '<td>' + data[i].EntryDate + '</td><td>OUT</td></tr>'
+                            );
+
+                        showCount++;
+                    }
+                    showCount = (page + 1) * 20;
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+
+    //*******************************  Sitename Change Function ****************************
+
+    function onSitenameChange() {
+        if (this.value() === '') {
+            $("#Div_All_Usr").empty();
+            $("#Div_All_Usr").append('<div class="loading_partial"></div>');
+            $("#Div_All_Usr").load("_UserListForSalary", "HumanResource");
+        } else {
+            $("#Div_All_Usr").empty();
+            $("#Div_All_Usr").append('<div class="loading_partial"></div>');
+            $("#Div_All_Usr").load('@Url.Action("_UserListForSalary", "HumanResource")?siteId=' + this.value());
+        }
+    }
+
+    //************************ Autocomplete  Search ***************************************
+
+    $(function () {
+        $("#autocom_User").autocomplete({
+            minLength: 2,
+            source: function (request, response) {
+                content = $.trim(request.term);
+                $.ajax({
+                    url: '@Url.Action("SearchUserForSalary", "HumanResource")',
+                    type: "POST",
+                    dataType: "json",
+                    data: { prefix: content },
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                label: item.UserName + '(Site name: ' + item.SiteIdName + ' EmpID: ' + item.EmpId + ' )',
+                                //label: '<img class="user-photo" src="/Images/UserPicture/thumb/201608061713399_inf_ila_ismail08.jpg" >' + item.UserName + '(Site name: ' + item.SiteIdName + ')',
+                                value: item.UserName,
+                                id: item.UserId
+                            };
+                        }))
+                    }
+                })
+            },
+            minLength: 2,
+            select: function (event, ui) {
+                isloadFirstTime = true;
+                var selectTextId = ui.item.id;
+                $("#Div_All_Usr").empty();
+                $("#Div_All_Usr").append('<div class="loading_partial"></div>');
+                $("#Div_All_Usr").load('@Url.Action("_UserListForSalary", "HumanResource")?userId=' + selectTextId);
+            },
+        })
+       .keyup(function () {
+           if ($.trim($("#autocom_User").val()) == "") {
+               showCount = 20; page = 0;
+               $("#Div_All_Usr").empty();
+               $("#Div_All_Usr").append('<div class="loading_partial"></div>');
+               $("#Div_All_Usr").load('@Url.Action("_UserListForSalary", "HumanResource")');
+           }
+       })
+    .autocomplete("instance")._renderItem = function (ul, item) {
+        var term = $.trim(this.term);
+        var re = new RegExp("(" + term + ")", "gi"),
+                   cls = "bold-text",
+                   template = "<span class='" + cls + "'>$1</span>",
+                   label = item.label.replace(re, template),
+                   $li = $("<li/>").appendTo(ul);
+
+        $("<span>").html(label).appendTo($li);
+
+        return $li;
+    };
+    });
+</script>
+<script>
+    //************************ Annual ****************************************
+    $("#Div_All_Usr").on("click", ".annualDetails", function (e) {
+        e.preventDefault();
+        var count = $(this).data('id');
+        var usrid = $("#count_" + count).data('userid');
+        var usrtype = $("#count_" + count).data('usertype');
+        var pckId = $("#count_" + count).data('pckid');
+
+        $("#Win_Pck_Details_anuual").empty();
+        $("#Win_Pck_Details_anuual").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '50%',
+            title: 'Assign Salary Package Details',
+            close: onWindowClose
+        });
+        $("#Win_Pck_Details_anuual").html('<div class="win_loading_half"></div>');
+        var Win_Pck_Details_anuual = $("#Win_Pck_Details_anuual").data("kendoWindow");
+        Win_Pck_Details_anuual.refresh({url: "/HumanResource/ShowSalaryPackageDetails?UserId=" + usrid + "&UserType=" + usrtype + "&PackageId=" + pckId + "&option=win"});
+        Win_Pck_Details_anuual.center().open();
+        document.documentElement.style.overflow = 'hidden';  
+        document.body.scroll = "no"; 
+    });
+    //************************ Cuurent Month *********************************
+    $("#Div_All_Usr").on("click", ".monthDetails", function (e) {
+        e.preventDefault();
+        var count = $(this).data('id');
+        var usrid = $("#count_" + count).data('userid');
+        var usrtype = $("#count_" + count).data('usertype');
+        var pckId = $("#count_" + count).data('pckid');
+
+        $("#Win_Pck_Details_month").empty();
+        $("#Win_Pck_Details_month").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '60%',
+            title: 'Assign Salary Package Details',
+            close: onWindowClose
+        });
+        $("#Win_Pck_Details_month").html('<div class="win_loading_half"></div>');
+        var Win_Pck_Details_month = $("#Win_Pck_Details_month").data("kendoWindow");
+        Win_Pck_Details_month.refresh({ url: "/HumanResource/ShowCurrentMonthSalaryDetails?UserId=" + usrid + "&UserType=" + usrtype + "&PackageId=" + pckId });
+        Win_Pck_Details_month.center().open();
+        document.documentElement.style.overflow = 'hidden';  
+        document.body.scroll = "no"; 
+    });
+    //************************ All Paid Salary History ************************
+    $("#Div_All_Usr").on("click", ".HistoryDetails", function (e) {
+        e.preventDefault();
+        totalChkAmnt = 0;
+        var count = $(this).data('id');
+        var usrid = $("#count_" + count).data('userid');
+        var usrtype = $("#count_" + count).data('usertype');
+        var pckId = $("#count_" + count).data('pckid');
+        $("#Win_All_paid_his").empty();
+        $("#Win_All_paid_his").kendoWindow({
+            actions: ["Close"],
+            draggable: true,
+            modal: false,
+            visible: false,
+            title: 'All Paid Salary Detials',
+            close: onWindowClose
+        });
+        $("#Win_All_paid_his").html('<div class="loading_half"></div>');
+        var Win_All_paid_his = $("#Win_All_paid_his").data("kendoWindow");
+        Win_All_paid_his.refresh({
+            url: "/HumanResource/ShowPaidSalaryHistory?UserId=" + usrid + "&UserType=" + usrtype + "&PackageId=" + pckId
+        });
+        Win_All_paid_his.maximize().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+    //************************ All DUE HISTORY *******************************
+    $("#Div_All_Usr").on("click", ".OutDetails", function (e) {
+        e.preventDefault();
+        $("#WinForSalaryPack").empty();
+        var count = $(this).data('id');
+        var usrid = $("#count_" + count).data('userid');
+        var usrtype = $("#count_" + count).data('usertype');
+        var pckId = $("#count_" + count).data('pckid');
+
+        $("#Win_due_list").empty();
+        $("#Win_due_list").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '80%',
+            title: 'All Outstanding Details',
+            close: onWindowClose
+        });
+        $("#Win_due_list").html('<div class="win_loading_half"></div>');
+        var Win_due_list = $("#Win_due_list").data("kendoWindow");
+        Win_due_list.refresh({ url: "/HumanResource/ShowUserDueSalary?UserId=" + usrid + "&UserType=" + usrtype + "&PackageId=" + pckId });
+        Win_due_list.center().open();
+        document.documentElement.style.overflow = 'hidden';  
+        document.body.scroll = "no"; 
+
+    });    
+    //************************ Pay Cuurent Month salary ************************
+    $("#Div_All_Usr").on("click", ".PaySalary", function (e) {
+        e.preventDefault();
+        var count = $(this).data('id');
+        totalChkAmnt = 0;
+        var usrid = $("#count_" + count).data('userid');
+        var usrtype = $("#count_" + count).data('usertype');
+        var pckId = $("#count_" + count).data('pckid');
+        var payType = 'Current';
+        SeletecUserCount = count;
+
+        $("#win_salary_pay").empty(); $("#win_due_pay").empty();
+        $("#win_salary_pay").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            title: 'Salary Payment System',    
+        });
+        $("#win_salary_pay").html('<div class="loading_half"></div>');
+        var win_salary_pay = $("#win_salary_pay").data("kendoWindow");
+        win_salary_pay.refresh({ url: "/HumanResource/_SalaryPayOptionMain?userId=" + usrid + "&userType=" + usrtype + "&packId=" + pckId + "&payType=" + payType });
+        win_salary_pay.maximize().open();        
+    });
+    //************************ Pay Outstanding Month salary ************************
+    $("#Div_All_Usr").on("click", ".PayDue", function (e) {
+        e.preventDefault();
+        var count = $(this).data('id');
+        var usrid = $("#count_" + count).data('userid');
+        var usrtype = $("#count_" + count).data('usertype');
+        var pckId = $("#count_" + count).data('pckid');
+        var payType = 'Due';
+        $("#win_salary_pay").empty(); $("#win_due_pay").empty();
+        $("#win_due_pay").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            title: 'Due Payment System',
+            
+        });
+        $("#win_due_pay").html('<div class="loading_half"></div>');
+        var win_due_pay = $("#win_due_pay").data("kendoWindow");
+        win_due_pay.refresh({
+            url: "/HumanResource/_SalaryPayOptionMain?userId=" + usrid + "&userType=" + usrtype + "&packId=" + pckId + "&payType=" + payType
+        });
+        win_due_pay.maximize().open();
+        
+    });
+
+
+
+    $("#Div_All_Usr").on("click", ".CreateSalary", function () {
+        var count = $(this).data('id');
+        var usrid = $("#count_" + count).data('userid');
+        var usrtype = $("#count_" + count).data('usertype');
+        var pckId = $("#count_" + count).data('pckid');
+        var sendData = { UserId: usrid, UserType: usrtype, pckId: pckId };
+        $.ajax({
+            url: '@Url.Action("CreateUserSalary", "SalaryConfig")',
+            type: 'Post',
+            data: sendData,
+            success: function (data) {
+
+                notification.hide();
+                notification.setOptions({autoHideAfter: 2000});
+                if (data === "Success") {
+                    notification.show({ message: "Account type added successfully", showTime: startTime() }, "upload-success");
+                    //$("#Div_All_Usr").empty();
+                    //$("#Div_All_Usr").append('<div class="loading_partial"></div>');
+                    //$("#Div_All_Usr").load("_UserListForSalary", "HumanResource");
+                }
+                else {
+                    notification.show({ message: "Account type addition unsuccessful", showTime: startTime() }, "upload-error");
+                }
+            },
+            error: function (error) {alert('error');}
+            
+        });
+    });
+    //********************************* Internal Account Change Function *******************
+    function onInternalAccChange(e) {
+        var dataItem = this.dataItem(e.item);
+        if (this.value() === '') {
+            internal_AccId = 0;
+            highest_amnt = 0;
+        } else {
+            internal_AccId = this.value();
+            highest_amnt = dataItem.HightestAmnt;
+        }
+    }
+
+    //************************************ Bank  Name Change Function *******************
+    function onBankNameChange() {
+        if (this.value() === "") {
+            bankId = 0;
+            $("#Div_For_Bank_Branch").hide();
+            $("#Div_For_Bank_Branch").empty();
+        } else {
+            bankId = this.value();
+            $("#Div_For_Bank_Branch").empty();
+            $("#Div_For_Bank_Branch").show();
+            $("#Div_For_Bank_Branch").append('<div class="editor-label">' +
+                '<label for="PackageName">Branch Name</label></div>' +
+                '<div class="editor-field">' +
+                '<input id="BranchId" name="BranchId" style="width: 100%;" />' +
+                '<span class="field-validation-valid text-danger" data-valmsg-for="BranchId" data-valmsg-replace="true"></span></div>' +
+                '<div id="Div_For_Bank_Acc" style="float:left;width:100%;"></div>');
+
+            $("#BranchId").kendoDropDownList({
+                dataTextField: "BranchName",
+                dataValueField: "BranchId",
+                optionLabel: "--Select One--",
+                change: onBranchNameChange,
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "@Url.Action("AllBankBranch", "HumanResource")?id=" + bankId, type: "GET"
+                    }
+                }
+            }
+            });
+        }
+    }
+
+
+    //************************************* Bank Branch Name Change Function *******************
+    function onBranchNameChange() {
+        if (this.value() === "") {
+            branchId = 0;
+            $("#Div_For_Bank_Acc").hide();
+            $("#Div_For_Bank_Acc").empty();
+        } else {
+            branchId = this.value();
+            $("#Div_For_Bank_Acc").empty();
+            $("#Div_For_Bank_Acc").show();
+            $("#Div_For_Bank_Acc").append('<div class="editor-label">' +
+                '<label for="PackageName">Account Name (Bank)</label></div>' +
+                '<div class="editor-field">' +
+                '<input id="BankAccId" name="BankAccId" style="width: 100%;" />' +
+                '<span class="field-validation-valid text-danger" data-valmsg-for="BankAccId" data-valmsg-replace="true"></span></div>');
+
+            $("#BankAccId").kendoDropDownList({
+                dataTextField: "AccountName",
+                dataValueField: "BankAccountId",
+                optionLabel: "--Select One--",
+                change: onBankAccChange,
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "@Url.Action("AllBankAcc", "HumanResource")?id=" + bankId, type: "GET"
+                    }
+                }
+            }
+            });
+    }
+    }
+    //************************* Account Name Change Function ***********************************
+    function onBankAccChange(e) {
+        var dataItem = this.dataItem(e.item);
+        if (this.value() === "") {
+            banlAccId = 0;
+            $("#div_Bank_acc_Slip").hide();
+            highest_amnt = 0;
+        } else {
+            banlAccId = this.value();
+            $("#div_Bank_acc_Slip").show();
+            highest_amnt = dataItem.HightestAmnt;
+        }
+    };
+</script>
+<script>
+    function GetAllChkUserId() {
+        allChkUserId = [],allUserType=[];
+        $('.chkUser').each(function () {
+            var ispay = $(this).data('ispay');
+            if ($(this).is(':checked') && ispay == 'True') {
+                allChkUserId.push($(this).data('userid'));
+                allUserType.push($(this).data('usertype'));
+            }
+        });
+    }
+    function GetAllChkUserIdForDue() {
+        allChkUserId = [], allUserType = [];
+        $('.chkUser').each(function () {
+            if ($(this).is(':checked')) {
+                allChkUserId.push($(this).data('userid'));
+                allUserType.push($(this).data('usertype'));
+            }
+        });
+    }
+    //************************ Pay Salary All User ************************
+    $("#btn_All_Salary").click(function () {
+        GetAllChkUserId();
+        if (allChkUserId.length > 0) {
+            $("#Win_All_Salary_Pay").empty();
+            $("#Win_All_Due_Pay").empty();
+
+            $("#Win_All_Salary_Pay").kendoWindow({
+                actions: ["Close"],
+                draggable: true,
+                modal: false,
+                visible: false,
+                title: 'All Paid Salary Detials'
+            });
+            $("#Win_All_Salary_Pay").html('<div class="loading_half"></div>');
+            var Win_All_Salary_Pay = $("#Win_All_Salary_Pay").data("kendoWindow");
+            Win_All_Salary_Pay.refresh({
+                url: "/HumanResource/_PaySalaryAllUser?PayType=Salary"
+            });
+            Win_All_Salary_Pay.maximize().open(); 
+        } else {
+            alert("Yout didn't select  any user.Please select users.")
+        }
+    });
+
+    //************************ Pay Due All User ****************************
+    $("#btn_All_Due").click(function () {
+        GetAllChkUserIdForDue();
+        if (allChkUserId.length > 0) {
+            $("#Win_All_Salary_Pay").empty();
+            $("#Win_All_Due_Pay").empty();
+            $("#Win_All_Due_Pay").kendoWindow({
+                actions: ["Close"],
+                draggable: true,
+                modal: true,
+                visible: false,
+                title: 'Pay Due For All User',
+                content: "/HumanResource/_PaySalaryAllUser?PayType=Due"
+            });
+            $("#Win_All_Due_Pay").data("kendoWindow").maximize().open();
+        } else {
+            alert("Yout didn't select  any user.Please select users.")
+        }
+    });
+</script>
+<script>
+    $("#btn_Salary_pck").click(function () {
+        location.href = '@Url.Action("SalaryPackageList", "SalaryConfig")?q=' + getDataEncrypted("fin=1?hr=0");
+    });
+    $("#btn_Assign_Salary").click(function () {
+        location.href = '@Url.Action("AssignSalaryPackage", "SalaryConfig")';
+    });
+    $("#btn_All_History").click(function () {
+        location.href = '@Url.Action("AllPaidHis", "HumanResource")';
+    });
+</script>

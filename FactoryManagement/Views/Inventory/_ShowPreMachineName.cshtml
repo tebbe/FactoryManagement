@@ -1,0 +1,30 @@
+﻿
+
+
+@*********************** Created By Jerin Jahan Date(22.07.2017) *******************************************@
+@model IEnumerable<FactoryManagement.Models.MachineList>
+@{
+    int count = 0;
+}
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" id="div_CartDis_option" style="width:90%!important;">
+    <table class="table">
+        <tr>
+            <th width="30%"></th>
+            <th width="10%">Sl</th>
+            <th width="60%">Machine Name</th>
+        </tr>
+        @foreach (var n in Model)
+        {
+            if (n.MachineAcronym != null)
+            {
+                count++;
+                <tr>
+                    <td></td>
+                    <td>@count .</td>
+                    <td>@n.MachineAcronym</td>
+                </tr>
+            }
+
+        }
+    </table>
+</div>

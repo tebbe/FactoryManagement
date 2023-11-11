@@ -1,0 +1,639 @@
+﻿@************************************ Created By Jerin Jahan (Date: 02.02.2017) ****************************************************************@
+@model FactoryManagement.ModelView.Voucher.VoucherModelView
+@using FactoryManagement.Helpers
+@{
+    ViewBag.Title = "CreateVoucher";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+<style>
+    .forAlignment {
+        text-align: right !important;
+    }
+
+    .forAlignmentEdit {
+        text-align: right !important;
+    }
+</style>
+@Html.HiddenFor(m => m.VoucherId)
+
+
+<h3 class="page-title">
+    Voucher Create <small>Add New Voucher</small>
+</h3>
+@if (ViewBag.IsAccSelect && ViewBag.type != null)
+{
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <i class="fa fa-calculator"></i>
+                <span> Finance</span>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            
+            <li>
+                <i class="fa fa-th-list" aria-hidden="true"></i>
+                <a href="/Accounting/AllBankList">Bank List</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <i class="fa fa-th-list" aria-hidden="true"></i>
+                <span>Branches List</span>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <i class="fa fa-th-list" aria-hidden="true"></i>
+                <span>Account List</span>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <i class="fa fa-th-list" aria-hidden="true"></i>
+                <span>Account Details With History</span>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <span>Create New Voucher</span>             
+            </li>
+        </ul>
+    </div>
+}
+@if (ViewBag.IsAccSelect && ViewBag.type ==null)
+{ 
+<div class="page-bar">
+    <ul class="page-breadcrumb col-md-12">
+        <li>
+            <i class="fa fa-calculator"></i>
+            <span>Finance</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list" aria-hidden="true"></i>
+            <a href="/Accounting/AccountGroup">Internal Account</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-info-circle" aria-hidden="true"></i>
+            <span>Account Details</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <span> Create New Voucher</span>
+        </li>
+    </ul>
+</div>
+ }
+@if (!ViewBag.IsAccSelect && ViewBag.type == null)
+{
+    <div class="page-bar">
+        <ul class="page-breadcrumb col-md-12">
+            <li>
+                <i class="fa fa-calculator"></i>
+                <span>Finance</span>
+                <i class="fa fa-angle-right"></i>
+            </li>          
+            <li>
+                <i class="fa fa-th-list" aria-hidden="true"></i>
+                <a href="/Voucher/VoucherList"> All Voucher List </a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>             
+                <span>Create Voucher</span>               
+            </li>
+        </ul>
+    </div>
+}
+<div class="portlet light bordered">
+    <div class="portlet-title">      
+        <div class="caption font-green">
+            <i class="fa fa-plus font-green"></i>
+            <span class="caption-subject bold uppercase">Create New Voucher</span>
+        </div>
+    </div>
+    <div>
+        <div class="form-horizontal" id="Div_For_Voucher_Create">
+            <div class="form-body">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.VoucherTypeId, "Voucher Type", htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+                    <div class="col-md-5 col-sm-6">
+                        @(Html.Kendo().DropDownListFor(model => model.VoucherTypeId)
+                      .OptionLabel("--Select One Type--")
+                      .BindTo(ViewBag.VoucherType)
+                      .HtmlAttributes(new { style = "width:100%" })
+                        )
+                        @Html.ValidationMessageFor(model => model.VoucherTypeId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.VoucherTitle, "Title", htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+                    <div class="col-md-5 col-sm-6">
+                        @Html.EditorFor(model => model.VoucherTitle, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                        @Html.ValidationMessageFor(model => model.VoucherTitle, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Number, "Voucher no", htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+                    <div class="col-md-5 col-sm-6">
+                        @Html.EditorFor(model => model.Number, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                        @Html.ValidationMessageFor(model => model.Number, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            </div>
+            @if (ViewBag.IsAccSelect)
+            {
+                
+              <div class="form-body">
+                        <div class="form-group">
+                            <label class="control-label col-md-3 col-sm-4">Service Name</label>
+                            <div class="col-md-5 col-sm-6">
+                                <input class="form-control k-textbox" type="text" value="@(ViewBag.name)" readonly id="txtServName">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-3 col-sm-4">Amount</label>
+                            <div class="col-md-5 col-sm-6">
+                                <input class="form-control k-textbox"
+                                       id="txtAmnt" name="txtAmnt" type="text"
+                                       min="1" value="" data-class="Amount"
+                                       placeholder="Amount"
+                                       data-val-regex="Invalid. Use only two digits after decimal point"
+                                       data-val-regex-pattern="\d+(\.\d{1,2})?"
+                                       data-val-length="Invalid number"
+                                       data-val-length-max="15"
+                                       data-val-required="Please enter amount">
+                                <span class="field-validation-valid text-danger" data-valmsg-for="txtAmnt" data-valmsg-replace="true"></span>
+                            </div>
+                        </div>
+               </div>
+                    
+              <div class="form-actions">
+                        <div class="row">
+                            <div class="col-md-offset-3 col-md-6 col-sm-offset-4 col-sm-8">
+                                <input type="submit" value="Save" class="btn green" id="btnVoucherCreateSave" />
+                                <input type="button" value="Refresh" class="btn yellow" id="btnVoucherCreateRefresh" />
+                                <input type="button" value="Cancel" class="btn red" id="btnVoucherCancel" />
+                            </div>
+                        </div>
+                </div>
+          
+            }
+            else
+            {
+               <div class="form-body">
+                    <div id="div_for_location">
+                        <div class="form-group">
+                            <label class="control-label col-md-3 col-sm-4">Place</label>
+                            <div class="col-md-3 col-sm-6">
+                                            @(Html.Kendo().DropDownList().Name("LocationId")
+                              .OptionLabel("--Select One--")
+                              .DataTextField("Name")
+                              .DataValueField("IdWithChar")
+                              .DataSource(source =>
+                              {
+                                  source.Read(read =>
+                                  {
+                                      read.Action("AllSiteListRevenue", "Accounting");
+                                  });
+                              })
+                                //.Events(e => e.Change("onCatagoryChange"))
+                              .HtmlAttributes(new { style = "width: 100%" })
+                                )
+                                <span class="field-validation-valid text-danger" data-valmsg-for="LocationId" data-valmsg-replace="true"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4>Services</h4>
+                    <div class="form-body" id="divForProduct" style="margin:0 !important;">
+                        <div class="form-group">
+                            <label class="control-label col-md-3 col-sm-4 col-xs-12" for="Product">1.</label>
+                            <div class="col-md-3 col-sm-4 col-xs-5">
+                                <input class="form-control k-textbox"
+                                       id="Product-1" name="Product-1"
+                                       type="text" value=""
+                                       onkeyup="showOtherCharge();"
+                                       data-class="Product"
+                                       placeholder="Service"
+                                       data-val-required="Please enter product name">
+                                <span class="field-validation-valid text-danger"
+                                      data-valmsg-for="Product-1" data-valmsg-replace="true" style="display: none;"></span>
+                            </div>
+                            <div class="col-md-2 col-sm-2 col-xs-5">
+                                <input class="form-control k-textbox forAlignment"
+                                       id="Amount-1" name="Amount-1" type="text"
+                                       min="1"
+                                       value="" data-class="Amount"
+                                       onkeyup="sum();"
+                                       placeholder="Amount"
+                                       data-val-regex="Invalid. Use only two digits after decimal point"
+                                       data-val-regex-pattern="\d+(\.\d{1,2})?"
+                                       data-val-length="Invalid number"
+                                       data-val-length-max="13"
+                                       data-val-required="Please enter amount">
+                                <span class="field-validation-valid text-danger" data-valmsg-for="Amount-1" data-valmsg-replace="true" style="display: none;"></span>
+                            </div>
+                            <div class="col-md-2 col-sm-2 col-xs-2" id="DivForDynBtn-1">
+                                <span class="k-icon k-i-plus" style="margin-right: .3rem;" id="btnAdd"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="form-group">
+                        <div class="col-md-offset-2">
+                            <label class="control-label col-md-4 col-sm-6 col-xs-6" for="TotalAmount">Total</label>
+                            <div class="col-md-2 col-sm-4">
+                                <label class="forAlignment" data-val="true"
+                                       data-val-number="The field TotalAmount must be a number."
+                                       id="TotalAmount" name="TotalAmount" type="text" value=""
+                                       style="float:right;padding-top:7px;"></label>
+                            </div>
+
+                            <div class="col-md-4 col-sm-3 col-xs-4" id="div_defineOtherCharge" style="display:none;">
+                                <span class="fa fa-pencil" id="btn_DefineOtherCharges"> Define Other Charges</span>
+                            </div>
+                        </div>
+                    </div>
+                   <hr />
+                    <div id="div_for_other_Charges" style="display:none;"></div>
+                    <div class="form-group" style="display:none;" id="divForSubTotal">
+                        <div class="col-md-offset-2">
+                            <label class="control-label col-md-4 col-sm-6 col-xs-12" for="SubTotal">Sub Total</label>
+                            <div class="col-md-2 col-sm-4">
+                                <label class="forAlignment" data-val="true"
+                                       data-val-number="The field TotalAmount must be a number."
+                                       id="SubTotal" name="SubTotal" type="text" value=""
+                                       style="float:right;padding-top:7px;"></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+               <div class="form-actions">
+                        <div class="row">
+                            <div class=" col-md-offset-3 col-md-9 col-sm-offset-4 col-sm-8">
+                                <input type="button" value="Save" class="btn green" id="btnVoucherCreateSave" />
+                                <input type="button" value="Refresh" class="btn yellow" id="btnVoucherCreateRefresh" />
+                                <input type="button" value="Cancel" class="btn red" id="btnVoucherCancel" />
+                            </div>
+                        </div>
+                    </div>
+               }
+
+            </div>
+        </div>   
+</div>
+<script>
+    var isVatSelected = false,vatColumnId = 0,count = 1, Othercount=0, id = "",addOtherService = 0,IsVatAlreadySelected = 0;
+    $(document).ready(function () {
+        $("#liForAccounting").addClass('active');
+        $("#liForVoucherList").addClass('sublistActive');
+        if ('@(ViewBag.IsAccSelect)' === 'True') {
+            $("#top_header_link").append('<span>Finance</span><span><i class="fa fa-angle-right fa-2x"></i></span>' +
+            '<span> Account Details <span><i class="fa fa-angle-right fa-2x"></i></span>' +
+           '<span class="current"><a href="/Voucher/CreateVoucher?IsAccSelect=false"> Create Voucher</a></span><span id="btn_page_back"><i class="fa fa-reply"> Back</i></span>');
+
+        } else {
+            $("#top_header_link").append('<span>Finance</span><span><i class="fa fa-angle-right fa-2x"></i></span>' +
+            '<span><a href="/Voucher/VoucherList"> All Voucher List </a><span><i class="fa fa-angle-right fa-2x"></i></span>' +
+           '<span class="current"><a href="/Voucher/CreateVoucher?IsAccSelect=false"> Create Voucher</a></span>');
+        }
+    });
+
+    $(document).on("click", "#btn_page_back", function () {
+        window.history.back();
+    });
+    function showOtherCharge() {
+        if ($("#Product-1").val() == "") {
+            $("#div_defineOtherCharge").hide();
+        } else {
+            $("#div_defineOtherCharge").show();
+        }
+    }
+    function sum() {
+        var amountSum = 0;
+        for (var i = 1; i <= count; i++) {
+            if ($("#Amount-" + i).val() == '') {
+                amountSum += 0;
+            }
+            else {
+                amountSum += parseFloat($("#Amount-" + i).val());
+            }
+        }
+        if (parseFloat(amountSum) > 0) {
+            $("#TotalAmount").text(amountSum.toFixed(2));
+        }
+        else {
+            $("#TotalAmount").text('');
+        }
+        $("#TotalAmount").val(amountSum.toFixed(2));
+        if (isVatSelected) {
+            if ($("#Service-" + IsVatAlreadySelected).data("isvat") === 1) {
+                var percentage = parseFloat($("#Service-" + IsVatAlreadySelected).data("percentage"));
+                var totalAmount = parseFloat($("#TotalAmount").val());
+                var amnt = ((totalAmount * percentage) / 100).toFixed(2);
+                $("#OtherAmount-" + IsVatAlreadySelected).val(amnt);
+            }
+        }
+    }
+    function onChange(e) {
+        isVatSelected = false;
+        IsVatAlreadySelected = 0;
+        vatColumnId = 0;
+        var id = e.sender.element[0].id;
+
+        var count = $("#" + id).data("count");
+        var totalAmount = parseFloat($("#TotalAmount").val());
+        var dataItem = this.dataItem(e.item);
+        if (dataItem.HasPercentile) {
+            var percentage = parseFloat(dataItem.Percentage);
+            var amnount = ((totalAmount * percentage) / 100).toFixed(2);
+            $("#Service-" + count).data("isvat", 1);
+            $("#Service-" + count).data("percentage", percentage);
+
+            $("#Service-" + count).attr("data-isvat", 1);
+            $("#Service-" + count).attr("data-percentage", percentage);
+
+            $("#OtherAmount-" + count).val(amnount);
+            isVatSelected = true;
+            IsVatAlreadySelected = count;
+            vatColumnId = dataItem.Id;
+
+        } else {
+            $("#OtherAmount-" + count).val('');
+            $("#Service-" + count).data("isvat", 0);
+            $("#Service-" + count).data("percentage", 0);
+
+            $("#Service-" + count).attr("data-isvat", 0);
+            $("#Service-" + count).attr("data-percentage", 0);
+        }
+        sumTwo();
+    }
+    function sumTwo() {
+        var amountSub = 0;
+        for (var i = 1; i <= Othercount; i++) {
+            if ($("#OtherAmount-" + i).val() == '') {
+                amountSub += 0;
+            }
+            else {
+                amountSub += parseFloat($("#OtherAmount-" + i).val());
+            }
+        }
+        var subAmount = parseFloat(amountSub) + parseFloat($("#TotalAmount").val());
+        $("#SubTotal").text(subAmount.toFixed(2));
+        $("#SubTotal").val(subAmount.toFixed(2));
+    }
+
+    $("#divForProduct").on("click", "#btnAdd", function () {
+        var contactValidate = $("#divForProduct").kendoValidator().data("kendoValidator");
+        if (contactValidate.validate()) {
+            $("#DivForDynBtn-" + count).empty();
+            $("#DivForDynBtn-" + count).hide();
+            count++;
+            $("#divForProduct").append('<div id="DynDivProduct-' + count + '">' +
+             '<div class="form-group">' +
+            '<label class="control-label col-md-3 col-sm-4 col-xs-12" for="Product">' + count + '.</label>' +
+            '<div class="col-md-3 col-sm-4 col-xs-5">' +
+                '<input class="form-control k-textbox text-box single-line k-valid contact" placeholder="Service" id="Product-' + count + '" name="Product-' + count + '" type="text" value="" data-class="Product" data-val-required="Please enter product name">' +
+                '<span class="field-validation-valid text-danger" data-valmsg-for="Product-' + count + '" data-valmsg-replace="true" style="display: none;"></span>' +
+            '</div>' +
+            '<div class="col-md-2 col-sm-2 col-xs-5">' +
+                '<input class="form-control k-textbox forAlignment" placeholder="Amount" id="Amount-' + count + '" name="Amount-' + count + '" ' +
+                'type="text" value="" min="1" onkeyup="sum();" data-val-length="Invalid number" data-val-length-max="13" data-val-regex="Invalid. Use only two digits after decimal point" data-val-regex-pattern="\\d+(\\.\\d{1,2})?" data-class="Amount" data-val-required="Please enter amount">' +
+                '<span class="field-validation-valid text-danger" data-valmsg-for="Amount-' + count + '" data-valmsg-replace="true" style="display: none;"></span>' +
+            '</div>' +
+            '<div class="col-md-2 col-sm-2 col-xs-2" id="DivForDynBtn-' + count + '">' +
+                '<span class="k-icon k-i-plus" style="margin-right: .3rem;" id="btnAdd"></span>' +
+                '<span class="k-icon k-i-close" style="margin-right: .3rem;" id="btnRemove"></span>' +
+           ' </div>' +
+        '</div>' +
+     '</div>');
+           
+        }
+    });
+    $("#divForProduct").on('click', '#btnRemove', function () {
+        $("#DynDivProduct-" + count).remove();
+        count--;
+        if (count > 1) {
+            $('#DivForDynBtn-' + count).append('<span class="k-icon k-i-plus" style="margin-right: .3rem;" id="btnAdd">' +
+                '</span><span class="k-icon k-i-close" style="margin-right: .3rem;" id="btnRemove"></span>');
+        } else {
+            $('#DivForDynBtn-' + count).append('<span class="k-icon k-i-plus" style="margin-right: .3rem;" id="btnAdd"></span>');
+        }
+        $('#DivForDynBtn-' + count).show();
+        sum();
+    });
+    $("#btnVoucherCreateRefresh").click(function () {
+        location.reload();
+    });
+    $("#btnVoucherCancel").click(function () {
+        location.href ='@Url.Action("VoucherList","Voucher")';
+    });
+   
+    $("#btn_DefineOtherCharges").click(function () {
+        var contactValidate = $("#divForProduct").kendoValidator().data("kendoValidator");
+        if (contactValidate.validate()) {
+            $("#divForSubTotal").show();
+            addOtherService = 1;
+            Othercount++;
+            $("#div_for_other_Charges").append('<div id="DynDivother-' + Othercount + '">' +
+             '<div class="form-group">' +
+                    '<label class="control-label col-md-3 col-sm-4 col-xs-12" for="Product">' + Othercount + '.</label>' +
+                    '<div class="col-md-3 col-sm-4 col-xs-5">' +
+                    '<div>'+
+                        '<input id="Service-' + Othercount + '" name="Service-' + Othercount + '" class="txtOtherService" data-count="' + Othercount + '" style="width:100%;"' +
+                        ' data-val-required="Please select service" data-isvat="0" data-percentage="0" data-count="' + Othercount + '">' +
+                        '<span class="field-validation-valid text-danger" data-valmsg-for="Service-' + Othercount + '" style="display: none;"></span>' +
+                   '</div>'+
+                  '</div>' +
+                 ' <div class="col-md-2 col-sm-2 col-xs-5">' +
+                     ' <input class="form-control k-textbox forAlignmentEdit"' +
+                            'id="OtherAmount-' + Othercount + '" name="OtherAmount-' + Othercount + '" type="text"' +
+                            'min="1"' +
+                            'value="" onkeyup="sumTwo();" data-class="OtherAmount" data-val-length="Invalid number" data-val-length-max="13"' +
+                            ' placeholder="Amount" data-val-regex="Invalid. Use only two digits after decimal point." data-val-regex-pattern="\\d+(\\.\\d{1,2})?"' +
+                            'data-val-required="Please enter amount">' +
+                    ' <span class="field-validation-valid text-danger" data-valmsg-for="OtherAmount-' + Othercount + '" data-valmsg-replace="true" style="display: none;"></span>' +
+                 '</div>' +
+                 '<div class="col-md-2 col-sm-2 col-xs-2" id="DivForDynBtnOther-' + Othercount + '">' +
+                     '<span class="k-icon k-i-plus" style="margin-right: .3rem;" id="btnAddOtherService"></span>' +
+                     '<span class="k-icon k-i-close" style="margin-right: .3rem;" id="btnRemoveOtherService"></span>' +
+                 '</div>' +
+                '</div>' +
+             '</div>');
+            $("#Service-" + Othercount).kendoDropDownList({
+                dataTextField: "ExtraServiceName",
+                dataValueField: "Id",
+                optionLabel: "--Select One--",
+                change: onChange,
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "@Url.Action("GetVoucherOtherCost", "Voucher")?id=" + vatColumnId, type: "GET"
+                        }
+                    }
+                }
+            });
+            $("#div_for_other_Charges").show();
+            $("#btn_DefineOtherCharges").hide();
+        }
+    });
+    $("#div_for_other_Charges").on('click', '#btn_extraCostCancel', function () {
+        $("#div_for_other_Charges").hide();
+        $("#div_for_other_Charges").empty();
+        $("#btn_DefineOtherCharges").show();
+        $("#divForSubTotal").hide();
+        addOtherService = 0;
+    });
+</script>
+<script>
+    $("#div_for_other_Charges").on("click", "#btnAddOtherService", function () {
+        var contactValidate = $("#div_for_other_Charges").kendoValidator({}).data("kendoValidator");
+        if (contactValidate.validate()) {
+            $("#DivForDynBtnOther-" + Othercount).empty();
+            $("#DivForDynBtnOther-" + Othercount).hide();
+            addOtherService = 1;
+            Othercount++;
+            $("#div_for_other_Charges").append('<div id="DynDivother-' + Othercount + '">' +
+             '<div class="form-group">' +
+                    '<label class="control-label col-md-3 col-sm-4 col-xs-12" for="Product">' + Othercount + '.</label>' +
+                    '<div class="col-md-3 col-sm-4 col-xs-5">' +
+                    '<div>' +
+                        '<input id="Service-' + Othercount + '" name="Service-' + Othercount + '" class="txtOtherService" data-count="' + Othercount + '" style="width:100%;" data-val-required="Please select service">' +
+                        '<span class="field-validation-valid text-danger"' +
+                   ' data-valmsg-for="Service-' + Othercount + '" data-valmsg-replace="true" style="display: none;"></span>' +
+                   '</div>' +
+                  '</div>' +
+                 ' <div class="col-md-2 col-sm-2 col-xs-5">' +
+                     ' <input class="form-control k-textbox forAlignmentEdit"' +
+                            'id="OtherAmount-' + Othercount + '" name="OtherAmount-' + Othercount + '" type="text"' +
+                            'min="1"' +
+                            'value="" onkeyup="sumTwo();" data-class="OtherAmount" data-val-length="Invalid number" data-val-length-max="13"' +
+                            ' placeholder="Amount" data-val-regex="Invalid. Use only two digits after decimal point" data-val-regex-pattern="\\d+(\\.\\d{1,2})?"' +
+                            'data-val-required="Please enter amount">' +
+                    ' <span class="field-validation-valid text-danger" data-valmsg-for="OtherAmount-' + Othercount + '" data-valmsg-replace="true" style="display: none;"></span>' +
+                 '</div>' +
+                 '<div class="col-md-2 col-sm-2 col-xs-2" id="DivForDynBtnOther-' + Othercount + '">' +
+                     '<span class="k-icon k-i-plus" style="margin-right: .3rem;" id="btnAddOtherService"></span>' +
+                     '<span class="k-icon k-i-close" style="margin-right: .3rem;" id="btnRemoveOtherService"></span>' +
+                 '</div>' +
+                '</div>' +
+             '</div>');
+            $("#Service-" + Othercount).kendoDropDownList({
+                dataTextField: "ExtraServiceName",
+                dataValueField: "Id",
+                optionLabel: "--Select One--",
+                change: onChange,
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "@Url.Action("GetVoucherOtherCost", "Voucher")?id=" + vatColumnId, type: "GET"
+                        }
+                    }
+                }
+            });
+        }
+    });
+    $("#div_for_other_Charges").on('click', '#btnRemoveOtherService', function () {
+        if ($("#Service-" + Othercount).data("isvat") === 1) {
+            isVatSelected = false;
+            IsVatAlreadySelected = 0;
+            vatColumnId = 0;
+        }
+        $("#DynDivother-" + Othercount).remove();
+        Othercount--;
+        if (Othercount === 0) {
+            $("#btn_DefineOtherCharges").show();
+            $("#divForSubTotal").hide();
+        } else
+            if (Othercount > 1) {
+                $('#DivForDynBtnOther-' + Othercount).append('<span class="k-icon k-i-plus" style="margin-right: .3rem;" id="btnAddOtherService">' +
+                    '</span><span class="k-icon k-i-close" style="margin-right: .3rem;" id="btnRemoveOtherService"></span>');
+            } else {
+                $('#DivForDynBtnOther-' + Othercount).append('<span class="k-icon k-i-plus" style="margin-right: .3rem;" id="btnAddOtherService"></span> <span class="k-icon k-i-close" style="margin-right: .3rem;" id="btn_extraCostCancel"></span>');
+
+            }
+        $('#DivForDynBtnOther-' + Othercount).show();
+        sumTwo();
+    });
+</script>
+<script>
+    $("#btnVoucherCreateSave").click(function () {
+        var validation = $("#Div_For_Voucher_Create").kendoValidator({
+            rules: {
+                location: function (input) {
+                    if (input.attr('name') === "LocationId" && $("#LocationId").val() === "" && '@(ViewBag.IsAccSelect)' === "False") {
+                        return false;
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                location: "Please select one type"
+            }
+        }).data("kendoValidator");
+
+        if (validation.validate()) {
+            notification.show({ message: "Voucher information is saving...", showTime: startTime() }, "upload-progress");
+            var OtherSevice = []; var AllVoucherProduct = [];
+            var sendData = {
+                VoucherId: $("#VoucherId").val(),
+                VoucherTypeId: $("#VoucherTypeId").val(),
+                VoucherTitle: $("#VoucherTitle").val(),
+                LocationId: $("#LocationId").val(),
+                Number: $("#Number").val(),
+                AllVoucherProduct: AllVoucherProduct,
+                AllOtherSevice: OtherSevice,
+                CreatedBy: userId
+            };
+            if ('@(ViewBag.IsAccSelect)' === 'True') {
+                if ('@(ViewBag.type)' === '1') {
+                    sendData.InternalAccId = '@(ViewBag.accId)';
+                }
+                else {
+                    sendData.BankAccId = '@(ViewBag.accId)';
+                }
+                AllVoucherProduct.push($("#txtServName").val() + "|" + $("#txtAmnt").val());
+                sendData.TotalAmount = $("#txtAmnt").val();
+                sendData.IsAccountSelected = true;
+            } else {
+                if (parseInt(count) > 1) {
+                    for (var i = 1; i <= parseInt(count) ; i++) {
+                        AllVoucherProduct.push($("#Product-" + i).val() + "|" + $("#Amount-" + i).val());
+                    }
+                }
+                else {
+                    AllVoucherProduct.push($("#Product-1").val() + "|" + $("#Amount-1").val());
+                }
+                for (var i = 1; i <= parseInt(Othercount) ; i++) {
+                    OtherSevice.push($("#Service-" + i).val() + "|" + $("#OtherAmount-" + i).val());
+                }
+                sendData.IsAccountSelected = false;
+                sendData.AllVoucherProduct = AllVoucherProduct;
+                sendData.AllOtherSevice = OtherSevice;
+                if (parseInt(Othercount) > 0) {
+                    sendData.TotalAmount = $("#SubTotal").val();
+                } else {
+                    sendData.TotalAmount = $("#TotalAmount").val();
+                }
+            }
+            $.ajax({
+                url: '@Url.Action("SaveVoucher", "Voucher")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === "Error") {
+                        notification.show({ message: "New voucher '" + sendData.VoucherTitle + " create was unsuccessful.", showTime: startTime() }, "upload-error");
+                    } else {
+                        notification.show({ message: "New voucher '" + sendData.VoucherTitle + " has been successfully created.", showTime: startTime() }, "upload-success");
+                        location.href = ('@Url.Action("VoucherList","Voucher")');
+                    }
+                },
+                error: function (err) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+</script>

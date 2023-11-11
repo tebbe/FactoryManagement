@@ -1,0 +1,106 @@
+﻿@*********************************************** Created By Jerin Jahan Date(14.05.2017) ************************@
+@{
+    ViewBag.Title = "Finished Product List Archive";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<h3 class="page-title">
+    Finished Product List <small>Manual Entry</small>
+</h3>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <a href="javascript:;">Inventory</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Report/FinishedProArchive">Finished Product Report</a>
+        </li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="note note-success">
+            <p>
+                All Unit Everyday Finished Product Report
+            </p>
+        </div>
+        <div class="portlet box green">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul"></i>Finished Product Report
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="table-responsive">
+                    <div id="Div_All_Finish_Pro" style="display:none;"><div class="loading_partial"></div></div>
+                    @if (db.Finished_Pro_Report_List.Any())
+                    {
+                        <script>
+                            $("#Div_All_Finish_Pro").show();
+                            $("#Div_All_Finish_Pro").load("_FinishedProArchive", "Report");
+                        </script>
+                    }
+                    <div id="loading" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var showCount = 0, totalCount = 0, page = 0, inCallback = false,content = '';
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+    });
+    $("#Div_All_Finish_Pro").on("click", ".btn_show_rep", function () {
+        var id = $(this).data("id");
+        location.href = '@Url.Action("ShowproArchiveDetails", "Report")?q=' + getDataEncrypted("id=" + id);
+    });
+
+
+     @******************************** OnScroll Bind Table Data *************************@
+    $(window).scroll(function () {
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/Report/GetProArch',
+            data: { page: page },
+            success: function (data) {
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        $("table#tbl_All_Pro_Arch > tbody").append('<tr>'+
+                                        '<th>' + showCount + '.</th>' +
+                                        '<td><a href="/Report/ShowproArchiveDetails?q=' + getDataEncrypted("id=" + data[i].Id) +
+                                        '">' + data[i].ReportName + '</a>' +
+                                        '<td>' + data[i].Title + ' (' + data[i].SubTitle + ')</td>' +
+                                        '<td>' + data[i].CreatedDateFormate + '</td>' +
+                                        '<td><span class="btn green btn_show_rep" data-id="' + data[i].Id + '"><i class="fa fa-info-circle"></i></span></td>' +
+                                        '</tr>');
+                    }
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+</script>

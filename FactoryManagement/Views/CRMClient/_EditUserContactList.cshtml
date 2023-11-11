@@ -1,0 +1,344 @@
+﻿@model FactoryManagement.ModelView.CRM.Client_User_ListsModelView
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var clientUserContactList = db.Client_User_ContactList.Where(m => m.UserId == Model.UserId).ToList();
+    var count = 1;
+}
+@Html.HiddenFor(m => m.UserId)
+@Html.HiddenFor(m => m.ClientId)
+@Html.HiddenFor(m => m.Id)
+<div>
+    <h4>Contact Information<span class="k-icon k-i-plus btnUserContactAdd" id="btnPlusContactAdd" style="cursor:pointer;margin-left:13px;"></span></h4>
+    <hr />
+    <div>
+        <div id="DivForUserContactAdd" style="display:none;">
+            <div class="editor-label"><label for="Contact">Contact</label></div>
+            <div class="editor-field">
+                <input class="form-control k-textbox text-box single-line k-valid contact" id="userContactAdd" name="userContactAdd" type="text" value="" data-class="userContactAdd">
+                <span class="field-validation-valid text-danger" data-valmsg-for="userContactAdd" data-valmsg-replace="true" style="display: none;"></span>
+            </div>
+            <div class="editor-label"><label for="userContactTypeId">Contact Type</label></div>
+            <div class="editor-field">
+                @(Html.Kendo().DropDownList()
+                      .Name("userContactTypeId")
+                      .DataTextField("Text")
+                      .DataValueField("Value")
+                      .OptionLabel("--Select Type--")
+                      .BindTo(new List<SelectListItem>() {
+                              new SelectListItem() {
+                                  Text = "Land",
+                                  Value = "1"
+                                  },
+                              new SelectListItem() {
+                                  Text = "Mobile",
+                                  Value = "2"
+                                  }
+                      })
+                  .HtmlAttributes(new { style = "width: 100%" })
+                )
+            </div>
+            <div class="editor-label"><label for="Comments">Comments</label></div>
+            <div class="editor-field">
+                <textarea class="form-control k-textbox text-box " rows="3" cols="40" name="Comments" type="text" id="Comments"></textarea>
+            </div>
+            <div class="k-edit-buttons k-state-default">
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnAddUserContact"><span class="k-icon k-update"></span>Add</button>
+                <button type="button" class="k-button k-button-icontext k-grid-update" id="btnRefreshUserContactAdd"><span class="k-icon k-update"></span>Refresh</button>               
+            </div>
+        </div>
+        <br />
+        <div id="DivForUserContactEdit">
+            @foreach (var item in clientUserContactList as IEnumerable<FactoryManagement.Models.Client_User_ContactList>)
+            {
+            <div class="form-horizontal form-widget" id="Div_For_UserCon_@item.Id">
+                <span class="k-icon k-i-close deleteUserContactInfo" data-id="@item.Id" id="deleteUserContactInfo-@item.Id" style="cursor:pointer;float:right;"></span>
+                <span class="fa fa-pencil editUserContactInfoPen"
+                      data-id="@item.Id"
+                      id="editUserContactInfo-@item.Id"
+                      data-ctype="@item.ContactTypeId"
+                      style="cursor:pointer;float:right;">
+                </span>
+                <div class="form-group" id="divForUserContactLabel-@item.Id" data-contactidl="@item.Id">
+                    @Html.LabelFor(modelItem => item.Contact, "Contact" +' '+count, htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12" })
+                    <div class="col-md-7 col-sm-7 col-xs-8" style="padding-top:7px">
+                        <p>
+                            @item.Contact (@if (item.ContactTypeName != null)
+                                {@item.ContactTypeName})
+                        </p>
+                        <p>@item.Comments</p>
+                    </div>
+                </div>
+
+                <div id="divforUserContactEdit-@item.Id" style="display:none;">
+                    <div class="editor-label"><label for="editUserContact">Contact</label></div>
+                    <div class="editor-field">
+                        <input class="form-control k-textbox text-box single-line" id="editUserContact_@item.Id" name="editUserContact_@item.Id" type="text" value="@item.Contact" />
+                        <span class="field-validation-valid text-danger" data-valmsg-for="editUserContact_@item.Id" data-valmsg-replace="true"></span>
+                    </div>
+                    <div class="editor-label"><label for="editUserContactTypeId">Contact Type</label></div>
+                    <div class="editor-field">
+                        @(Html.Kendo().DropDownListFor(model=>model.ContactTypeId)
+                        .Name("editUserContactTypeId_"+@item.Id)
+                                        .DataTextField("Text")
+                                        .DataValueField("Value")
+                                        .OptionLabel("--Select Type--")
+                                        .BindTo(new List<SelectListItem>() {
+                                          new SelectListItem() {
+                                                 Text = "Land",
+                                                 Value = "1"
+                                           },
+                                         new SelectListItem() {
+                                                 Text = "Mobile",
+                                                 Value = "2"
+                                           }
+                                           })
+                                        .HtmlAttributes(new { style = "width: 100%" })
+                        )
+                        <span class="field-validation-valid text-danger" data-valmsg-for="editUserContactTypeId_@item.Id" data-valmsg-replace="true" style="display: none;"></span>
+                    </div>
+                    <div class="editor-label"><label for="Comments">Comments</label></div>
+                    <div class="editor-field">
+                        <textarea class="form-control k-textbox text-box " rows="3" cols="40" id="Comments-@item.Id" name="item.Comments" type="text">@item.Comments</textarea>
+                    </div>
+
+                    <div class="k-edit-buttons k-state-default">
+                        <button type="button" class="k-button k-button-icontext k-primary k-grid-update btnUserContactEdit" id="btnUserContactEdit-@item.Id" data-id="@item.Id"><span class="k-icon k-update"></span>Update</button>
+                        <button type="button" class="k-button k-button-icontext k-grid-update btnUserContactRefreshEdit" id="btnUserContactRefreshEdit-@item.Id"><span class="k-icon k-update"></span>Refresh</button>                     
+                    </div>
+                </div>
+            </div>
+            <br />
+            count++;
+            }
+        </div>
+    </div>
+</div>
+<script id="temp_win_userContact_edit" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        @if (clientUserContactList.Count()>1)
+        {
+            <p style="font-size: 14px; padding: 10px">Are you sure you want to delete this contact ?</p>
+            <div style="text-align: right;">
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_ContactEditUnit_ok"><span class="k-icon k-update"></span>OK</button>
+                <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_ConyactEditUnit_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+            </div>
+        }     
+        else
+        {
+            <p style="font-size: 14px; padding: 10px">At least one contact must be exist</p>
+            <div style="text-align: right;">
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-upgrade" id="btn_ConyactEditUnit_cancel"><span class="k-icon k-update"></span>OK</button>
+            </div>
+        }
+    </div>
+</script>
+<script>
+    var type;
+    var id;
+    var logUserId = 0;
+    $(document).ready(function () {
+        logUserOneId = loginUserId;
+        var clienId = '@Model.ClientId';
+        telInput = $("#userContactAdd");
+        telInput.intlTelInput({
+            geoIpLookup: function (callback) {
+                $.get("http://ipinfo.io", function () { }, "jsonp").always(function (resp) {
+                    var countryCode = (resp && resp.country) ? resp.country : "";
+                    callback(countryCode);
+                });
+            },
+            initialCountry: "auto",
+            utilsScript: "../Scripts/intl-tel-input-master/build/js/utils.js"
+        });
+        var reset = function () {
+            telInput.removeClass("error");
+        };
+        telInput.on("keyup change", reset);
+    });
+
+    //************************ Edit Contact pen btn Click****************************
+    $("#divForUserContact").on("click", ".editUserContactInfoPen", function () {
+        id = $(this).data('id');
+        uTelInput = $("#editUserContact_" + id);     //Intel Input For Edit Contact
+        uTelInput.intlTelInput({
+            geoIpLookup: function (callback) {
+                $.get("http://ipinfo.io", function () { }, "jsonp").always(function (resp) {
+                    var countryCode = (resp && resp.country) ? resp.country : "";
+                    callback(countryCode);
+                });
+            },
+            initialCountry: "auto",
+            utilsScript: "../Scripts/intl-tel-input-master/build/js/utils.js"
+        });
+        var reset = function () {
+            telInput.removeClass("error");
+        };
+        telInput.on("keyup change", reset);
+        $("#divForUserContactLabel-" + id).hide();
+        $("#divforUserContactEdit-" + id).show();
+        $("#editUserContactInfo-" + id).hide();
+        $("#deleteUserContactInfo-" + id).hide();
+    });
+    //******************************************User Contact Update ******************************************************
+    $("#divForUserContact").on("click", ".btnUserContactEdit", function () {
+        id = $(this).data('id');
+        var userContactEditValidation = $("#Div_For_UserCon_" + id).kendoValidator({
+            rules: {
+                Contact: function (input) {
+                    var name = "UserCont_" + id;
+                    if (input.is("[name=" + name + "]")) {
+                        if (!telInput.intlTelInput("isValidNumber")) {
+                            return false;
+                        }
+                    }
+                    return true;
+                },
+                ContactType: function (input) {
+                    var name = "UserContType_" + id;
+                    if (input.is("[name=" + name + "]") && input.val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            },
+            messages: {
+                Contact: "Please enter valid contact number",
+                ContactType: "Please select contact type"
+            }
+        }).data("kendoValidator");
+
+        if (userContactEditValidation.validate()) {          
+            notification.show({ message: "User contact inforamtion updating...", showTime: startTime() }, "upload-progress");
+            var sendData = {
+                Id: id,
+                UserId: $("#UserId").val(),
+                Contact: $("#editUserContact_" + id).intlTelInput("getNumber"),
+                ContactTypeId: $("#editUserContactTypeId_" + id).val(),
+                Comments: $("#Comments-" + id).val(),
+                CreatedBy: logUserOneId
+            };
+            $.ajax({
+                url: '@Url.Action("UpdateUserContactInfo", "CRMClient")',
+                type: 'Post',
+                data: sendData,
+                success: function (nId) {
+                    if (nId != '') {
+                        notification.hide();
+                        notification.setOptions({ autoHideAfter: 2000 });
+                        notification.show({ message: "Contact information successfully updated", showTime: startTime() }, "upload-success");
+                    }
+                    else {
+                        notification.show({ message: "Update unsuccessful", showTime: startTime() }, "upload-error");
+                    }
+                    $("#divForUserContact").empty();
+                    $("#divForUserContact").load('@Url.Action("_EditUserContactList", "CRMClient")?UserId=' + '@Model.UserId');                  
+                }
+            });
+        }
+    });
+    //********************************************Delete User Contact info**************************
+    $("#DivForUserContactEdit").on("click", ".deleteUserContactInfo", function (e) {
+        id = $(this).data('id');
+        e.preventDefault();
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        var template = kendo.template($("#temp_win_userContact_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+
+        kendoWindow.find("#btn_ConyactEditUnit_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_ContactEditUnit_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            deleteUserContactInfo(id);
+        }).end();
+    });
+    function deleteUserContactInfo(id) {
+        notification.show({ message: "User contact inforamtion deleting...", showTime: startTime() }, "upload-progress");
+        $.ajax({
+            url: '@Url.Action("DeleteUserContact", "CRMClient")',
+            type: 'Post',
+            data: { Id: id },
+            success: function (data) {
+                if (data === "Success") {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 2000 });
+                    notification.show({ message: "Contact information successfully deleted", showTime: startTime() }, "upload-success");
+                }
+                else {
+                    notification.show({ message: "Deletion unsuccessful", showTime: startTime() }, "upload-error");
+                }
+                $("#divForUserContact").empty();
+                $("#divForUserContact").load('@Url.Action("_EditUserContactList", "CRMClient")?UserId=' + '@Model.UserId');
+
+            }
+        });
+    };
+
+//***********************Add user new contact********************************
+    $("#divForUserContact").on("click", "#btnPlusContactAdd", function (e) {
+        e.preventDefault();
+        $("#DivForUserContactAdd").show();
+    });
+    $("#DivForUserContactAdd").on("click", "#btnAddUserContact", function () {
+        var userContactAddValidation = $("#DivForUserContactAdd").kendoValidator({
+            rules: {
+                Contact: function (input) {
+                    if (input.is("[name=userContactAdd]")) {
+                        if (!telInput.intlTelInput("isValidNumber")) {
+                            return false;
+                        }
+                    }
+                    return true;
+                },
+                ContactType: function (input) {
+                    if (input.is("[name=ContactType]") && input.val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            },
+            messages: {
+                Contact: "Please enter valid contact number",
+                ContactType: "Please select contact type"
+            }
+        }).data("kendoValidator");
+        if (userContactAddValidation.validate()) {
+            notification.show({ message: "User contact inforamtion adding...", showTime: startTime() }, "upload-progress");
+            var sendData = {
+                Id: $("#Id").val(),
+                UserId: $("#UserId").val(),
+                Contact: $("#userContactAdd").intlTelInput("getNumber"),
+                ContactTypeId: $("#userContactTypeId").val(),
+                Comments: $("#Comments").val(),
+                CreatedBy: logUserOneId
+            };
+            $.ajax({
+                url: '@Url.Action("AddUserNewContact", "CRMClient")',
+                type: 'Post',
+                dataType: 'json',
+                data: sendData,
+                success: function (nId) {
+                    if (nId != '') {
+                        notification.hide();
+                        notification.setOptions({ autoHideAfter: 2000 });
+                        notification.show({ message: "Contact information successfully added", showTime: startTime() }, "upload-success");
+                    }
+                    else {
+                        notification.show({ message: "Contact information adding failed!", showTime: startTime() }, "upload-error");
+                    }
+                    $("#divForUserContact").empty();
+                    $("#divForUserContact").load('@Url.Action("_EditUserContactList", "CRMClient")?UserId=' + '@Model.UserId');
+                }
+            });
+        }
+    });
+</script>
+

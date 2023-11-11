@@ -1,0 +1,21 @@
+﻿
+<div class="col-sm-12" style="padding-left:0px!important;padding-right:0px!important;">
+    <div class="panel with-nav-tabs panel-default">
+        <div class="panel-heading">
+            <ul class="nav nav-tabs">
+                    <li class="active"><a href="#tab1doc" data-toggle="tab">Documents</a></li>
+            </ul>
+        </div>
+        <div class="panel-body" style="border:none!important;">
+            <div class="tab-content">
+                <div class="tab-pane fade in active" id="tab1doc"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $("#tab1doc").append('<div class="loading_half"></div>');
+        $("#tab1doc").load('@Url.Action("_UserDocuments", "HumanResource")?UserId=' + EmpId);
+    });
+</script>

@@ -1,0 +1,39 @@
+﻿@*********************************************** Done By : Tasnim Tuli (31 Jan, 2017)*******************************@
+
+@model FactoryManagement.ModelView.Accounting.AccountGroupModelView
+@{
+    ViewBag.Title = "EditAccountInfo";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+
+<h3>Edit Account Info</h3>
+<div id="Show_Account_Info">
+    <div class="loading_partial"></div>
+    <script>
+        $("#Show_Account_Info").load('@Url.Action("ShowAccountInfo", "Accounting")?AccId=' + '@(Model.AccId)');
+    </script>
+</div>
+<div class="row">
+    <div class="col-md-offset-2">
+        <span class="btn btn-success" id="ShowPopUpIncreasedAmount"><i class="fa fa-plus"></i> Increase Amount</span>
+        <span class="btn btn-success" id="ShowPopUpDecreaseAmount"><i class="fa fa-minus"></i> Decrease Amount</span>
+    </div>
+
+</div>
+<script>
+    $(document).ready(function () {
+        $("#liForAccounting").addClass('active');
+        $("#liForAccountGroup").addClass('sublistActive');
+        $("#top_header_link").append('<span>Accounce</span><span><i class="fa fa-angle-right fa-2x"></i></span>' +
+            '<span><a href="/Accounting/AccountGroup"> All Account Name</a></span><span><i class="fa fa-angle-right fa-2x"></i></span>' +
+           '<span class= "current"> Account Info</span>' +
+           '<span id="btn_page_back"><i class="fa fa-reply"> Back</i></span>');
+    });
+    $(document).on("click", "#btn_page_back", function (e) {
+        e.preventDefault();
+        window.history.back();
+    });
+    
+</script>
+
+

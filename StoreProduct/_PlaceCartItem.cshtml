@@ -1,0 +1,160 @@
+﻿
+
+
+@***************** Created By Jerin Jahan Date(19.11.2016) *****************************@
+<style>
+    #Div_Selected_Order_List table th, #Div_Selected_Order_List table td, #tbl_selected_item td, #tbl_selected_item th {border: none !important; }
+</style>
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="div_CartDis_option">
+    <div class="col-sm-12" style="float:left;display:none;" id="div_cart_ryt"><div class="loading_45"></div></div>
+    <script>
+        var windowHeight = $(window).height() - $(".navbar-fixed-top").height() - 200;
+        hieght = (parseInt(windowHeight));
+        $("#div_cart_ryt").show();
+        $("#div_cart_ryt").css({ "min-height": hieght });
+        $("#div_cart_ryt").load('@Url.Action("_CartItemLocation", "StoreProduct")');
+    </script>
+    <div class="k-edit-buttons k-state-default col-xs-11">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_CartDis_Save">
+            <span class="k-icon k-update"></span>Route
+        </button>
+        <button type="reset" class="k-button k-button-icontext k-grid-cancel" id="btn_CartDis_Cancle">
+            <span class="k-icon k-cancel"></span>Cancel
+        </button>
+    </div>
+</div>
+<script>
+    $("#btn_CartDis_Cancle").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#btn_CartDis_Save").click(function () {
+        var validation = $("#div_CartDis_option").kendoValidator({
+            rules: {
+                vname: function (input) {
+                    if (input.attr('name') === "txtVname" && $("#txtVname").val() === "") {
+                        return false;
+                    }
+                    return true;
+                },
+                option: function (input) {
+                    if (input.attr('name') === "AssignType" && (!$("#ChkMachine").is(":checked") && !$("#ChkOrder").is(":checked") && !$("#ChkPlace").is(":checked"))) {
+                        return false;
+                    }
+                    return true;
+                },
+                order: function (input) {
+                    if (input.attr('name') === "Bus_Order" && $("#ChkOrder").is(":checked") && current == "") {
+
+                        return false;
+                    }
+                    return true;
+                },
+                signleuser: function (input) {
+                    if (input.attr('name') === "SingleUser" && $("#ChkSingleUser").is(":checked") && $("#SingleUser").data("kendoMultiSelect").value() == '') {
+                        return false;
+                    }
+                    return true;
+                },
+                SiteId: function (input) {
+                    if (input.attr('name') === "SiteId" && $("#ChkPlace").is(":checked") && $("#SiteId").val() === "") {
+                        return false;
+                    }
+                    return true;
+                },
+                SiteUnitId: function (input) {
+                    if (input.attr('name') === "SiteUnitId" && $("#ChkPlace").is(":checked") && $("#SiteUnitId").data("kendoMultiSelect").value() == '') {
+                        return false;
+                    }
+                    return true;
+                },
+                dept: function (input) {
+                    if (input.attr('name') === "UnitDeptId" && $("#ChkPlace").is(":checked") && $("#UnitDeptId").data("kendoMultiSelect").value() == '') {
+                        return false;
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                vname: "Please enter voucher name",
+                option: "Please select one",
+                order: "Please select order",
+                signleuser: "Please select user to assign",
+                SiteId: "Please select site",
+                SiteUnitId: "Please select unit",
+                dept: "Please select dept."
+            }
+        }).data("kendoValidator");
+        
+        if (validation.validate()) {
+            notificationPopUp.show({ message: "Routing data in saving.......", showTime: startTime() }, "upload-progress");
+            $('#btn_CartDis_Cancle').attr('disabled', 'disabled');
+            $('#btn_CartDis_Save').attr('disabled', 'disabled');
+            var orderId = 0, assigUserId = 0, allAssignUser = 0;
+            var allSelectedItem = [];
+            var allOrderId = [];
+            var sendData = "";
+            var url = "";
+            var isOne = false;
+            if ($("#ChkSingleUser").is(':checked')) {
+                $("#div_cart_ryt .selectedDiv").each(function () {
+                    var id = $(this).data('id');
+                    var count = 0;
+                    $("#div_order_" + id + " .txt_disQuan").each(function () {
+                        count++;
+                        allSelectedItem.push($(this).data('locid') + '-' + $(this).val());
+                    });
+                    allOrderId.push(id + "|" + count);
+                });
+                isOne = true;
+                var multiselect = $("#SingleUser").data("kendoMultiSelect");
+                allAssignUser = multiselect.value();
+            }
+            else {
+                $("#div_cart_ryt .selectedDiv").each(function () {
+                    var id = $(this).data('id');
+                    var assignUid = $(this).data('uid');
+                    var count = 0;
+                    var multiselect = $("#assignUser_" + id).data("kendoMultiSelect");
+                    var value = multiselect.value();
+                    $("#div_order_" + id + " .txt_disQuan").each(function () {
+                        count++;
+                        allSelectedItem.push($(this).data('locid') + '-' + $(this).val());
+                    });
+                    allOrderId.push(id + "|" + count + "|" + value);
+                });
+                assignUserId = 0;
+                isOne = false;
+            }
+
+            url = '@Url.Action("CartItemAssignedWithPlace", "StoreProduct")';
+            sendData = {
+                vname: $("#txtVname").val(),
+                allPlaceId: allOrderId, allSelectedItem: allSelectedItem,
+                userId: userId, allAssignUser: allAssignUser, isOne: isOne,
+                isStore: isStore
+            };
+            $.ajax({
+                url: url,
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notificationPopUp.hide();
+                    notificationPopUp.setOptions({ autoHideAfter: 5000 });
+                    if (data === "Success") {
+                        notificationPopUp.show({ message: "Inventory item has been successfully routed.", showTime: startTime() }, "upload-success");
+                        location.reload();
+                        $("#btn_CartDis_Save").closest(".k-window-content").data("kendoWindow").close();
+                    }
+                    else {
+                        notificationPopUp.show({ message: "Inventory item route was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                },
+                error: function (xhr) {
+                    notificationPopUp.hide();
+                    notificationPopUp.setOptions({ autoHideAfter: 5000 });
+                    notificationPopUp.show({ message: "Error occurred...!!!", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+</script>

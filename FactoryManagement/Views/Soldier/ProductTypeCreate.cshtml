@@ -1,0 +1,77 @@
+﻿@*----------------------Created By (Jerin Jahan) Date(22-03-2017)-----------------*@
+
+@model FactoryManagement.ModelView.Inventory.Product.ProductTypeViewModel
+
+@using (Html.BeginForm("ProductTypeCreateSave", "Inventory", FormMethod.Post))
+{
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(m => m.ProductTypeId)
+    @Html.HiddenFor(m => m.HasParent)
+    @Html.HiddenFor(m => m.ParentId)
+    @Html.HiddenFor(m => m.ParentName)
+    @Html.HiddenFor(m => m.CreatedBy)
+
+    <br />
+    <div class="k-edit-form-container" id="divForProCreate">
+        <div class="editor-label"><label>Product Type Name</label></div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.ProductTypeName, new { htmlattributes = new { @class = "k-textbox", @style = "width:100%" } })
+            @Html.ValidationMessageFor(model => model.ProductTypeName, "", new { @class = "text-Danger" })
+        </div>
+
+        <div class="k-edit-buttons k-state-default">
+            @if (Model.ProductTypeId != 0)
+            {
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnCreate"><span class="k-icon k-update"></span>Update</button>
+            }
+            else
+            {
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnCreate"><span class="k-icon k-update"></span>Create</button>
+            }
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+    <br />
+}
+<script>
+    var validation = $("#divForProCreate").kendoValidator().data("kendoValidator");
+    $("#btnCreate").click(function () {
+        var msg = "";
+        if (validation.validate()) {
+            var sendData = {
+                CategoryId: $("#ProductTypeId").val(), CategoryName: $("#ProductTypeName").val(),
+                HasParent: $("#HasParent").val(), ParentId: $("#ParentId").val(), ParentName: $("#ParentName").val(), CreatedBy: userId
+            };
+            msg = ($("#ProductTypeId").val() > 0) ? "Updating product type information" : "Creating new product Type";
+            notification.show({
+                message: msg,showTime: startTime()}, "upload-progress");
+            $.ajax({
+                url: '@Url.Action("ProductTypeCreateSave", "Soldier")',
+                type: 'Post',
+                data: sendData,
+                success: function (response) {
+                    $("#window").data("kendoWindow").close();
+                    notification.hide(); notification.setOptions({ autoHideAfter: 2000 });
+                    if (response === "Success") {
+                        if ($("#ProductTypeId").val() > 0) {
+                            msg = "Product type information successfully updated";
+                        } else {
+                            msg = ($("#HasParent").val() == 'True') ? "Product type successfully added" : "Product type successfully created";
+                        }
+                        notification.show({message: msg, showTime: startTime()}, "upload-success");
+                        $("#divForAll_Pro_type").empty();
+                        $("#divForAll_Pro_type").append('<div class="loading_partial"></div>');
+                        $("#divForAll_Pro_type").load('@Url.Action("_ShowAllProductTypeList", "Soldier")');
+                    }
+                    else {
+                        msg = ($("#HasParent").val() == 'True') ? "Add product type attempt unsuccessful" : "Product type create attempt unsuccessful";
+                        notification.show({message: msg, showTime: startTime()}, "upload-error");
+                    }
+                }
+            });
+        }
+    });
+    $("#btnCancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

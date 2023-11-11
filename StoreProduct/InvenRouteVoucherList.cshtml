@@ -1,0 +1,259 @@
+﻿@************************************* Created by Jerin Jahan (Date: 03.12.2016) ******************************************@
+@{
+    ViewBag.Title = "InvenRoutedVoucherList";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/StoreProduct/InvenRouteVoucherList"> All Routed History</a>
+        </li>
+    </ul>
+</div>
+<div class="note note-success"><p id="h4title">Showing All History</p></div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">All Routed History</span>
+                </div>
+                <div class="actions">
+                    <div class="btn-group btn-group-devided" data-toggle="buttons" id="Div_Upper_Portion" style="display:none;">
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm active" id="btn_All" data-toggle="tooltip" title="All History" data-container="body">
+                            <input type="radio" name="options" class="toggle">All
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_today" data-toggle="tooltip" title="Today History" data-container="body">
+                            <span><input type="radio" name="options" class="toggle">Today</span>
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_seven" data-toggle="tooltip" title="Last 7 days History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 7 Days
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_thirty" data-toggle="tooltip" title="Last 30 day History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 30 Days
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="tab-content">
+                    <div class="tab-pane fade in active" id="tab1AllRoute">
+                        <div id="divForAllRoute"></div>
+                        @if (db.View_Inven_Dis_Voucher_List.Where(m => m.Type == 1).Any())
+                        {
+                            <script>
+                                // $("#Div_Upper_Portion1").show();
+                                $("#divForAllRoute").empty();
+                                        $("#divForAllRoute").append('<div class="win_loading_half"></div>');
+                                       
+                                        $("#divForAllRoute").load('@Url.Action("_InvenRouteVoucherList", "StoreProduct")?isStore=' + '@(ViewBag.isStore)');
+                            </script>
+                        }
+                        else
+                        {
+                            <script>
+                                $("#divForAllRoute").empty();
+                                $("#divForAllRoute").append(' <h4>There is no record to display...</h4>');
+                    
+                            </script>
+                        }
+                    </div>
+                    <div class="tab-pane fade" id="tab1MachineList"><div id="divForMachine"></div></div>
+                    <div class="tab-pane fade" id="tab2PlaceList">
+                        <div id="divForPlace"></div>
+                    </div>
+                </div>
+
+                @*<div id="Div_All_His" style="display:none;"></div>
+                @if (db.View_Inven_Dis_Voucher_List.Where(m => m.Type == 1).Any())
+                {
+                    <script>
+                        $("#Div_Upper_Portion").show();
+                        $("#Div_All_His").append('<div class="loading_partial"></div>');
+                        $("#Div_All_His").show();
+                        $("#Div_All_His").load('@Url.Action("_InvenRouteVoucherList", "StoreProduct")?isStore=' + '@(ViewBag.isStore)');
+                    </script>
+                }
+                else
+                {
+                    <script>
+                        $("#Div_All_His").append(' <h3>There is no record to display...</h3>');
+                        $("#Div_All_His").show();
+                    </script>
+                }
+                <div id="loading" style="display:none;"></div>*@
+            </div>
+        </div>
+    </div>
+</div>
+
+<script id="temp_win_voucher_edit" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px"> #=msg# </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_indent_noty_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_indent_noty_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+
+<script>
+    var showCount = 0, totalCount = 0, page = 0, inCallback = false;
+    var days = 0;
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $("#liForRouteVouHis").addClass('sublistActive');
+        $("#top_header_link").append('<span>Inventory</span><span><i class="fa fa-angle-right fa-2x"></i></span>' +
+            '<span><a href="/StoreProduct/Store"> Store</a></span><span><i class="fa fa-angle-right fa-2x"></i></span>' +
+            '<span class="current"><a href="/StoreProduct/InvenRouteVoucherList"> Routed History</a></span><span id="btn_page_back"><i class="fa fa-reply"> Back</i></span>');
+    });
+
+
+    @******************************** OnScroll Bind Table Data *************************@
+    $(window).scroll(function () {
+        var countBytype, result;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/StoreProduct/GetInvenRouteVoucher',
+            data: { page: page },
+            success: function (data) {
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        $("table#tbl_inven_vou_lit").append('<tr><th>' + showCount + '.</th>' +
+                            '<td><a href="/StoreProduct/RoutedHistoryDetails?q=' + getDataEncrypted("id=" + data[i].Id) + '">' + data[i].VoucherName + '</a></td>' +
+                            '<td>' + data[i].DispatchedDateName + '</td>' +
+                            '<td><img class="img-circle" src="/Images/UserPicture/thumb/' + data[i].DispatchedUserPic + '">' +
+                            ((data[i].DispatchedBy > 0) ? '<a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].DispatchedBy + "?isDisplay=true") + '">' + ' ' + data[i].DispatchedUserName + '</a>' : ' <span>Super admin</span>'
+                                ) +
+                             '</td>' +
+                             '<td><span class="btn btn-danger btn_remove_route"><i class="fa fa-close"></i></span></td>' +
+                             '</tr>');
+                    }
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+
+    $("#btn_today").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = { days: 1, isStore: '@(ViewBag.isStore)' };
+        $("#Div_All_His").empty();
+        $("#Div_All_His").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Today's Dispatched History");
+        $("#Div_All_His").load('@Url.Action("_InvenRouteVoucherListDayWise", "StoreProduct")', passdata);
+        days = 1;
+    });
+
+    $("#btn_last_seven").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = { days: 7, isStore: '@(ViewBag.isStore)' };
+        $("#Div_All_His").empty();
+        $("#Div_All_His").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Last 7 Days Dispatched History");
+        $("#Div_All_His").load('@Url.Action("_InvenRouteVoucherListDayWise", "StoreProduct")', passdata);
+        days = 7;
+    });
+    $("#btn_last_thirty").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = { days: 30, isStore: '@(ViewBag.isStore)' };
+        $("#Div_All_His").empty();
+        $("#Div_All_His").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Last 30 Days Dispatched History");
+        $("#Div_All_His").load('@Url.Action("_InvenRouteVoucherListDayWise", "StoreProduct")', passdata);
+        days = 30;
+    });
+    $("#btn_All").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        $("#Div_All_His").empty();
+        $("#Div_All_His").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing All History");
+        $("#Div_All_His").load('@Url.Action("_InvenRouteVoucherList", "StoreProduct")?isStore=' + '@(ViewBag.isStore)');
+        days = 0;
+    });
+
+
+    $("#Div_All_His").on("click", ".btn_remove_route", function () {
+        var id = $(this).data("id");
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose
+        });
+        msg = "Are you sure you want to delete this voucher? It may cause problem in your system.";
+        var template = kendo.template($("#temp_win_voucher_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+
+        kendoWindow.find("#btn_indent_noty_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            document.documentElement.style.overflow = 'auto';
+            document.body.scroll = "yes";
+        }).end();
+
+        kendoWindow.find("#btn_indent_noty_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            document.documentElement.style.overflow = 'auto';
+            document.body.scroll = "yes";
+            deleteVoucher(id);
+        }).end();
+    });
+
+    function deleteVoucher(id) {
+        notification.show({ message: "Route voucher is deleting...", showTime: startTime() }, "upload-progress");
+        $.ajax({
+            url: '@Url.Action("RouteVoucherDelete", "StoreProduct")',
+            type: 'Post',
+            data: { id: id, deletedBy: userId },
+            success: function (data) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                if (data === "Error") {
+                    notification.show({ message: "Route voucher deletion was unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+                else {
+                    notification.show({ message: "Route voucher has been successfully deleted.", showTime: startTime() }, "upload-success");
+
+                    $("#Div_All_His").append('<div class="loading_partial"></div>');
+                    $("#Div_All_His").show();
+                    $("#Div_All_His").load('@Url.Action("_InvenRouteVoucherList", "StoreProduct")?isStore=' + '@(ViewBag.isStore)');
+                }
+            }
+        });
+    };
+</script>

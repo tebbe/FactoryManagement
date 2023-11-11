@@ -1,0 +1,127 @@
+﻿@******************************** Created By Jerin Jahan (Date: 02.01.2017) ******************************************************@
+@model FactoryManagement.Models.View_Manual_Indent
+@{
+    var uPrice="";
+    if (Model.ProUnitPrice > 0)
+    {
+        uPrice = Convert.ToString(Model.ProUnitPrice);
+    }
+    else
+    {
+        uPrice = "N/A";
+    }
+}
+
+    @Html.HiddenFor(m => m.IndentId)
+
+    <div class="k-edit-form-container col-md-10 col-sm-10 col-xs-10" id="Div_Indent_Edit" style="margin-bottom:4%;">
+        <div class="editor-label"><label for="DeptName">Product Name</label></div>
+        <div class="editor-field">
+            <input class="k-textbox" id="ProName" name="ProName" style="width: 100%;"
+                   placeholder="Product name..." onfocus="this.placeholder = ''" onblur="    this.placeholder = 'Product name...' "
+                   data-val="true" data-val-required="Please enter quantity" value="@Model.ProName" />
+            <span class="field-validation-valid text-danger" data-valmsg-for="ProName" data-valmsg-replace="true"></span>
+        </div>
+
+        <div class="editor-label"><label for="DeptAcronym">Quantity</label></div>
+        <div class="editor-field">
+            <input class="k-textbox" data-val="true" data-val-length="Invalid"
+                   data-val-required="Please enter quantity" min="1" pattern="[0-9]"
+                   placeholder="Quantity" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Quantity' "
+                   id="Quantity" name="Quantity" type="number" value="@Model.Quantity" aria-invalid="true">
+            <span class="field-validation-valid text-danger" data-valmsg-for="Quantity" data-valmsg-replace="true"></span>
+        </div>
+
+        <div class="editor-label"><label for="DeptAcronym">Unit</label></div>
+        <div class="editor-field">
+            @(Html.Kendo().DropDownListFor(model => model.ProUnitId)
+            .OptionLabel("--Select One--")
+            .BindTo(ViewBag.UnitId)
+            .HtmlAttributes(new { style = "width:100%" })
+            )
+            <span class="field-validation-valid text-danger" data-valmsg-for="ProUnitId" data-valmsg-replace="true"></span>
+        </div>
+
+        <div class="editor-label"><label for="DeptAcronym">Unit Price</label></div>
+        <div class="editor-field">
+            <input class="k-textbox"
+                   placeholder="Unit Price" onfocus="this.placeholder = ''"  onblur="this.placeholder = 'Unit Price' " min="1"
+                   id="ProUnitPrice" name="ProUnitPrice" type="text" value="@uPrice" aria-invalid="true">
+            <span class="field-validation-valid text-danger" data-valmsg-for="ProUnitPrice" data-valmsg-replace="true"></span>
+        </div>
+
+        <div class="editor-label"><label for="DeptAcronym">Comments</label></div>
+        <div class="editor-field">
+            <input class="k-textbox" data-val-length="string length exceed"
+                   data-val-length-max="500"
+                   placeholder="Comments" onfocus="this.placeholder = ''" onblur="    this.placeholder = 'Comments' "
+                   id="Comments" name="Comments" type="text" value="@Model.Comments" aria-invalid="true">
+            <span class="field-validation-valid text-danger" data-valmsg-for="Comments" data-valmsg-replace="true"></span>
+        </div>
+
+     
+        <div class="col-sm-11 col-xs-11">
+            <div class="k-edit-buttons k-state-default">
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_Indent_Up"><span class="k-icon k-update"></span>Update</button>
+                <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_Indent_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+
+
+    $("#btn_Indent_Up").click(function () {
+        var validation = $("#Div_Indent_Edit").kendoValidator({
+            rules: {
+                unitId: function (input) {
+                    if (input.is("[name=ProUnitId]") && input.val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            },
+            messages: {
+                unitId: "Please select unit"
+            }
+        }).data("kendoValidator");
+        if (validation.validate()) {
+            notification.show({ message: "Indent product info updating...", showTime: startTime() }, "upload-progress");
+            var senddata = {
+                IndentId:'@(Model.IndentId)',
+                IndentType: '@(Model.IndentType)', MachineId: '@(Model.MachineId)', StoreId: '@(Model.StoreId)', WareId: '@(Model.WareId)',
+                ProName: $("#ProName").val(), Quantity: $("#Quantity").val(),
+                ProUnitId: $("#ProUnitId").val(), ProUnitPrice: $("#ProUnitPrice").val(), Comments: $("#Comments").val(), UpdatedBy: userId
+            };
+            $.ajax({
+                url: '@Url.Action("EditManualIndent", "Acquisition")',
+                type: 'Post',
+                data: senddata,
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    $("#btn_Indent_Up").closest(".k-window-content").data("kendoWindow").close();
+                    if (data == "Success") {
+                        notification.show({ message: "Indent info has been successfully updated.", showTime: startTime() }, "upload-success");
+                        $("#Div_Manual_Indent").empty();
+                        $("#Div_Manual_Indent").append('<div class="win_loading_half"></div>');
+                        $("#Div_Manual_Indent").load('@Url.Action("_AllManualIndent", "Acquisition")?v='+'edit'+ '&status=' +@Model.VoucherStatus +'&id='+@Model.VoucherId);
+                    } else {
+                        notification.show({ message: "Indent info update was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+
+                },
+                error: function (err) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                }
+
+            });
+        }
+    });
+
+    $("#btn_Indent_cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>
+

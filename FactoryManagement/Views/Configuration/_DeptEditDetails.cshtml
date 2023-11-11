@@ -1,0 +1,50 @@
+﻿@******************************** Created By Mabia Mishu (Date:21.09.2016) *********************************@
+
+@model FactoryManagement.ModelView.Configuration.DepartmentListModelView
+<div id="divForDeptUpdate">
+    <div class="editor-label"><label for="DeptName">Department Name</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.DeptName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        @Html.ValidationMessageFor(model => model.DeptName, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="DeptAcronym">Dept. Acronym</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.DeptAcronym, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        @Html.ValidationMessageFor(model => model.DeptAcronym, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="Status">Status</label></div>
+    <div class="editor-field">
+        @(Html.Kendo().DropDownList()
+                       .Name("StatusValue")
+                       .DataTextField("Text")
+                       .DataValueField("Value")
+                       .OptionLabel("--Select One Type--")
+                       .HtmlAttributes(new { style = "width:100%" })
+                       .Events(e => e.Change("onDeptStatusChange"))
+                       .BindTo(new List<SelectListItem>() {
+                          new SelectListItem() {
+                              Text = "Active",
+                              Value = "1"
+                          },
+                          new SelectListItem() {
+                              Text = "Inactive",
+                              Value = "0"
+                          },
+                      })
+                  .Value(Model.Status.ToString())
+        )
+        @Html.ValidationMessageFor(model => model.Status, "", new { @class = "text-danger" })
+    </div>
+</div>
+<script>
+    var DeptName, DeptStatus,siteId,unitId,deptId,siteName,unitName;
+    $(document).ready(function () {
+        DeptName = '@(Model.DeptName)';
+        Deptstatus = '@(Model.Status)';
+        siteId = parseInt('@Model.SiteId');
+        unitId = parseInt('@Model.UnitId');
+        deptId = parseInt('@Model.DeptId');
+        siteName = '@Model.SiteName';
+        unitName = '@Model.UnitName';
+    });
+</script>

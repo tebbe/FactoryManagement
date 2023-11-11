@@ -1,0 +1,52 @@
+﻿
+@{
+    ViewBag.Title = "MachineSchedule";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    var count = 1;
+}
+
+<h2>Machine Schedule</h2>
+
+<table class="table table-bordered">
+    <tr>
+        <th>#</th>
+        <th>Last Checking Date</th>
+        <th>Oparetion Duration</th>
+        <th>Machine Off Duration</th>
+        <th>Next Checking Date</th>
+        <th>Left Days</th>
+    </tr>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <th>@count</th>
+            <td>Last Date</td>
+            <td>@Html.DisplayFor(modelItem => item.Acroynm)</td>
+
+            <td>
+                @if (item.CreatedBy == 1)
+                {
+                    <img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" />
+                    @Request.Cookies["CookieAdminInfo"].Values["username"].ToString()
+                }
+                else
+                {
+                    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+                    var user = db.View_UserLists.Where(m => m.UserType == 1 && m.UserId == item.CreatedBy).FirstOrDefault();
+                    <img src="~/Images/UserPicture/thumb/@user.Picture" class="user-photo" />
+                    <span>@user.UserName</span>
+                }
+            </td>
+            <td>@Convert.ToDateTime(item.CreatedDate).ToString("MMMM dd,yyyy")</td>
+            <td>
+                <a href="/Configuration/DesignationCreate?id=@item.Id"><span class="k-icon k-i-pencil"></span></a>
+                <span data-id="@item.Id" style="cursor:pointer;" class="btnDesigDelete"><span class="fa fa-trash"></span></span>|
+                <a href="/Configuration/DesignationCreate?id=@item.Id"><span class="k-icon k-i-hbars">Show All Machine</span></a>
+            </td>
+        </tr>
+                count++;
+    }
+</table>
+
+
+

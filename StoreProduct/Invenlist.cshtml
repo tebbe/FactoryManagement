@@ -1,0 +1,272 @@
+﻿@**************************** Created By Jerin Jahan (Date:20.04.2017) *****************************************@
+@{
+    ViewBag.Title = "Inventory Product Lists";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+<style>
+    #categoryList li {
+        margin-top: 0px;
+        height: 30px;
+        padding: 0px;
+        width: 100%;
+        border: 1px solid blue;
+    }
+
+        #categoryList li a {
+            text-decoration: none;
+            cursor: pointer;
+            color: black;
+            font-weight: bold;
+        }
+
+    .selected {
+        background-color: orange;
+    }
+
+    #divForCategory .treeView {
+        padding: 10px 0px 10px 10px;
+        border: 1px solid #e6e6e6;
+        background-color: #f5f5f5;
+        border-radius: 3px;
+    }
+</style>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-file-text" aria-hidden="true"></i>
+            <a href="/StoreProduct/Invenlist">Mothly Report Generator</a>
+        </li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">Monthly Report </span>
+                </div>
+                <div class="actions">
+                    <span class="btn green btn-outline btn-circle btn-sm" id="btn_Pro_Tday_Rep" data-toggle="tooltip" title="Todays Report" data-container="body">
+                        <i class="fa fa-file"></i> Today
+                    </span>
+                    <span class="btn green btn-outline btn-circle btn-sm" id="btn_Pro_Mon_Rep" data-toggle="tooltip" title="Specific Month Report" data-container="body">
+                       <i class="fa fa-file"></i> Specific Month
+                    </span>
+                    <span class="btn green btn-outline btn-circle btn-sm" id="btn_Pro_Curreny_Mnth_Rep" data-toggle="tooltip" title="Current Month Report" data-container="body">
+                        <i class="fa fa-file"></i> Current Month
+                    </span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="row">
+                    <div id="divForCategory" class="col-xs-12 col-sm-3 col-md-3">
+                        <div id="tv_Ware_Pro_List" class="treeView"></div>
+                    </div>
+                    <div id="div_for_list" class="col-xs-12 col-sm-8 col-lg-9">
+                        <div id="Div_Inven_List"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="div_for_rep"></div>
+<div id="div_for_month_win"></div>
+<script id="temp_tv_Ware_Pro_List" type="text/kendo-ui-template">
+    #if(item.id.split('-')[1] === 'c'){#
+    <label style="cursor:pointer;color:grey;font-weight:normal;width: 100%;"
+           class="lblTreeViewProType child"
+           data-id="#:item.id#"
+           data-text="#: item.text #">#: item.text # (#:item.Count#)</label>
+    #}else {#
+    <label style="cursor:pointer;color:black;font-weight:bold;width: 100%;"
+           class="lblTreeViewProType parent"
+           data-id=" #:item.id#"
+           data-text="#: item.text #">#: item.text #<span class='right-count'></span></label>
+    #}#
+</script>
+<script>
+    var AllId = [];
+    var allMonthList = [
+        { text: "January", value: "1" },
+        { text: "February", value: "2" },
+        { text: "March", value: "3" },
+        { text: "April", value: "4" },
+        { text: "May", value: "5" },
+        { text: "June", value: "6" },
+        { text: "July", value: "7" },
+        { text: "August", value: "8" },
+        { text: "September", value: "9" },
+        { text: "October", value: "10" },
+        { text: "November", value: "11" },
+        { text: "December", value: "12" }
+    ];
+    var currentmonthList = [];
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $('#liForInvenReport').addClass('open');
+        $('#liForInvenReport .sub-menu').show();
+        $("#liForMonthRep").addClass('sublistActive');
+
+        var currentmonth = new Date().getMonth();
+        for (var i = 0; i <= currentmonth; i++) {currentmonthList.push(allMonthList[i]);}
+        $.ajax({
+            type: 'GET',
+            url: '/StoreProduct/GetAllCategory',
+            success: function (data) {
+                if (data.length > 0) {
+                    for (var i = 0; i < data.length; i++){
+                        $("#categoryList").append('<li data-id="' + data[i].ProductTypeId + '"><a>' + data[i].ProductTypeName + '</a></li>');
+                    }
+                }
+            }, error: function (error) {}
+        });
+
+        var url = '/StoreProduct/ProductCategoryAll?userId=' + userId + '&roleId=' + roleId;
+        $.getJSON(url, function (data) {
+            $("#tv_Ware_Pro_List").kendoTreeView({
+                dataSource: data,
+                template: kendo.template($("#temp_tv_Ware_Pro_List").html()),
+            }).data("kendoTreeView");
+        });
+       
+       // $(".k-top k-top").children('span').addClass("k-in k-state-selected");
+        $("#Div_Inven_List").empty();
+        $("#Div_Inven_List").append('<div class="loading_partial"></div>');
+        $("#Div_Inven_List").load('@Url.Action("InventoryProductListByType", "StoreProduct")?productTypeId=0');
+    });
+
+    //********** Left Side Item Category Select *****************
+    $("#tv_Ware_Pro_List").on("click", ".lblTreeViewProType", function (e) {
+        e.preventDefault();
+        var proId = 0, name = "";
+        $("#Div_Inven_List").empty();
+        $("#Div_Inven_List").append('<div class="loading_partial"></div>');
+        if ($(this).data("id") == 0) {
+            name = "";
+            proId = 0;
+        }
+        else {
+            name = $(this).data("text");
+            proId = $(this).data("id").split('-')[0];
+        }
+        sendData = { productTypeId: proId, name: name };
+        $("#Div_Inven_List").load('@Url.Action("InventoryProductListByType", "StoreProduct")', sendData);
+    });
+
+    $("#Div_Inven_List").on("click", ".chkInven", function () {
+        if ($(this).is(":checked")) {
+            AllId.push($(this).data("invenid"));
+        } else {
+            if (AllId.length > 0) {
+                for (var i = 0; i < AllId.length; i++) {
+                    if (AllId[i] == $(this).data("invenid")) {
+                        AllId.splice(i, 1);
+                    }
+                }
+            }
+        }
+    });
+    $("#btn_Pro_Tday_Rep").click(function () {
+        if (AllId.length > 0) {
+            var sendData = { AllId: AllId };
+            window.open('@Url.Action("InvenProTodayReport", "StoreProduct")?q=' + btoa(AllId), "_blank");
+        } else {
+            alert("You didn't select any product");
+        }
+    });
+    $("#btn_Pro_Curreny_Mnth_Rep").click(function () {
+        if (AllId.length > 0) {
+            var data = "allId=" + AllId + "&month=" + (new Date().getMonth() + 1) + "&year=" + new Date().getFullYear();
+            window.open('@Url.Action("InvenProMonthReport", "StoreProduct")?q=' + btoa(data));
+        } else {
+            alert("You didn't select any product");
+        }
+    });
+    $("#btn_Pro_Mon_Rep").click(function () {
+        if (AllId.length > 0) {
+            $("#div_for_month_win").empty().clearQueue();
+            $("#div_for_month_win").kendoWindow({
+                actions: ["Close"],
+                draggable: false,
+                modal: true,
+                visible: false,
+                width: '50%',
+                position: { top: '20%' },
+                title: 'Select month and year'
+            });
+            $("#div_for_month_win").html('<div class="partial_loading_half"></div>');
+            var div_for_month_win = $("#div_for_month_win").data("kendoWindow");
+            div_for_month_win.refresh({ url: "/StoreProduct/MonthSpecReportPopup?view=month" });
+            div_for_month_win.center().open();
+        } else {
+            alert("You didn't select any product");
+        }
+    });
+
+
+    function onYearDropChange() {
+        var yearDrop = $("#yearDrop").data("kendoDropDownList");
+        $("#monthDrop").val('');
+        if (new Date(yearDrop.value()).getFullYear() == new Date().getFullYear()) {
+            $("#monthDrop").kendoDropDownList({
+                index: new Date().getMonth(),
+                dataTextField: "text",
+                dataValueField: "value",
+                dataSource: currentmonthList,
+            });
+        } else {
+            $("#monthDrop").kendoDropDownList({
+                index: 0,
+                dataTextField: "text",
+                dataValueField: "value",
+                dataSource: allMonthList,
+            });
+        }
+    }
+    function onmonthDropChange() { }
+    function startDateChange() {
+        var startDate = $("#startDate").data("kendoDatePicker");
+        var endDate = $("#endDate").data("kendoDatePicker");
+        $("#endDate").val('');
+        endDate.min(new Date(startDate.value()));
+    }
+    $("#Div_Inven_List").on("click", "#checkAll", function () {
+        if ($(this).is(":checked")) {
+            var allIdNow = [];
+            $(".chkInven").each(function () {
+                allIdNow.push($(this).data("invenid"));
+                $(this).prop('checked', true);
+            });
+            for (var i = 0; i < allIdNow.length; i++) {
+                var flag;
+                for (var j = 0; j < AllId.length; j++) {
+                    if (AllId[j] == allIdNow[i]) {
+                        flag = true;
+                        break;
+                    }
+                }
+                if (flag != true) {
+                    AllId.push(allIdNow[i]);
+                }
+            }
+        } else {
+            $(".chkInven").each(function () {
+                allIdNow = [];
+                $(this).prop('checked', false);
+                for (var i = 0; i < AllId.length; i++) {
+                    if (AllId[i] == $(this).data("invenid")) {
+                        AllId.splice(i, 1);
+                    }
+                }
+            });
+        }
+    });
+</script>

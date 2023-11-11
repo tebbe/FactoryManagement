@@ -1,0 +1,261 @@
+﻿@***************************** Created By : Tasnim Tuli (8.10.16)**************************************** *@
+@model FactoryManagement.ModelView.CRM.Client_Vehicle_ListsModelView
+<div class="k-edit-form-container" id="divForNewVehicleSave">
+    @Html.HiddenFor(m => m.VehicleId)
+    @Html.HiddenFor(m => m.ClientId)
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div class="editor-label"><label for="VehicleName">Vehicle Name</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.VehicleName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        @Html.ValidationMessageFor(model => model.VehicleName, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="RegisterNo">Register No</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.RegisterNo, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        @Html.ValidationMessageFor(model => model.RegisterNo, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="Description">Description</label></div>
+    <div class="editor-field">
+        @Html.TextAreaFor(model => model.Description, new { cols = 60, rows = 6, @class = "form-control k-textbox" })
+        @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="Address">Address</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        @Html.ValidationMessageFor(model => model.Address, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="AddressLine1">AddressLine1</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.AddressLine1, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        @Html.ValidationMessageFor(model => model.AddressLine1, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="Country">Country</label></div>
+    <div class="editor-field">
+        @(Html.Kendo().DropDownListFor(model => model.Country)
+                      .Name("vehicleCountry")
+                      .OptionLabel("--Select One Country--")
+                      .Events(e => e.Change("onChangeOfVehicleCountry"))
+                      .BindTo(ViewBag.CountryId)
+                      .HtmlAttributes(new { style = "width:100%" })
+        )
+        @Html.ValidationMessageFor(model => model.Country, "", new { @class = "text-danger" })
+    </div>
+    <div id="DivForVehicleState">
+        <div class="editor-label"><label for="State">State</label></div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.State, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.State, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div id="DivForVehicleDivision">
+        <div class="editor-label"><label for="DivisionId">Division</label></div>
+        <div class="editor-field">
+            @(Html.Kendo().DropDownListFor(model => model.DivisionId)
+                      .Name("vehicleDivisionId")
+                      .OptionLabel("--Select One Division--")
+                      .BindTo(ViewBag.DivisionList)
+                      .HtmlAttributes(new { style = "width:100%" })
+            )
+            @Html.ValidationMessageFor(model => model.DivisionId, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="editor-label"><label for="City">City</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.City, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        @Html.ValidationMessageFor(model => model.City, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="PostalCode">Postal Code</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.PostalCode, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        @Html.ValidationMessageFor(model => model.PostalCode, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="PictureName">Picture Name</label></div>
+    <div class="editor-field">
+        <div class="col-md-12" id="divForPic" style="padding-left:0px">
+            <div class="col-md-4" id="divPic-0" style="padding-left:0px;">
+                <span id="UserImgClose-0" style="display:none;">
+                    <img src="/Content/Icon/modal_close.png" class="previewImgClose" id="UserImgClose-0" data-count="0" />
+                </span>
+                <div id="imgPreview-0" class="imgPreview"></div>
+                <div id="imgUpload-0" class="image-uploader">
+                    <input type="file" name="files" id="file-0" class="inputfile inputfile-4" data-count="0" style="display:none;" />
+                    <label for="file-0" id="lbl-0" class="lblForPics">
+                        <span style="font-size: 26px;padding-top:3em;display:block;" id="lbl_Span_plus">+</span>
+                        <span style="font-size: 15px;font-weight:bold;">Add Photos</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div> 
+</div>
+
+<script>
+    
+    var allMainFile = [];
+    var allFileCount = [];
+    var PictureName;
+    $(document).ready(function () {
+        countryCode()
+    });
+   function countryCode() {
+            $.get("http://ipinfo.io", function () { }, "jsonp").always(function (resp) {
+                var vehicleCountryCode = (resp && resp.country) ? resp.country : "";
+                var vehicleCountryList = $("#vehicleCountry").data("kendoDropDownList");
+                vehicleCountryList.value(vehicleCountryCode);
+                $("#vehicleCountry").val(vehicleCountryCode);
+                if (vehicleCountryCode === "BD") {
+                    $("#DivForVehicleDivision").show();
+                    $("#DivForVehicleState").hide();
+                }
+                else {
+                    $("#DivForVehicleState").show();
+                    $("#DivForVehicleDivision").hide();
+                }                
+                
+        });
+     };
+$("#divForPic").on('change', '.inputfile-4', function (e) {
+       var id = $(this).data("count");
+       var countFiles = $("#file-" + id)[0].files.length;
+       var imgPath = $("#file-" + id)[0].value;
+       var extn = imgPath.substring(imgPath.lastIndexOf('.') + 1).toLowerCase();
+       var image_holder = $("#imgPreview-" + id);
+       var files = e.target.files;
+       image_holder.empty();
+       if (extn == "gif" || extn == "png" || extn == "jpg" || extn == "jpeg") {
+           if (typeof (FileReader) != "undefined") {
+  
+               allMainFile[0] = files[0];
+               for (var i = 0; i < countFiles; i++) {
+                   var reader = new FileReader();
+                   reader.onload = function (e) {
+                       $("<img />", { "src": e.target.result }).appendTo(image_holder);
+                   }
+                   $("#imgUpload-" + id).hide();
+                   $("#UserImgClose-" + id).show();
+                   image_holder.show();
+                   $("#file-" + id).hide();
+                   $("#lblfile-" + id).hide();
+                   $("#PictureName").val($("#file-" + id)[0].files[i]);
+                   reader.readAsDataURL($("#file-" + id)[0].files[i]);
+                   $("#lbl_Span_plus").text("+");
+               }
+           } else {
+               alert("This browser does not support FileReader.");
+           }
+       } else {
+           alert("Pls select only images");
+       }
+   });
+$("#divForPic").on('click', '.previewImgClose', function (e) {
+       var id = $(this).data("count");
+       $("#imgPreview-" + id).empty();
+       $("#imgPreview-" + id).hide();
+       $("#UserImgClose-" + id).hide();
+       $("#imgUpload-" + id).show();
+   });
+$("#btnRefreshAddVehicle").click(function () {
+        $("#divForNewVehicleSave").empty();
+        $("#divForNewVehicleSave").append('<div class="loading_partial"></div>');
+        $("#divForNewVehicleSave").load('@Url.Action("_AddNewVehicle", "CRMClient")?ClientId=' + '@(Model.ClientId)');
+        $("#divForNewVehicleSave").show();
+});
+$("#btnAddVehicle").click(function () {
+        var vehicleValidation = $("#divForNewVehicleSave").kendoValidator({
+
+        }).data("kendoValidator");
+        if (vehicleValidation.validate()) {
+            var sendData = new FormData();
+            sendData.append("VehicleId", $("#VehicleId").val());
+            sendData.append("files", allMainFile[0]);
+            sendData.append("CreatedBy", loginUserId);
+            sendData.append("VehicleName", $("#VehicleName").val());
+            sendData.append("RegisterNo", $("#RegisterNo").val());
+            sendData.append("ClientId", '@Model.ClientId');
+            sendData.append("Description", $("#Description").val());
+            sendData.append("Address", $("#Address").val());
+            sendData.append("AddressLine1", $("#AddressLine1").val());
+            sendData.append("Country", $("#vehicleCountry").val());
+            sendData.append("DivisionId", $("#vehicleDivisionId").val());
+            sendData.append("State", $("#State").val());
+            sendData.append("City", $("#City").val());
+            sendData.append("PostalCode", $("#PostalCode").val());           
+            $.ajax({
+                url: '@Url.Action("AddNewVehicle", "CRMClient")',
+                type: 'Post',
+                data: sendData,
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({
+                        autoHideAfter: 2000
+                    });
+                    if (data != null) {
+                        if (data === 'Error') {notification.show({ message: "Adding vehicel unsuccessfull !"}, "upload-error");}
+                        else {notification.show({message: "Vehicle  successfully added", showTime: startTime()},"upload-success");}
+                    }
+                    $("#AddNewVehicelPopUp").empty();
+                    $("#AddNewVehicelPopUp").data("kendoWindow").close();
+                    $("#div_ryt_panel").load('@Url.Action("VehicleList", "CRMClient")?Id=' + '@(Model.ClientId)'+'&isDisplay='+isDisplay);                   
+                },
+                error: function (error) {notification.show({message: "Upload unsuccessful"},"upload-error");}
+            });
+        }
+    });
+</script>
+<style>
+    .image-uploader {
+        width: 100%;
+        height: 260px;
+        display: block;
+        text-align: center;
+    }
+    .imgPreview {
+        background-color: #e8e4d0;
+        margin-bottom: 20px;
+        position: relative;
+        width: 100%;
+        height: 260px;
+        border: 1px solid #808080;
+        display: none;
+        overflow: hidden;
+    }
+
+        .imgPreview img {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+    .lblForPics {
+        text-align: center;
+        max-width: 100%;
+        width: 100%;
+        height: 221px;
+        vertical-align: middle;
+        border: 1px dashed blue;
+    }
+
+        .lblForPics span {
+            color: #083bb5 !important;
+        }
+
+    .previewImgClose {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        float: right;
+        right: -1.8em;
+        bottom: -1.8em;
+        z-index: 9999;
+        margin-top: -3em;
+    }
+</style>

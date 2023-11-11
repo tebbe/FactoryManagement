@@ -1,0 +1,486 @@
+﻿@************************************** Created By Jerin Jahan (Date:24.08.2016)  ***************************************@
+@******************** Edited By Kaikubad(Date:07.02.2017) **************************@
+
+@*this view is fully modified to display details at desired design*@
+<style>
+    .k-edit-field, .k-edit-form-container .editor-field {
+        width: 70% !important;
+    }
+
+    #tbl_Pack_Details td {
+        border: none !important;
+    }
+
+    #tbl_Pack_Details3 {
+        text-align: left;
+    }
+
+    #tbl_Pack_Details {
+        border-bottom: none;
+    }
+</style>
+@model FactoryManagement.ModelView.SalaryConfig.SalayPackageConfig
+@{
+    var count = 1;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    double total = 0;
+    double monthlyTotal = 0;
+    var Currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+@if (ViewBag.option == "win")
+{
+    <style>
+    #tbl_Pack_Details2 td {color: black !important;}
+    .table td,.table tr{
+        border:1px solid #ddd !important;
+    }
+    </style>
+    <div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">Package Name</label></div>
+    <div class="editor-field" style="float:left;margin-left:10px;padding-top:7px">
+        @Html.DisplayFor(model => model.PackageName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+    </div>
+    
+    <div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName"></label></div>
+    <div class="editor-field" style="float:left;margin-left:10px">
+        <table class="table table-condensed table-bordered" id="tbl_Pack_Details2">
+            @foreach (var list in ViewBag.allAccName as IEnumerable<FactoryManagement.ModelView.SalaryConfig.SalaryAccAddModelView>)
+            {
+                double BaseSalary = ViewBag.baseAmount;
+                double amount;
+                double monthlyAmount = 0;
+                string MonthName = "";
+                string Eventname = "";
+                <tr style="color:black">
+                    <td>@count . @list.Name</td>
+                    @if (list.AccPayType == 1)
+                    {
+                        var monthList = db.Salary_Acc_Pay_MonthList.Where(m => m.Salary_Pck_Acc_Id == list.Id).Select(m => m.MonthName).ToList();
+                        foreach (var m in monthList)
+                        {
+                            MonthName += m + ",";
+                        }
+                    }
+                    else if (list.AccPayType == 1)
+                    {
+                        Eventname = db.HolidayLists.Where(m => m.Id == list.HolidayId).Select(m => m.HolidayName).FirstOrDefault();
+                    }
+                    @if (list.AccountType == 2)
+                    {
+                        amount = BaseSalary * Convert.ToDouble(list.Percentage) / 100;
+                        if (list.AccPayType == 1)
+                        {
+                            <td style="margin-left:10px;margin-right:10px;">
+                                @Currency @amount  ; @MonthName.Remove(MonthName.Length - 1)
+                                (@list.Percentage% of @Currency @BaseSalary)
+                            </td>
+                        }
+                        else if (list.AccPayType == 1)
+                        {
+                            <td style="margin-left:10px;margin-right:10px;">
+                                @Currency @amount Eventname (@list.Percentage% of @Currency @BaseSalary )
+                            </td>
+                        }
+                        else
+                        {
+                            <td style="margin-left:10px;margin-right:10px;">
+                                @Currency @amount (@list.Percentage% of @Currency @BaseSalary)
+                            </td>
+                        }
+                    }
+                    else
+                    {
+                        amount = Convert.ToDouble(list.Amount);
+                        if (list.AccPayType == 1)
+                        {
+                            <td style="margin-left:10px;margin-right:10px;">
+                                @Currency @list.Amount (@MonthName.Remove(MonthName.Length - 1))
+                            </td>
+                        }
+                        else if (list.AccPayType == 1)
+                        {
+                            <td style="margin-left:10px;margin-right:10px;">
+                                @Currency @list.Amount ; Eventname
+                            </td>
+                        }
+                        else
+                        {
+                            <td style="margin-left:10px;margin-right:10px;">@Currency @list.Amount</td>
+                        }
+                    }
+                    <td id="btn_Edit_selected_Pck" style="display:none;">
+                        <span class="k-icon k-i-pencil btn_pack_Acc_Edit" data-id="@list.Id" data-packageid="@list.PackageId"></span>
+                        <span class="k-icon k-i-close btn_pack_Acc_Delete" data-id="@list.Id" data-packageid="@list.PackageId"></span>
+                    </td>
+                </tr>
+                    count++;
+                    if (list.AccPayType == 3)
+                    {
+                        monthlyAmount = amount;
+                        amount = 12 * amount;
+                    }
+                    else
+                    {
+                        if (list.AccountType != 4 && list.AccountType != 6)
+                        {
+                            int monthCount = db.Salary_Acc_Pay_MonthList.Where(m => m.Salary_Pck_Acc_Id == list.Id).Count();
+                            amount = monthCount * amount;
+                        }
+                    }
+                    if (list.IsAddition)
+                    {
+                        if (list.AccountType != 4 && list.AccountType != 6)
+                        {
+                            total = total + Convert.ToDouble(amount);
+                            monthlyTotal = monthlyTotal + Convert.ToDouble(monthlyAmount);
+                        }
+                    }
+                    else
+                    {
+                        if (list.AccountType != 4 && list.AccountType != 6)
+                        {
+                            total = total - Convert.ToDouble(amount);
+                            monthlyTotal = monthlyTotal - Convert.ToDouble(monthlyAmount);
+                        }
+                    }
+            }
+            <tr>
+                <td colspan="2" style="margin-left:10px;margin-right:10px;">
+                  Total = @Currency @monthlyTotal (Monthly)
+                    <span style="margin-top:5px;margin-left:10px"> Total = @Currency @total (Annual)</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+    
+    @*<div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName"></label></div>
+    <div class="editor-field" style="float:left;">
+        <span style="margin-bottom:5px">Total = @Currency @monthlyTotal (Monthly)</span>
+        <span style="margin-top:5px;margin-left:10px"> Total = @Currency @total (Annual)</span>
+    </div>*@
+}
+else if (ViewBag.option == "assign")
+{
+    <div class="k-edit-form-container col-lg-11 col-md-11 col-sm-11 col-xs-11">
+        <div class="control-label col-md-3 col-xs-3" style="float:left;padding-left:0px;"><label for="PackageName">Package Name</label></div>
+        <div class="editor-field" style="float:left;">
+            <div class="col-sm-11 col-xs-11" style="padding-top:8px;color:#5a7391;font-weight:bold">
+                @Html.DisplayFor(model => model.PackageName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        <div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName"></label></div>
+        <div class="editor-field" style="float:left;">
+            <div class="col-sm-11 col-xs-11" style="padding-top:7px;margin-left:4%;width:96%">
+                <table class="table table-condensed" id="tbl_Pack_Details2">
+                    @foreach (var list in ViewBag.allAccName as IEnumerable<FactoryManagement.ModelView.SalaryConfig.SalaryAccAddModelView>)
+                    {
+                        double BaseSalary = ViewBag.baseAmount;
+                        double amount;
+                        double monthlyAmount = 0;
+                        string MonthName = "";
+                        string Eventname = "";
+                        <tr style="color:black">
+                            <td>@count . @list.Name</td>
+
+                            @if (list.AccPayType == 1)
+                            {
+                                var monthList = db.Salary_Acc_Pay_MonthList.Where(m => m.Salary_Pck_Acc_Id == list.Id).Select(m => m.MonthName).ToList();
+                                foreach (var m in monthList)
+                                {
+                                    MonthName += m + ",";
+                                }
+                            }
+                            else if (list.AccPayType == 1)
+                            {
+                                Eventname = db.HolidayLists.Where(m => m.Id == list.HolidayId).Select(m => m.HolidayName).FirstOrDefault();
+                            }
+
+                            @if (list.AccountType == 2)
+                            {
+                                amount = BaseSalary * Convert.ToDouble(list.Percentage) / 100;
+                                if (list.AccPayType == 1)
+                                {
+                                    <td style="margin-left:10px;margin-right:10px;">
+                                        @list.Percentage% of @Currency @BaseSalary
+                                        (@Currency @amount  ; @MonthName.Remove(MonthName.Length - 1) )
+                                    </td>
+                                }
+                                else if (list.AccPayType == 1)
+                                {
+                                    <td style="margin-left:10px;margin-right:10px;">
+                                        @list.Percentage% of @BaseSalary @Currency
+                                        (@Currency @amount Eventname)
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td style="margin-left:10px;margin-right:10px;">
+                                        @list.Percentage% of @Currency @BaseSalary
+                                        (@Currency @amount )
+                                    </td>
+                                }
+                            }
+                            else
+                            {
+                                amount = Convert.ToDouble(list.Amount);
+                                if (list.AccPayType == 1)
+                                {
+                                    <td style="margin-left:10px;margin-right:10px;">
+                                        @Currency @list.Amount (@MonthName.Remove(MonthName.Length - 1))
+                                    </td>
+                                }
+                                else if (list.AccPayType == 1)
+                                {
+                                    <td style="margin-left:10px;margin-right:10px;">
+                                        @Currency @list.Amount ; Eventname
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td style="margin-left:10px;margin-right:10px;">@Currency @list.Amount</td>
+                                }
+                            }
+                            <td id="btn_Edit_selected_Pck" style="display:none;">
+                                <span class="k-icon k-i-pencil btn_pack_Acc_Edit" data-id="@list.Id" data-packageid="@list.PackageId"></span>
+                                <span class="k-icon k-i-close btn_pack_Acc_Delete" data-id="@list.Id" data-packageid="@list.PackageId"></span>
+                            </td>
+                        </tr>
+                            count++;
+                            if (list.AccPayType == 3)
+                            {
+                                monthlyAmount = amount;
+                                amount = 12 * amount;
+                            }
+                            else
+                            {
+                                if (list.AccountType != 4 && list.AccountType != 6)
+                                {
+                                    int monthCount = db.Salary_Acc_Pay_MonthList.Where(m => m.Salary_Pck_Acc_Id == list.Id).Count();
+                                    amount = monthCount * amount;
+                                }
+                            }
+                            if (list.IsAddition)
+                            {
+                                if (list.AccountType != 4 && list.AccountType != 6)
+                                {
+                                    total = total + Convert.ToDouble(amount);
+                                    monthlyTotal = monthlyTotal + Convert.ToDouble(monthlyAmount);
+                                }
+
+                            }
+                            else
+                            {
+                                if (list.AccountType != 4 && list.AccountType != 6)
+                                {
+                                    total = total - Convert.ToDouble(amount);
+                                    monthlyTotal = monthlyTotal - Convert.ToDouble(monthlyAmount);
+                                }
+                            }
+                    }
+                </table>
+            </div>
+        </div>
+        <div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName"></label></div>
+        <div class="editor-field" style="float:left;">
+            <div class="col-sm-11 col-xs-11 control-label" style="margin-left:4%;text-align:left;padding-top:3px;">
+                <span style="margin-bottom:3px">  Total = @Currency @monthlyTotal (Monthly) </span>
+                <span style="margin-left:10px">Total = @Currency @total (Annual)</span>
+            </div>
+        </div>
+    </div>
+}
+else if (ViewBag.option == "setSalary")
+{
+    <div class="col-md-offset-3 col-sm-offset-5 col-md-4 col-sm-5 col-xs-7">
+        <p>Package Name : @Model.PackageName</p>
+        <p>Package Details</p>
+        <table class="table table-condensed" id="tbl_Pack_Details" style="margin-left:3%;">
+            @foreach (var list in ViewBag.allAccName as IEnumerable<FactoryManagement.ModelView.SalaryConfig.SalaryAccAddModelView>)
+            {
+                double BaseSalary = ViewBag.baseAmount;
+                double amount;
+                string MonthName = "";
+                string Eventname = "";
+                <tr>
+                    <td>@count . @list.Name</td>
+                    @if (list.AccPayType == 1)
+                    {
+                        var monthList = db.Salary_Acc_Pay_MonthList.Where(m => m.Salary_Pck_Acc_Id == list.Id).Select(m => m.MonthName).ToList();
+                        foreach (var m in monthList)
+                        {
+                            MonthName += m + ",";
+                        }
+                    }
+                    else if (list.AccPayType == 1)
+                    {
+                        Eventname = db.HolidayLists.Where(m => m.Id == list.HolidayId).Select(m => m.HolidayName).FirstOrDefault();
+                    }
+
+                    @if (list.AccountType == 2)
+                    {
+                        amount = BaseSalary * Convert.ToDouble(list.Percentage) / 100;
+                        if (list.AccPayType == 1)
+                        {
+                            <td style="margin-left:10px;margin-right:10px;">
+                                @Currency @amount  ; @MonthName.Remove(MonthName.Length - 1)
+                                (@list.Percentage% of @Currency @BaseSalary)
+                            </td>
+                        }
+                        else if (list.AccPayType == 1)
+                        {
+                            <td style="margin-left:10px;margin-right:10px;">
+                                @Currency @amount (@list.Percentage% of @Currency @BaseSalary)
+                            </td>
+                        }
+                        else
+                        {
+                            <td style="margin-left:10px;margin-right:10px;">
+                                @Currency @amount (@list.Percentage% of @Currency @BaseSalary)
+                            </td>
+                        }
+                    }
+                    else
+                    {
+                        amount = Convert.ToDouble(list.Amount);
+                        if (list.AccPayType == 1)
+                        {
+                            <td style="margin-left:10px;margin-right:10px;">
+                                @Currency @list.Amount (@MonthName.Remove(MonthName.Length - 1))
+                            </td>
+                        }
+                        else if (list.AccPayType == 1)
+                        {
+                            <td style="margin-left:10px;margin-right:10px;">
+                                @Currency @list.Amount ; Eventname
+                            </td>
+                        }
+                        else
+                        {
+                            <td style="margin-left:10px;margin-right:10px;">@Currency @list.Amount</td>
+                        }
+                    }
+                    <td id="btn_Edit_selected_Pck" style="display:none;">
+                        <span class="k-icon k-i-pencil btn_pack_Acc_Edit" data-id="@list.Id" data-packageid="@list.PackageId"></span>
+                        <span class="k-icon k-i-close btn_pack_Acc_Delete" data-id="@list.Id" data-packageid="@list.PackageId"></span>
+                    </td>
+                </tr>
+                    count++;
+                    if (list.AccPayType == 3)
+                    {
+                        amount = 12 * amount;
+                    }
+                    else
+                    {
+                        int monthCount = db.Salary_Acc_Pay_MonthList.Where(m => m.Salary_Pck_Acc_Id == list.Id).Count();
+                        amount = monthCount * amount;
+                    }
+                    if (list.IsAddition)
+                    {
+                        total = total + Convert.ToDouble(amount);
+                    }
+                    else
+                    {
+                        total = total - Convert.ToDouble(amount);
+                    }
+            }
+            <tr><td></td><td>Total = @Currency @total (Annual)</td></tr>
+        </table>
+    </div>
+}
+else
+{
+    <p style="color:#5a7391;font-weight: 600;">Package Name : @Model.PackageName 
+        <span style="margin-left:3%"><i class="fa fa-pencil" id="change_emp_Salary_Pack" ></i></span>
+    </p>
+    <p style="color:#5a7391;font-weight: 600;">Package Details</p>
+    <table class="table table-condensed" id="tbl_Pack_Details" style="margin-left:3%;">
+        @foreach (var list in ViewBag.allAccName as IEnumerable<FactoryManagement.ModelView.SalaryConfig.SalaryAccAddModelView>)
+        {
+            double BaseSalary = ViewBag.baseAmount;
+            double amount;
+            string MonthName = "";
+            string Eventname = "";
+            <tr>
+                <td>@count . @list.Name</td>
+                @if (list.AccPayType == 1)
+                {
+                    var monthList = db.Salary_Acc_Pay_MonthList.Where(m => m.Salary_Pck_Acc_Id == list.Id).Select(m => m.MonthName).ToList();
+                    foreach (var m in monthList)
+                    {
+                        MonthName += m + ",";
+                    }
+                }
+                else if (list.AccPayType == 1)
+                {
+                    Eventname = db.HolidayLists.Where(m => m.Id == list.HolidayId).Select(m => m.HolidayName).FirstOrDefault();
+                }
+
+                @if (list.AccountType == 2)
+                {
+                    amount = BaseSalary * Convert.ToDouble(list.Percentage) / 100;
+                    if (list.AccPayType == 1)
+                    {
+                        <td style="margin-left:10px;margin-right:10px;">
+                            @Currency @amount  ; @MonthName.Remove(MonthName.Length - 1)
+                            (@list.Percentage% of @Currency @BaseSalary)
+                        </td>
+                    }
+                    else if (list.AccPayType == 1)
+                    {
+                        <td style="margin-left:10px;margin-right:10px;">
+                            @Currency @amount (@list.Percentage% of @Currency @BaseSalary)
+                        </td>
+                    }
+                    else
+                    {
+                        <td style="margin-left:10px;margin-right:10px;">
+                            @Currency @amount (@list.Percentage% of @Currency @BaseSalary)
+                        </td>
+                    }
+                }
+                else
+                {
+                    amount = Convert.ToDouble(list.Amount);
+                    if (list.AccPayType == 1)
+                    {
+                        <td style="margin-left:10px;margin-right:10px;">
+                            @Currency @list.Amount (@MonthName.Remove(MonthName.Length - 1))
+                        </td>
+                    }
+                    else if (list.AccPayType == 1)
+                    {
+                        <td style="margin-left:10px;margin-right:10px;">
+                            @Currency @list.Amount ; Eventname
+                        </td>
+                    }
+                    else
+                    {
+                        <td style="margin-left:10px;margin-right:10px;">@Currency @list.Amount</td>
+                    }
+                }
+                <td id="btn_Edit_selected_Pck" style="display:none;">
+                    <span class="k-icon k-i-pencil btn_pack_Acc_Edit" data-id="@list.Id" data-packageid="@list.PackageId"></span>
+                    <span class="k-icon k-i-close btn_pack_Acc_Delete" data-id="@list.Id" data-packageid="@list.PackageId"></span>
+                </td>
+            </tr>
+                count++;
+                if (list.AccPayType == 3)
+                {
+                    amount = 12 * amount;
+                }
+                else
+                {
+                    int monthCount = db.Salary_Acc_Pay_MonthList.Where(m => m.Salary_Pck_Acc_Id == list.Id).Count();
+                    amount = monthCount * amount;
+                }
+                if (list.IsAddition)
+                {
+                    total = total + Convert.ToDouble(amount);
+                }
+                else
+                {
+                    total = total - Convert.ToDouble(amount);
+                }
+        }
+        <tr><td></td><td>Total = @Currency @total (Annual)</td></tr>
+    </table>
+}

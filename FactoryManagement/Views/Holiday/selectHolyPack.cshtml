@@ -1,0 +1,33 @@
+﻿
+@******************************** Created By Jerin Jahan (Date: 03.01.2017) ******************************************************@
+@model FactoryManagement.Models.View_HolidayPackage
+
+@if (ViewBag.v == "win")
+{
+    <div class="editor-label"><label>Package Name</label></div>
+    <div class="editor-field" style="padding-top:6px!important;"><span>@Model.HolidayPackName</span></div>
+
+    <div class="editor-label"><label>No. of Paid Leave</label></div>
+    <div class="editor-field" style="padding-top:6px!important;"><span>@Model.NoOfPaidLeave days</span></div>
+
+}
+else if (ViewBag.v == "setsalary")
+{
+    <p>Package Name : @Model.HolidayPackName</p>
+    <p>No. of Paid Leave : @Model.NoOfPaidLeave days</p>
+}
+else
+{
+    <div class="row">
+        <label class="control-label col-md-3 col-sm-3">Package Name</label>
+        <div class="col-md-2 col-sm-2" style="margin-top:5px">
+            <span>@Model.HolidayPackName</span>
+        </div>
+    </div>
+    <div class="row">
+        <label class="control-label col-md-3 col-sm-3">No. of Paid Leave</label>
+        <div class="col-md-2 col-sm-2" style="margin-top:5px">
+            <span>@Model.NoOfPaidLeave days</span>
+        </div>
+    </div>
+}

@@ -1,0 +1,27 @@
+﻿@using FactoryManagement.Helpers
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-top:2%;">
+    <div id="div_employee_Basic_Details"></div>
+    <div class="col-sm-11 col-xs-11">
+        <div class="k-edit-buttons k-state-default" style="margin-top:15px">
+            <span style="float:left">
+              <a  href="@Html.EncodedParam("DisplayEmployeeDetails","HumanResource",new { UserId=ViewBag.UserId,isDisplay=true},null)" target="_blank">
+            View Full Profile
+            </a>
+            </span>
+            <span>
+                <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_Wrk_Schl_Cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+            </span>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $("#div_employee_Basic_Details").empty();
+        $("#div_employee_Basic_Details").append('<div class="partial_loading_half"></div>');
+        $("#div_employee_Basic_Details").load('@Url.Action("EmployeeBasicDetails", "HumanResource")?UserId=@ViewBag.UserId');
+    });
+    $("#btn_Wrk_Schl_Cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

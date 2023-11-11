@@ -1,0 +1,189 @@
+﻿
+@***********************************Created By : Jerin Jahan (05.03.2017)**************************************@
+
+@model FactoryManagement.Models.View_UserLists
+
+@{
+    ViewBag.Title = "Set Salary";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+<link href="~/Scripts/intl-tel-input-master/build/css/intlTelInput.css" rel="stylesheet" />
+
+@Html.HiddenFor(m => m.UserId)
+<div class="col-sm-12 row" id="Div_Set_Payroll">
+    <div class="form-horizontal form-widgets">
+        <h4 class="ra-well-title" style="font-size: 1.5em!important;">Company Information</h4>
+        <div class="form-horizontal form-widgets col-sm-12">
+            <div class="form-group">
+                <label class="control-label col-md-3 col-sm-5 col-xs-12">Select Salary Package</label>
+                <div class="col-md-4 col-sm-5 col-xs-7">
+                    @(Html.Kendo().DropDownList().Name("Salary_PackageId")
+                     .OptionLabel("--Select One Package--")
+                     .BindTo(ViewBag.SalaryPackages as SelectList)
+                     .Events(e => e.Change("salaryPackageChange"))
+                     .HtmlAttributes(new { style = "width:100%" })
+                    )
+                    <span class="field-validation-valid text-danger" data-valmsg-for="Salary_PackageId" data-valmsg-replace="true"></span>
+                </div>
+            </div>
+            <div class="form-group" id="div_selected_salary" style="display:none;"></div>
+
+            <div class="form-group">
+                <label class="control-label col-md-3 col-sm-5 col-xs-12">Select Holiday Package</label>
+                <div class="col-md-4 col-sm-5 col-xs-7">
+                    @(Html.Kendo().DropDownListFor(model => model.HolidayPackId)
+                     .OptionLabel("--Select One Package--")
+                     .BindTo(ViewBag.HolidayPackId as SelectList)
+                     .Events(e => e.Change("onChangeHolyPack"))
+                     .HtmlAttributes(new { style = "width:100%" })
+                    )
+                    @Html.ValidationMessageFor(model => model.HolidayPackId, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="form-group" id="div_main_holiday" style="display:none;">
+                <div class="col-md-offset-3 col-sm-offset-5 col-md-4 col-sm-5 col-xs-7" id="div_selected_holiday"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-md-3 col-sm-5 col-xs-12">Select Working Schedule</label>
+                <div class="col-md-4 col-sm-5 col-xs-7">
+                    @(Html.Kendo().DropDownList().Name("WorkingScheduleId")
+                     .OptionLabel("--Select One Package--")
+                     .BindTo(ViewBag.WorkingSchedules as SelectList)
+                     .Events(e => e.Change("onChangeWorkScdl"))
+                     .HtmlAttributes(new { style = "width:100%" })
+                    )
+                    @Html.ValidationMessageFor(model => model.WorkingScheduleId, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="form-group" id="div_main_wrk_scdl" style="display:none;">
+                <div class="col-md-offset-3 col-sm-offset-5 col-md-8 col-sm-7 col-xs-11" id="div_selected_working_schedule"></div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-offset-3 col-sm-offset-5 col-md-4 col-sm-5 col-xs-7">
+                    <input type="button" value="Save" id="btnCreate" data-id="0" class="k-button k-state-default" />
+                    <input type="reset" value="Refresh" id="btnRefresh" class="k-button k-state-default" />
+                    <input type="button" value="Cancel" id="btnCancel" class="k-button k-state-default" />
+                </div>
+            </div>
+        </div>
+    </div>  
+</div>
+<script>
+    $(document).ready(function () {
+        $("#liForHR").addClass('active');
+        $("#liForUserLists").addClass('sublistActive');
+        //$("#top_header_link").append('<span>HR</span>' +
+        //    '<span><i class="fa fa-angle-right fa-2x"></i></span>' +
+        //    '<span><a href="/HumanResource/AllUserLists">All User List</a></span>' +
+        //    '<span><i class="fa fa-angle-right fa-2x"></i></span>' +
+        //    '<span>Set Salary</span>' +
+        //    '<span><a href="/HumanResource/AllUserLists"><i class="fa fa-reply"> Back</i></a></span>');
+    });
+
+    function salaryPackageChange() {
+        var selectedId = $("#Salary_PackageId").val();
+        if (selectedId != 0 && selectedId != null && selectedId != '') {
+            var sendData = { PackageId: selectedId, option: 'setSalary' };
+            $("#div_selected_salary").empty();
+            $("#div_selected_salary").show();
+            $("#div_selected_salary").append('<div class="win_loading_half"></div>')
+            $("#div_selected_salary").load('@Url.Action("ShowSalaryPackageDetails", "HumanResource")', sendData);
+        } else {
+            $("#div_selected_salary").empty();
+            $("#div_selected_salary").hide();
+        }
+    }
+    function onChangeHolyPack() {
+        if ($("#HolidayPackId").val() == "") {
+            $("#div_main_holiday").hide();
+            $("#div_selected_holiday").hide();
+            $("#div_selected_holiday").empty();
+        }
+        else {
+            $("#div_selected_holiday").empty();
+            $("#div_main_holiday").show();
+            $("#div_selected_holiday").show();
+            $("#div_selected_holiday").append('<div class="win_loading_half"></div>')
+            $("#div_selected_holiday").load('@Url.Action("selectHolyPack","Holiday")?id=' + $("#HolidayPackId").val() + "&v=setsalary");
+        }
+    }
+    function onChangeWorkScdl() {
+        if ($("#WorkingScheduleId").val() == "") {
+            $("#div_main_wrk_scdl").hide();
+            $("#div_selected_working_schedule").empty();
+        }
+        else {
+            $("#div_selected_working_schedule").empty();
+            $("#div_main_wrk_scdl").show();
+            $("#div_selected_working_schedule").append('<div class="win_loading_half"></div>')
+            $("#div_selected_working_schedule").load('@Url.Action("SelectedSchedule","HumanResource")?id=' + $("#WorkingScheduleId").val() + '&view=setsalary');
+        }
+    }
+
+
+    $("#btnRefresh").click(function () {
+        location.reload();
+    });
+    $("#btnCancel").click(function () {
+        location.href = '@Url.Action("AllUserLists", "HumanResource")';
+    });
+    $("#btnCreate").click(function () {
+        var validation = $("#Div_Set_Payroll").kendoValidator({
+            rules: {
+                salary_pck: function (input) {
+                    if (input.is("[name=Salary_PackageId]") && input.val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
+                holiday: function (input) {
+                    if (input.is("[name=HolidayPackId]") && input.val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
+                working_scdl: function (input) {
+                    if (input.is("[name=WorkingScheduleId]") && input.val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            },
+            messages: {
+                salary_pck: "Please select one",
+                holiday: "Please select one",
+                working_scdl: "Please select one"
+            }
+        }).data("kendoValidator");
+
+        if (validation.validate()) {
+            notification.show({ message: "Saving...", showTime: startTime() }, "upload-success");
+            var sendData = {
+                id: '@(Model.UserId)', Salary: $("#Salary_PackageId").val(),
+                Holiday: $("#HolidayPackId").val(), working_Scdl: $("#WorkingScheduleId").val(), userId: userId
+            };
+            $.ajax({
+                url: '@Url.Action("SetNewUserSalary", "HumanResource")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === "Error") {
+                        notification.show({ message: "Set salary was unsuccessful.", showTime: startTime() }, "upload-error");
+                    } else {
+                        notification.show({ message: "Salary has been successfully assigned.", showTime: startTime() }, "upload-success");
+                        location.href = '@Url.Action("AllUserLists", "HumanResource")';
+                    }
+                },
+                error: function (error) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred!", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+</script>

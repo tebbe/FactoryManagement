@@ -1,0 +1,15 @@
+﻿
+
+
+
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" id="" style="margin-bottom:4%;margin-top:2%;">
+    <div id="divForAddManualSpec"></div>
+</div>
+<script>
+    $(document).ready(function () {
+        $("#divForAddManualSpec").append('<div class="win_loading_half"></div>');
+        $("#divForAddManualSpec").show();
+        $("#divForAddManualSpec").load('@Url.Action("BusManualSpecAdd", "CRM")?BusinessOrderId=' + '@ViewBag.busId');
+    });
+</script>

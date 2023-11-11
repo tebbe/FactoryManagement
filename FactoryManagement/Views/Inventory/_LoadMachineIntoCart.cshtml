@@ -1,0 +1,93 @@
+﻿
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int Count = 0;
+    int machineId = ViewBag.machineId;
+}
+
+@if ((Enumerable.Count(ViewBag.ExsitLocId)) > 0)
+{
+    <table class="table table-condensed" id="tbl_Dis_@machineId">
+        <tr><th colspan="2"><span>@(ViewBag.name)</span></tr>
+        @foreach (var m in ViewBag.ExsitLocId as IEnumerable<FactoryManagement.Models.Inventory_Item_Location>)
+        {
+            string proname = db.InventoryLists.Where(inven => inven.InventoryId == m.InventoryId).Select(inven => inven.ProductName).FirstOrDefault();
+            proname = "Type " + proname + "'s quantity";
+            Count++;
+            <tr>
+                <td width="15%">@Count .</td>
+                <td width="85%">
+                    <input class="k-textbox txt_disQuan @m.LocationId"
+                           style="width: 90% !important; display: inline-block;"
+                           data-oid="@machineId" data-count="@Count"
+                           data-cartid="@m.InventoryId" data-locid="@m.LocationId" data-val-required="*"
+                           id="txt_quan_@machineId@Count" name="txt_quan_@machineId@Count"
+                           placeholder="@proname"
+                           value="" type="text" onkeypress="return cartQuan(event, this.value)">
+                    <span class="field-validation-valid text-danger" data-valmsg-for="txt_quan_@machineId@Count" data-valmsg-replace="true"></span>
+                </td>
+            </tr>
+            }
+            <tr class="tr_user_machine"><td></td><td><label>Type User To Assign </label></td></tr>
+            <tr class="tr_user_machine">
+                <td></td>
+                <td>
+                   
+                    <input id="assignUser_@machineId" name="assignUser_@machineId" class="customers assignUser_" style="width: 90%;" />
+                    <span class="field-validation-valid text-danger" data-valmsg-for="assignUser_@machineId" data-valmsg-replace="true"></span>
+                </td>
+                @*<td id="user_action">
+                    <i class="fa fa-plus fa_add_user" data-id="1"></i>
+                </td>*@
+            </tr>
+            @*<script>
+                $("#assignUser_" + '@(machineId)').kendoMultiSelect({
+                    placeholder: "Select users...",
+                    dataTextField: "Username",
+                    dataValueField: "UserId",
+                    headerTemplate: '<div class="dropdown-header k-widget k-header"><span>Photo</span><span>User info</span></div>',
+                    itemTemplate: '<span class="k-state-default" style="background-image: url(\'/Images/UserPicture/thumb/#: data.Picture #\')"></span>' +
+                              '<span class="k-state-default"><h3>#: data.Username #</h3><p>#: data.UserEmpId #      #:data.UserType#</p></span>',
+                    tagTemplate: '<span class="selected-value" style="background-image: url(\'/Images/UserPicture/thumb/#: data.Picture #\')"></span><span>#:data.Username#</span>',
+
+                    dataSource: { transport: { read: { url: "@Url.Action("GetUserListToAssigncart", "Inventory")?orderId=0", type: "GET" } } }
+                });
+            </script>*@
+    </table> 
+}
+else
+{
+
+    <script>
+        $("#div_order_"+@(machineId)).append('<h3 id="wrong_machine" style="color:red">Wrong machine selected.</3>');
+    </script>
+}
+@*<script>
+    $(".fa_add_user").click(function(){
+        var countId=parseInt($(this).data("id")+1);
+        if(countId==2){
+            $("#user_action").hide();
+        }else{
+            $("#user_action_"+countId).hide();
+        }
+        $(this).parent().parent().append('<tr id="user_tr_'+countId+'"><td></td>'+
+                '<td>'+
+                    '<input id="input_assign_+'+countId+'" class="input_assign" style="width: 90%;" />'+
+                    '<span class="field-validation-valid text-danger" data-valmsg-for="assignUser_@machineId" data-valmsg-replace="true"></span>'+
+                '</td>'+
+                '<td id="user_action_'+countId+'">'+
+                    '<i class="fa fa-plus fa_add_user" data-id="'+countId+'"></i>'+
+                    '<i class="fa fa-remove fa_remve_user" data-id="'+countId+'"></i>'+
+                '</td></tr>');
+
+    });
+    $(".fa_remve_user").click(function(){
+        var countId=$(this).data("id");
+        $("#user_tr_"+countId).remove();
+        if(countId==2){
+            $("#user_action").show();
+        }else{
+            $("#user_action_"+countId).show();
+        }
+    });
+</script>*@

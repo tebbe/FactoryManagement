@@ -1,0 +1,30 @@
+﻿
+
+
+@********************************************* Created By Jerin Jahan (04.10.2016) *******************************@
+@model IEnumerable<FactoryManagement.Models.Acquisition>
+@{
+    var count = 1;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<style>
+    #tbl_received_item_lists td {border: none !important;}
+    #tbl_received_item_lists th {border: none !important;}
+</style>
+<table class="table" id="tbl_received_item_lists">
+    <tr>
+        <th width="5%">#</th>
+        <th width="70%">Item Name</th>
+        <th width="15%">Quantity</th>
+    </tr>
+        @foreach (var item in Model)
+        {
+            string UnitName = db.UnitLists.Where(m => m.UnitId == item.UnitId).Select(m => m.UnitName).FirstOrDefault();
+            <tr>
+                <td>@count .</td>
+                <td>@item.ProductName</td>
+                <td>@item.ReceivedQuantity  @UnitName</td>
+            </tr>
+            count++;
+        }
+</table>

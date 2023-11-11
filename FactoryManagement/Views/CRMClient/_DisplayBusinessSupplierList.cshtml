@@ -1,0 +1,52 @@
+﻿@model IEnumerable<FactoryManagement.ModelView.CRM.BusinessOrderListModelView>
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var count = 1;
+    var currency = Request.Cookies["CookieAdminInfo"].Values["cuurencySymbol"].ToString();
+}
+<style>
+    #tbl_client_Sup_his td {
+        border: none !important;
+    }
+     #tbl_client_Sup_his th {
+        border: none !important;
+    }
+</style>
+<table class="table" id="tbl_client_Sup_his">
+    <tr>
+        <th width="3%"></th>
+        <th width="20%">Order Name</th>
+        <th width="15%">Approved by</th>
+        <th width="20%">Approved date</th>
+        <th width="10%">Total cost </th>
+        <th width="10%">Product cost</th>
+        <th width="15%">Other cost</th>
+        <th width="15%">Status</th>
+    </tr>
+    @foreach (var item in Model)
+    {
+        <tr id="tr_@item.BusinessOrderId">
+            <td>@count.</td>
+            <td>
+                <span id="spanForName_@item.BusinessOrderId">
+                    @if (db.BusinessOrderProductLists.Where(m => m.BusinessOrderId == item.BusinessOrderId).Any())
+                    {
+                        <span class="btn_expandSupplierList" id="newtrForAp_@item.BusinessOrderId"
+                              data-id="@item.BusinessOrderId"
+                              data-isclick="0">
+                            <i class="fa fa-plus-square-o fa-2"></i>
+                        </span>
+                    }
+                    @item.OrderName
+                </span>
+            </td>
+            <td>@item.CreatedByName</td>
+            <td>@Convert.ToDateTime(item.CreatedDate).ToString("MMMM dd,yyyy")</td>
+            <td>@currency @item.TotalCost</td>
+            <td>@currency @item.TotalProCost</td>
+            <td>@currency @item.TotalOthersCost</td>
+           <td>@item.OrderAprvStatus</td>
+        </tr>
+        count++;
+    }
+</table>

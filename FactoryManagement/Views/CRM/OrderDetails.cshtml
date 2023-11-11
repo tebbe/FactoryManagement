@@ -1,0 +1,1237 @@
+﻿@********************************************* Created By (JERIN JAHAN)(07.09.2016) *******************************@
+
+
+
+
+@using FactoryManagement.Helpers
+@model FactoryManagement.ModelView.CRM.BusinessOrderListModelView
+@{
+    ViewBag.Title = "OrderDetails";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    bool hasAcquisition = db.Acquisition_List.Where(m => m.AcquisitionType == 2 && m.BusinessOrderId == Model.BusinessOrderId).Any();
+}
+<link href="~/Content/BusiOrderDetails.css" rel="stylesheet" />
+<style>
+    .table {
+        font-size: 13px !important;
+    }
+
+    .k-edit-field, .k-edit-form-container .editor-field .k-textbox .k-dropdown {
+        width: 50% !important;
+    }
+
+    .panel-body {
+        overflow: auto;
+        padding: 0 !important;
+    }
+
+    .panel {
+        margin-bottom: 0px !important;
+    }
+
+        .panel.panel-default .panel-heading {
+            background: #f5f5f5;
+        }
+
+        .panel .panel-heading h2, .panel .panel-heading h3 {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-weight: 500;
+            line-height: .5;
+            margin-top: 8px;
+            margin-bottom: 8px;
+            font-size: 18px;
+            color: #333;
+        }
+
+            .panel .panel-heading h2 .ryt_btn {
+                float: right;
+                cursor: pointer;
+                font-size: 18px;
+            }
+</style>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-users fa-fwt"></i>
+            <span>Business Mangement</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/CRM/BusinessOrder">Business Order</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-info-circle" aria-hidden="true"></i>
+            @*<a href="/CRM/OrderDetails?BusinessOrderId=@Model.BusinessOrderId&OrderType=@Model.OrderType">Order Details</a>*@
+            <span>Order Details</span>
+        </li>
+    </ul>
+</div>
+@Html.HiddenFor(m => m.BusinessOrderId)
+@Html.HiddenFor(m => m.Client_User_Id)
+@Html.HiddenFor(m => m.AllFilename)
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption font-green">
+                    <i class="fa fa-info-circle font-green"></i>
+                    <span class="caption-subject green bold uppercase"> Order Details</span>
+                </div>
+                <div class="caption font-green" style="float:right;">
+                    <span class="green bold" data-toggle="tooltip" title="Print Order Details" style="float:right;cursor:pointer;font-size:16px!important;">
+                        <a href="@Html.EncodedParam("OrderDetailsPrint", "CRM", new { BusinessOrderId = Model.BusinessOrderId, OrderType = Model.OrderType}, null)" target="_blank">
+                            <small style="color:#3C8DBC"> <i class="fa fa-print"></i> Print </small>
+                        </a>
+                    </span>
+                </div>
+            </div>
+            <div class="portlet-body form">
+                <div class="row" style="font-size:13px !important;">
+                    <div class=" col-md-6 col-sm-6 col-xs-12">
+                        <div id="win_ForDeadLine"></div>
+                        <div id="div_order_Name_Status" style="display:none;"></div>
+                        <script>
+                            $("#div_order_Name_Status").show();
+                            $("#div_order_Name_Status").append('<div class="tiny_loading"></div>');
+                            $("#div_order_Name_Status").load('@Url.Action("_OrderNameSatatusDetails", "CRM")?BusinessOrderId='+'@(Model.BusinessOrderId)');
+                        </script>
+                    </div>
+                    <div class="col-md-6 col-sm-6 col-xs-12">
+                        <div id="div_order_main_file" style="display:none;"></div>
+                        @if (db.View_BusinessOrder_File.Where(m => m.BusinessOrderId == Model.BusinessOrderId && m.IsMainFile == true).Any())
+                        {
+                            <script>
+                                $("#div_order_main_file").show();
+                                $("#div_order_main_file").append('<div class="tiny_loading"></div>');
+                                $("#div_order_main_file").load('@Url.Action("_OderMainFileList", "CRM")?BusinessOrderId='+'@(Model.BusinessOrderId)');
+                            </script>
+                        }
+                    </div>
+                </div>
+                <hr />
+                <div class="row">
+                    <div style="background-color:#f8f8f8; display:none;" id="OrderTimeline">
+                    </div>
+                    @if (db.View_BusinessOrder_File.Where(m => m.BusinessOrderId == Model.BusinessOrderId).Any())
+                    {
+                        <script>
+                            $("#OrderTimeline").show();
+                            $("#OrderTimeline").append('<div class="win_loading_half"></div>');
+                            $("#OrderTimeline").load('@Url.Action("_OrderTimeLine", "CRM")?BusinessOrderId=' + '@(Model.BusinessOrderId)');
+                        </script>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.OrderStatus == 0)
+{
+    <div id="AllFileLists">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-4 col-sm-4 col-xs-12 mainDiv_File_Lists" style="padding-left: 0px !important;">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h2>Specification <span class="ryt_btn" id="FileUploadForSpecification" data-toggle="tooltip" title="Upload Specification File"><i class="fa fa-plus"></i></span></h2></div>
+                        <div class="panel-body" style="height: 377px;">
+                            <div style="display:none;" id="Div_Spec_List">
+                                <div class="win_loading_half"></div>
+                            </div>
+                        </div>
+                    </div>
+                    @if (db.Business_Order_FileLists.Where(m => m.BusinessOrderId == Model.BusinessOrderId && m.FileType == 1).Any())
+                    {
+                    <script>
+                            $("#Div_Spec_List").show();
+                            $("#Div_Spec_List").load('@Url.Action("_OrderFileLists", "CRM")?BusinessOrderId=' + @Model.BusinessOrderId +'&FileType=1');
+                    </script>
+                    }
+                </div>
+                <div class="col-md-4 col-sm-4 col-xs-12 mainDiv_File_Lists" style="padding-left: 0px !important;">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h2>Negotiation <span class="ryt_btn" id="FileUploadForNegotiation" data-toggle="tooltip" title="Upload Negotiation File"><i class="fa fa-plus"></i></span></h2></div>
+                        <div class="panel-body" style="height: 377px;">
+                            <div style="display:none;" id="Div_Nego_List">
+                                <div class="win_loading_half"></div>
+                            </div>
+                        </div>
+                    </div>
+                    @if (db.Business_Order_FileLists.Where(m => m.BusinessOrderId == Model.BusinessOrderId && m.FileType == 2).Any())
+                    {
+                    <script>
+                            $("#Div_Nego_List").show();
+                            $("#Div_Nego_List").load('@Url.Action("_OrderFileLists", "CRM")?BusinessOrderId=' +@Model.BusinessOrderId +'&FileType=2');
+                    </script>
+                    }
+                </div>
+                <div class="col-md-4 col-sm-4 col-xs-12 mainDiv_File_Lists" style="padding: 0px !important;">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h2>Finance <span class="ryt_btn" id="FileUploadForFinance" data-toggle="tooltip" title="Upload Finance File"><i class="fa fa-plus"></i></span></h2></div>
+                        <div class="panel-body" style="height: 377px;">
+                            <div style="display:none;" id="Div_Finance_List">
+                                <div class="win_loading_half"></div>
+                            </div>
+                        </div>
+                    </div>
+                    @if (db.Business_Order_FileLists.Where(m => m.BusinessOrderId == Model.BusinessOrderId && m.FileType == 3).Any())
+                    {
+                    <script>
+                            $("#Div_Finance_List").show();
+                            $("#Div_Finance_List").load('@Url.Action("_OrderFileLists", "CRM")?BusinessOrderId=' +@Model.BusinessOrderId +'&FileType=3');
+                    </script>
+                    }
+                </div>
+            </div>
+        </div>
+        <br />
+    </div>
+}
+<div class="row" id="div_Main_Manual_Spec" style="display:none;"></div>
+@if (Model.OrderStatus == 1)
+{
+    <script>
+        $("#div_Main_Manual_Spec").show();
+        $("#div_Main_Manual_Spec").append('<div class="loading_partail"></div>');
+        $("#div_Main_Manual_Spec").load('@Url.Action("ManualSpecification", "CRM")?BusinessOrderId='+@Model.BusinessOrderId);
+    </script>
+}
+@if (Model.AcquisitionOrderId > 0)
+{
+    <div class="row">
+        <div class="col-md-12">
+            @if (hasAcquisition)
+            {
+            <div class="col-md-6 col-sm-6 col-xs-6" style="border:1px solid #ddd;">
+                <h4>
+                    All Required Item Lists
+                    <span style="float:right;">
+                        <a href="/Acquisition/Acquisition?AcquisitionOrderId=@Model.AcquisitionOrderId"
+                           style="text-decoration: none !important;font-size: small;" class="k-button">
+                            <span class="k-icon k-i-plus" style="margin-right: .3rem;"></span>Add Item
+                        </a>
+                    </span>
+                </h4>
+                <hr />
+                <div id="div_required_item">
+                    <div class="loading_half"></div>
+                </div>
+            </div>
+            <script>
+                    $("#div_required_item").load('@Url.Action("_AlreadyAddedAcqProductList", "CRM")?AcquisitionOrderId='+@Model.AcquisitionOrderId);
+            </script>
+            }
+
+            @if (db.Inventory_Reserved_Item_Lists.Where(m => m.AcquisitionOrderId == Model.AcquisitionOrderId && m.IsAssigned == false).Any())
+            {
+            <div class="col-md-6 col-sm-6 col-xs-6" style="border:1px solid #ddd;">
+                <h4>All Reserved Item Lists (From Inventory )</h4><hr />
+                <div id="div_resrvd_item"><div class="loading_half"></div></div>
+            </div>
+            <script>
+                    $("#div_resrvd_item").load('@Url.Action("_ReservedItemList", "CRM")?AcquisitionOrderId='+@Model.AcquisitionOrderId);
+            </script>
+            }
+            else
+            {
+            <div class="col-md-6 col-sm-6 col-xs-6" style="border:1px solid #ddd;">
+                <h4>All Reserved Item Lists (From Inventory )</h4><hr />
+                <p>No Item</p>
+            </div>
+            }
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="col-md-6 col-sm-6 col-xs-6" style="border:1px solid #ddd;">
+                <h4>All Assigned Item Lists</h4><hr />
+                <div id="div_assigned_item" style="display:none;"><div class="loading_half"></div></div>
+            </div>
+            @if (db.View_All_AcquisitionList.Where(m => m.AcquisitionOrderId == Model.AcquisitionOrderId && m.AssignedQuantity > 0).Any())
+            {
+            <script>
+                    $("#div_assigned_item").show();
+                    $("#div_assigned_item").load('@Url.Action("_AssignedItemList", "CRM")?AcquisitionOrderId='+@Model.AcquisitionOrderId);
+            </script>
+            }
+            <div class="col-md-6 col-sm-6 col-xs-6" style="border:1px solid #ddd;">
+                <h4>All Received Item Lists</h4><hr />
+                <div id="div_received_item" style="display:none;"><div class="loading_half"></div></div>
+            </div>
+            @if (db.Acquisitions.Where(m => m.AcquisitionOrderId == Model.AcquisitionOrderId && m.ReceivedQuantity > 0).Any())
+            {
+            <script>
+                    $("#div_received_item").show();
+                    $("#div_received_item").load('@Url.Action("_ReceivedItemList", "CRM")?AcquisitionOrderId='+@Model.AcquisitionOrderId);
+            </script>
+            }
+        </div>
+    </div>
+}
+<script id="temp_win_rsrv_cunt" type="text/x-kendo-template">
+    <div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;" id="DivForSpecificationFileUpload">
+        <div class="editor-label"><label>Enter Quantity</label></div>
+        <div class="editor-field">
+            <input class="k-textbox text-box single-line k-invalid" id="txt_Tem_Quantity"
+                   name="txt_Tem_Quantity"
+                   onkeypress="return isNumber(event)"
+                   type="text" value="" aria-invalid="true">
+            <span id="temp_unitname">#=data#</span>
+        </div>
+        <div class="k-edit-buttons k-state-default col-xs-11">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_temp_Ok"><span class="k-icon k-update"></span>Save</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_tmp_Cancel"><span class="k-icon k-i-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+
+<script id="temp_win_businessOrder_details" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px"> #=msg# </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_busOrd_det_noty_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_busOrd_det_noty_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<div id="div_win_spec"></div>
+<div id="div_win_nego"></div>
+<div id="div_win_finance"></div>
+
+<div id="div_win_spec_edit"></div>
+<div id="BusinessOrderwindowEdit"></div>
+<div id="Busi_Orderwindow_File_Details"></div>
+<div id="div_win_manual_spec"></div>
+<div id="div_win_manual_spec_edit"></div>
+
+<script>
+    var fileType = 0, status = '@Model.OrderStatus';
+    var clientId ='@(Model.ClientId)',orderId='@(Model.BusinessOrderId)';
+    var OrderType = '@(Model.OrderType)';
+    var onClientSelect = false, onInHouseSelect = false;
+    $(document).ready(function () {
+        $("#liForCRM").addClass('active');
+        $("#liForBusinessOrder").addClass('sublistActive');
+        //allMainFile = [];
+    });
+
+    $("#FileUploadForSpecification").click(function () {
+        fileType = 1;
+        $("#FileType").val(fileType);
+        var url="";
+        $("#div_win_spec").empty();
+        $("#div_win_nego").empty();
+        $("#div_win_finance").empty();
+        $("#div_win_spec_edit").empty();
+        $("#BusinessOrderwindowEdit").empty();
+        $("#Busi_Orderwindow_File_Details").empty();
+        $("#div_win_spec").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width:'55%',
+            height:'40%',
+            title: 'File Upload For Specification',
+            close: onWindowClose
+        });
+        $("#div_win_spec").html('<div class="win_loading_half"></div>');
+        var div_win_spec = $("#div_win_spec").data("kendoWindow");
+        if('@(Model.OrderType)' == '1'){
+            div_win_spec.refresh({ url: "/CRM/SpecificationFileUploadPoPUp?FileType=" + fileType});
+        }else{
+            div_win_spec.refresh({ url: "/CRM/SpecificationFileUploadPoPUp?FileType=" + fileType });
+        }
+        div_win_spec.center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+    });
+
+    $("#FileUploadForNegotiation").click(function () {
+        fileType = 2;
+        $("#FileType").val(fileType);
+        var url="";
+        $("#div_win_spec").empty();
+        $("#div_win_nego").empty();
+        $("#div_win_finance").empty();
+        $("#div_win_spec_edit").empty();
+        $("#BusinessOrderwindowEdit").empty();
+        $("#Busi_Orderwindow_File_Details").empty();
+        $("#div_win_nego").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width:'55%',
+            height:'40%',
+            title: 'File Upload For Negotiation',
+            close: onWindowClose
+        });
+        $("#div_win_nego").html('<div class="win_loading_half"></div>');
+        var div_win_nego = $("#div_win_nego").data("kendoWindow");
+        if('@(Model.OrderType)' == '1'){
+            div_win_nego.refresh({ url: "/CRM/SpecificationFileUploadPoPUp?FileType=" + fileType });
+        }else{
+            div_win_nego.refresh({ url: "/CRM/SpecificationFileUploadPoPUp?FileType=" + fileType });
+        }
+        div_win_nego.center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+    });
+
+    $("#FileUploadForFinance").click(function () {
+        fileType = 3;
+        $("#FileType").val(fileType);
+        var url="";
+        $("#div_win_spec").empty();
+        $("#div_win_nego").empty();
+        $("#div_win_finance").empty();
+        $("#div_win_spec_edit").empty();
+        $("#BusinessOrderwindowEdit").empty();
+        $("#Busi_Orderwindow_File_Details").empty();
+        $("#div_win_finance").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width:'55%',
+            height:'40%',
+            title: 'File Upload For Finance',
+            close: onWindowClose
+        });
+        $("#div_win_finance").html('<div class="win_loading_half"></div>');
+        var div_win_finance = $("#div_win_finance").data("kendoWindow");
+        if('@(Model.OrderType)' == '1'){
+            div_win_finance.refresh({ url: "/CRM/SpecificationFileUploadPoPUp?FileType=" + fileType });
+        }else{
+            div_win_finance.refresh({ url: "/CRM/SpecificationFileUploadPoPUp?FileType=" + fileType });
+        }
+        div_win_finance.center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+    });
+
+    function onInHouseUserSelect(e) {
+        var DataItem = this.dataItem(e.item.index());
+        $("#Client_User_Id").val(DataItem.UserId);
+        onInHouseSelect = true;
+        return;
+    }
+    function onClientUserSelect(e) {
+        var DataItem = this.dataItem(e.item.index());
+        $("#Client_User_Id").val(DataItem.UserId);
+        onClientSelect = true;
+        return;
+    }
+    function onOrderFileUpload(e) {
+        $('[data-toggle="tooltip"]').tooltip();
+        allMainFile.push(e.files[0]);
+    }
+    function onSuccess(e) {
+        $(".uploadFileName").addClass('fontblack');
+    }
+    function addExtensionClass(extension) {
+        extension.toLowerCase();
+        var ext = extension.toLowerCase();
+        switch (ext) {
+            case '.jpg':
+            case '.jpeg':
+            case '.img':
+            case '.gif':
+                return "img-file";
+            case '.png':
+                return "png-file";
+            case '.doc':
+            case '.docx':
+                return "doc-file";
+            case '.ppt':
+            case '.pptx':
+                return "ppt-file";
+            case '.xls':
+            case '.xlsx':
+                return "xls-file";
+            case '.pdf':
+                return "pdf-file";
+            case '.zip':
+            case '.rar':
+                return "zip-file";
+            default:
+                return "default-file";
+        }
+    }
+    function addExtensionFormaterial(extension) {
+        var ext = extension.toLowerCase();
+        switch (ext) {
+            case '.jpg':
+            case '.jpeg':
+            case '.img':
+            case '.gif':
+                return "/Content/web/upload/jpg.png";
+            case '.png':
+                return "/Content/web/upload/png_converted.png";
+            case '.doc':
+            case '.docx':
+                return "/Content/web/upload/doc.png";
+            case '.ppt':
+            case '.pptx':
+                return "/Content/web/upload/ppt.png";
+            case '.xls':
+            case '.xlsx':
+                return "/Content/web/upload/xls.png";
+            case '.pdf':
+                return "/Content/web/upload/pdf.png";
+            case '.zip':
+            case '.rar':
+                return "/Content/web/upload/zip.png";
+            default:
+                return "/Content/web/upload/default.png";
+        }
+    }
+
+
+    //*********************************************************************************************************************************************
+    //******************************************************** SPEC FILE NAME RENAME  *************************************************************
+    //*********************************************************************************************************************************************
+
+    @*$("#AllFileLists").on("click", ".lblFileName", function (e) {
+        e.preventDefault();
+        var fileid = $(this).data("fileid");
+        $("#lblforFileNameDiaplay-" + fileid).hide();
+        $("#lblforFileNameEdit-" + fileid).show();
+        $("#span_btn_edit-" + fileid).show();
+        $("#txtMateName-" + fileid).val($(this).data("filename"));
+        $("#txtMateName-" + fileid + "_validationMessage").hide();
+    });
+    $("#AllFileLists").on("click", ".FileRenameUpdateTickClose", function (e) {
+        e.preventDefault();
+        var fileid = $(this).data("fileid");
+        $("#lblforFileNameDiaplay-" + fileid).show();
+        $("#lblforFileNameEdit-" + fileid).hide();
+        $("#span_btn_edit-" + fileid).hide();
+    });
+    $("#AllFileLists").on("click", ".FileRenameTickUpdate", function (e) {
+        e.preventDefault();
+        var fileid = $(this).data("fileid");
+        var validation = $("#lblforFileNameEdit-" + fileid).kendoValidator().data("kendoValidator");
+
+        if (validation.validate()) {
+            notification.show({ message: "File name changing.....", showTime: startTime() }, "upload-progress");
+
+            var Filename = $("#txtMateName-" + fileid).val() + "" + $(this).data("extension");
+            var fileContype = $(this).data("contype");
+
+            $.ajax({
+                url: '@Url.Action("OrderFileRename", "CRM")',
+                type: 'Post',
+                data: { FileId: fileid, FileName: Filename, UserId: userId },
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    if (data == "Error") {
+                        notification.show({ message: "File rename unsuccessful.", showTime: startTime() }, "upload-error");
+                    } else {
+                        notification.show({ message: "File successfully renamed.", showTime: startTime() }, "upload-success");
+
+                        $("#lblforFileNameDiaplay-" + fileid).show();
+                        $("#lblforFileNameEdit-" + fileid).hide();
+                        $("#span_btn_edit-" + fileid).hide();
+                        $("#lblforFileNameDiaplay-" + fileid).show();
+
+                        //var url = '/CRM/DownloadMaterial?fileName=' + data + '&contentType=' + fileContype;
+                        //$("#lbl_btn_span-" + fileid).children('a').attr('href', url);
+                        $("#lblforFileNameDiaplay-" + fileid).text($("#txtMateName-" + fileid).val());
+                        $("#lblforFileNameDiaplay-" + fileid).attr('data-filename', $("#txtMateName-" + fileid).val());
+                        $("#lblforFileNameDiaplay-" + fileid).data('filename', $("#txtMateName-" + fileid).val());
+
+                        $("#div_order_main_file").empty();
+                        $("#div_order_main_file").show();
+                        $("#div_order_main_file").append('<div class="tiny_loading"></div>');
+                        $("#div_order_main_file").load('@Url.Action("_OderMainFileList", "CRM")?BusinessOrderId=' + orderId );
+
+                        $("#OrderTimeline").empty();
+                        $("#OrderTimeline").append('<div class="loading_half"></div>');
+                        $("#OrderTimeline").show();
+                        $("#OrderTimeline").load('@Url.Action("_OrderTimeLine", "CRM")?BusinessOrderId=' + orderId );
+                    }
+                },
+                error: function (error) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 2000 });
+                    notification.show({ message: "File rename unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+            });
+        }
+    });*@
+
+    //************************************ ORDER FILE EDIT(ALL) ********************************************************
+    $("#AllFileLists").on("click", ".btnFileEdit", function (e) {
+        e.preventDefault();
+        var fileid = $(this).data("fileid");
+        var type= $(this).data('type');
+        var title= "";
+        if(type == 1){
+            title = 'Edit Specification File';
+        }
+        else if(type == 2)
+        {
+            title = 'Edit Negotiation File';
+        }
+        else
+        {
+            title = 'Edit Finance File';
+        }
+        $("#div_win_spec").empty();
+        $("#div_win_nego").empty();
+        $("#div_win_finance").empty();
+        $("#div_win_spec_edit").empty();
+        $("#BusinessOrderwindowEdit").empty();
+        $("#Busi_Orderwindow_File_Details").empty();
+        $("#div_win_spec_edit").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width:'60%',
+            height:'45%',
+            title: title,
+            close: onWindowClose
+        });
+        $("#div_win_spec_edit").html('<div class="win_loading_half"></div>');
+        var div_win_spec_edit = $("#div_win_spec_edit").data("kendoWindow");
+        div_win_spec_edit.setOptions({ title: title });
+        div_win_spec_edit.refresh({ url: "/CRM/SpecificationFileUploadEditPoPUp?FileId=" + fileid });
+        div_win_spec_edit.center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+    });
+
+    //********************************* ORDER FILE DELETE *********************************************
+
+    $("#AllFileLists").on("click", ".btnFileDelete", function (e) {
+
+        var fileid = $(this).data("fileid");
+        var filetype = $(this).data("filetype");
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose
+        });
+        msg = "Are you sure you want to delete this file? It may cause problem in your system.";
+        var template = kendo.template($("#temp_win_businessOrder_details").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+
+        kendoWindow.find("#btn_busOrd_det_noty_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            document.documentElement.style.overflow = 'auto';
+            document.body.scroll = "yes";
+        }).end();
+        kendoWindow.find("#btn_busOrd_det_noty_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            document.documentElement.style.overflow = 'auto';
+            var promsg = ""; var sucmsg = ""; var errmsg = "";
+            if (filetype === 1) {
+                promsg = "Specification file deleting....";
+                sucmsg = "Specification file successfulley deleted.";
+                errmsg = "Specification file deletion unsuccessful.";
+            } else if (filetype === 2) {
+                promsg = "Negotiation file deleting....";
+                sucmsg = "Negotiation file successfulley deleted.";
+                errmsg = "Negotiation file deletion unsuccessful.";
+            } else {
+                promsg = "Finance file deleting....";
+                sucmsg = "Finance file successfulley deleted.";
+                errmsg = "Finance file deletion unsuccessful.";
+            }
+            notification.show({ message: promsg, showTime: startTime() }, "upload-progress");
+
+            $.ajax({
+                url: '@Url.Action("DeleteUploadedFiles", "CRM")',
+                type: 'Post',
+                data: { FileId: fileid, userId: userId },
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 2000 });
+                    if (data == "Error") {
+                        notification.show({ message: errmsg, showTime: startTime() }, "upload-error");
+                    } else {
+                        notification.show({ message: sucmsg, showTime: startTime() }, "upload-success");
+                        //$("#th_order_file-" + fileid).hide();
+                        $.ajax({
+                            url: '@Url.Action("CheckBusiOrderHasFile", "CRM")',
+                            type: 'Post',
+                            data: { BusiId: @Model.BusinessOrderId},
+                            success: function (data) {
+                                $("#div_order_main_file").hide();
+                                $("#div_order_main_file").empty();
+
+                                $("#OrderTimeline").hide();
+                                $("#OrderTimeline").empty();
+                                if(filetype == 1)
+                                {
+                                    $("#Div_Spec_List").hide();
+                                    $("#Div_Spec_List").empty();
+                                }
+                                else if(filetype == 2)
+                                {
+                                    $("#Div_Nego_List").hide();
+                                    $("#Div_Nego_List").empty();}
+                                else if(filetype == 3)
+                                {
+                                    $("#Div_Finance_List").hide();
+                                    $("#Div_Finance_List").empty();
+                                }
+                                if (data) {
+                                    if(filetype == 1)
+                                    {
+                                        $("#Div_Spec_List").show();
+                                        $("#Div_Spec_List").append('<div class="loading_30"></div>');
+                                        $("#Div_Spec_List").load('@Url.Action("_OrderFileLists", "CRM")?BusinessOrderId=' + orderId +'&FileType=1');
+                                    }
+                                    else if(filetype == 2)
+                                    {
+
+                                        $("#Div_Nego_List").show();
+                                        $("#Div_Nego_List").append('<div class="loading_30"></div>');
+                                        $("#Div_Nego_List").load('@Url.Action("_OrderFileLists", "CRM")?BusinessOrderId=' + orderId +'&FileType=2');
+                                    }
+                                    else if(filetype == 3)
+                                    {
+                                        $("#Div_Finance_List").show();
+                                        $("#Div_Finance_List").append('<div class="loading_30"></div>');
+                                        $("#Div_Finance_List").load('@Url.Action("_OrderFileLists", "CRM")?BusinessOrderId=' + orderId +'&FileType=3');
+                                    }
+
+                                    $("#div_order_main_file").append('<div class="tiny_loading"></div>');
+                                    $("#div_order_main_file").show();
+
+                                    $("#OrderTimeline").append('<div class="partial_loading_half"></div>');
+                                    $("#OrderTimeline").show();
+
+                                    $("#div_order_main_file").load('@Url.Action("_OderMainFileList", "CRM")?BusinessOrderId=' + orderId);
+                                    $("#OrderTimeline").load('@Url.Action("_OrderTimeLine", "CRM")?BusinessOrderId=' + orderId);
+                                }
+                            }
+                        });
+                    }
+
+                }
+            });
+        }).end();
+    });
+
+    //******************************************************** FILE NAME DETAILS  *************************************************************
+
+    $("#AllFileLists").on("click", ".btnFileDetails", function (e) {
+        e.preventDefault();
+        var fileid = $(this).data("fileid");
+        $("#div_win_spec").empty();
+        $("#div_win_nego").empty();
+        $("#div_win_finance").empty();
+        $("#div_win_spec_edit").empty();
+        $("#BusinessOrderwindowEdit").empty();
+        $("#Busi_Orderwindow_File_Details").empty();
+        $("#Busi_Orderwindow_File_Details").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width:'55%',
+            height: '35%',
+            title: 'File Details',
+            close: onWindowClose
+        });
+        $("#Busi_Orderwindow_File_Details").html('<div class="win_loading_half"></div>');
+        var Busi_Orderwindow_File_Details = $("#Busi_Orderwindow_File_Details").data("kendoWindow");
+        Busi_Orderwindow_File_Details.refresh({ url: "/CRM/BusinessOrderFileDetails?FileId=" + fileid });
+        Busi_Orderwindow_File_Details.center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+    });
+
+    //******************************************** Create Manually Order Spec *************************
+    $("#div_Main_Manual_Spec").on("click", "#btn_Create_Aqui" , function () {
+        location.href = '@Html.EncodedParam("Acquisition", "Acquisition", new { AcquisitionType = 2, BusinessOrderId = Model.BusinessOrderId }, null)';
+        @*location.href = '@Url.Action("Acquisition", "Acquisition")?AcquisitionType=2&BusinessOrderId=' + '@(Model.BusinessOrderId)';*@
+    });
+</script>
+<script>
+    var ProUnitName= '';
+    var ProStatus = '';
+    function isNumber(e) {
+        e = (e) ? e : window.event;
+        var charCode = (e.which) ? e.which : e.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+        return true;
+    }
+    function getFileInfo(e) {
+        return $.map(e.files, function(file) {
+            var info = file.name;
+            if (file.size > 0) {
+                info  += " (" + Math.ceil(file.size / 1024) + " KB)";
+            }
+            return info;
+        }).join(", ");
+    }
+    function onSpecUnitSelect(e) {
+        var dataItem = this.dataItem(e.item);
+        ProUnitName = dataItem.UnitName;
+    };
+    function onSpecStatusSelect(e) {
+        var dataItem = this.dataItem(e.item);
+        ProStatus = dataItem.text;
+    };
+    var data = [
+        { text: "Not in production", value: "0" },
+        { text: "In Production", value: "1" },
+        { text: "Delay", value: "2" },
+        { text: "Complete", value: "3" }
+    ];
+
+
+
+    //*******************   Create Manually Specification *********************************
+
+    $("#div_Main_Manual_Spec").on("click",("#btn_Create_Spec"),function () {
+
+        $("#div_win_spec").empty();
+        $("#div_win_nego").empty();
+        $("#div_win_finance").empty();
+        $("#div_win_spec_edit").empty();
+        $("#BusinessOrderwindowEdit").empty();
+        $("#Busi_Orderwindow_File_Details").empty();
+        $("#div_win_manual_spec").empty();
+        $("#div_win_manual_spec_edit").empty();
+        $("#div_win_manual_spec").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width:'80%',
+            title: 'Add Manual Specification',
+            close: onWindowClose
+        });
+        $("#div_win_manual_spec").html('<div class="win_loading_half"></div>');
+        var div_win_manual_spec = $("#div_win_manual_spec").data("kendoWindow");
+        if('@(Model.OrderType)' == '1'){
+            div_win_manual_spec.refresh({ url: "/CRM/BusManualSpecAddPopUp?BusinessOrderId=" + '@(Model.BusinessOrderId)' });
+        }else{
+            div_win_manual_spec.refresh({ url: ""});
+        }
+        div_win_manual_spec.center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+    });
+
+    //********************************* EDIT MANUAL SPEC *********************
+    $("#div_Main_Manual_Spec").on("click",".btn_edit_manual_spec",function(){
+        var id = $(this).data("id");
+
+        $("#div_win_spec").empty();
+        $("#div_win_nego").empty();
+        $("#div_win_finance").empty();
+        $("#div_win_spec_edit").empty();
+        $("#BusinessOrderwindowEdit").empty();
+        $("#Busi_Orderwindow_File_Details").empty();
+        $("#div_win_manual_spec").empty();
+        $("#div_win_manual_spec_edit").empty();
+        $("#div_win_manual_spec_edit").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width:'80%',
+            title: 'Edit Manual Specification',
+            close: onWindowClose
+        });
+        $("#div_win_manual_spec_edit").html('<div class="win_loading_half"></div>');
+        var div_win_manual_spec_edit = $("#div_win_manual_spec_edit").data("kendoWindow");
+        if('@(Model.OrderType)' == '1'){
+            div_win_manual_spec_edit.refresh({ url: "/CRM/BusManualSpecEditPopUp?&SpecId=" + id });
+        }else{
+            div_win_manual_spec_edit.refresh({ url: ""});
+        }
+        div_win_manual_spec_edit.center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+    });
+
+    //***************************** TICK EDIT MANUAL SPEC *********************
+    @*$("#div_Main_Manual_Spec").on("click",".btn_cancel_manual_spec",function(){
+        var id = $(this).data("id");
+        $("#btn_tick_Show_"+id).hide();
+        $("#span_lbl_edit_"+id).hide();
+        $("#span_quan_edit_"+id).hide();
+        $("#span_des_edit_"+id).hide();
+        $("#span_sts_edit_"+id).hide();
+
+        $("#span_lbl_dis_"+id).show();
+        $("#span_quan_dis_"+id).show();
+        $("#span_unit_dis_"+id).show();
+        $("#span_des_dis_"+id).show();
+        $("#span_sts_dis_"+id).show();
+        $("#btn_tick_hide_"+id).show();
+    });
+
+    //***************************** TICK EDIT MANUAL SPEC *********************
+    $("#div_Main_Manual_Spec").on("click",".btn_tick_manual_spec",function() {
+        var id = $(this).data("id");
+        var validate_table = $("#tr_manual_spec_"+id).kendoValidator().data("kendoValidator");
+        if (validate_table.validate()) {
+            var lbl=$("#txt_spec_"+id).val();
+            var quan=$("#txt_quan_"+id).val();
+            var unit=$("#txt_unit_"+id).val();
+            var des=$("#txt_des_"+id).val();
+            var status = $("#txt_sts_"+id).val();
+
+            $.ajax({
+                url: '@Url.Action("EditManualSpec", "CRM")',
+                type: 'Post',
+                data: { Id: id, Spec_lbl: lbl,Quantity:quan,UnitId:unit,Spec_Description:des,ProStatus:status, CreatedBy: userId },
+                success: function (data) {
+                    notification.hide();notification.setOptions({ autoHideAfter: 5000 });
+                    if (data == "Error") {
+                        notification.show({ message: "Specification update unsuccessful.", showTime: startTime() }, "upload-error");
+                    } else {
+                        notification.show({ message: "Specification updated successfully", showTime: startTime() }, "upload-success");
+
+
+                        $("#span_lbl_dis_"+id).text(lbl);
+                        $("#span_quan_dis_"+id).text(quan);
+                        $("#span_unit_dis_"+id).text(ProUnitName);
+                        $("#span_des_dis_"+id).text(des);
+                        $("#span_sts_dis_"+id).text(ProStatus);
+
+                        $("#btn_tick_Show_"+id).hide();
+                        $("#span_lbl_edit_"+id).hide();
+                        $("#span_quan_edit_"+id).hide();
+                        $("#span_des_edit_"+id).hide();
+                        $("#span_sts_edit_"+id).hide();
+
+                        $("#span_lbl_dis_"+id).show();
+                        $("#span_quan_dis_"+id).show();
+                        $("#span_unit_dis_"+id).show();
+                        $("#span_des_dis_"+id).show();
+                        $("#span_sts_dis_"+id).show();
+                        $("#btn_tick_hide_"+id).show();
+                    }
+                },
+                error: function (error) {
+                    notification.hide();notification.setOptions({ autoHideAfter: 2000 });
+                    notification.show({ message: "Specification updated unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+            });
+        }
+    });*@
+
+
+
+    //***************************** Delete Manually Added Specification *****************************
+    $("#div_Main_Manual_Spec").on("click", ".btn_delete_manual_spec", function (e) {
+        var id = $(this).data("id");
+        var filetype = $(this).data("filetype");
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose
+        });
+        msg = "Are you sure you want to delete this Specification? It may cause problem in your system.";
+        var template = kendo.template($("#temp_win_businessOrder_details").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+
+        kendoWindow.find("#btn_busOrd_det_noty_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            document.documentElement.style.overflow = 'auto';
+            document.body.scroll = "yes";
+        }).end();
+        kendoWindow.find("#btn_busOrd_det_noty_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            document.documentElement.style.overflow = 'auto';
+            document.body.scroll = "yes";
+            notification.show({ message: "Specification deleting....", showTime: startTime() }, "upload-progress");
+            $.ajax({
+                url: '@Url.Action("DeleteManualSpec", "CRM")',
+                type: 'Post',
+                data: { Id: id,UserId: userId },
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 2000 });
+                    if (data == "Error") {
+                        notification.show({ message: "Specification delete unsuccessful.", showTime: startTime() }, "upload-error");
+                    } else {
+                        notification.show({ message: "Specification successfully deleted.", showTime: startTime() }, "upload-success");
+                        $("#Div_all_manual_spec").empty();
+                        $("#Div_all_manual_spec").append('<div class="loading_partail"></div>');
+                        $("#Div_all_manual_spec").load('@Url.Action("AddedManualSpec", "CRM")?BusinessOrderId='+@Model.BusinessOrderId);
+                    }
+                },
+                error: function (error) {
+                    notification.hide();notification.setOptions({ autoHideAfter: 2000 });
+
+                    notification.show({ message: "Specification delete unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+            });
+        }).end();
+    });
+    //*********************** Store Into Stock ************************************
+    $("#div_Main_Manual_Spec").on("click",".btn_Store_Stock",function() {
+        var id = $(this).data('id');
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose
+        });
+        msg = "Are you sure you want to store this item into stock?";
+        var template = kendo.template($("#temp_win_businessOrder_details").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+
+        kendoWindow.find("#btn_busOrd_det_noty_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            document.documentElement.style.overflow = 'auto';
+            document.body.scroll = "yes";
+        }).end();
+        kendoWindow.find("#btn_busOrd_det_noty_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            document.documentElement.style.overflow = 'auto';
+            document.body.scroll = "yes";
+            notification.show({ message: "Storing into stock.....", showTime: startTime() }, "upload-progress");
+            $.ajax({
+                url: '@Url.Action("StoreIntoStock", "CRM")',
+                type: 'Post',
+                data: { Bus_Spec_Id: id,UserId: userId },
+                success: function (data) {
+                    notification.hide();notification.setOptions({ autoHideAfter: 5000 });
+                    if (data == "Error") {
+                        notification.show({ message: "Store unsuccessful.", showTime: startTime() }, "upload-error");
+                    } else {
+                        notification.show({ message: "Successfully store into stock.", showTime: startTime() }, "upload-success");
+                        $("#btn_Store_Stock_"+id).hide();
+                    }
+                },
+                error: function (error) {
+                    notification.hide();notification.setOptions({ autoHideAfter: 2000 });
+                    notification.show({ message: "Store unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+            });
+        }).end();
+    });
+</script>
+<script>
+
+    //************************************************* RECEIVED ASSEIGN INTEM FROM INVENTORY *****************************************************
+    $("#div_assigned_item").on("click", ".btn_Rcvd_item", function (e) {
+        if (confirm('Are you sure want to receive this item?')) {
+            e.preventDefault();
+            var acqId = $(this).data("acqid");
+            var proid = $(this).data("proid");
+            var data = $(this).data('unitname');
+            var required_Quantity = $(this).data('quantity');
+
+            var kendoWindow = $("<div />").kendoWindow({
+                actions: ["Close"],
+                title: "Number of Quantity",
+                resizable: false,
+                width: "60%",
+                modal: true
+            });
+            var errmsg = "*";
+            var template = kendo.template($("#temp_win_rsrv_cunt").html());
+            kendoWindow.data("kendoWindow").content(template(data)).center().open();
+
+            kendoWindow.find("#btn_temp_Ok").click(function () {
+                var validattion = $("#txt_Tem_Quantity").kendoValidator({
+                    rules: {quantity: function (input) {
+                        if (input.is("[name=txt_Tem_Quantity]")) {
+                            if ($("#txt_Tem_Quantity").val() === '') {
+                                errmsg = "*";
+                                return false;
+                            }
+                            if (parseInt($("#txt_Tem_Quantity").val()) > parseInt(required_Quantity)) {
+                                errmsg = "Quantity cann't be greater than " + required_Quantity;
+                                return false;
+                            }
+                            if ($("#txt_Tem_Quantity").val() !== '' && parseInt($("#txt_Tem_Quantity").val()) < 1) {
+                                errmsg = "Invalid";
+                                return false;
+                            }
+                            return true;
+                        }
+                        return true;
+                    }},
+                    messages: {quantity: errmsg}
+                }).data("kendoValidator");
+                var sendData = {id: acqId,proid:proid, quan: $("#txt_Tem_Quantity").val(),UserId: userId};
+                if (validattion.validate()) {
+                    kendoWindow.data("kendoWindow").close();
+                    notification.show({ message: "Saving....", showTime: startTime() }, "upload-progress");
+                    $.ajax({
+                        url: '@Url.Action("ReceiveItemFromInven", "CRM")',
+                        type: 'Post',
+                        data: sendData,
+                        success: function (data) {
+                            notification.hide();notification.setOptions({ autoHideAfter: 2000 });
+                            if (data === "Success") {
+                                notification.show({ message: "Item received.", showTime: startTime() }, "upload-success");
+                                $("#div_assigned_item").empty();
+                                $("#div_assigned_item").append('<div class="loading_half"></div>');
+                                $("#div_assigned_item").show();
+                                $("#div_received_item").empty();
+                                $("#div_received_item").append('<div class="loading_half"></div>');
+                                $("#div_received_item").show();
+                                $("#div_assigned_item").load('@Url.Action("_AssignedItemList", "CRM")?AcquisitionOrderId='+@Model.AcquisitionOrderId);
+                                $("#div_received_item").load('@Url.Action("_ReceivedItemList", "CRM")?AcquisitionOrderId='+@Model.AcquisitionOrderId);
+                            }
+                            else {
+                                notification.show({ message: "Acquisition order approve attempt unsuccessful", showTime: startTime() }, "upload-error");
+                            }
+                        }
+                    });
+                }
+            }).end()
+
+            kendoWindow.find("#btn_tmp_Cancel").click(function () {
+                kendoWindow.data("kendoWindow").close();
+            }).end()
+        }
+    });
+
+</script>
+<script>
+    //***************************** Edit Business Order (IN Order Details Page) *********************
+    $("#div_order_Name_Status").on("click", "#btn_busi_det_edit", function () {
+        $("#div_win_spec").empty();
+        $("#div_win_nego").empty();
+        $("#div_win_finance").empty();
+        $("#div_win_spec_edit").empty();
+        $("#BusinessOrderwindowEdit").empty();
+        $("#Busi_Orderwindow_File_Details").empty();
+        $("#BusinessOrderwindowEdit").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            title: 'Edit Business Order',
+            width: '50%',
+            height: '28%',
+            close: onWindowClose
+        });
+        $("#BusinessOrderwindowEdit").html('<div class="tiny_loading"></div>');
+        var BusinessOrderwindowEdit = $("#BusinessOrderwindowEdit").data("kendoWindow");
+        BusinessOrderwindowEdit.refresh({ url: "/CRM/BusinessOrderCreatePopUp?BusinessOrderId=" + '@Model.BusinessOrderId' });
+        BusinessOrderwindowEdit.center().open();
+
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+    });
+    //***************************** Approve Business Order (IN Order Details Page) *********************
+    $("#div_order_Name_Status").on("click", "#btn_busi_ord_det_appr", function (e) {
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose
+        });
+        msg = "Are you sure want to approve this order?";
+        var template = kendo.template($("#temp_win_businessOrder_details").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+
+        kendoWindow.find("#btn_busOrd_det_noty_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_busOrd_det_noty_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            document.documentElement.style.overflow = 'auto';
+            document.body.scroll = "yes";
+            notification.show({ message: "Business ording is approving...", showTime: startTime() }, "upload-progress");
+            $.ajax({
+                url: '@Url.Action("BusinessOrderStatusChange", "CRM")',
+                type: 'Post',
+                data: { BusinessOrderId: orderId, ApprovedBy: userId, OrderStatus: 1 },
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if (data == "Success") {
+                        notification.show({ message: "Business order has been successfully approved.", showTime: startTime() }, "upload-success");
+                        $("#AllFileLists").hide();
+                        $("#AllFileLists").empty();
+                        $("#div_order_Name_Status").hide();
+                        $("#div_order_Name_Status").empty();
+                        $("#div_order_Name_Status").show();
+                        $("#div_order_Name_Status").append('<div class="tiny_loading"></div>');
+                        $("#div_order_Name_Status").load('@Url.Action("_OrderNameSatatusDetails", "CRM")?BusinessOrderId=' + '@(Model.BusinessOrderId)');
+                        $("#div_Main_Manual_Spec").hide();
+                        $("#div_Main_Manual_Spec").empty();
+                        $("#div_Main_Manual_Spec").show();
+                        $("#div_Main_Manual_Spec").append('<div class="loading_half"></div>');
+                        $("#div_Main_Manual_Spec").load('@Url.Action("ManualSpecification", "CRM")?BusinessOrderId=' + '@(Model.BusinessOrderId)');
+                    } else {
+                        notification.show({ message: "Business order approved was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                },
+                error: function (err) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }).end();
+    });
+    //***************************** Complete Business Order (IN Order Details Page) *********************
+    $("#div_order_Name_Status").on("click", "#btn_bus_ord_com", function (e) {
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        msg = "Are you sure want to complete this order?";
+        var template = kendo.template($("#temp_win_businessOrder_details").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+
+        kendoWindow.find("#btn_busOrd_det_noty_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_busOrd_det_noty_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            document.documentElement.style.overflow = 'auto';
+            document.body.scroll = "yes";
+            $("#div_win_manual_spec").empty();
+            $("#div_win_manual_spec_edit").empty();
+            $("#win_ForDeadLine").empty();
+            $("#win_ForDeadLine").kendoWindow({
+                actions: ["Close"],
+                visible: false,
+                modal: true,
+                position: { top: '50%', left: '50%' },
+                title: 'Enter Order DeadLine',
+                width: "40%",
+                minHeight: 100,
+                content: "/CRM/_OrderDeadLine"
+            });
+            $("#win_ForDeadLine").data("kendoWindow").center().open();
+        }).end();
+    });
+</script>

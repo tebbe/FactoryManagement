@@ -1,0 +1,566 @@
+﻿@************************************** Created By Jerin Jahan (Date:22.09.2016)  ***************************************@
+@using FactoryManagement.Helpers;
+@model FactoryManagement.Models.View_ProList_WithLC
+@{
+    ViewBag.Title = "Product Details";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var locationList = (from m in db.Inventory_Item_Location
+                        where m.InventoryId == Model.InventoryId && m.ImportId == Model.ImportId
+                        group m by new
+                        {
+                            m.StoreId,
+                            m.WarehouseId
+                        } into i
+                        select new
+                        {
+                            LocationId = i.FirstOrDefault().LocationId,
+                            StoreId = i.FirstOrDefault().StoreId,
+                            WareId = i.FirstOrDefault().WarehouseId,
+                            StoreName = (i.FirstOrDefault().StoreId > 0) ? db.StoreLists.Where(sm => sm.Id == i.FirstOrDefault().StoreId).Select(sm => sm.StoreName).FirstOrDefault() : "",
+                            WareName = (i.FirstOrDefault().WarehouseId > 0) ? db.WarehouseLists.Where(sm => sm.Id == i.FirstOrDefault().WarehouseId).Select(sm => sm.WarehouseName).FirstOrDefault() : "",
+                            Quantity = i.Sum(x => x.Quantity)
+                        }).ToList();
+}
+<link href="~/Content/desoSlide/css/demo.css" rel="stylesheet" />
+<link href="~/Content/desoSlide/css/animate.min.css" rel="stylesheet" />
+<style>
+    #ulSlideshow {
+        margin-bottom: 0px !important;
+    }
+
+        #ulSlideshow li {
+            padding-right: 0px !important;
+        }
+
+            #ulSlideshow li img {
+                max-width: 60px;
+                max-height: 70px;
+                border: 1px solid #ddd !important;
+            }
+
+    #slideshow {
+        border: 1px solid #ddd;
+        padding: 20px 0px 20px 25px;
+        margin-bottom: 10px;
+        position: relative;
+        height: 335px;
+        overflow: hidden;
+    }
+
+        #slideshow img {
+            border: none !important;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+    #section_demo {
+        margin-bottom: 0px !important;
+        padding-bottom: 0px !important;
+    }
+
+    .available {
+        color: #59b210;
+        font-weight: 700 !important;
+        text-transform: capitalize;
+    }
+
+    .availability label {
+        color: #707070;
+        font-weight: 700 !important;
+        text-transform: capitalize;
+        margin-top: 10px;
+    }
+</style>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-list"></i>
+            <a href="/StoreProduct/Store">Store</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-info-circle"></i>
+            <span>Store Item Details</span>
+        </li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col-xs-12" style="margin-bottom:10px">
+        <span class="btn green btn-sm" id="btn_import_pro" data-toggle="tooltip" title="Import Product" data-placement="top" data-container="body"><i class="fa fa-reply-all"></i> Import</span>
+        <span class="btn blue btn-sm" id="btn_import_his" data-toggle="tooltip" title="Import History" data-placement="top" data-container="body"><i class="fa fa-history"> Import History</i></span>
+      @if (Model.LC != null && Model.LC.Trim() != "N/A")
+      {
+        <span class="btn blue btn-sm" id="btn_LC_his" data-toggle="tooltip" title="LC Details" data-placement="top" data-container="body"><i class="fa fa-history"> LC Wise Details</i></span>
+
+      }
+        
+        @if (db.DispatchedItemLists.Where(m => m.LocationId == Model.LocationId).Any())
+        {
+            <span class="btn blue btn-sm" id="btn_dis_his" data-toggle="tooltip" title="Dispatched History" data-placement="top" data-container="body"><i class="fa fa-history"> Dispatched History</i></span>
+        }
+        @if (db.DispatchedItemLists.Where(m => m.LocationId == Model.LocationId).Any())
+        {
+            <span class="btn blue btn-sm" id="btn_route_his" data-toggle="tooltip" title="Routed History" data-placement="top" data-container="body"><i class="fa fa-history"> Routed History</i></span>
+        }     
+    </div>
+</div>
+<div class="portlet light bordered">
+    <div class="portlet-title">
+        <div class="caption font-green">
+            <i class="fa fa-list-ul font-green"></i>
+            <span class="caption-subject green bold uppercase">
+                @Model.ProductName (L/C : @Model.LC)
+            </span>
+            <div class="availability">
+                <label>Availability:</label>
+                @if (Model.Quantity > 0)
+                {<span class="available">in stock </span>}
+            </div>
+        </div>
+        <div class="actions">
+            <div class="btn-group btn-group-devided" data-toggle="buttons" >
+                <a data-toggle="tooltip" id="btn_show_Master" data-placement="top" title="Show Master Item Details" href="@Html.EncodedParam("StoreProductDetails", "StoreProduct", new { id = Model.InventoryId }, null)">
+                    <span class="btn btn-transparent green btn-outline btn-circle btn-sm"><i class="fa fa-info-circle"></i> Master Item</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="row" id="div_pro_details">
+            @if (db.Inventory_Image_Lists.Where(m => m.InventoryId == Model.InventoryId).Any())
+            {
+                <div class="col-md-6 col-sm-6" id="section_demo"></div>
+                <script>
+                    $("#section_demo").append('<div class="loading_half"></div>');
+                    $("#section_demo").load('@Url.Action("_ProductImages", "StoreProduct")?id='+@Model.InventoryId);
+                </script>
+            }
+            else
+            {
+                <div class="product-image-wrapper col-md-3 col-sm-4 col-xs-12">
+                    <div class="single-products">
+                        <div class="productinfo text-center thumbnail" id="find">
+                            <img class="img-responsive" src="/Images/Inventory/Store/no_img.jpg" alt="Product" style="height:150px;width:150px">
+                        </div>
+                    </div>
+                </div>
+            }
+            <div class="col-md-6 col-sm-6 col-xs-12" style="padding-left:30px!important;">
+                <h4 style="font-weight: 600;color: #696b79;font-size: 17px;">Item Details</h4>
+                <p>Material : @Model.ProductType</p>
+                @if (Model.CanbeReplaceable || Model.CanbePerishable || Model.CanbeTopup)
+                {
+                    if (Model.CanbeReplaceable)
+                    {
+                        <p>Type : Replaceable</p>
+                    }
+                    if (Model.CanbePerishable)
+                    {
+                        <p>Type : Perishable</p>
+                    }
+                    if (Model.CanbeTopup)
+                    {
+                        <p>Type : Top-up</p>
+                    }
+                }
+                <p>Country of Origin : @Model.CountryName</p>
+                @if (Model.BrandName != null)
+                { <p>Brand Name : @Model.BrandName</p>}
+                @if (Model.Model != null)
+                { <p>Model Name : @Model.Model</p>}
+
+                @if (Model.Description != null)
+                { <p>Description : @ViewBag.getCurrency  @Model.Description</p>}
+                <p style="color:#0074b8!important;font-weight:600;">Quantity : @Model.Quantity @Model.UnitName</p>
+                @if (Model.CanbePerishable)
+                {
+                    var list = (from m in db.StoreItemLists
+                                where m.InventoryId == Model.InventoryId
+                                select new
+                                {
+                                    Expired = m.ExpiredDate
+                                }).GroupBy(g => g.Expired).ToList();
+                    <p>
+                        Item Expired Date:
+                        <div class="col-lg-9 col-md-9 col-sm-8 col-xs-8" style="padding-top:7px;">
+                            @foreach (var date in list)
+                            {
+                                DateTime ex_date = Convert.ToDateTime(date.Key);
+                                int count = db.StoreItemLists.Where(m => m.ExpiredDate == ex_date).Count();
+                                if (count > 0)
+                                {
+                                    <span class="col-md-9 col-sm-9 col-xs-9" style="padding-left:0px!important;">
+                                        <span>@count @Model.UnitName</span>
+                                        <span style="font-size:12px;color:#808080;margin-left:10px;"> Expired Date : @Convert.ToDateTime(ex_date).ToString("MMM dd,yyyy")</span>
+                                    </span>
+
+                                }
+                            }
+                        </div>
+                    </p>
+                }
+
+                <h4 style="color:#526cd0;margin-top:2em;font-size: 15px;font-weight:600;">Item Location</h4>
+                @foreach (var multi in locationList)
+                {
+                    <p style="">
+                        @if (multi.StoreId > 0)
+                        {
+                            <span>@multi.StoreName :</span>
+                        }
+                        else
+                        {
+                            <span>@multi.WareName :</span>
+                        }
+                        <span style="font-size:12px;color:#808080;">Quantity @multi.Quantity @Model.UnitName </span>
+                    </p>
+                }
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="win_import_His"></div>
+<div id="win_Dis_His"></div>
+<div id="win_Route_His"></div>
+<div id="Win_show_Imp_His_Dtls_LC"></div>
+<div id="Win_Add_Resrv_Deatils"></div>
+<div id="Win_Req_His"></div>
+<div id="win_item_requan_info"></div>
+
+<script>
+    @*$("#btn_show_Master").click(function(){
+        location.href='@Html.EncodedParam("StoreProductDetails", "StoreProduct", new { id = Model.InventoryId }, null)';
+    });*@
+    var inventoryId ='@(Model.InventoryId)';
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $("#liForAllInventoryList").addClass('sublistActive');
+    });
+    $("#btn_import_pro").click(function () {
+        location.href = "@Url.Action("InventoryItemLocationSet", "StoreProduct")?id="+inventoryId;
+    });
+
+    //************************ All Import History ********************************
+    $("#btn_import_his").click(function(){
+        $("#win_import_His").empty();
+        $("#win_import_His").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '80%',
+            height: '50%',
+            title:'Show Import History',
+            close: onWindowClose
+        });
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+        $("#win_import_His").html('<div class="loading_30"></div>');
+        var win_import_His = $("#win_import_His").data("kendoWindow");
+        win_import_His.refresh({ url: "/StoreProduct/_ProImportHis?id=" + '@(Model.InventoryId)'+'&impid='+'@(Model.ImportId)'});
+        win_import_His.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+
+    //********************* Show Import Details LC Wise ******************************
+
+    $("#btn_LC_his").click(function(){
+        $("#Win_show_Imp_His_Dtls_LC").empty();
+        $("#Win_show_Imp_His_Dtls_LC").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '50%',
+            title: 'Import History Details LC Wise',
+            close: onWindowClose
+        });
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+        $("#Win_show_Imp_His_Dtls_LC").html('<div class="loading_30"></div>');
+        var Win_show_Imp_His_Dtls_LC = $("#Win_show_Imp_His_Dtls_LC").data("kendoWindow");
+        Win_show_Imp_His_Dtls_LC.refresh({ url: "/StoreProduct/ImportExportDetailsLC?lc=" + '@(Model.LC)' });
+        //Win_show_Imp_His_Dtls_LC.refresh({ url: "/StoreProduct/ImportHistoryDetailsLC?lc=" + '@(Model.LC)' });
+        Win_show_Imp_His_Dtls_LC.center().open();
+    });
+
+    //************************ All Dispatched History ********************************
+
+    $("#btn_dis_his").click(function(){
+        $("#win_Dis_His").empty();
+        $("#win_Route_His").empty();
+        $("#win_Dis_His").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '80%',
+            height: '50%',
+            title:'Show Dispatched History',
+            close: onWindowClose
+        });
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+        $("#win_Dis_His").html('<div class="loading_30"></div>');
+        var win_Dis_His = $("#win_Dis_His").data("kendoWindow");
+        win_Dis_His.refresh({ url: "/StoreProduct/_ProDispatchedHis?id=" + '@(Model.InventoryId)' + '&type=2&locid='+'@(Model.LocationId)' });
+        win_Dis_His.center().open();
+    });
+
+    //************************ All Route History ********************************
+    $("#btn_route_his").click(function(){
+        $("#win_Dis_His").empty();
+        $("#win_Route_His").empty();
+        $("#win_Route_His").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: "80%",
+            height: "80%",
+            title: 'Show Routed History',
+            close: onWindowClose
+        });
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+        $("#win_Route_His").html('<div class="win_loading_half"></div>');
+        var win_Route_His = $("#win_Route_His").data("kendoWindow");
+        win_Route_His.refresh({ url: "/StoreProduct/_ProDispatchedHis?id=" + inventoryId + "&type=1"});
+        win_Route_His.center().open();
+    });
+
+
+</script>
+<script>
+    function onAdditionalData() {
+        return {
+            prefix: $("#ProductName").val()
+        };
+    }
+    function onBrandData() {
+        return {
+            prefix: $("#Brand").val()
+        };
+    }
+    function InventoryItemSelect(e){
+        var dataItem = this.dataItem(e.item.index());
+        $(".div_hide_display").hide();
+        $("#div_Pro_AutoCom").hide();
+        $("#divForUnitList").hide();
+        $("#div_pro_select").show();
+        $("#div_slected_pro_info").show();
+        $("#div_slected_pro_info").append('<div class="loading_partial"></div>');
+        $("#div_slected_pro_info").load('@Url.Action("_AcquisitionBySearch", "StoreProduct")?InventoryId='+dataItem.InventoryId);
+        $("#lbl_Pro_Name").text(dataItem.ProductName);
+        $("#InventoryId").val(dataItem.InventoryId);
+    }
+    function BrandSelect(e){
+        var dataItem = this.dataItem(e.item.index());
+        $("#div_Brnd_AutoCom").hide();
+        $("#div_brnd_select").show();
+        $("#lbl_Brnd_Name").text(dataItem.BrandName);
+        $("#BrandId").val(dataItem.BrandId);
+    }
+    $("#btnCloseForProduct").click(function(){
+        $("#div_slected_pro_info").empty();
+        $("#div_slected_pro_info").hide();
+        $("#div_pro_select").hide();
+        $(".div_hide_display").show();
+        $("#div_Pro_AutoCom").show();
+        $("#divForUnitList").show();
+        $("#lbl_Pro_Name").text('');
+        $("#InventoryId").val(0);
+        $("#Country").val('');
+        $("#Price").val('');
+        $("#ProductName").val('');
+        $("#UnitId").val('');
+        $("#lbl_select_pro_unitname").text('');
+    });
+    $("#btnCloseForBrnd").click(function(){
+        $("#div_brnd_select").hide();
+        $("#div_Brnd_AutoCom").show();
+        $("#lbl_Brnd_Name").text('');
+        $("#BrandId").val(0);
+    });
+</script>
+<script>
+    var BrandName,count = 1,unitCount=1,brandCount=1,subunitCount=1;
+    var allMainFile = [];
+    var allFileCount = [];
+
+
+    var addedImg = [];
+    var newImg = [];
+
+    //**************************** PRODUCT TYPE CHANGE ************************************************
+    function onProductChange(){
+        if(this.value() === ""){
+            $("#ProductTypeId").val(0);
+        }
+        else{
+            var ProductTypeId= this.value();
+            var ProductTypeName= this.text();
+            $.ajax({
+                url: '@Url.Action("ProductTypeHasChildern", "Acquisition")',
+                type: 'Post',
+                data: {ProductTypeId:ProductTypeId},
+                success: function (data) {
+                    if(data)
+                    {
+                        $("#ProductTypeId").val(0);
+                        $("#lblForCatagoryName-"+count).text(ProductTypeName);
+                        $("#divForCatLbl-"+count).show();
+                        $("#dynDivForProCat-"+count).hide();
+
+                        count++;
+                        $("#divForProductCatagory").append('<div class="form-group dynDivForProCat" id="dynDivForProCat-'+count+'">'+
+                            '<label class="control-label col-lg-2 col-md-2 col-sm-3 col-xs-12" for="ProductType-'+count+'">Sub Catagory</label>'+
+                            '<div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" id="divForcat-'+count+'">'+
+                            '<label id="productCatType-'+count+'" style="width:100%;"></label>'+
+                            '<span class="field-validation-valid text-danger" data-valmsg-for="ProductTypeId" data-valmsg-replace="true"></span></div>'+
+                            '<div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" style="display: none; padding-top: 7px;" id="divForCatLbl-'+count+'">'+
+                            '<label id="lblForCatagoryName-'+count+'"></label> '+
+                            '<span class="k-icon k-i-close" id="btnCloseForCat-'+count+'" data-id="'+count+'"></span></div></div>');
+
+                        $("#productCatType-"+count).kendoDropDownList({
+                            dataTextField: "ProductTypeName",
+                            dataValueField: "ProductTypeId",
+                            change: onProductChange,
+                            optionLabel: "--Select One--",
+                            dataSource: {
+                                transport: {
+                                    read: {
+                                        url: "@Url.Action("GetAllProductType", "Acquisition")?ParentId=" + ProductTypeId,
+                                        type: "GET"
+                                    }
+                                }
+                            }
+                        });
+
+                    }else{$("#ProductTypeId").val(ProductTypeId);}
+
+                }
+            });
+        }
+    };
+
+    //**************************** UNIT CHANGE ************************************************
+
+    function onUnitChange(){
+        if(this.value() === ""){
+            $("#divForSubUnitChk").hide();
+        }else{
+            if($("#CanbeBreakable").is(":checked")){
+                $("#lblForSubQuantity").text("Per "+$("#unitType-"+unitCount).data("kendoDropDownList").text());
+            }
+
+            var UnitId= this.value();
+            var UnitName= this.text();
+            $.ajax({
+                url: '@Url.Action("UnitHasChildern", "Acquisition")',
+                type: 'Post',
+                data: {UnitId:UnitId},
+                success: function (data) {
+                    if(data)
+                    {
+                        $("#UnitId").val(0);
+                        $("#lblForUnitName-"+unitCount).text(UnitName);
+                        $("#divForUnitLbl-"+unitCount).show();
+                        $("#divForunit-"+unitCount).hide();
+                        divForunit-1
+                        unitCount++;
+                        $("#divForUnitList").append('<div class="col-xs-12 dynDivForProUnit" id="dynDivForProUnit-'+unitCount+'">'+
+                            '<label class="editor-label" for="Unit-'+unitCount+'">Sub Unit</label>'+
+                            '<div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" id="divForunit-'+unitCount+'">'+
+                            '<label id="unitType-'+unitCount+'" style="width:100%;"></label>'+
+                            '<span class="field-validation-valid text-danger" data-valmsg-for="UnitId" data-valmsg-replace="true"></span></div>'+
+                            '<div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" style="display: none; padding-top:7px;" id="divForUnitLbl-'+count+'">'+
+                            '<label id="lblForUnitName-'+unitCount+'"></label> '+
+                            '<span class="k-icon k-i-close" id="btnCloseForUnit-'+unitCount+'" data-id="'+unitCount+'"></span></div></div>');
+                        $("#unitType-"+unitCount).kendoDropDownList({
+                            dataTextField: "UnitName",
+                            dataValueField: "UnitId",
+                            change: onUnitChange,
+                            optionLabel: "--Select One--",
+                            dataSource: {
+                                transport: {
+                                    read: {
+                                        url: "@Url.Action("GetAllUnit", "Acquisition")?ParentId=" + UnitId,
+                                        type: "GET"
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    else{
+                        $("#UnitId").val(UnitId);
+                        $("#divForSubUnitChk").show();
+                    }
+                }
+            });
+        }
+    };
+
+    //************************** Breakable Unit Change *****************************************
+    function onBreakableUnitChange(){
+        if(this.value() === ""){
+            $("#SubUnits").val(0);
+        }else{
+            var UnitId= this.value();
+            var UnitName= this.text();
+            $.ajax({
+                url: '@Url.Action("UnitHasChildern", "Acquisition")',
+                type: 'Post',
+                data: {UnitId:UnitId},
+                success: function (data) {
+                    if(data)
+                    {
+                        $("#SubUnits").val(0);
+                        $("#lblForSubUnitName-"+subunitCount).text(UnitName);
+                        $("#divForSubUnitLbl-"+subunitCount).show();
+                        $("#divForSubUnit-"+subunitCount).hide();
+
+                        subunitCount++;
+                        $("#divForSubUnitList").append('<div class="form-group" id="dynDivForSubUnit-'+subunitCount+'">'+
+                            '<label class="control-label col-lg-2 col-md-2 col-sm-3 col-xs-12">Sub Unit</label>'+
+                            '<div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" id="divForSubUnit-'+subunitCount+'">'+
+                            '<label id="SubunitType-'+subunitCount+'" style="width:100%;"></label>'+
+                            '<span class="field-validation-valid text-danger" data-valmsg-for="SubUnits" data-valmsg-replace="true"></span></div>'+
+                            '<div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" style="display: none; padding-top:7px;" id="divForSubUnitLbl-'+count+'">'+
+                            '<label id="lblForSubUnitName-'+subunitCount+'"></label> '+
+                            '<span class="k-icon k-i-close" id="btnCloseForSubUnit-'+subunitCount+'" data-id="'+subunitCount+'"></span></div></div>');
+
+                        $("#SubunitType-"+subunitCount).kendoDropDownList({
+                            dataTextField: "UnitName",
+                            dataValueField: "UnitId",
+                            change: onBreakableUnitChange,
+                            optionLabel: "--Select One--",
+                            dataSource: {
+                                transport: {
+                                    read: {
+                                        url: "@Url.Action("GetAllUnit", "Acquisition")?ParentId=" + UnitId,type: "GET"
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    else{$("#SubUnits").val(UnitId);}}});}};
+
+</script>

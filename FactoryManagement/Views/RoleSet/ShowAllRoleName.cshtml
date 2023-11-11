@@ -1,0 +1,54 @@
+﻿
+
+
+@*********************************   Created By Jerin Jahan (Date: 2016-11-07) **************************************@
+@model IEnumerable<FactoryManagement.Models.RoleNameList>
+@{
+    int count = 1;
+}
+<h4>All Role Name List</h4><hr />
+
+@(Html.Kendo().Window()
+.Name("win_role_create")
+.Visible(false)  
+.Modal(true)  
+.Draggable(true)
+)
+
+<span style="text-decoration: none !important;" class="k-button" id="btn_role_create">
+    <span class="k-icon k-i-plus" style="margin-right: .3rem;"></span>Add New Role
+</span>
+<table class="table table-bordered">
+    <tr>
+        <th width="8%">#</th>
+        <th width="60%">Role Name</th>
+        <th width="20%"></th>
+    </tr>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@count.</td>
+            <td>@item.RoleName</td>
+            <td>
+                <span class="fa fa-pencil-square-o btn_Role_Assign" data-id="@item.Id" data-name="@item.RoleName" style="color:#428bca;"></span>
+                <span class="fa fa-pencil-square-o btn_Role_Per_Assign" data-id="@item.Id" data-name="@item.RoleName" style="color:#428bca;">Permission</span>
+                <span class="fa fa-trash btn_delete_role" data-id="@item.Id" data-name="@item.RoleName" style="color:#428bca;"></span>
+            </td>
+        </tr>
+        count++;
+    }
+</table>
+<script>
+    $("#btn_role_create").click(function () {
+        var window = $("#win_role_create").data("kendoWindow");
+        window.setOptions({
+            width: '55%',
+            title: 'Add New Role'
+        });
+        window.refresh({
+            url: "/RoleSet/_RoleCreate"
+        });
+        window.center();
+        window.open();
+    });
+</script>

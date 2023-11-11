@@ -1,0 +1,429 @@
+﻿@************************** Created By Jerin Jahan(Date:31.12.2016) ****************************************@
+
+@using FactoryManagement.Helpers
+@{
+    ViewBag.Title = "Indent";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+
+}
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Acquisition/ShowAllIndentVoucher">Indent History</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+
+        <li>
+            <i class="fa fa-plus-circle"></i>
+            <a href="@Html.EncodedParam("ManuallyIndentForInven", "Acquisition", new { type = 1 }, null)">Add New Indent</a>
+
+        </li>
+    </ul>
+</div>
+<div class="portlet light bordered">
+    <div class="portlet-title">
+        <div class="caption font-green">
+            <i class="fa fa-plus font-green"></i>
+            <span class="caption-subject green bold uppercase">New Indent  <small>Create</small></span>
+        </div>
+        <div class="actions">
+            <div class="btn-group btn-group-devided" data-toggle="buttons">
+                <a data-toggle="tooltip" title="Show All Indent Voucher List" id="allIndentVoucherListBtn" data-placement="top" href="#">
+                    <span class="btn btn-transparent green btn-outline btn-circle btn-sm"><i class="fa fa-list-ul"></i> All Indent Voucher List</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-horizontal" id="div_manual_indent">
+            <div class="form-body">
+                <div class="form-group">
+                    <label class="control-label col-md-3 col-sm-4" for="Title">Voucher Name</label>                   
+                    <div class="col-md-5 col-sm-6">
+                        <input class="form-control k-textbox text-box single-line" data-val="true" data-val-length="Invalid"
+                               data-val-length-max="100" data-val-length-min="3"
+                               data-val-remote="Voucher name already exists..."
+                               data-val-remote-additionalfields="*.txtVoucher"
+                               data-val-remote-type="Post"
+                               data-val-remote-url="/RemoteValidation/CheckVoucherName"
+                               data-val-required="Please enter voucher name"
+                               id="txtVoucher" name="txtVoucher" type="text" value="">
+                        @*<input class="form-control k-textbox text-box single-line" id="txtVoucher" name="txtVoucher" type="text" value="">
+                        <span class="field-validation-valid text-danger" data-valmsg-for="txtVoucher" data-valmsg-replace="true"></span>*@
+                    </div>
+                </div>
+                <h4>Item Lists</h4>
+                <div class="form-group">
+                    <div class="col-md-12 col-sm-12 col-xs-11">
+                        <table id="tbl_dyn_indent" class="table table-bordered">
+                            <tr id="trdyn_1" class="child">
+                                <td width="20%">
+                                    <input id="txtProName-1" onkeyup="ItemSearch(event)" name="txtProName-1" style="width: 100%;"
+                                           data-val="true" data-val-required="Please enter quantity" />
+                                    <span class="field-validation-valid text-danger" data-valmsg-for="txtProName-1" data-valmsg-replace="true"></span>
+                                </td>
+                                <td width="15%">
+                                    <input class="form-control k-textbox txtQuan" data-val="true" data-val-length="Invalid"
+                                           data-val-required="Please enter quantity" min="1" pattern="[0-9]"
+                                           placeholder="Quantity" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Quantity' "
+                                           id="txtQuan-1" name="txtQuan-1" type="number" value="" aria-invalid="true">
+                                    <span class="field-validation-valid text-danger" data-valmsg-for="txtQuan-1" data-valmsg-replace="true"></span>
+                                </td>
+                                <td width="15%">
+                                    <input class="txtUnit" id="txtUnit-1" name="txtUnit-1" style="width: 100%;" />
+                                    <span class="field-validation-valid text-danger" data-valmsg-for="txtUnit-1" data-valmsg-replace="true"></span>
+                                </td>
+                                <td width="17%">
+                                    <input class="form-control k-textbox txtUPrice"
+                                           placeholder="Unit Price" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Unit Price' " min="1"
+                                           id="txtUPrice-1" name="txtUPrice-1" type="number" value="" aria-invalid="true">
+                                    <span class="field-validation-valid text-danger" data-valmsg-for="txtUPrice-1" data-valmsg-replace="true"></span>
+                                </td>
+                                <td width="20%">
+                                    <input class="form-control k-textbox txtComnt" data-val-length="string length exceed"
+                                           data-val-length-max="500"
+                                           placeholder="Comments" onfocus="this.placeholder = ''" onblur="    this.placeholder = 'Comments' "
+                                           id="txtComnt-1" name="txtComnt-1" type="text" value="" aria-invalid="true">
+                                    <span class="field-validation-valid text-danger" data-valmsg-for="txtComnt-1" data-valmsg-replace="true"></span>
+                                </td>
+                                <td width="10%">
+                                    <span class="btn_del_Div_1" style="display:none">
+                                        <i class="fa fa-times"></i>
+                                    </span>
+                                    <span id="btn_dyn_1">
+                                        <span class="k-icon k-i-plus tr_add" style="margin-right: .3rem;"></span>
+                                    </span>
+
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <div class="row">
+                    <div class="col-md-offset-7 col-md-5 col-sm-offset-7 col-sm-5" style="text-align:right;">
+                        <input type="button" value="Save" id="btnManuIndentSave" class="btn green" />
+                        <input type="Reset" value="Refresh" id="btnManuIndentRefresh" class="btn yellow" />
+                        <input type="button" value="Cancel" id="btnManuIndentCancel" class="btn red" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="DivForAllIndentVoucher"></div>
+<script>
+    var count = 1, dcount = 1,autoCompleteId=0, addintionalData;
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $("#liForInedntVou").addClass('sublistActive');
+        bindAutoCom(count);
+        bindUnit(count);
+
+    });
+    function ItemSearch(event) {
+        addintionalData = event.currentTarget.value;
+    }
+    $("#allIndentVoucherListBtn").click(function () {
+        $("#DivForAllIndentVoucher").empty();
+        $("#DivForAllIndentVoucher").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '45%',
+            height: '25%',
+            title: 'All Indent Voucher List',
+            close: onWindowClose
+        });
+        $("#DivForAllIndentVoucher").html('<div class="win_loading_half"></div>');
+        var win_indent_info = $("#DivForAllIndentVoucher").data("kendoWindow");
+        win_indent_info.refresh({ url: "/Acquisition/IndentVoucherListPopUp" });
+        win_indent_info.center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+    });
+    function bindAutoCom(id) {
+
+        function onSelect(e) {
+            var dataItem = this.dataItem(e.item.data('offset-index'));
+            autoCompleteId = dataItem.uid;
+        }
+        $("#txtProName-" + id).kendoAutoComplete({
+            dataTextField: "ProductName",
+            filter: "contains",
+            minLength: 3,
+            placeholder: "Product name...",
+            select: onSelectTxtName,
+            change: onChangeTxtName,
+            select: onSelect,
+            dataSource: {
+                type: "GET",
+                serverFiltering: true,
+                transport: {
+                    read: {
+                        url: "@Url.Action("ProductNameSearchingInvenFinish", "Acquisition")"
+                    },
+                    data: "onAdditionalData()"
+                }
+            }
+        });
+    }
+    function bindUnit(id) {
+        $("#txtUnit-" + id).kendoDropDownList({
+            dataTextField: "UnitName",
+            dataValueField: "UnitId",
+            optionLabel: "--Select One--",
+            dataSource: { type: "GET", transport: { read: { url: "@Url.Action("GetAllUnit", "Acquisition")" } } }
+        });
+    }
+    function onAdditionalData() {
+        return {
+            prefix: addintionalData
+        }
+        //return { prefix: $("#txtProName-1").val() };
+    }
+
+    //******************* Kendo Autocomplete Change Function *********************************************
+    function onChangeTxtName() {
+    }
+
+    //******************* Kendo Autocomplete select Function *********************************************
+    function onSelectTxtName(e) {
+        var dataItem = this.dataItem(e.item.index());
+        var ProductName = dataItem.ProductName;
+        var InventoryId = dataItem.InventoryId;
+    }
+
+
+    //*************************** Dynamically Add Div ******************************************************
+    $("#div_manual_indent").on('click', "#btnAdd", function () {
+
+
+    });
+    $("#btnManuIndentRefresh").click(function () {
+        location.reload();
+    });
+    $("#btnManuIndentCancel").click(function () {
+        window.history.back();
+    });
+
+    var validation = $("#div_manual_indent").kendoValidator({
+        rules: {
+            custom: function (input) {
+                var errormessage;
+                var remoteAttr = input.attr("data-val-remote-url");
+                if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                    return true;
+                }
+                var isInvalid;
+                var data = {};
+                var VoucherName = $("#txtVoucher").val();
+                data = {VoucherName: VoucherName };
+                $.ajax({
+                    url: remoteAttr,
+                    mode: "abort",
+                    port: "validate" + input.attr('name'),
+                    dataType: "json",
+                    type: input.attr("data-val-remote-type"),
+                    data: data,
+                    async: false,
+                    success: function (response) {
+                        isInvalid = response;
+                        if (isInvalid === true) {
+                            isInvalid = false;
+
+                        }
+                        else {
+                            isInvalid = true;
+                        }
+                    }
+                });
+                return isInvalid;
+            },
+            vouname: function (input) {
+                if (input.is("[name=txtVoucher]") && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            proname: function (input) {
+                if (input.is("[name=txtProName-" + count + "]") && autoCompleteId === 0) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        },
+        messages: {
+            custom: function (input) { return "Voucher Name Already Exist!"; },
+            vouname: "Please type voucher name",
+            proname: "Please select item name"
+        }
+    }).data("kendoValidator");
+    console.log("Manual indent For Invent");
+    //***********************************  Save Data ********************************************************
+    $("#btnManuIndentSave").click(function () {
+
+        if (validation.validate()) {
+            notification.show({ message: "Creating indent...", showTime: startTime() }, "upload-progress");
+            var allProName = [], allQuan = [], allUnit = [], allUPrice = [], allCom = [];
+            for (var i = 1; i <= count; i++) {
+                allProName.push($("#txtProName-" + i).val());
+                allQuan.push($("#txtQuan-" + i).val());
+                allUnit.push($("#txtUnit-" + i).val());
+                if ($("#txtUPrice-" + i).val() == "") {
+                    allUPrice.push(0);
+                } else {
+                    allUPrice.push($("#txtUPrice-" + i).val());
+                }
+                allCom.push($("#txtComnt-" + i).val());
+            }
+            var senddata = {
+                vouchername: $("#txtVoucher").val(),
+                IndentType: '@(ViewBag.type)',
+            MachineId: '@(ViewBag.MachineId)',
+            StoreId: '@(ViewBag.StoreId)',
+            WareId: '@(ViewBag.WareId)',
+            allProName: allProName,
+            allQuan: allQuan,
+            allUnit: allUnit, allUPrice: allUPrice, allCom: allCom, userId: userId
+        };
+        $.ajax({
+            url: '@Url.Action("SaveManualIndent", "Acquisition")',
+            type: 'Post',
+            data: senddata,
+            success: function (data) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                if (data == "Success") {
+                    notification.show({ message: "Indent has been successfully created.", showTime: startTime() }, "upload-success");
+                    location.href = '@Url.Action("ShowAllIndentVoucher", "Acquisition")';
+                } else {
+                    notification.show({ message: "Indent creation was unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+            },
+            error: function (err) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+            }
+        });
+    }
+    });
+
+    $(document).on("click", ".tr_add", function () {
+        var prevalidate = $("#trdyn_" + count).kendoValidator({
+            rules: {
+                vouname: function (input) {
+                    if (input.is("[name=txtVoucher]") && input.val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
+                proname: function (input) {
+                    if (input.is("[name=txtProName-" + count + "]") && autoCompleteId===0) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
+                prounit: function (input) {
+                    if (input.is("[name=txtUnit-" + count + "]") && input.val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
+                prounitprice: function (input) {
+                    if (input.is("[name=txtUPrice-" + count + "]")) {
+                        return true;
+                    } else {
+                        return true;
+                    }
+                }
+            },
+            messages: {
+                vouname: "Please type voucher name",
+                proname: "Please enter product name",
+                prounit: "Please select unit",
+                prounitprice: "Please enter unit price"
+            }
+        }).data("kendoValidator");
+
+        if (prevalidate.validate()) {
+            $(this).hide();
+            $(this).parent().siblings().show();
+            count++; dcount++;
+            $("#tbl_dyn_indent").append('<tr id="trdyn_' + count + '" class="child"><td width="20%">' +
+                           '<input class="txtProName" ' +
+                           'id="txtProName-' + count + '" onkeyup="ItemSearch(event)" name="txtProName-' + count + '" ' +
+                           'placeholder="Product name..." onfocus="this.placeholder = \'\'" onblur="    this.placeholder = \'Product name...\' "' +
+                           'style="width: 100%;" data-val="true" data-val-required="Please enter product name" />' +
+                           '<span class="field-validation-valid text-danger" data-valmsg-for="txtProName-' + count + '" data-valmsg-replace="true"></span>' +
+                        '</td>' +
+                        '<td width="15%">' +
+                            '<input class="form-control k-textbox txtQuan" data-val="true" data-val-length="Invalid"' +
+                            'data-val-required="Please enter quantity" min="1" pattern="[0-9]"' +
+                            'placeholder="Quantity" onfocus="this.placeholder = \'\'" onblur="this.placeholder = \'Quantity\' "' +
+                            'id="txtQuan-' + count + '" name="txtQuan-' + count + '" type="number" value="" aria-invalid="true">' +
+                        '<span class="field-validation-valid text-danger" data-valmsg-for="txtQuan-' + count + '" data-valmsg-replace="true"></span>' +
+                        '</td>' +
+                        '<td width="15%">' +
+                            '<input class="txtUnit" id="txtUnit-' + count + '" name="txtUnit-' + count + '" style="width: 100%" />' +
+                            '<span class="field-validation-valid text-danger" data-valmsg-for="txtUnit-' + count + '" data-valmsg-replace="true"></span>' +
+                        '</td>' +
+                        '<td width="17%">' +
+                            '<input class="form-control k-textbox txtUPrice"' +
+                            'placeholder="Unit Price" onfocus="this.placeholder = \'\'" onblur="this.placeholder = \'Unit Price\' " min="1"' +
+                            'id="txtUPrice-' + count + '" name="txtUPrice-' + count + '" type="number" value="" aria-invalid="true">' +
+                        '<span class="field-validation-valid text-danger" data-valmsg-for="txtUPrice-' + count + '" data-valmsg-replace="true"></span>' +
+                        '</td>' +
+                        '<td width="20%">' +
+                            '<input class="form-control k-textbox txtComnt" data-val-length="string length exceed"' +
+                            'data-val-length-max="500"' +
+                            'placeholder="Comments" onfocus="this.placeholder = \'\'" onblur="    this.placeholder = \'Comments\' "' +
+                            'id="txtComnt-' + count + '" name="txtComnt-' + count + '" type="text" value="" aria-invalid="true">' +
+                            '<span class="field-validation-valid text-danger" data-valmsg-for="txtComnt-' + count + '" data-valmsg-replace="true"></span>' +
+                        '</td>' +
+                        '<td width="10%">' +
+                        '<span class="btn_del_Div_1"><i class="fa fa-times"></i></span>' +
+                         '<span id="btn_dyn_1"><span class="k-icon k-i-plus tr_add" style="margin-right: .3rem;"></span></span>' +
+                        '</td>' +
+                    '</tr>');
+            var alltr = $("#tbl_dyn_indent").find('tr');
+            $(".btn_del_Div_" + count).each(function () {
+                $(this).show();
+            });
+            bindAutoCom(count);
+            bindUnit(count);
+        }
+
+    });
+
+    $("#tbl_dyn_indent").on("click", ".btn_del_Div_1", function () {
+        var alltr = $("#tbl_dyn_indent").find('tr');
+        if (alltr.length == 2) {
+            $(this).parent().parent().prev().find('.btn_del_Div_1').hide();
+            $(this).parent().parent().prev().find('.tr_add').show();
+            $(this).parent().parent().remove();
+            count = 1;
+        }
+        if (alltr[alltr.length - 1] != $(this).parent().parent()[0]) {
+            $(this).parent().parent()[0].remove();
+        } else if (alltr.length >2) {
+            $(this).parent().parent().prev().find('.tr_add').show();
+            $(this).parent().parent().remove();
+        }
+
+    });
+
+</script>

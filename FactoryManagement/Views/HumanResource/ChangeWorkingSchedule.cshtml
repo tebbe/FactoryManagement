@@ -1,0 +1,55 @@
+﻿@******************** Created By Jerin Jahan(Date:31.01.2017) **************************@
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;">
+    <div id="div_load_change_work_sche"><div class="win_loading_half"></div></div>
+    <div class="k-edit-buttons k-state-default col-xs-11">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_Work_scdl_Change"><span class="k-icon k-update"></span>Change</button>
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_Work_scdlchng_Refresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+        <button type="reset" class="k-button k-button-icontext k-grid-cancel" id="btn_work_scdlchng_Cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+<script>
+    var initialid = '@(ViewBag.id)';
+    $(document).ready(function () {
+        $("#div_load_change_work_sche").load('@Url.Action("_ChangeWorkingSchedule", "HumanResource")?id=' + initialid);
+        $("#btn_Work_scdl_Change").prop('disabled', true);
+    });
+    $("#btn_work_scdlchng_Cancel").click(function (e) {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#btn_Work_scdlchng_Refresh").click(function (e) {
+        $("#div_load_change_work_sche").empty();
+        $("#div_load_change_work_sche").append('<div class="win_loading_half"></div>');
+        $("#div_load_change_work_sche").load('@Url.Action("_ChangeWorkingSchedule", "HumanResource")?id=' + initialid);
+        $("#btn_Work_scdl_Change").prop('disabled', true);
+    });
+    $("#btn_Work_scdl_Change").click(function () {
+        notification.show({ message: "Assigning Working Schedule...", showTime: startTime() }, "upload-progress");
+        var senddata = {
+            WorkingScheduleId: $("#Working_ScheduleId").val(),
+            UserId: EmpId,
+            AssignedBy: userId
+        };
+        $.ajax({
+            url: '@Url.Action("ChangeWorkingScheduleWithUser", "HumanResource")',
+            type: 'Post',
+            data: senddata,
+            success: function (data) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                if (data !== "Error") {
+                    notification.show({ message: "Working Schedule has been successfully assigned.", showTime: startTime() }, "upload-success");
+                    work_schedule = senddata.WorkingScheduleId;
+                    $("#btn_Work_scdl_Change").closest(".k-window-content").data("kendoWindow").close();
+                    $("#tab1workscdl").empty();
+                    $("#tab1workscdl").append('<div class="loading_partial"></div>');
+                    $("#tab1workscdl").load('@Url.Action("SelectedSchedule", "HumanResource")?id=' + $("#Working_ScheduleId").val() + '&reason=edit&UserId=' + EmpId + "&view=display");
+                } else {
+                    notification.show({ message: "Working Schedule assign was unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+            },
+            error: function (error) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+            }
+        });
+    })
+</script>

@@ -1,0 +1,129 @@
+﻿@model IEnumerable<FactoryManagement.Models.View_BusinessOrder_File>
+@{
+    int count1 = 1;
+    int count2 = 1;
+    bool? isPrint = ViewBag.IsPrint;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<link href="~/Content/horizontal-timeline/css/reset.css" rel="stylesheet" />
+<link href="~/Content/horizontal-timeline/css/style.css" rel="stylesheet" />
+@if (Model.Count() > 0)
+{
+    <section class="cd-horizontal-timeline" style="margin:20px !important;">
+        <div class="events-content">
+            <ol>
+                @foreach (var file in Model)
+                {
+                    bool multiple_File = false;
+                    var date2 = Convert.ToDateTime(file.CreatedDate).ToString("dd MMM");
+                    string s = file.FileOriginalName;
+                    int idx = s.LastIndexOf('.');
+                    string fileName = s.Substring(0, idx);
+                    string extension = s.Substring(idx);
+                    string FileType = (file.FileType == 1) ? "Specification" : (file.FileType == 2) ? "Negotiation" : "Finance";
+
+                    if (db.View_BusinessOrder_File.Where(m => m.CreatedDateName == file.CreatedDateName).Count() > 1)
+                    {
+                        multiple_File = true;
+                    }
+                    if (count2 == 1)
+                    {
+                        if (multiple_File)
+                        {
+                            var list = db.View_BusinessOrder_File.Where(m => m.CreatedDateName == file.CreatedDateName && m.BusinessOrderId == file.BusinessOrderId).ToList();
+                            <li class="selected" data-date="@file.CreatedDateName">
+                                @foreach (var l in list)
+                                {
+                                    string ss = l.FileOriginalName;
+                                    int idxs = ss.LastIndexOf('.');
+                                    string fileNames = ss.Substring(0, idxs);
+                                    string extensions = ss.Substring(idxs);
+                                    string FileTypes = (l.FileType == 1) ? "Specification" : (file.FileType == 2) ? "Negotiation" : "Finance";
+
+                                    <div class="col-xs-3">
+                                        <h2>File Name : @fileNames</h2>
+                                        <p>File Type: @FileTypes</p>
+                                        <p>File Sendby : @l.FileSend</p>
+                                        <p>Date: @Convert.ToDateTime(l.CreatedDate).ToString("MMMM dd , yyyy")</p>
+                                    </div>
+                                }
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="selected" data-date="@file.CreatedDateName">
+                                <h2>File Name : @fileName</h2>
+                                <p>File Type: @FileType</p>
+                                <p>File Sendby : @file.FileSend</p>
+                                <p>Date: @Convert.ToDateTime(file.CreatedDate).ToString("MMMM dd , yyyy")</p>
+                            </li>
+                        }
+
+                    }
+                    else
+                    {
+                        if (multiple_File)
+                        {
+                            var list = db.View_BusinessOrder_File.Where(m => m.CreatedDateName == file.CreatedDateName && m.BusinessOrderId == file.BusinessOrderId).ToList();
+                            <li data-date="@file.CreatedDateName">
+                                @foreach (var l in list)
+                                {
+                                    string ss = l.FileOriginalName;
+                                    int idxs = ss.LastIndexOf('.');
+                                    string fileNames = ss.Substring(0, idxs);
+                                    string extensions = ss.Substring(idxs);
+                                    string FileTypes = (l.FileType == 1) ? "Specification" : (file.FileType == 2) ? "Negotiation" : "Finance";
+
+                                    <div class="col-xs-3">
+                                        <h2>File Name : @fileNames</h2>
+                                        <p>File Type: @FileTypes</p>
+                                        <p>File Sendby : @l.FileSend</p>
+                                        <p>Date: @Convert.ToDateTime(l.CreatedDate).ToString("MMMM dd , yyyy")</p>
+                                    </div>
+                                }
+                            </li>
+                        }
+                        else
+                        {
+                            <li data-date="@file.CreatedDateName">
+                                <h2>File Name : @fileName</h2>
+                                <p>File Type: @FileType</p>
+                                <p>File Sendby : @file.FileSend</p>
+                                <p>Date: @Convert.ToDateTime(file.CreatedDate).ToString("MMMM dd , yyyy")</p>
+                            </li>
+                        }
+
+                    }
+                    count2++;
+                }
+            </ol>
+        </div>
+        <div class="timeline">
+              <div class="events-wrapper">
+                    <div class="events">
+                        <ol>
+                            @foreach (var file in Model)
+                            {
+                                var date2 = Convert.ToDateTime(file.CreatedDate).ToString("dd MMM");
+                                if (count1 == 1)
+                                {
+                            <li><a href="#0" data-date="@file.CreatedDateName" class="selected">@date2</a></li>}
+                                else
+                                {
+                            <li><a href="#0" data-date="@file.CreatedDateName">@date2</a></li>}
+                                count1++;
+                            }
+                        </ol>
+                        <span class="filling-line" aria-hidden="true"></span>
+                    </div>
+                </div>
+            
+            <ul class="cd-timeline-navigation">
+                <li><a href="#0" class="prev inactive">Prev</a></li>
+                <li><a href="#0" class="next">Next</a></li>
+            </ul>
+        </div>
+
+    </section>
+}
+<script src="~/Content/horizontal-timeline/js/main.js"></script>

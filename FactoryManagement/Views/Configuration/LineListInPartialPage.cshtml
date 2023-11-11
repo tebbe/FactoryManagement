@@ -1,0 +1,19 @@
+﻿
+
+
+
+@******************************** Created By (Jerin Jahan) Date (16.07.2016) *******************************@
+<div id="treeViewForLine" class="tvCustomClass"></div>
+<script>
+    $(document).ready(function () {
+        var deptId = '@(ViewBag.deptId)';
+        var urlRyt = '/Configuration/GetAllLine?deptId=' + deptId;
+        $.getJSON(urlRyt, function (data) {
+            $("#treeViewForLine").kendoTreeView({
+                template: kendo.template($("#templateForRight").html()),
+                dataSource: data,
+                dragAndDrop: true
+            }).data("kendoTreeView");
+        });
+    });
+</script>

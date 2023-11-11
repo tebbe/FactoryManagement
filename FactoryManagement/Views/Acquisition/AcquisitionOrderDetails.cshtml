@@ -1,0 +1,268 @@
+﻿
+
+
+@{
+    ViewBag.Title = "Acquisition Order Details";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<h2>@ViewBag.Title</h2><hr />
+
+@model FactoryManagement.ModelView.Acquisition.AcquisitionViewModel
+<style>
+    #tbl_Acq_Pro_List td{
+        border:none!important;
+    }
+    #tbl_Acq_Pro_List th{
+        border-right:none!important;
+        border-left:none!important;
+    }
+</style>
+<div class="row">
+    <dl class="dl-horizontal col-md-12 col-sm-12">
+        <dt>Order Name :</dt>
+        <dd>@Model.Name</dd>
+
+        <dt>Order Status :</dt>
+        <dd>@Model.Status</dd>
+
+        <dt>Order Type :</dt>
+        @if (Model.AcquisitionType == 1)
+        {
+            <dd>Acquisition For Inventory</dd>
+        }
+        else if (Model.AcquisitionType == 2)
+        {
+            <dd>Acquisition For Business Order</dd>
+        }
+        else
+        {
+            <dd>Acquisition For Spare Parts</dd>
+        }
+        
+    </dl>
+    <h4>Product Lists</h4>
+    <h6>
+        <span>
+            <a href="/Acquisition/Acquisition?AcquisitionOrderId=@Model.AcquisitionOrderId"
+               style="text-decoration: none !important;" class="k-button">
+                <span class="k-icon k-i-plus" style="margin-right: .3rem;"></span>Add Item
+            </a>
+        </span>
+    </h6>
+</div>
+@if (db.Acquisitions.Where(m => m.AcquisitionOrderId == Model.AcquisitionOrderId).Any())
+{
+    <div class="row" id="Div_Partial_load"><div class="loading_partial"></div></div>
+    <script>
+        $("#Div_Partial_load").load('@Url.Action("_AllAcquistionProList", "Acquisition")?AcquisitionOrderId='+@Model.AcquisitionOrderId+'&type='+'@(Model.AcquisitionType)');
+    </script>
+}
+<div class="row">
+    <div style="float:right;text-align:right;"> 
+        <a href="/Acquisition/AcquisitionOrderList" style="text-decoration: none !important;" class="k-button"><span>Back to Acquisition Order List</span></a>
+    </div>
+</div>
+<script id="temp_win_rsrv_cunt" type="text/x-kendo-template">
+    <div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;" id="DivForSpecificationFileUpload">
+        <div class="editor-label" style="float:left;padding-left:0px;"><label>Enter Quantity</label></div>
+        <div class="editor-field" style="float:left;">
+            <div class="col-sm-11 col-xs-11" style="padding-right:0px;">
+                <input class=" k-textbox text-box single-line k-invalid"
+                       id="txt_Tem_Quantity"
+                       name="txt_Tem_Quantity"
+                       onkeypress="return isNumber(event)"
+                       type="text" value="" aria-invalid="true">
+                <span id="temp_unitname">#=data#</span>
+            </div>
+        </div>
+        <div class="k-edit-buttons k-state-default col-xs-11">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_temp_Ok"><span class="k-icon k-update"></span>Save</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_tmp_Cancel"><span class="k-icon k-i-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+@(Html.Kendo().Window()
+       .Name("Aqc_Order_Details")
+       .Visible(false)
+       .Modal(true)
+       .Draggable(true)
+)
+<script>
+    var required_Quantity = 0;
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $('#liForInventory > ul > #liForStore').addClass('open');
+        $('#liForInventory > ul > #liForStore >ul:first').show();
+        $("#liForAllAcquisitionList").addClass('sublistActive');
+    });
+    function isNumber(e) {
+        e = (e) ? e : window.event;
+        var charCode = (e.which) ? e.which : e.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+        return true;
+    }
+
+    //****************************** SHOW DETAILS OF PRODUCT ****************************
+    $("#Div_Partial_load").on("click", ".btn_Details", function (e) {
+        var id = $(this).data("id");
+        var window = $("#Aqc_Order_Details").data("kendoWindow");
+        window.setOptions({
+            width: '80%',
+            title: 'Product Details.'
+        });
+        window.refresh({
+            url: "/Acquisition/AcqusiProductDetails?AcqId=" + id
+        });
+        window.open();
+        window.center();
+    });
+
+
+
+    //****************************** DELETE PRODUCT FROM ORDER ****************************
+    $("#Div_Partial_load").on("click", ".btnAcqDelete", function (e) {
+        var acquisitionid = $(this).data("id");
+        var acquisitionorderid = $(this).data("orderid");
+        var msg = "", hasChild = true;
+
+        $.ajax({
+            url: '@Url.Action("CheckAcqProductCount", "Acquisition")',
+            type: 'Post',
+            data: { AcquisitionOrderId: acquisitionorderid },
+            success: function (count) {
+                if (count == 1) {
+                    msg = 'Are you sure want to delete this product from Acquisition order?If you delete this product from order then order will be deleted.';
+                    hasChild = false;
+                }
+                else {
+                    msg = 'Are you sure want to delete this product from Acquisition order?';
+                    hasChild = true;
+                }
+                if (confirm(msg)) {
+                    e.preventDefault();
+                    notification.show({ message: "Deleting Product...", showTime: startTime() }, "upload-progress");
+
+                    $.ajax({
+                        url: '@Url.Action("DeleteAcq", "Acquisition")',
+                        type: 'Post',
+                        data: { Id: acquisitionid, UserId: userId, OrderName: '@Model.Name', BusiId: '@(Model.BusinessOrderId)' },
+                        success: function (data) {
+                            notification.hide();
+                            notification.setOptions({ autoHideAfter: 2000 });
+                            if (data === "Success") {
+                                notification.show({ message: "Product successfully deleted", showTime: startTime() }, "upload-success");
+                                $("#Div_Partial_load").hide();
+                                if (hasChild) {
+                                    $("#Div_Partial_load").append('<div class="loading_partial"></div>');
+                                    $("#Div_Partial_load").show();
+                                    $("#Div_Partial_load").load('@Url.Action("_AllAcquistionProList", "Acquisition")?AcquisitionOrderId=' +@Model.AcquisitionOrderId +'&type=' + '@(Model.AcquisitionType)');
+                                } else {
+                                    location.href = '@Url.Action("AcquisitionOrderList", "Acquisition")';
+                                }
+                            } else {
+                                notification.show({ message: "Product deletion unsuccessful", showTime: startTime() }, "upload-error");
+                            }
+                        }
+                    });
+                }
+            }
+        });
+
+    });
+
+
+    //************************************************* ASSIGN INVENTORY ITEM WITH BUSINESS ORDER *****************************************************
+
+    $("#Div_Partial_load").on("click", ".btnAssignProduct", function (e) {
+        if (confirm('Are you sure want to assign this item?')) {
+            e.preventDefault();
+
+            var type = $(this).data("type");
+            var id = $(this).data("id");
+            required_Quantity = $(this).data('quantity');
+            var data = $(this).data('unitname');
+            var proName = $(this).data('name');
+
+            var kendoWindow = $("<div />").kendoWindow({
+                actions: ["Close"],
+                title: "Number of Quantity",
+                resizable: false,
+                width: "60%",
+                modal: true
+            });
+            var errmsg = "*";
+            var template = kendo.template($("#temp_win_rsrv_cunt").html());
+            kendoWindow.data("kendoWindow").content(template(data)).center().open();
+
+            kendoWindow.find("#btn_temp_Ok").click(function () {
+                var validattion = $("#txt_Tem_Quantity").kendoValidator({
+                    rules: {
+                        quantity: function (input) {
+                            if (input.is("[name=txt_Tem_Quantity]")) {
+                                if ($("#txt_Tem_Quantity").val() === '') {
+                                    errmsg = "*";
+                                    return false;
+                                }
+                                if (parseInt($("#txt_Tem_Quantity").val()) > parseInt(required_Quantity)) {
+                                    errmsg = "Quantity cann't be greater than " + required_Quantity;
+                                    return false;
+                                }
+                                if ($("#txt_Tem_Quantity").val() !== '' && parseInt($("#txt_Tem_Quantity").val()) < 1) {
+                                    errmsg = "Invalid";
+                                    return false;
+                                }
+                                return true;
+                            }
+                            return true;
+                        }
+                    },
+                    messages: {
+                        quantity: errmsg
+                    }
+                }).data("kendoValidator");
+
+                if (validattion.validate()) {
+                    kendoWindow.data("kendoWindow").close();
+                    notification.show({ message: "Assigning inventory item....", showTime: startTime() }, "upload-progress");
+                    $.ajax({
+                        url: '@Url.Action("AssingInvenSingleItem", "Acquisition")',
+                        type: 'Post',
+                        data: { Id: id, UserId: userId, quantity: $("#txt_Tem_Quantity").val() },
+                        success: function (data) {
+                            notification.hide();
+                            notification.setOptions({ autoHideAfter: 2000 });
+
+                            if (data === "Success") {
+                                notification.show({ message: proName+ " successfully assigned.", showTime: startTime() }, "upload-success");
+                                $("#Div_Partial_load").hide();
+                                $("#Div_Partial_load").append('<div class="loading_partial"></div>');
+                                $("#Div_Partial_load").show();
+                                $("#Div_Partial_load").load('@Url.Action("_AllAcquistionProList", "Acquisition")?AcquisitionOrderId=' +@Model.AcquisitionOrderId+'&type='+'@(Model.AcquisitionType)');
+                            }
+                            else {
+                                notification.show({ message: "Acquisition order approve attempt unsuccessful", showTime: startTime() }, "upload-error");
+                            }
+                        }
+                    });
+                }
+            }).end()
+
+            kendoWindow.find("#btn_tmp_Cancel").click(function () {
+                kendoWindow.data("kendoWindow").close();
+            }).end()
+        }
+    });
+
+    //**************************************** PRODUCT  EDIT FUNCTION *************************************
+    $("#Div_Partial_load").on("click", ".btnForEditProduct", function (e) {
+        if (confirm('Are you sure want to assign this item?')) {
+            e.preventDefault();
+
+        }
+    });
+
+
+</script>

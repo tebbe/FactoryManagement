@@ -1,0 +1,15 @@
+﻿
+
+<div id="div_for_User_document_upload"></div>
+
+<script>
+    $(document).ready(function () {
+        $("#div_for_User_document_upload").append('<div class="partial_loading_half"></div>');
+        $("#div_for_User_document_upload").load('@Url.Action("UploadDoucuments", "HumanResource")');
+    });
+    $("#div_for_User_document_upload").on("click", "#btnDocumentUploadRefresh", function () {
+        $("#div_for_User_document_upload").empty();
+        $("#div_for_User_document_upload").append('<div class="partial_loading_half"></div>');
+        $("#div_for_User_document_upload").load('@Url.Action("UploadDoucuments", "HumanResource")');
+    });
+</script>

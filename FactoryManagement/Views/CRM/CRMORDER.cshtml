@@ -1,0 +1,113 @@
+﻿
+
+
+@******************************** Created By Jerin Jahan (Date:31.08.2016) *********************************@
+@{
+    ViewBag.Title = "Business Order";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+
+<h2>Business Order</h2><hr />
+@(Html.Kendo().Window()
+       .Name("WinForDirectOrd")
+       .Visible(false)
+       .Modal(true)
+       .Draggable(true)
+)
+
+<div class="row">
+    <div id="Div_Load_Appvd_Order" style="display:none;"><div class="loading_half"></div></div>
+    <div id="Div_Load_Order_Create" style="display:none;"></div>
+    <div id="Div_Sup_ord_list" style="display:none;"><div class="loading_half"></div></div>
+    <div id="Div_Sup_aprvd_ord_list" style="display:none;"><div class="loading_half"></div></div>
+
+    @if (db.View_All_Approved_AcquisitionList.Where(m => m.OrderStatus == 0).Any())
+    {
+        <script>
+            $('#Div_Load_Appvd_Order').show();
+            $('#Div_Load_Appvd_Order').load('@Url.Action("AllApprovedOrderList", "CRM")?order=false');
+        </script>
+    }
+    @if (db.BusinessOrderLists.Where(m => m.OrderType == 2 && m.OrderStatus == 0).Any())
+    {
+        <script>
+            $('#Div_Sup_ord_list').show();
+            $('#Div_Sup_ord_list').load('@Url.Action("AllBusinessOrderForsupplier", "CRM")?status=0');
+        </script>
+    }
+    @if (db.BusinessOrderLists.Where(m => m.OrderType == 2 && m.OrderStatus == 1).Any())
+    {
+        <script>
+            $('#Div_Sup_aprvd_ord_list').show();
+            $('#Div_Sup_aprvd_ord_list').load('@Url.Action("AllBusinessOrderForsupplier", "CRM")?status=1');
+        </script>
+    }
+</div>
+<script>
+    var selectedId = [], current = '', previous;
+    var quantity = [];
+    $(document).ready(function () {
+        $("#liForCRM").addClass('active');
+        $("#liForCRMAcquisitionList").addClass('sublistActive');
+    });
+    function isNumber(e,v) {
+        e = (e) ? e : window.event;
+        var charCode = (e.which) ? e.which : e.keyCode;
+        var afterDot = v.substr(v.indexOf(".") + 1);
+        if (charCode > 31 && (charCode < 46 || charCode > 57 || charCode == 47)) {
+            return false;
+        }
+        if (v.indexOf('.') > -1 && charCode == 46) {
+            return false;
+        }
+        if (v.indexOf('.') > -1 && afterDot.length == 2) {
+            return false;
+        }
+        return true;
+    }
+    function showTotalCount(v) {
+        alert(v);
+    }
+    function onClientSelect(e) {
+        previous = this._savedOld;
+        current = this.value();
+        var diff = [];
+        if (previous) {
+            diff = $(previous).not(current).get();
+        }
+        this._savedOld = current.slice(0);
+        if (diff.length > 0) {
+            $("#div_user_" + diff).remove();
+        } else {
+            var dataItem = this.dataSource.view()[e.item.index()];
+        }
+    };
+    function onClientSelectChange(e) {
+        previous = this._savedOld;
+        current = this.value();
+        var diff = [];
+        if (previous) {
+            diff = $(previous).not(current).get();
+        }
+        this._savedOld = current.slice(0);
+    }
+    $("#btn_Buyer_Order_Create").click(function () {
+        $('#Div_Load_Appvd_Order').hide();
+        $('#Div_Load_Order_Create').append('<div class="loading_half"></div>');
+        $('#Div_Load_Order_Create').show();
+        $('#Div_Load_Order_Create').load('@Url.Action("BusinessOrderCreate", "CRM")?OrderType=1');
+        $('#Div_Load_Order_Create').show();
+        $('#btn_Buyer_Order_Create').hide();
+    });
+    $("#Div_Load_Order_Create").on("click", "#btnBusinessOrderCancel", function () {
+        $('#Div_Load_Order_Create').hide();
+        $('#Div_Load_Order_Create').empty();
+        $('#Div_Load_Order_Create').append('<div class="loading_half"></div>');
+        $("#btn_Buyer_Order_Create").show();
+        $('#Div_Load_Appvd_Order').empty();
+        $('#Div_Load_Appvd_Order').append('<div class="loading_half"></div>');
+        $('#Div_Load_Appvd_Order').show();
+        $('#Div_Load_Appvd_Order').load('@Url.Action("AllApprovedOrderList", "CRM")');
+    });
+</script>

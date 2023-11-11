@@ -1,0 +1,61 @@
+﻿
+
+@******************** Created By Jerin Jahan(Date:31.01.2017) **************************@
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;">
+    <div id="div_load_change_holiday_pck"><div class="win_loading_half"></div></div>
+    <div class="k-edit-buttons k-state-default col-xs-11">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_holy_pck_change"><span class="k-icon k-update"></span>Change</button>
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_holy_pckchng_Refresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+        <button type="reset" class="k-button k-button-icontext k-grid-cancel" id="btn_pack_chang_Cancle"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+
+<script>
+    var selectedholiId = '@(ViewBag.packId)';
+    $(document).ready(function () {
+        $("#div_load_change_holiday_pck").load('@Url.Action("_ChangeHolidayPack", "Holiday")?packId=' + selectedholiId);
+        $("#btn_holy_pck_change").prop('disabled', true);
+    });
+    $("#btn_holy_pckchng_Refresh").click(function (e) {
+        $("#div_load_change_holiday_pck").empty();
+        $("#div_load_change_holiday_pck").append('<div class="partial_loading_half"></div>');
+        $("#div_load_change_holiday_pck").load('@Url.Action("_ChangeHolidayPack", "Holiday")?packId=' + selectedholiId);
+        $("#btn_holy_pck_change").prop('disabled', true);
+    });
+    $("#btn_pack_chang_Cancle").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#btn_holy_pck_change").click(function () {
+        notification.show({ message: "Assigning holiday package...", showTime: startTime() }, "upload-progress");
+        var senddata = {
+            HolidayPackId: $("#HolidayPackId").val(),
+            UserId: EmpId,
+            AssignedBy: userId
+        };
+        $.ajax({
+            url: '@Url.Action("ChangeHolidayPackWithUser", "Holiday")',
+            type: 'Post',
+            data: senddata,
+            success: function (data) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                if (data !== "Error") {
+                    holidayPack = senddata.HolidayPackId;
+                    notification.show({ message: "Previous holiday package has been successfully changed.", showTime: startTime() }, "upload-success");
+                    var LoadAgain = { id: $("#HolidayPackId").val(), view: "partial", UserId: EmpId };
+                    $("#btn_holy_pck_change").closest(".k-window-content").data("kendoWindow").close();
+                    $("#tab1holyPck").append('<div class="loading_half"></div>');
+                    $("#tab1holyPck").load('@Url.Action("_HolidayPackInfo", "Holiday")', LoadAgain);
+                } else {
+                    notification.show({ message: "Previous Holiday package Change was unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+            },
+            error: function (error) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+            }
+        });
+    });
+ 
+  
+  
+</script>

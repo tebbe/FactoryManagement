@@ -1,0 +1,105 @@
+﻿
+
+
+@************************************** Created By Jerin Jahan (Date:27.12.2016)  ***************************************@
+
+@model FactoryManagement.ModelView.Inventory.MachineTypeModelView
+
+@using (Html.BeginForm())
+{
+    @Html.HiddenFor(m => m.CreatedBy)
+    @Html.HiddenFor(m => m.AllSpareParts)
+    @Html.HiddenFor(m => m.AllPerishableId)
+    @Html.HiddenFor(m => m.AllRepDate)
+    @Html.HiddenFor(m => m.AllPartsSame)
+    
+    <div class="k-edit-form-container col-md-10 col-sm-10 col-xs-10" id="Div_Machine_Edit" style="margin-bottom:4%;">
+        <div class="editor-label"><label for="MachineType">Machine Type</label></div>
+        <div class="editor-field">
+            @(Html.Kendo().DropDownListFor(model => model.MachineType)  
+            .OptionLabel("--Select One Type--") 
+            .BindTo(ViewBag.MachineType)     
+            .HtmlAttributes(new { style = "width:100%" })
+            )
+            @Html.ValidationMessageFor(model => model.MachineType, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="editor-label"><label for="Acroynm">Acroynm</label></div>
+        <div class="editor-field" style="margin-top:3px;">
+            <label for="Acroynm">@Model.Acroynm</label>
+        </div>
+
+        <div class="editor-label"><label for="ModelName">ModelName</label></div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.ModelName, new { htmlAttributes = new { @class = "k-textbox" } })
+            @Html.ValidationMessageFor(model => model.ModelName, "", new { @class = "text-danger" })
+        </div>
+
+
+        <div class="editor-label"><label for="BrandId">Brand Name</label></div>
+        <div class="editor-field">
+            @(Html.Kendo().DropDownListFor(model => model.BrandId)
+                            .OptionLabel("--Select One Type--")
+                            .BindTo(ViewBag.BrandId)
+                            .HtmlAttributes(new { style = "width:100%" })
+            )
+            @Html.ValidationMessageFor(model => model.BrandId, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="editor-label"><label >Mgf. Year</label></div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.Mgf, new { htmlAttributes = new { @class = "k-textbox" } })
+            @Html.ValidationMessageFor(model => model.Mgf, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="editor-label"><label for="CountryOfOrigin">Country Of Origin</label></div>
+        <div class="editor-field">
+            @(Html.Kendo().DropDownListFor(model => model.CountryOfOrigin)
+                            .OptionLabel("--Select One Country--")
+                            .BindTo(ViewBag.CountryId)
+                            .HtmlAttributes(new { style = "width:100%" })
+            )
+            @Html.ValidationMessageFor(model => model.CountryOfOrigin, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="col-sm-11 col-xs-11">
+            <div class="k-edit-buttons k-state-default">
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_machine_edit"><span class="k-icon k-update"></span>Update</button>
+                <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_machine_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+            </div>
+        </div>
+    </div>
+}
+<script>
+    $("#btn_machine_cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#btn_machine_edit").click(function () {
+        var validation = $("#Div_Machine_Edit").kendoValidator().data("kendoValidator");
+        if (validation.validate()) {
+            notification.show({ message: "Updating machine information....", showTime: startTime() }, "upload-progress");
+            var sendData = {
+                Id:'@(Model.Id)',
+                MachineType: $("#MachineType").val(),
+                Name: $("#Name").val(),
+                Acroynm: $("#Acroynm").val(), ModelName: $("#ModelName").val(),
+                BrandId: $("#BrandId").val(), CountryOfOrigin: $("#CountryOfOrigin").val(),
+                CreatedBy: userId
+            };
+            $.ajax({
+                url: '@Url.Action("UpdateMachineType", "Inventory")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === "Error") {
+                        notification.show({ message: "Machine type info update was unsuccessful.", showTime: startTime() }, "upload-error");
+                    } else {
+                        notification.show({ message: "Machine type has been successfully updated. ", showTime: startTime() }, "upload-success");
+                        location.reload();
+                    }
+                }
+            });
+        }
+    });
+</script>

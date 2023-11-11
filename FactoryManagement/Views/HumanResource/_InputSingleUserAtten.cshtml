@@ -1,0 +1,118 @@
+﻿
+
+
+@******************** Created By Jerin Jahan(Date:10.12.2016) **************************@
+
+@model FactoryManagement.Models.Attendance
+<h4>Manually Enter User Attendance</h4>
+
+@using (Html.BeginForm())
+{
+    @Html.HiddenFor(m => m.InsertedBy)
+    @Html.HiddenFor(m => m.UserId)
+    <div class="form-horizontal col-md-12 col-sm-12 col-xs-12" id="Div_Single_User_Attend">
+        <hr />
+        <div class="form-group">
+            <label class="control-label col-md-2 col-sm-3" for="InsertedDate">Date & Time</label>
+            <div class="col-md-3 col-sm-4">
+                @(Html.Kendo().DateTimePicker()
+                .Name("EntryDate")
+                .Value(DateTime.Now)
+                .HtmlAttributes(new { style = "width:100%;" })
+                )
+                <span class="field-validation-valid text-danger" data-valmsg-for="EntryDate" data-valmsg-replace="true"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-2 col-sm-3" for="Type">Entry Type</label>
+            <div class="col-md-3 col-sm-4">
+                @(Html.Kendo().DropDownList()
+               .Name("EntryType")
+               .DataTextField("Text")
+               .DataValueField("Value")
+               .OptionLabel("--Select One Type--")
+               .HtmlAttributes(new { style = "width:100%" })
+               .BindTo(new List<SelectListItem>() {
+                   new SelectListItem() {
+                       Text = "In",
+                       Value = "IN"
+                   },
+                   new SelectListItem() {
+                       Text = "Out",
+                       Value = "OUT"
+                   },
+               })
+                )
+                <span class="field-validation-valid text-danger" data-valmsg-for="EntryType" data-valmsg-replace="true"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10 col-sm-offset-3 col-sm-9">
+                <input type="button" value="Save" class="k-button k-state-default" id="btn_Single_User_Att_save" />
+                <input type="reset" value="Refresh" class="k-button k-state-default" id="btn_Single_User_Att_Refresh" />
+            </div>
+        </div>
+    </div>
+}
+<script>
+    $("#btn_Single_User_Att_Refresh").click(function () {
+        $("#tab2AttenInput").empty();
+        $("#tab2AttenInput").append('<div class="loading_half"></div>');
+        $("#tab2AttenInput").load('@Url.Action("_InputSingleUserAtten", "HumanResource")?UserId=' + selectedUserId);
+    });
+    $("#btn_Single_User_Att_save").click(function () {
+        var validation = $("#Div_Single_User_Attend").kendoValidator({
+            rules: {
+                EntryDate: function (input) {
+                    if (input.is("[name=EntryDate]")) {
+                        if ($("#EntryDate").val() === '') {
+                            return false;
+                        }
+                        return true;
+                    } else
+                        return true;
+                },
+                EntryType: function (input) {
+                    if (input.is("[name=EntryType]") && $("#EntryType").val() === "") {
+                        return false;
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                EntryDate: "Please enter entry date",
+                EntryType: "Please select entry type",
+            }
+        }).data("kendoValidator");
+        if (validation.validate()) {
+            notification.show({ message: "Saving attendance...", showTime: startTime() }, "upload-progress");
+            var sendData = { UserId: $("#UserId").val(), Status: $("#EntryType").val(), EntryDateTime: $("#EntryDate").val(),InsertedBy:userId };
+            $.ajax({
+                url: '@Url.Action("SingleUserAttendanceSave", "HumanResource")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    if (data != null) {
+                        if (data === 'Success') {
+                            notification.show({ message: "User attendance has been successfully saved", showTime: startTime() }, "upload-success");
+                            $("#tab1AttendanceList").empty();
+                            $("#tab1AttendanceList").append('<div class="loading_half"></div>');
+                            $("#tab1AttendanceList").load('@Url.Action("UserAllAttendList", "HumanResource")?UserId=' + selectedUserId);
+                        }
+                        else {
+                            notification.show({ message: "User attendance save was unsuccessful.", showTime: startTime() }, "upload-error");
+                        }
+                    }
+                },
+                error: function (error) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error", showTime: startTime() }, "upload-warning");
+                }
+            });
+
+        }
+    });
+</script>

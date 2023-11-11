@@ -1,0 +1,52 @@
+﻿
+
+@model FactoryManagement.ModelView.Acquisition.AcquisitionViewModel
+@{
+    var imgCount = @ViewBag.TotalAcqImg;
+}
+<h4> Sample Images </h4>
+<hr />
+
+<link href="~/Content/collagePlus/css/examples.css" rel="stylesheet" />
+<link href="~/Content/collagePlus/css/transitions.css" rel="stylesheet" />
+<script src="~/Content/collagePlus/jquery.collagePlus.js"></script>
+<script src="~/Content/collagePlus/extras/jquery.removeWhitespace.js"></script>
+<script src="~/Content/collagePlus/extras/jquery.collageCaption.js"></script>
+
+@if (imgCount > 0)
+{
+    <div class="container">
+        <div class="row Collage effect-parent">
+            @foreach (var item in ViewBag.AcqImg as IEnumerable<FactoryManagement.Models.AcquisitionImage>)
+            {
+                <div class="Image_Wrapper">
+                    <img src="~/Images/Inventory/Acquisition/Resize/@item.ImageName" style="width:80%;height:auto" />
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="form-group">
+        @Html.LabelFor(model => model.ProductImageName, "Nothing to display", htmlAttributes: new { @class = "control-label col-md-5 col-sm-5" })
+    </div>
+}
+<script>
+    $(document).ready(function () {
+        collage();
+    });
+    function collage() {
+        $("#divForLoading").hide();
+        $("#DiForImageLoad").show();
+        $('.Collage').removeWhitespace().collagePlus(
+            {
+                'fadeSpeed': 2000,
+                'targetHeight': 150,
+                'effect': 'effect-1',
+                'direction': 'vertical',
+                'allowPartialLastRow': true
+            }
+        );
+    };
+</script>

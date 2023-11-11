@@ -1,0 +1,60 @@
+﻿@model FactoryManagement.ModelView.CRM.BusinessOrderListModelView
+@{   
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<h4>Client Business Order History</h4>
+<hr />
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;">
+    <div class="col-md-10 col-sm-10" id="divForBusinessHistory">           
+            <div class="loading_partial"></div>
+    </div> 
+</div>
+<script>
+    $(document).ready(function () {
+        $("#divForBusinessHistory").load('@Url.Action("_DisplayBusinessOrder", "CRMClient")?ClientId=' + '@(Model.ClientId)');
+    });
+    $("#divForBusinessHistory").on("click", ".btn_expandProductType", function (e) {
+        e.preventDefault();
+        var typeId = $(this).data("id");
+            $(this).find('i').toggleClass('fa-plus-square-o fa-2 fa-minus-square-o fa-2');
+            if ($(this).data("isclick") == "0") {
+                $(this).data("isclick", "1");
+                $(this).attr("dataisclick", "1");
+                $.ajax({
+                    url: '@Url.Action("GetAllProductTypeForList", "CRMClient")',
+                    type: 'Post',
+                    data: { ParentId: typeId },
+                    success: function (data) {
+                        if (data) {
+                            $(".trforchild_" + typeId).empty();
+                            $(".trforchild_" + typeId).show();
+                            var crntSpan = $("#spanForName_" + typeId);
+                            var getPadValue = parseInt(crntSpan.css('padding-left'));
+                            var childCount = 1;
+                            for (var i in data) {
+                                $('<tr id ="tr_' + data[i].BusOrdId + '" class="trforchild_' + typeId + '" data-proid="' + data[i].BusOrdId + '">' +
+                                    '<td colspan="5" style="padding-left:4%;">' +
+                                    '<span class="col-xs-3">' + data[i].Spec_lbl + '</span>' +
+                                    '<span class="col-xs-3">Quantity : ' + data[i].Quantity + ' ' + data[i].UnitName + '</span>' +
+                                    '<span class="col-xs-3" style="margin-left:15px;">' + ((data[i].ProStatus == 0) ? ' ' + "Status : Not in production " + ' ' : (data[i].ProStatus == 1) ? ' ' + "Status : In production " + ' ' : (data[i].ProStatus == 2) ? ' ' + "Status : Delay " + ' ' : "Status : Complete") + '</span>' +
+                                    '</td></tr>').insertAfter("#tr_" + typeId);
+                                childCount++;
+                            }
+                        }
+                    }
+                });
+            }
+            else {
+                $(this).data("isclick", "0");
+                $(this).attr("dataisclick", "0");
+                $(".trforchild_" + typeId).each(function () {
+                    var id = $(this).data("proid");
+                    var haschild = $(this).data("prochild");
+                    if (haschild == "True") {
+                        childremove(id);
+                    }
+                });
+            $(".trforchild_" + typeId).remove();
+         }
+    });
+</script>

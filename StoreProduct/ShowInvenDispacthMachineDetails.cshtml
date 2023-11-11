@@ -1,0 +1,51 @@
+﻿
+
+@******************************** Created By Jerin Jahan (Date: 24.01.2017) ******************************************************@
+@using FactoryManagement.Helpers
+
+@model IEnumerable<FactoryManagement.Models.View_Dispacth_Item_Details>
+@{
+    int count = 0;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+   
+}
+<div class="k-edit-form-container col-md-10 col-sm-10 col-xs-10" style="margin-bottom:4%;">
+    <table class="table table-bordered table-condensed">
+            <tr>
+                <th width="10%">#</th>
+                <th width="15%">Product Name</th>
+                <th width="15%">Return Quantity</th>
+                <th width="15%">Dispatched Date</th>
+                <th width="20%">Dispatched By</th>
+               
+            </tr>
+                    @foreach (var item in Model)
+                    {
+                        count++;
+                        <tr>
+                            <th>@count.</th>
+                            <td>@item.ProductName</td>
+                            <td>@item.ReturnQuantity</td>
+                            <td>@item.DispatchedDateName</td>
+                            <td>
+                                @if (item.DispatchedBy > 0)
+                                {
+                                    <img class="img-circle" src="/Images/UserPicture/thumb/@item.DispatchedUserPic">
+                                    @*<a href="/HumanResource/DisplayEmployeeDetails?UserId=@item.DispatchedBy&isDisplay=true">@item.DispatchedUserName</a>*@
+                                    @Html.EncodedActionLink(item.DispatchedUserName, "DisplayEmployeeDetails", "HumanResource", new { UserId = item.DispatchedBy , isDisplay = true },null)
+                                }
+                                else
+                                {
+                                    <img class="img-circle" src="/Images/UserPicture/thumb/@item.DispatchedUserPic">
+                                    <span>@item.DispatchedUserName</span>
+                                }
+                            </td>
+                         
+                        
+                            @*<td><span class="btn btn-info" data-invenid="@item.InventoryId"><i class="fa fa-info-circle"></i> Detials</span></td>*@
+              </tr>
+            }
+        </table>
+   
+</div>
+

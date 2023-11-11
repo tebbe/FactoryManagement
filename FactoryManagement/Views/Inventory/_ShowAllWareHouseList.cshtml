@@ -1,0 +1,81 @@
+﻿@******************************** Created By Mabia (Date:16.08.2016) *********************************@
+@using FactoryManagement.Helpers
+@model IEnumerable<FactoryManagement.Models.View_All_WarehouseLists>
+
+@{
+    var count = 1;
+}
+<table class="table table-hover table-bordered table-striped table-condensed">
+    <tbody>
+        <tr>
+            <th width="4%">#</th>
+            <th width="10%">Name</th>
+            <th width="10%">Acroynm</th>
+            <th width="20%">User Name</th>
+            <th width="16%">Created By</th>
+            <th width="10%">Created Date</th>
+            <th width="10%">Last Updated By</th>
+            <th width="10%">Last Updated date</th>
+            <th width="10%"></th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <th scope="row">@count.</th>
+                <td>
+                @Html.EncodedActionLink(item.WarehouseName, "WareHouse", "Inventory", new { wareid = item.Id },null)
+                </td>
+                <td>@Html.DisplayFor(modelItem => item.WarehouseAcroynm)</td>
+                <td>@Html.DisplayFor(modelItem => item.AssignUserName)</td>
+                <td>
+                    @if (item.CreatedBy > 0)
+                    {
+                        <img src="~/Images/UserPicture/thumb/@item.PictureName" class="img-circle" />
+                        
+                        @Html.EncodedActionLink(item.UserName, "DisplayEmployeeDetails", "HumanResource", new { UserId = item.CreatedBy , isDisplay = true },null)
+                    }
+                    else
+                    {
+                        <img src="~/Images/UserPicture/thumb/admin.jpg" class="img-circle" /><span>Super Admin</span>
+                    }
+                </td>
+                <td>@Html.DisplayFor(modelItem => item.CreatedDateName)</td>
+                <td>
+                    @if (item.UpdatedBy != null)
+                    {
+                        if (item.UpdatedBy > 0)
+                        {
+                            <img src="~/Images/UserPicture/thumb/@item.UpdateUserPic" class="img-circle" />
+                            
+                            @Html.EncodedActionLink(item.UpdateUsername, "DisplayEmployeeDetails", "HumanResource", new { UserId = item.UpdatedBy , isDisplay = true },null)
+                        }
+                        else
+                        {
+                            <img src="~/Images/UserPicture/thumb/admin.jpg" class="img-circle" />
+                            <span>Super Admin</span>
+                        }
+                    }
+                    else
+                    {
+                        <span>@item.UpdatedBy</span>
+                    }
+                </td>
+                <td>@item.UpdatedDateFormate</td>
+                <td class="td_btn_ware">
+
+                   @Html.EncodedActionLink("<span data-toggle=\"tooltip\" title=\"Update Warehouse\" class=\"btn green\"><i class=\"fa fa-pencil\"></i></span>", "AddNewWarehouse", "Inventory", new { Id = item.Id },null)
+                    <span data-toggle="tooltip" title="Delete Warehouse" data-id="@item.Id" data-name="@item.WarehouseName" style="cursor:pointer;" class="btn btn-danger btnWarehouseDelete"><span class="fa fa-trash"></span></span>
+                </td>
+            </tr>
+            count++;
+        }
+    </tbody>
+</table>
+<script>
+    if (userId > 0) {
+        $(".td_btn_ware").hide();
+    }
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>

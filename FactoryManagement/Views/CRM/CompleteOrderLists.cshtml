@@ -1,0 +1,40 @@
+﻿
+
+@************************************** Created By JERIN JAHAN (Date:16.11.2016)  ***************************************@
+@model IEnumerable<FactoryManagement.Models.View_Busi_Details_ForClient>
+@{
+    var count = 1;
+}
+<h4>Completed Order List</h4><hr />
+<div class="row">
+    <div class="col-xs-12">
+        <table class="table table-bordered">
+            <tr></tr>
+            <tr>
+                <th>#</th>
+                <th>Order Name</th>
+                <th>Ordered By</th>
+                <th>Created Date</th>
+            </tr>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <th scope="row">@count</th>
+                    <td>
+                        @item.OrderName
+                        @*<a href="/CRM/OrderDetails?BusinessOrderId=@item.BusinessOrderId&OrderType=@item.OrderType">
+                            @Html.DisplayFor(modelItem => item.OrderName)
+                        </a>*@
+                    </td>
+
+                    <td><a href="/CRMClient/DisplayClientInformation?Id=@item.ClientId">@Html.DisplayFor(modelItem => item.ClientName)</a></td>
+                    <td>@Convert.ToDateTime(item.CreatedDate).ToString("MMMM dd,yyyy")</td>
+                </tr>
+                count++;
+            }
+        </table>
+    </div>
+</div>
+
+
+

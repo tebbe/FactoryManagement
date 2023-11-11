@@ -1,0 +1,131 @@
+﻿@model IEnumerable<FactoryManagement.Models.Acquisition_List>
+@{
+    int count = 1;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<style>
+    #tbl_apprv_item {border: none !important;}
+    #tbl_apprv_item th {border: none !important;}
+    #tbl_apprv_item td {border: none !important;}
+</style>
+<div class="k-edit-form-container col-lg-10 col-md-10 col-sm-10 col-xs-10" style="margin-bottom:4%;" id="Div_For_Direct_Sup_Order">
+    <div class="editor-field">
+        <table class="table table-bordered" id="tbl_apprv_item">
+            @foreach (var item in Model)
+            {
+                int acqId = 0;
+                if (ViewBag.proId == null)
+                { acqId = ViewBag.Acqid; }
+                else
+                {
+                    int proid = ViewBag.proId;
+                    acqId = db.Acquisitions.Where(m => m.AcquisitionOrderId == item.AcquisitionOrderId && m.ProductId == proid).Select(m => m.AcquisitionId).FirstOrDefault();
+                }
+                var itemDetails = db.Acquisitions.Where(m => m.AcquisitionId == acqId).FirstOrDefault();
+                <tr class="tbl_tr">
+                    <td>@count . @item.Name (@itemDetails.Quantity  @ViewBag.Unitname)</td>
+                </tr>
+                count++;
+            }
+        </table>
+    </div>
+    <hr />
+
+    <div class="editor-label"><label>Store Into</label></div>
+    <div class="editor-field">
+        <div class="col-sm-11 col-xs-11" style="padding-right:0px;padding-left:0px!important">
+            @(Html.Kendo().DropDownList()
+              .Name("StoreLocation")
+              .OptionLabel("--Select One Type--")
+              .DataTextField("Text")
+              .DataValueField("Value")
+              .Events(e => e.Change("onStoreLocationChange"))
+              .BindTo(new List<SelectListItem>() {
+                  new SelectListItem() {
+                      Text = "Store",
+                      Value = "1"
+                  },
+                  new SelectListItem() {
+                      Text = "Ware-House",
+                      Value = "2"
+                  },
+                  new SelectListItem() {
+                      Text = "Order",
+                      Value = "3"
+                  }
+              })
+              .HtmlAttributes(new { style = "width: 40%" })
+            )
+        </div>
+    </div>
+
+    <div id="Div_For_Store" style="display:none;">
+        <div class="editor-label"><label>Store</label></div>
+        <div class="editor-field">
+            <div class="col-sm-11 col-xs-11" style="padding-right:0px;padding-left:0px!important">
+                @(Html.Kendo().DropDownList().Name("StoreId")
+                  .OptionLabel("--Select One Type--")
+                  .BindTo(ViewBag.StoreId)
+                  .HtmlAttributes(new { style = "width:40%" })
+                )
+            </div>
+        </div>
+    </div>
+
+    <div id="Div_For_Ware" style="display:none;">
+        <div class="editor-label"><label>Ware-House</label></div>
+        <div class="editor-field">
+            <div class="col-sm-11 col-xs-11" style="padding-right:0px;padding-left:0px!important">
+                @(Html.Kendo().DropDownList().Name("WareHouseId")
+                  .OptionLabel("--Select One Type--")
+                  .BindTo(ViewBag.WareHouseId)
+                  .HtmlAttributes(new { style = "width:40%" })
+                )
+            </div>
+        </div>
+    </div>  
+
+    @if (ViewBag.hasBusOrd)
+    {
+        <div id="Div_For_Order" style="display:none;">
+            <div class="editor-label"><label>Order</label></div>
+            <div class="editor-field">
+                <div class="col-sm-11 col-xs-11" style="padding-right:0px;padding-left:0px!important">
+                    @(Html.Kendo().DropDownList().Name("BusiId")
+                      .OptionLabel("--Select One Type--")
+                      .BindTo(ViewBag.BusiId)
+                      .HtmlAttributes(new { style = "width:40%" })
+                    )
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="editor-label"><label>Quantity</label></div>
+    <div class="editor-field">
+        <div class="col-sm-11 col-xs-11" style="padding-right:0px;padding-left:0px!important">
+            <input class="k-textbox text-box single-line k-invalid" 
+                   id="txt_Tem_Quantity" 
+                   name="txt_Tem_Quantity" 
+                   onkeypress="return isNumber(event)" 
+                   type="text" value="" 
+                   aria-invalid="true">
+            <span>@ViewBag.Unitname</span>
+        </div>
+    </div>
+    <div class="k-edit-buttons k-state-default col-xs-11">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_item_store"><span class="k-icon k-update"></span>Store</button>
+        <button type="reset" class="k-button k-button-icontext k-grid-cancel" id="btn_item_store_Cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+<script>
+    var storeId = 0, wareId = 0, orderId = 0,locationtype= 0;
+    $("#btn_item_store").click(function () {
+        alert(storeId);
+        alert(wareId);
+        alert(orderId);
+    });
+    $("#btn_item_store_Cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

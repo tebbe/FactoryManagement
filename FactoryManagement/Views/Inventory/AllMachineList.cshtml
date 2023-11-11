@@ -1,0 +1,266 @@
+﻿
+
+
+@******************************** Created By Jerin Jahan (Date:28.07.2016) *********************************@
+@using FactoryManagement.Helpers
+@model IEnumerable<FactoryManagement.Models.Machine>
+
+@{
+    ViewBag.Title = "ShowAllMachineList";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    
+}
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-building"></i>
+            <a href="/Home/EquipDash">Equipments</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Inventory/AllMachineList">All Machine List</a>
+        </li>
+    </ul>
+</div>
+<p><a data-toggle="tooltip" title="Add New Machine" class="btn green" href="/Inventory/MachineTypeCreate"><i class="fa fa-plus"> </i> Add New Machine</a></p>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">All Machine List</span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div style="margin-bottom:15px;">
+
+                    @(Html.Kendo().MultiSelect()
+                                      .Name("multiselectSearch")
+                                      .DataTextField("Acroynm")
+                                      .DataValueField("Id")
+                                      .Placeholder("Start typing name")
+                                      .Events(e => e.Change("onSearchChange"))
+                                      .AutoClose(false)
+                                      .DataSource(source =>
+                                      {
+                                          source.Read(read =>
+                                          {
+                                              read.Action("SearchingMachineByName", "Inventory");
+
+                                          });
+                                          source.ServerFiltering(false);
+                                      })
+                    )
+                    <span class="k-icon k-i-search" style="margin-top:-27px;margin-right:10px;float:right;">&nbsp;</span>
+                </div>
+                <div id="divForAll_Machine"><div class="loading_partial"></div></div>
+                @if (db.Machines.Any())
+                {
+                <script>
+                $("#divForAll_Machine").load('@Url.Action("_AllMachineList", "Inventory")');
+                </script>
+                }
+                else
+                {
+                <p>There is no records to show...</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<div id="win_machine_edit"></div>
+<div id="win_add_equip"></div>
+
+<script id="temp_for_confirmation" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px"> #=message# </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_confirm_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_confirm_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script id="temp_for_alert" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px"> #=msg# </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_alert_ok"><span class="k-icon k-update"></span>OK</button>
+        </div>
+    </div>
+</script>
+<script>
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $("#liForEquipments").addClass('sublistActive');
+    });
+    function onSearchChange() {
+        var id = this.value();        
+            $("#divForAll_Machine").load('@Url.Action("_AllMachineList", "Inventory")?search=' + id);
+    }
+   
+    //**************************** Edit Machine *************************************************************
+
+    $("#divForAll_Machine").on("click", ".btn_Edit_Machine", function () {
+        var id = $(this).data("id");
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        message = "Are you sure want to edit this machine?";
+        var template = kendo.template($("#temp_for_confirmation").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+
+        kendoWindow.find("#btn_confirm_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_confirm_ok").click(function () {
+            $("#win_machine_edit").empty();
+            $("#win_machine_edit").kendoWindow({
+                actions: ["Close"],
+                draggable: false,
+                modal: true,
+                visible: false,
+                width: '50%',
+                height: '40%',
+                title: 'Edit Machine',
+                close: onWindowClose
+            });
+            $("#win_machine_edit").html('<div class="win_loading_half"></div>');
+            var win_machine_edit = $("#win_machine_edit").data("kendoWindow");
+            win_machine_edit.refresh({ url: "/Inventory/_EditMachine?Id=" + id });
+            win_machine_edit.center().open();
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+    });
+    //************************** Remove Machine *************************************************************
+    $("#divForAll_Machine").on("click", ".btn_Remv_Machine", function () {
+        var id = $(this).data("id");
+        var name = $(this).data("name");
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        message = "Are you sure want to delete this machine?It may occur problem in your system.";
+        var template = kendo.template($("#temp_for_confirmation").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        kendoWindow.find("#btn_confirm_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_confirm_ok").click(function () {
+            deleteMachine(id, name);
+        }).end();
+    });
+   
+    function deleteMachine(id, name) {
+        $.ajax({
+            url: '@Url.Action("checkMachineTypeUsed", "Inventory")',
+            type: 'Post',
+            data: { id: id },
+            success: function (data) {
+                if (data) {
+                    var kendoWindow = $("<div />").kendoWindow({
+                        actions: ["Close"],
+                        title: "Alert",
+                        resizable: false,
+                        width: "30%",
+                        modal: true
+                    });
+                    msg = "Machine '" + name + "' can not be deleted because it is in use.";
+                    var template = kendo.template($("#temp_for_alert").html());
+                    kendoWindow.data("kendoWindow").content(template).center().open();
+                    kendoWindow.find("#btn_alert_ok").click(function () {
+                        kendoWindow.data("kendoWindow").close();
+                    }).end();
+                } else {
+                    $.ajax({
+                        url: '@Url.Action("DeleteMachineType", "Inventory")',
+                        type: 'Post',
+                        data: { id: id, userId: userId, name: name },
+                        success: function (data) {
+                            notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                            if (data === "Success") {
+                                notification.show({ message: "Machine has been successfully deleted", showTime: startTime() }, "upload-success");
+                                $("#divForAll_Machine").load('@Url.Action("_AllMachineList", "Inventory")');
+                            } else {
+                                notification.show({ message: msg, showTime: startTime() }, "upload-error");
+                            }
+                        },
+                        error: function (err) {
+                            notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                            notification.show({ message: "Error occured", showTime: startTime() }, "upload-warning");
+                        }
+                    });
+                }
+            },
+            error: function (err) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occured", showTime: startTime() }, "upload-warning");
+            }
+        });
+    }
+
+    //**************************** Add Equipment *************************************************************
+    $("#divForAll_Machine").on("click", ".btn_Add_Equip", function () {
+        var id = $(this).data("id");
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        message = "Are you sure want to add more equipment?";
+        var template = kendo.template($("#temp_for_confirmation").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+        kendoWindow.find("#btn_confirm_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_confirm_ok").click(function () {
+            $("#win_add_equip").empty();
+            $("#win_add_equip").kendoWindow({
+                actions: ["Close"],
+                draggable: false,
+                modal: true,
+                visible: false,
+                width: '50%',
+                height: '50%',
+                title: 'Add More Equipment',
+                close: onWindowClose
+            });
+            $("#win_add_equip").html('<div class="win_loading_half"></div>');
+            var win_add_equip = $("#win_add_equip").data("kendoWindow");
+            win_add_equip.refresh({ url: "/Inventory/_AddMoreEquip?Id=" + id });
+            win_add_equip.center().open();
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+    });
+
+</script>
+<style>
+    #get {
+        float: right;
+        margin: 0px auto 0;
+    }
+
+    .k-floatwrap {
+        padding: 5px !important;
+    }
+</style>

@@ -1,0 +1,50 @@
+﻿
+
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var allUnitList = db.Site_Unit_Lists.Where(m => m.UnitStatus == 1).ToList();
+    int tabcount = 1;
+    int divcount = 1;
+}
+
+<div class="panel with-nav-tabs panel-default" >
+    <div class="panel-heading">
+        <ul class="nav nav-tabs">
+            <li class="active" id="liForAll"><a href="#tab1All" data-toggle="tab">All</a></li>
+            @foreach (var u in allUnitList)
+            {
+                tabcount++;
+                <li class="liForUname" data-count="@tabcount" data-uid="@u.UnitId"><a href="#tab_@tabcount" data-toggle="tab">@u.UnitAcryonm</a></li>
+            }
+            
+        </ul>
+    </div>
+    <div class="panel-body" style="border:none!important;" id="div_for_panel_body">
+        <div class="tab-content">
+            <div class="tab-pane fade in active" id="tab1All"></div>
+            @foreach (var u in allUnitList)
+            {
+                divcount++;
+                <div class="tab-pane fade" id="tab_@divcount" data-count="@divcount"></div>
+            }
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $("#tab1All").append('<div class="partial_loading_half"></div>');
+        $("#tab1All").load('@Url.Action("_UnitWiseMachine", "Home")?v=all');
+    });
+    $("#liForAll").click(function () {
+        $("#tab1All").empty();
+        $("#tab1All").append('<div class="partial_loading_half"></div>');
+        $("#tab1All").load('@Url.Action("_UnitWiseMachine", "Home")?v=all');
+    });
+    $(".liForUname").click(function () {
+        var count = $(this).data("count");
+        var uid = $(this).data("uid");
+        $("#tab_" + count).empty();
+        $("#tab_" + count).append('<div class="partial_loading_half"></div>');
+        $("#tab_" + count).load('@Url.Action("_UnitWiseMachine", "Home")?uid=' + uid);
+    });
+</script>

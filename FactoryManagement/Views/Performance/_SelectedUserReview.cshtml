@@ -1,0 +1,496 @@
+﻿@************************************** Created By Jerin Jahan (Date:12.11.2016)  ***************************************@
+@model IEnumerable<FactoryManagement.Models.GetUserPerformanceReview_Result>
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    long loginUserId = Convert.ToInt64(Request.Cookies["CookieAdminInfo"].Values["userid"].ToString());
+    string username = Request.Cookies["CookieAdminInfo"].Values["fulname"].ToString();
+    var data = Model.Where(x => x.HasParent == false).ToList();
+    var allCommentList = Model.Where(x => x.HasParent == true).OrderByDescending(x => x.Id).ToList();
+    var loginUserPicture = db.UserInformations.Where(x => x.UserId == loginUserId).Select(x => x.Picture).FirstOrDefault();
+    if (loginUserId == 0)
+    {
+        username = "Super Admin";
+        loginUserPicture = "admin.jpg";
+    }
+}
+<style>
+    .margin-left-5px {
+        margin-left: 5px;
+    }
+    .reply:hover {
+        cursor: pointer;
+    }
+    .viewmore :hover{
+        cursor:pointer;
+    }
+</style>
+<table class="table">
+@if (ViewBag.canComment)
+{
+    <tr id="trForLibraryResourceComment2">
+        <td width="6%">
+            <img src="@Url.Content("~/Images/UserPicture/thumb/" + loginUserPicture)" width="50" height="50" />
+        </td>       
+        <td id="divForCommentForResource">
+            <div class="col-sm-11 col-xs-12" style="padding-right:0px!important;padding-left:0px!important;">
+                <textarea style="width: 100%" id="CommentForResource" rows="3" onblur="this.placeholder = 'Share your opinion'" onfocus="this.placeholder = 'Share your opinion'" name="CommentForResource" data-val-length="Maximum lentgh is 2000" data-val-length-max="500"
+                          class="k-textbox form-control CommentForResource" placeholder="Share your opinion"></textarea>
+                <div class="form-group" style="float:right;margin-top:10px;display:none" id="divForPostButton">
+                    <input type="button" value="Cancel" id="btnForCommentCancel" class="k-button k-state-default" />
+                    <input type="button" value="Post" id="btnForComment" class="k-button k-state-active" disabled />
+                </div>
+            </div>           
+        </td>       
+            </tr>
+        }
+</table>
+<table class="table" id="tbl_All_review">
+    @foreach (var item in data)
+    {
+        var subList = db.GetUserPerformanceReview(item.UserId, loginUserId).ToList();
+        ViewBag.userChildReview = subList.Where(m => m.ParentId == item.Id).ToList();
+        <tr id="trForLibraryResourceComment@(item.Id)">
+            <td width="6%">
+                @{var a = item.Id; var rate = item.Rate;}
+                @if (item.ReviewBy == 0)
+                { <img src="@Url.Content("~/Images/UserPicture/thumb/admin.jpg")" width="50" height="50" /> }
+                else
+                {  <img src="@Url.Content("~/Images/UserPicture/thumb/" + item.Picture)" width="50" height="50" />}
+                <div class=""><div id="jRate-@item.Id" class="classForRating" data-step="1" data-rating="@item.Rate"></div></div>
+                <script>
+                    var rating;
+                    if('@rate'===''){
+                        rating=0;
+                    }
+                    else{
+                        rating='@rate';
+                    }
+                    $("#jRate-"+@a).jRate({
+                        rating: rating,
+                        count: 5,
+                        startColor: 'orange',
+                        endColor: 'orange',
+                        backgroundColor: 'gray',
+                        min: 0,
+                        max: 5,
+                        precision: 0.5,
+                        width: 10,
+                        height: 10,
+                        readOnly: true
+                    });
+                </script>
+            </td>
+            <td>
+                <div id="divForCommntDetails@(item.Id)">
+                    <div style="float:left; width:100%;">
+                        <div class="col-sm-11 col-xs-11" style="float:left;padding-left:0px!important;">
+                            @if (item.ReviewBy == 0)
+                            {<label style="margin-right:20px;float:left;font-weight:bold;">Super Admin</label> }
+                            else
+                            { <a href="/HumanResource/DisplayEmployeeDetails?UserId=@item.ReviewBy&isDisplay=true" style="margin-right:20px;float:left;font-weight:bold;">@item.UserName</a>}
+                            <label id="commenttime-@item.Id" style="color:#428bca;font-size:13px">@Html.DisplayFor(modelItem => item.CommentTime)</label>
+                            @if (item.IsUpdated == true)
+                            {
+                                <label id="isEdited-@item.Id">(edited)</label>
+                            }
+                            else
+                            {
+                                <label id="isEdited-@item.Id" style="display:none"></label>
+                            }
+                        </div>
+                        @if (item.ReviewBy == loginUserId)
+                        {
+                            <div class="col-sm-1 col-xs-1" style="float:right">
+                                <div class="btn-group" style="float:right">
+                                    <span>
+                                        <i class="fa fa-caret-down showActionDiv" data-id="@(item.Id)"></i>
+                                    </span>
+                                    <ul id="showActionDiv-@item.Id" class="dropdown-menu" role="menu" aria-labelledby="dLabel" style="width:100px!important;display:none;min-width:100px!important;margin-left:-100px">
+                                        <li class="editComment" data-id="@item.Id" style="width:100px"><a tabindex="-1"><i class="fa fa-pencil"></i> Edit</a></li>
+                                        <li class="deleteComment" data-id="@(item.Id)" style="width:100px"><a tabindex="-1" ><i class="fa fa-remove"></i> Delete</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-sm-1 col-xs-1" style="float:right">
+                                <div class="btn-group" style="float:right">
+                                    <span>
+                                        <i class="fa fa-caret-down showActionDiv" data-id="@(item.Id)"></i>
+                                    </span>
+                                    <ul id="showActionDiv-@item.Id" class="dropdown-menu" role="menu" aria-labelledby="dLabel" style="margin-left:-100px;width:100px!important;display:none;min-width:100px!important">
+                                        <li style="width:100px" data-id="@(item.Id)" id="report-@item.Id" class="report_btn"><a tabindex="-1"><i class="fa fa-flag"></i> Report</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <span class="more comment" id="DisplayComment-@item.Id">@item.Review</span>
+                    <span style="float:left;width:100%;">
+                        
+                        <span class="likeUnlikeDiv" id="likeUnlikeDiv-@item.Id">
+                            @if ((bool)item.IsLikeByUser)
+                            {
+                                <span>
+                                    @if (ViewBag.canComment)
+                                    {
+                                        <i class="fa fa-thumbs-up icon like_btn" id="Like-@(item.Id)" data-isunlike="True" data-id="@item.Id"></i>
+                                    }
+                                    else
+                                    {<i class="fa fa-thumbs-up icon" id="Like-@(item.Id)" data-isunlike="True" data-id="@item.Id"></i> }
+
+                                    <label class="margin-left-5px" id="cmmntLike-@(item.Id)">@item.Likes</label>
+                                </span>
+                            }
+                            else
+                            {
+                                <span>
+                                   @if (ViewBag.canComment)
+                                   {
+                                    <i class="fa fa-thumbs-o-up icon like_btn" id="Like-@(item.Id)" data-isunlike="False" data-id="@item.Id"></i>
+                                   }
+                                   else
+                                   {
+                                    <i class="fa fa-thumbs-o-up icon" id="Like-@(item.Id)" data-isunlike="False" data-id="@item.Id"></i>
+                                   }
+                                    <label class="margin-left-5px" id="cmmntLike-@(item.Id)">@item.Likes</label>
+                                </span>
+                            }
+                            @if ((bool)item.IsUnLikeByUser)
+                            {
+                                <span>
+                                   @if (ViewBag.canComment)
+                                   {
+                                    <i class="fa fa-thumbs-down icon unlike_btn margin-left-5px" id="UnLike-@(item.Id)" data-islike="True" data-id="@(item.Id)"></i>
+                                   }
+                                   else
+                                   {
+                                    <i class="fa fa-thumbs-down icon margin-left-5px" id="UnLike-@(item.Id)" data-islike="True" data-id="@(item.Id)"></i>
+                                   }
+                                    <label class="margin-left-5px" id="cmmntUnLike-@(item.Id)">@item.UnLikes</label>
+                                </span>
+                            }
+                            else
+                            {
+                                <span>
+                                  @if (ViewBag.canComment)
+                                  {
+                                    <i class="fa fa-thumbs-o-down icon unlike_btn margin-left-5px" id="UnLike-@(item.Id)" data-islike="False" data-id="@(item.Id)"></i>
+                                  }
+                                  else
+                                  {   <i class="fa fa-thumbs-o-down icon margin-left-5px" id="UnLike-@(item.Id)" data-islike="False" data-id="@(item.Id)"></i>}
+                                    <label class="margin-left-5px" id="cmmntUnLike-@(item.Id)">@item.UnLikes</label>
+                                </span>
+                            }
+                        </span>
+                        <span id="Reply-@(item.Id)" class="reply" style="margin-left:20px">
+                            Reply 
+
+                            @if (Enumerable.Count(ViewBag.userChildReview) > 0)
+                            {
+                                <label id="replyCount-@item.Id" style="color:#0094ff;margin-left:5px;margin-right:10px">
+                                   (@Enumerable.Count(ViewBag.userChildReview))
+                                </label>
+                            }
+                        </span>
+                        <br />
+                        <span id="Viewmore-@(item.Id)" class="viewmore" >                                                 
+                                @if (Enumerable.Count(ViewBag.userChildReview) > 0)
+                                {   <a>
+                                   <span id="view_hide_all-@item.Id"> View all</span>
+                                    <span id="replyCounter-@item.Id" style="color:#0094ff;font-weight:bold">
+                                        @Enumerable.Count(ViewBag.userChildReview)
+
+                                    </span>
+                                    Replies <i class="fa fa-angle-down" id="replyangle-@item.Id" style="font-size: 1.3em;font-weight:bold;"></i>
+                                </a>
+                                }                           
+                        </span>
+                   
+                     </span>
+                    <div class="DivForReply row" id="DivForReply-@item.Id" style="display:none">
+                        <div style="width:6%;float:left;margin-right:15px">
+                            <img src="@Url.Content("~/Images/UserPicture/thumb/" + loginUserPicture)" width="40" height="40" style="margin-left:20%"/>
+                        </div>
+                        
+                        <div  style="width:80%;float:left">
+                            <textarea style="width:100%" id="Comment-@item.Id" rows="3" name="Comment" data-val-length="Maximum lentgh is 8000" data-val-length-max="8000"
+                                      class="k-textbox form-control Comment" onblur="this.placeholder = 'Reply'" onfocus="this.placeholder = 'Reply'" placeholder="Reply"></textarea>
+                            <div style="text-align:right;margin-top:10px;float:right" id="replycommentDiv-@item.Id">
+                                <input type="button" value="Cancel" data-id="@(item.Id)" class="k-button k-state-default btnForReplyCancel btn-sm" />
+                                <input type="button" value="Reply" id="btnForReply-@(item.Id)" class="k-button k-state-active btnForReply btn-sm" disabled />
+                            </div>
+                         </div>
+                        
+                    </div>
+                    <div style="display:none" id="replyComment-@(item.Id)">
+                        @if (allCommentList.Where(x => x.ParentId == item.Id).Any())
+                        {
+                            foreach (var comment in allCommentList.Where(x => x.ParentId == item.Id).ToList())
+                            {
+                                <div class="row" style="margin-top:5px" id="replyComment-@(comment.Id)">
+                                    <div style="float:left;width:6%;margin-right:15px">
+                                        @if (comment.ReviewBy == 0)
+                                        {
+                                            <img src="@Url.Content("~/Images/UserPicture/thumb/admin.jpg")" width="40" height="40" style="margin-left:20%"/>
+                                        }
+                                        else
+                                        {
+                                            <img src="@Url.Content("~/Images/UserPicture/thumb/" + @comment.Picture)" width="40" height="40" style="margin-left:20%"/>
+                                        }
+                                    </div>
+                                    <div id="replyofComment-@comment.Id">
+                                        <div  style="float:left">
+                                            <span>
+                                                <label>
+                                                    @if (comment.ReviewBy == 0)
+                                                    {
+                                                        <span>Super Admin</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <a href="/HumanResource/DisplayEmployeeDetails?UserId=@comment.ReviewBy&isDisplay=true">@comment.UserName</a>
+                                                    }
+                                                </label>
+                                            </span>
+                                            <span><label style="margin-left:20px;color:#428bca;font-size:13px" id="commenttime-@comment.Id">@comment.CommentTime</label></span>
+                                            @if (comment.IsUpdated == true)
+                                            {
+                                                <span><label style="margin-left:10px" id="isEdited-@comment.Id">(Edited)</label></span><br />
+                                            }
+                                            else
+                                            {
+                                                <span><label style="margin-left:10px;display:none" id="isEdited-@comment.Id"></label></span><br />
+                                            }
+                                            <span id="rc-@comment.Id" class="comment">@comment.Review</span>
+                                        </div>
+                                        @if (comment.ReviewBy == loginUserId)
+                                        {
+                                            <div class="col-xs-1 col-md-1" style="float:right">
+                                                <div class="btn-group" style="float:right;margin-right:29px">
+                                                    <span>
+                                                        <i class="fa fa-caret-down showActionDiv" data-id="@comment.Id"></i>
+                                                    </span>
+                                                    <ul id="showActionDiv-@comment.Id" class="dropdown-menu" role="menu" aria-labelledby="dLabel" style="margin-left:-100px;width:100px!important;min-width:100px!important">
+                                                        <li class="editreplyComment" data-id="@comment.Id" style="width:100px"><a tabindex="-1"><i class="fa fa-pencil"></i> Edit</a></li>
+                                                        <li class="deleteComment" data-id="@comment.Id" style="width:100px"><a tabindex="-1"><i class="fa fa-remove"></i> Delete</a></li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        { <div class="col-xs-1 col-md-1" style="float:right">
+                                            <div class="btn-group" style="float:right;margin-right:29px">
+                                                <span>
+                                                    <i class="fa fa-caret-down showActionDiv" data-id="@comment.Id"></i>
+                                                </span>
+                                                <ul id="showActionDiv-@comment.Id" class="dropdown-menu" role="menu" aria-labelledby="dLabel" style="width:100px!important;min-width:100px!important">
+                                                    <li style="width:100px" data-id="@(comment.Id)" id="report-@comment.Id" class="report_btn"><a tabindex="-1" href=""><i class="fa fa-flag"></i> Report</a></li>
+                                                </ul>
+                                            </div>
+                                        </div>}
+                                        <div style="float:left;width:100%">
+                                            @*<span class="col-xs-1 col-md-1"></span>*@
+                                            <span class="col-xs-10 col-md-10" style="margin-left:6%">
+                                                <span style="">
+                                                    @if (comment.IsLikeByUser == true)
+                                                    {
+                                                        <span>
+                                                            @if (ViewBag.canComment)
+                                                            {
+                                                                <i class="fa fa-thumbs-up icon like_btn" id="Like-@comment.Id" data-isunlike="True" data-id="@comment.Id"></i>
+                                                            }
+                                                            else
+                                                            {
+                                                                <i class="fa fa-thumbs-up icon" id="Like-@comment.Id" data-isunlike="True" data-id="@comment.Id"></i>
+                                                            }
+                                                        </span>
+                                                        <label class="margin-left-5px" id="cmmntLike-@comment.Id"> @comment.Likes</label>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>
+                                                            @if (ViewBag.canComment)
+                                                            {
+                                                                <i class="fa fa-thumbs-o-up icon like_btn margin-left-5px" id="Like-@comment.Id" data-isunlike="False" data-id="@comment.Id"></i>
+                                                            }
+                                                            else
+                                                            {
+
+                                                                <i class="fa fa-thumbs-o-up icon margin-left-5px" id="Like-@comment.Id" data-isunlike="False" data-id="@comment.Id"></i>
+                                                            }
+                                                            <label class="margin-left-5px" id="cmmntLike-@comment.Id">@comment.Likes</label>
+                                                        </span>
+                                                    }
+                                                </span>
+                                                <span>
+                                                    @if (comment.IsUnLikeByUser == true)
+                                                    {
+                                                        <span>
+                                                            @if (ViewBag.canComment)
+                                                            {
+                                                                <i class="fa fa-thumbs-down icon unlike_btn margin-left-5px" id="UnLike-@comment.Id" data-islike="True" data-id="@comment.Id"></i>
+                                                            }
+                                                            else
+                                                            {
+                                                                <i class="fa fa-thumbs-down icon margin-left-5px" id="UnLike-@comment.Id" data-islike="True" data-id="@comment.Id"></i>
+                                                            }
+                                                        </span>
+                                                        <label class="margin-left-5px" id="cmmntUnLike-@comment.Id"> @comment.UnLikes</label>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>
+                                                            @if (ViewBag.canComment)
+                                                            {
+                                                                <i class="fa fa-thumbs-o-down icon unlike_btn margin-left-5px" id="UnLike-@(comment.Id)" data-islike="False" data-id="@comment.Id"></i>
+                                                            }
+                                                            else
+                                                            {
+                                                                <i class="fa fa-thumbs-o-down icon margin-left-5px" id="UnLike-@(comment.Id)" data-islike="False" data-id="@comment.Id"></i>
+                                                            }
+                                                        </span>
+                                                        <label class="margin-left-5px" id="cmmntUnLike-@comment.Id"> @comment.UnLikes</label>
+                                                    }
+                                                </span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div style="display:none;" id="edit_reply_of_Comment-@comment.Id">
+                                        <div class="divForCommntEdit" style="float:left;width:80%">
+                                            <textarea class="k-textbox txtareaCmntEdit" id="txtareaCmntEdit-@(comment.Id)" name="CommentForIssue" data-val-length="Maximum lentgh is 8000" data-val-length-max="8000" rows="3" style="width: 100%;float:left;margin-bottom:10px">@comment.Review</textarea>
+                                            <div style="text-align:right">
+                                                <input type="button" data-id="@(comment.Id)" value="Cancel" class="k-button k-state-default btnreplyCmntEditCancel" id="btnCmntEditCancel-@(comment.Id)" />
+                                                <input type="button" data-id="@(comment.Id)" value="Update" class="k-button k-state-default btnreplyCmntEditSave" id="btnCmntEditSave-@(comment.Id)" disabled />
+                                            </div>
+                                        </div>
+                                       
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+                <div id="divForCommntEdit@(item.Id)" style="display:none">
+                    <div class="divForCommntEdit" style="float:left;width:80%">
+                        <textarea class="k-textbox txtareaCmntEdit" id="txtareaCmntEdit-@(item.Id)" name="CommentForIssue" data-val-length="Maximum lentgh is 8000" data-val-length-max="8000" rows="3" style="width: 100%;float:left;margin-bottom:10px">@item.Review</textarea>
+                        <div style="text-align:right;">
+                            <input type="button" data-id="@(item.Id)" value="Cancel" class="k-button k-state-default btnCmntEditCancel" id="btnCmntEditCancel-@(item.Id)" />
+                            <input type="button" data-id="@(item.Id)" value="Update" class="k-button k-state-default btnCmntEditSave" id="btnCmntEditSave-@(item.Id)" disabled />
+                        </div>
+                     </div>
+                   
+                </div>
+            </td>
+        </tr>
+    }
+</table>
+<div id="Report_Popup"></div>
+
+<script>
+    $(document).ready(function(){
+        $(".comment").shorten({showChars: 500,moreText: 'read more ...', lessText: 'less'});
+    });
+    $("#tbl_All_review").on("click",".report_btn",function (e) {
+        e.preventDefault();
+        var itemId=$(this).data("id");
+        $("#Report_Popup").empty();
+        $("#Report_Popup").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '40%',
+            height: '35%',
+            title: 'Report Comment'
+        });
+        $("#Report_Popup").html('<div class="partial_loading_half"></div>');
+        var Report_Popup = $("#Report_Popup").data("kendoWindow");
+        Report_Popup.refresh({ url: "/Performance/GetAllReportNames?id="+itemId});
+        Report_Popup.center().open();
+    });
+    $("#Report_Popup").on("click","#cancel_report",function(){
+        $("#Report_Popup").data("kendoWindow").close();
+        $("#showActionDiv-"+$(this).data("id")).hide();
+    });
+    $("#Report_Popup").on("click","#confirm_report",function(){
+        var reportId;
+        $(".report_Checkbox").each(function(){           
+            if($(this).is(':checked')){
+                reportId=$(this).val();
+            }
+        });
+        var sendData={
+            reportId:reportId,
+            reportedBy:'@loginUserId',
+            commentId:$(this).data("id")
+        }
+        $.ajax({
+            url: '@Url.Action("ReportComment", "Performance")',
+            type: 'Post',
+            data: sendData,
+            success: function (data) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                if (data == "Success") {
+                    notification.show({ message: "Your report has been posted.Wait for authority to take action.", showTime: startTime() }, "upload-success");
+                    $("#Report_Popup").data("kendoWindow").close();
+                    
+                } else {
+                    notification.show({ message: "Tour report for comment was unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+            },
+            error: function (err) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+            }
+        });
+
+    });
+    $("#CommentForResource").click(function(){
+        $("#divForPostButton").show();
+    });
+    $("#tbl_All_review").on("keyup",".Comment",function(e){
+        e.preventDefault();
+        var itemId=$(this).attr("id").split("-")[1];
+        var replyComment=$("#Comment-"+itemId).val();
+      //  $("#btnForReply-"+itemId).attr("disabled",false);
+        $("#replycommentDiv-"+itemId).show();
+
+        if (replyComment.length > 0) {
+            $('#btnForReply-'+itemId).attr("disabled", false);
+            if(replyComment.length>8000){
+                alert("maximum length is 8000");
+            }
+        }
+        else {
+            $('#btnForReply-'+itemId).attr("disabled", true);
+        }
+    });
+    $("#CommentForResource").keyup(function () {
+        var commentForResource = $("#CommentForResource").val();
+        if (commentForResource.length > 0) {
+            $('#btnForComment').attr("disabled", false);
+            if(commentForResource.length>8000){
+                alert("maximum length is 8000");
+            }
+        }
+        else {
+            $('#btnForComment').attr("disabled", true);
+        }
+    });
+    $("#CommentForResource").click(function () {
+        $('#divForPostButton').show();
+    });
+    $("#tbl_All_review").on("click",".Comment",function(){
+        var itemId=$(this).attr("id").split("-")[1];
+        $("#replycommentDiv-"+itemId).show();
+    });
+    $("#btnForCommentCancel").click(function () {
+        $('#CommentForResource').val(null);
+        $('#btnForComment').attr("disabled", true);
+        $('#divForPostButton').hide();
+        $("#CommentForResource_validationMessage").hide();
+    });
+
+</script>

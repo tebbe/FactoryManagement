@@ -1,0 +1,714 @@
+﻿@************************************** Created By Jerin Jahan (Date:26.07.2016)  ***************************************@
+@model FactoryManagement.ModelView.Inventory.MachineTypeModelView
+@{
+    ViewBag.Title = "New Machine Create";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+<style>
+    #tblForAddedPart {margin-top: 2em !important;}
+    #tblForAddedPart tr td {border: none !important;}
+    #tblForAddedPart tr td span {cursor: pointer;}
+</style>
+@if (ViewBag.v == "add")
+{
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <i class="icon-basket"></i>
+                <span>Inventory</span>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <i class="fa fa-building"></i>
+                <a href="/Home/EquipDash">Equipments</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <i class="fa fa-building"></i>
+                <a href="/Inventory/AllEquipmentList">All Equipments List</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <i class="fa fa-plus"s aria-hidden="true"></i>
+                <a href="/Inventory/MachineTypeCreate"> Add More Equipment</a>
+            </li>
+        </ul>
+    </div>
+    <div class="portlet light bordered">
+        <div class="portlet-title">
+            <div class="caption font-green">
+                <i class="fa fa-plus font-green"></i>
+                <span class="caption-subject bold uppercase"> Add More Equipment</span>
+            </div>
+            <div class="actions">
+                @*<div class="btn-group btn-group-devided" data-toggle="buttons">
+                    <a href="/Inventory/MachineTypeName">
+                        <span class="btn btn-transparent green btn-outline btn-circle btn-sm active" data-toggle="tooltip" title="Show All Machine Type Name List" id="btn_Pro_Edit" data-container="body"><i class="fa fa-list-ul"></i> Type Name</span>
+                    </a>
+                </div>*@
+            </div>
+        </div>
+        <div class="portlet-body form">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    @using (Html.BeginForm())
+                    {
+                        @Html.HiddenFor(m => m.CreatedBy)
+                        @Html.HiddenFor(m => m.AllSpareParts)
+                        @Html.HiddenFor(m => m.AllPerishableId)
+                        @Html.HiddenFor(m => m.AllRepDate)
+                        @Html.HiddenFor(m => m.AllPartsSame)
+
+                        <div id="div_machine_type">
+                            <div class="form-horizontal col-md-12 col-sm-12 col-xs-12">
+                                <h4>Basic Information</h4><hr />
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.Acroynm, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+                                    <div class="col-md-5 col-sm-6" id="div_name_Auto">
+                                        @(Html.Kendo().AutoComplete()
+                                        .Name("Mahine_Name")
+                                        .DataTextField("Name")
+                                        .Filter("contains")
+                                        .MinLength(1)
+                                        .HtmlAttributes(new { style = "width:100%" })
+                                        .Events(e => e.Select("MachineNameSelect"))
+                                        .DataSource(source =>
+                                          {
+                                              source.Read(read =>
+                                              {
+                                                  read.Action("MahineNameSearching", "Inventory").Data("onAdditionalData");
+                                              })
+                                              .ServerFiltering(true);
+                                          })
+                                        )
+                                        <span class="field-validation-valid text-danger" data-valmsg-for="Mahine_Name" data-valmsg-replace="true"></span>
+                                    </div>
+                                    <div class="col-md-5 col-sm-6" id="div_name_show" style="display:none;padding-top:10px!important;">
+                                        <span id="lbl_machine_name"></span>
+                                        <span class="k-icon k-i-close" style="cursor:pointer;" id="btn_Remove_Name"></span>
+                                    </div>
+                                </div>
+                                <div id="div_Seleted_Machine"></div>
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.Quantity, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+                                    <div class="col-md-5 col-sm-6">
+                                        <input class="form-control k-textbox" data-val="true"
+                                               data-val-number="The field Quantity must be a number."
+                                               data-val-required="Please enter quantity."
+                                               data-val-regex="Only integer number and greater than zero"
+                                               data-val-regex-pattern="^[1-9]+\d*$"
+                                               id="Quantity" name="Quantity" type="number" value="" min="1" max="200">
+                                        @Html.ValidationMessageFor(model => model.Quantity, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="form-group" id="Div_Chk_Parts">
+                                    <div class="col-md-offset-3 col-md-7 col-sm-offset-4 col-sm-7 col-xs-11" style="font-weight:bold;">
+                                        @Html.CheckBox("ChkAllPartsSame", new { @onchange = "onsamePartschane(this);" }) All machines's parts are same
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-offset-3 col-md-7 col-sm-offset-4 col-sm-8">
+                                        <input type="button" value="Add" class="btn green" id="btnMachineCreate" />
+                                        <input type="reset" value="Refresh" class="btn yellow" id="btnMachineRefresh" />
+                                        <input type="button" value="Cancel" class="btn red" id="btnMachineCreateCancel" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="div_For_DefineMachine" style="display:none;"></div>
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <i class="icon-basket"></i>
+                <span>Inventory</span>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <i class="fa fa-building"></i>
+                <a href="/Home/EquipDash">Equipments</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <i class="fa fa-th-list"></i>
+                <a href="/Inventory/AllMachineList"> All MachineList</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <i class="fa fa-hdd-o" aria-hidden="true"></i>
+                <a href="/Inventory/MachineTypeCreate"> Machine Type Create</a>
+            </li>
+        </ul>
+    </div>
+    <div class="portlet light bordered">
+        <div class="portlet-title">
+            <div class="caption font-green">
+                <i class="fa fa-plus font-green"></i>
+                <span class="caption-subject bold uppercase"> Add Machine Type</span>
+            </div>
+            <div class="actions">
+              
+            </div>
+        </div>
+        <div class="portlet-body form">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    @using (Html.BeginForm())
+                    {
+                        @Html.HiddenFor(m => m.CreatedBy)
+                        @Html.HiddenFor(m => m.AllSpareParts)
+                        @Html.HiddenFor(m => m.AllPerishableId)
+                        @Html.HiddenFor(m => m.AllRepDate)
+                        @Html.HiddenFor(m => m.AllPartsSame)
+                        
+
+                        <div id="div_machine_type">
+                            <div class="form-horizontal col-md-6 col-sm-6 col-xs-12" >
+                                <h4>Basic Information</h4><hr />
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.MachineType, htmlAttributes: new { @class = "control-label col-md-4 col-sm-4" })
+                                    <div class="col-md-7 col-sm-7">
+                                        @(Html.Kendo().DropDownListFor(model => model.MachineType)
+                                            .OptionLabel("--Select One Type--")
+                                            .BindTo(ViewBag.MachineType)
+                                            .HtmlAttributes(new { style = "width:100%" })
+                                        )
+                                        @Html.ValidationMessageFor(model => model.MachineType, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.ModelName, htmlAttributes: new { @class = "control-label col-md-4 col-sm-4" })
+                                    <div class="col-md-7 col-sm-7">
+                                        @Html.EditorFor(model => model.ModelName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                                        @Html.ValidationMessageFor(model => model.ModelName, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.BrandId, htmlAttributes: new { @class = "control-label col-md-4 col-sm-4" })
+                                    <div class="col-md-7 col-sm-7">
+                                        @(Html.Kendo().AutoComplete()
+                                        .Name("BrandName")
+                                        .DataTextField("BrandName")
+                                        .Filter("contains")
+                                        .MinLength(1)
+                                        .HtmlAttributes(new { style = "width:100%" })
+                                        .Events(e => e.Select("BrandSelect"))
+                                        .DataSource(source =>
+                                          {
+                                              source.Read(read =>
+                                              {
+                                                  read.Action("BrandNameSearching", "StoreProduct").Data("onBrandData");
+                                              })
+                                              .ServerFiltering(true);
+                                          })
+                                        )
+                                        @Html.ValidationMessageFor(model => model.BrandId, "", new { @class = "text-danger" })
+                                    </div>
+                                    <div style="padding-top:6px">
+                                        <span data-toggle="tooltip" title="Show Brand List" id="btn_brand_list"><i class="fa fa-info-circle"></i></span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.Acroynm, htmlAttributes: new { @class = "control-label col-md-4 col-sm-4" })
+                                    <div class="col-md-7 col-sm-7">
+                                        @Html.EditorFor(model => model.Acroynm, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                                        @Html.ValidationMessageFor(model => model.Acroynm, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.CountryOfOrigin, htmlAttributes: new { @class = "control-label col-md-4 col-sm-4" })
+                                    <div class="col-md-7 col-sm-7">
+                                        @(Html.Kendo().DropDownListFor(model => model.CountryOfOrigin)
+                                        .OptionLabel("--Select One Country--")
+                                        .BindTo(ViewBag.CountryId)
+                                        .HtmlAttributes(new { style = "width:100%" })
+                                        )
+                                        @Html.ValidationMessageFor(model => model.CountryOfOrigin, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.Mgf,"Mfg. Year", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4" })
+                                    <div class="col-md-7 col-sm-7">
+                                        @Html.EditorFor(model => model.Mgf, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                                        @Html.ValidationMessageFor(model => model.Mgf, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.Quantity, htmlAttributes: new { @class = "control-label col-md-4 col-sm-4" })
+                                    <div class="col-md-7 col-sm-7">
+                                        <input class="form-control k-textbox" data-val="true"
+                                               data-val-number="The field Quantity must be a number."
+                                               data-val-required="Please enter quantity."
+                                               data-val-regex="Only integer number and greater than zero"
+                                               data-val-regex-pattern="^[1-9]+\d*$"
+                                               id="Quantity" name="Quantity" type="number" value="" min="1" max="200">
+                                        @Html.ValidationMessageFor(model => model.Quantity, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="form-group" id="Div_Chk_Parts">
+                                    <div class="col-md-offset-4 col-md-7 col-sm-offset-4 col-sm-7 col-xs-11" style="font-weight:bold;">
+                                        @Html.CheckBox("ChkAllPartsSame", new { @onchange = "onsamePartschane(this);" }) All machines's parts are same
+                                    </div>
+                                </div>                              
+                            </div>
+                            @*<div class="form-horizontal col-md-6 col-sm-6 col-xs-12" id="divForSelectedParts">
+                                <h4>Added Main Parts List</h4><hr />
+                                <div class="form-group" id="DivForParts">
+                                    @Html.Label("Select Spare Parts", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4" })
+                                    <div class="col-md-7 col-sm-7 col-xs-11" id="DivForSpareParts">
+                                        @(Html.Kendo().MultiSelect()
+                                        .Name("SpareParts")
+                                        .DataTextField("Name")
+                                        .DataValueField("PartsId")
+                                        .Placeholder("Select products...")
+                                        .AutoBind(false)
+                                        .HtmlAttributes(new { style = "width:100%" })
+                                        .Events(e => e.Change("onSparePartsChange").Select("onSparePartsSelect"))
+                                        .DataSource(source => { source.Read(read => { read.Action("GetAllSpareParts", "Inventory"); }).ServerFiltering(true); })
+                                        )
+                                        <span class="field-validation-valid text-danger" data-valmsg-for="SpareParts" data-valmsg-replace="true"></span>
+                                    </div>
+                                    <div class="col-md-1 col-sm-1 col-xs-1">
+                                        <span class="k-icon k-i-plus" style="cursor:pointer;" id="btnAddNewParts"> Add New Parts</span>
+                                    </div>
+                                </div>
+                                <table id="tblForAddedPart" class="table" style="display:none;">
+                                    <tr>
+                                        <th width="30%">Parts Name</th>
+                                        <th width="25%">Replaceable Date</th>
+                                        <th width="20%">Quantity</th>
+                                        <th width="25%">Unit</th>
+                                    </tr>
+                                </table>
+                            </div>*@
+                            <div class="form-horizontal col-md-12 col-sm-12 col-xs-12">
+                                <div class="form-group">
+                                    <div class="col-md-offset-2 col-md-7 col-sm-offset-2 col-sm-8">
+                                        <input type="button" value="Next" class="btn green" id="btnMachineCreate" />
+                                        <input type="reset" value="Refresh" class="btn yellow" id="btnMachineRefresh" />
+                                        <input type="button" value="Cancel" class="btn red" id="btnMachineCreateCancel" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="div_For_DefineMachine" style="display:none;"></div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<div id="win_brand_list"></div>
+<div id="WinForAddNewParts"></div>
+<div id="win_spare_parts_quantity"></div>
+<script>
+    var selectedPartsIds=[];
+    var AllSparePartsId = "", sparePartsMultiselect;
+    var previous, current = "", repDate, repTypeId;
+    var isMachineSeleted = false;
+    var Id = "";
+    var sendData = "";
+    var url = "";
+    var BrandId = 0;
+
+    $(document).ready(function () {
+        $("#AllPartsSame").val(1);
+        $("#ChkAllPartsSame").prop("checked", true);
+        $("#liForInventory").addClass('active');
+        $('#liForInventory > ul > li:first').addClass('open');
+        $('#liForInventory > ul > li:first >ul:first').show();
+        $("#liForMachineAdd").addClass('sublistActive');
+
+        $("#div_machine_type").hide();
+        $("#div_machine_type").empty();
+        $("#div_For_DefineMachine").empty();
+        $("#div_For_DefineMachine").append('<div class="loading_partial"></div>');
+        $("#div_For_DefineMachine").show();
+        $("#div_For_DefineMachine").load('@Url.Action("DefineMachineDetails", "Inventory")?id=1028&quan=1&isAdd=false');
+    });
+    function onBrandData() {
+        return {
+            prefix: $("#BrandName").val()
+        };
+    }
+    function BrandSelect(e) {
+        var dataItem = this.dataItem(e.item.index());
+        $("#div_Brnd_AutoCom").hide();
+        $("#div_brnd_select").show();
+        $("#lbl_Brnd_Name").text(dataItem.BrandName);
+        BrandId = dataItem.BrandId;
+    }
+    function onAdditionalData() {
+        return {
+            prefix: $("#Mahine_Name").val(),
+            type: $("#MachineType").val()
+        };
+    }
+    function MachineNameSelect(e) {
+        var dataItem = this.dataItem(e.item.index());
+        isMachineSeleted = true;
+        Id = dataItem.Id;
+        $("#div_name_Auto").hide();
+        $("#div_New_Machine").hide();
+        $("#Div_Chk_Parts").hide();
+        $("#divForSelectedParts").hide();
+        $("#div_name_show").show();
+        $("#lbl_machine_name").text(dataItem.Name);
+        $("#div_Seleted_Machine").append('<div class="win_loading_half"></div>');
+        $("#div_Seleted_Machine").load('@Url.Action("_SelectedMachineInfo", "Inventory")?Id=' + dataItem.Id);
+    }
+    $("#btn_Remove_Name").click(function () {
+        isMachineSeleted = false;
+        Id = "";
+        $("#MachineType").data("kendoDropDownList").value(null);
+        $("#Acroynm").val('');
+        $("#ModelName").val('');
+        $("#BrandId").val('');
+        $("#CountryOfOrigin").val('');
+        $("#Mahine_Name").val("");
+        $("#div_name_show").hide();
+        $("#lbl_machine_name").text("");
+        $("#div_name_Auto").show();
+        $("#div_New_Machine").show();
+        $("#div_Seleted_Machine").empty();
+
+        $("#divForSelectedParts").show();
+        $("#Div_Chk_Parts").show();
+    });
+    function onChangeType(e) {
+        var dataItem = this.dataItem(e.item);
+        if (dataItem.Value === '1') {
+            $("#DivForExpire").show();
+        }
+        else {
+            $("#DivForExpire").hide();
+            $("#ExpireDate").val('');
+        }
+    }
+    function onsamePartschane(cb) {
+        if (cb.checked === false) {
+            $("#divForSelectedParts").hide();
+            $("#DivForParts").hide();
+            $("#AllPartsSame").val(0);
+            $("#tblForAddedPart").empty();
+            $("#DivForSpareParts").empty();
+        } else {
+            $("#divForSelectedParts").show();
+            $("#DivForSpareParts").load('@Url.Action("_PartialViewForSpareParts", "Inventory")');
+            $("#DivForParts").show();
+            $("#AllPartsSame").val(1);
+            $("#tblForAddedPart").empty();
+            $("#tblForAddedPart").append('<tr><th width="30%">Parts Name</th><th width="25%">Replaceable Date</th><th width="20%">Quantity</th><th width="25%">Unit</th></tr>');
+            $("#tblForAddedPart").hide();
+        }
+    }
+    function isNumber(e, v) {
+        e = (e) ? e : window.event;
+        var charCode = (e.which) ? e.which : e.keyCode;
+        if (charCode < 48 || charCode > 57) {
+            return false;
+        } else {
+            if (charCode == 48 && v === '') {
+                return false;
+            }
+            return true;
+        }
+
+    }
+    function onSparePartsSelect(e) {
+        previous = this._savedOld;
+        current = this.value();
+        var diff = [];
+        if (previous) {
+            diff = $(previous).not(current).get();
+        }
+        this._savedOld = current.slice(0);
+        if (diff.length > 0) {
+            $("#trfor-" + diff).remove();
+        }
+        else {
+            var dataItem = this.dataSource.view()[e.item.index()];
+            var id = dataItem.PartsId;
+            if ($("#trfor-" + id).length < 1) {
+                $("#tblForAddedPart").show();
+                if (dataItem.Canbebreakable) {
+                    sparePartsQuantity();
+                    //$("table#tblForAddedPart").append('' +
+                    //    '<tr id=trfor-' + id + ' class="spanForRep" data-id="' + id + '" ' +
+                    //    'data-uid="' + dataItem.UnitId + '" data-break="' + dataItem.Canbebreakable + '"  data-touup="' + dataItem.CanbeTopup + '">' +
+                    //    '<td>' + dataItem.Name + '</td>' +
+                    //    '<td>' +
+                    //    '<input class="form-control k-textbox" required data-required-msg="*" ' +
+                    //    'id="txtRepDate-' + id + '" name="txtRepDate-' + id + '" ' +
+                    //    'type="text" value="" aria-invalid="true"' +
+                    //    'onkeypress="return isNumber(event,this.value)" style="width:100%;float:left;">' +
+                    //    '<span class="field-validation-valid text-danger" data-valmsg-for="txtRepDate-' + id + '" data-valmsg-replace="true"></span>' +
+                    //    '</td>' +
+
+                    //    '<td>' +
+                    //    '<input class="form-control k-textbox txtQuan"' +
+                    //    'required data-required-msg="*" id="txtQuan-' + id + '"' +
+                    //    'name="txtQuan-' + id + '" type="text" value="" aria-invalid="true"' +
+                    //    'style="width:100%;float:left;"' +
+                    //    'pattern="^[0-9]{0,3}$" title="Invalid">' +
+                    //    '<span class="field-validation-valid text-danger" data-valmsg-for="txtQuan-' + id + '" data-valmsg-replace="true"></span>' +
+                    //    '</td>' +
+                    //    '<td><input id="txtSpareUnitId-' + id + '" name="txtSpareUnitId-' + id + '" style="width: 100%;" required data-required-msg="*"/>' +
+                    //    '<span class="field-validation-valid text-danger" data-valmsg-for="txtSpareUnitId-' + id + '" data-valmsg-replace="true"></span>' +
+                    //    '</td>' +
+                    //    '</tr>');
+
+
+                    @*$("#txtSpareUnitId-" + id).kendoDropDownList({
+                        dataTextField: "UnitName",
+                        dataValueField: "UnitId",
+                        optionLabel: "--Select One--",
+                        dataSource: {
+                            transport: {
+                                read: { url: "@Url.Action("GetBreakableProUnit", "Acquisition")?id=" + id, type: "GET" }
+                            }
+                        }
+                    });*@
+
+                }
+                else {
+                    sparePartsQuantity();
+                    //$("table#tblForAddedPart").append('' +
+                    //   '<tr id=trfor-' + id + ' class="spanForRep" data-id="' + id + '" ' +
+                    //    'data-uid="' + dataItem.UnitId + '" data-break="' + dataItem.Canbebreakable + '"  data-touup="' + dataItem.CanbeTopup + '">' +
+                    //    '<td>' + dataItem.Name + '</td>' +
+                    //    '<td>' +
+                    //    '<input class="form-control k-textbox" required data-required-msg="*" ' +
+                    //    'id="txtRepDate-' + id + '" name="txtRepDate-' + id + '" ' +
+                    //    'type="text" value="" aria-invalid="true"' +
+                    //    'onkeypress="return isNumber(event,this.value)" style="width:100%;float:left;">' +
+                    //    '<span class="field-validation-valid text-danger" data-valmsg-for="txtRepDate-' + id + '" data-valmsg-replace="true"></span>' +
+                    //    '</td>' +
+
+                    //    '<td>' +
+                    //    '<input class="form-control k-textbox txtQuan"' +
+                    //    'required="" data-required-msg="*" id="txtQuan-' + id + '"' +
+                    //    'name="txtQuan-' + id + '" type="text" value="" aria-invalid="true"' +
+                    //    'style="width:100%;float:left;"' +
+                    //    'pattern="^[0-9]{0,3}$" title="Invalid">' +
+                    //    '<span class="field-validation-valid text-danger" data-valmsg-for="txtQuan-' + id + '" data-valmsg-replace="true"></span>' +
+                    //    '</td>' +
+                    //    '<td>' + dataItem.UnitName + '</td>' +
+                    //    '</tr>');
+                }
+            }
+        }
+    };
+    function onSparePartsChange(e) {
+        previous = this._savedOld;
+        current = this.value();
+        var diff = [];
+        if (previous) {
+            diff = $(previous).not(current).get();
+        }
+        this._savedOld = current.slice(0);
+        if (diff.length > 0) {
+            $("#trfor-" + diff).remove();
+        }
+        selectedPartsIds = this.value();
+    }
+    $("#btnMachineCreate").click(function () {
+        var validation = $("#div_machine_type").kendoValidator({
+            rules: {
+                proName: function (input) {
+                    if (input.is("[name=SpareParts]") && $("#ChkAllPartsSame").is(":checked") && current.length == 0 && !(isMachineSeleted)) {
+                        return true;
+                    }
+                    else
+                        return true;
+                }
+            },
+            messages: {
+                proName: "Please select parts",
+            }
+        }).data("kendoValidator");
+        if (validation.validate()) {
+            if (isMachineSeleted) {
+                url = '@Url.Action("AddMachine", "Inventory")';
+                sendData = { id: Id, quan: $("#Quantity").val(), userId: userId };
+
+                $("#div_machine_type").hide();
+                $("#div_machine_type").empty();
+                $("#div_For_DefineMachine").empty();
+                $("#div_For_DefineMachine").append('<div class="loading_partial"></div>');
+                $("#div_For_DefineMachine").show();
+                $("#div_For_DefineMachine").load('@Url.Action("DefineMachineDetails", "Inventory")?id=' + Id + '&quan=' + sendData.quan + '&isAdd=true');
+
+            } else {
+                notification.show({ message: "Machine type is creating....", showTime: startTime() }, "upload-progress");
+                var allPartsQuan = [], allPartsRepDate = [], AllId = [], AllUnit = [];
+                $(".spanForRep").each(function () {
+                    var id = $(this).data('id');
+                    var breakable = $(this).data('break');
+                    var touup = $(this).data('touup');
+                    var uid = $(this).data('uid'); allPartsQuan
+                    allPartsRepDate.push($("#txtRepDate-" + id).val());
+                    allPartsQuan.push($("#txtQuan-" + id).val());
+                    AllId.push(touup);
+                    if (breakable) {
+                        AllUnit.push($("#txtSpareUnitId-" + id).val());
+                    } else {
+                        AllUnit.push(uid);
+                    }
+                });
+                sendData = {
+                    MachineType: $("#MachineType").val(),
+                    Name: $("#Mahine_Name").val(),
+                    Acroynm: $("#Acroynm").val(), ModelName: $("#ModelName").val(),
+                    BrandName: $("#BrandName").val(), Mgf: $("#Mgf").val(),
+                    BrandId: BrandId, CountryOfOrigin: $("#CountryOfOrigin").val(),
+                    Quantity: $("#Quantity").val(), CreatedBy: userId,
+                    AllPartsSame: $("#AllPartsSame").val(),
+                    AllSpareId: current, allPartsQuan: allPartsQuan,
+                    allPartsRepDate: allPartsRepDate, AllUnit: AllUnit, AllId: AllId
+                };
+                url = '@Url.Action("MachineTypeSave", "Inventory")';
+
+                $.ajax({
+                    url: url,
+                    type: 'Post',
+                    data: sendData,
+                    success: function (data) {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        if (data === "Error") {
+                            notification.show({ message: "Machine type creation was unsuccessful.", showTime: startTime() }, "upload-error");
+                        } else {
+                            notification.show({ message: "Machine type has been successfully created. ", showTime: startTime() }, "upload-success");
+                            $("#div_machine_type").hide();
+                            $("#div_machine_type").empty();
+
+                            $("#div_For_DefineMachine").empty();
+                            $("#div_For_DefineMachine").append('<div class="loading_partial"></div>');
+                            $("#div_For_DefineMachine").show();
+                            $("#div_For_DefineMachine").load('@Url.Action("DefineMachineDetails", "Inventory")?id=' + data + '&quan=' + sendData.Quantity + '&isAdd=false');
+                        }
+                    }
+                });
+
+            }
+
+        }
+    });
+    $("#btnAddNewParts").click(function (e) {
+        e.preventDefault();
+        var userId = $("#UserId").val();
+        $("#WinForAddNewParts").empty();
+        $("#WinForAddNewParts").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '55%',
+            title: 'Add New Spare Parts',
+            close: onWindowClose
+        });
+        $("#win_brand_list").html('<div class="win_loading_half"></div>');
+        var win_brand_list = $("#win_brand_list").data("kendoWindow");
+        win_brand_list.refresh({ url: "/Inventory/_AddNewSpareParts?CreatedBy=" + userId });
+        win_brand_list.center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+
+    });
+
+    $("#btnMachineRefresh").click(function () {
+        location.reload();
+    });
+    $("#btnMachineCreateCancel").click(function () {
+        if ('@ViewBag.v' == "add")
+        {
+            location.href = '@Url.Action("AllEquipmentList", "Inventory")';
+        } else {
+            location.href = '@Url.Action("AllMachineList", "Inventory")';
+        }
+    });
+    $("#btn_Pro_Edit").click(function () {
+        location.href = '@Url.Action("MachineTypeAdd", "Inventory")';
+    })
+    $("#btn_brand_list").click(function () {
+        $("#win_brand_list").empty();
+        $("#win_brand_list").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '55%',
+            title: 'Brand List',
+            close: onWindowClose
+        });
+        $("#win_brand_list").html('<div class="win_loading_half"></div>');
+        var win_brand_list = $("#win_brand_list").data("kendoWindow");
+        win_brand_list.refresh({ url: "/Inventory/_ShowBrandList" });
+        win_brand_list.center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+    });
+    function sparePartsQuantity() {
+        
+        $("#win_spare_parts_quantity").empty();
+        $("#win_spare_parts_quantity").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '25%',
+            title: 'Brand List',
+            close: onWindowClose
+        });
+        $("#win_spare_parts_quantity").html('<div class="win_loading_half"></div>');
+        var win_brand_list = $("#win_spare_parts_quantity").data("kendoWindow");
+        win_brand_list.refresh({ url: "/Inventory/_ConfirmPartsQuantity" });
+        win_brand_list.center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+    }
+    $("#win_spare_parts_quantity").on("click", "#cancel_parts_qauntity", function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#win_spare_parts_quantity").on("click", "#refresh_parts_qauntity", function () {
+        $("#win_spare_parts_quantity").empty();
+        $("#win_spare_parts_quantity").html('<div class="win_loading_half"></div>');
+        $("#win_spare_parts_quantity").load("/Inventory/_ConfirmPartsQuantity");
+    });
+
+    $("#div_For_DefineMachine").on("click", ".remove_parts", function () {
+        var id = $(this).data("id");
+        var name = $(this).data("name");
+        var index;
+        $("#Parts_" + id).remove();
+        for (var i = 0; i < selectedPartsIds.length; i++) {
+            if (selectedPartsIds[i] == id) {
+                selectedPartsIds.splice(i, 1);
+            }
+        }
+
+        $("#SpareParts_taglist").find('li').find('span').each(function () {
+            if ($(this).text() == name) {
+                $(this).parent().remove();
+                //var dataItems = $("#SpareParts").data("kendoMultiSelect").dataItems();
+                //for (var x = 0; x < dataItems.length; x++) {
+                //    if (id == dataItems[x].PartsId) {
+                //        index = x + 1;
+                //        $("#SpareParts").data("kendoMultiSelect").value().splice(x,index);
+                //    }
+                //}
+            }
+        });
+    });
+</script>

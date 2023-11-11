@@ -1,0 +1,67 @@
+﻿
+@************************************** Created By Jerin Jahan (Date:2.11.2016)  ***************************************@
+
+@model FactoryManagement.Models.View_UserLists
+
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    var TotalDueAmnt = (from m in db.EmpSalaryPaymentDetails
+                        where m.UserId == Model.UserId && m.UserType == Model.UserType
+                        select new
+                        {
+                            Due = m.TotalAmount - (m.PaidAmount == null?0:m.PaidAmount)
+                        }).Select(d=> d.Due).Sum();
+}
+
+<h4>Selected User Information</h4>
+
+<div style="float:left;width:100%;">
+    <div class="editor-label" style="margin-left:2em!important;width:30%!important;"><label for="PackageName">User Name</label></div>
+    <div class="editor-field" style="padding-top:5px;">
+        <span><img src="~/Images/UserPicture/thumb/@Model.Picture" class="user-photo" /></span>@Model.UserName
+    </div>
+</div>
+<div style="float:left;width:100%;">
+    <div class="editor-label" style="margin-left:2em!important;width:30%!important;"><label for="PackageName">Site name</label></div>
+    <div class="editor-field" style="padding-top:5px;">
+        @Model.SiteName
+    </div>
+</div>
+<div style="float:left;width:100%;">
+    <div class="editor-label" style="margin-left:2em!important;width:30%!important;"><label for="PackageName">Dept. Name</label></div>
+    <div class="editor-field" style="padding-top:5px;">
+        @Model.DeptName
+    </div>
+</div>
+<div style="float:left;width:100%;">
+    <div class="editor-label" style="margin-left:2em!important;width:30%!important;"><label for="PackageName">Designation</label></div>
+    <div class="editor-field" style="padding-top:5px;">
+        @Model.DesignationName
+    </div>
+</div>
+<div style="float:left;width:100%;">
+    <div class="editor-label" style="margin-left:2em!important;width:30%!important;"><label for="PackageName">Join Date</label></div>
+    <div class="editor-field" style="padding-top:5px;">
+        @Convert.ToDateTime(Model.JoinDate).ToString("MMMM dd,yyyy")
+    </div>
+</div>
+<div style="float:left;width:100%;">
+    <div class="editor-label" style="margin-left:2em!important;width:30%!important;"><label for="PackageName">Current Salary Package</label></div>
+    <div class="editor-field" style="padding-top:5px;">
+        <a href="/SalaryConfig/SalaryPackageConfig/@Model.SalaryPackageId">
+            <span id="userSalaryPackage">@db.Salary_Package_List.Where(m => m.PackageId == Model.SalaryPackageId).Select(m => m.PackageName).FirstOrDefault()</span>
+        </a>
+    </div>
+</div>
+<div style="float:left;width:100%;">
+    <div class="editor-label" style="margin-left:2em!important;width:30%!important;"><label for="PackageName">Due Amount</label></div>
+    <div class="editor-field" style="padding-top:5px;">
+        @currency @TotalDueAmnt
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        username = '@Model.UserName';
+    });
+</script>

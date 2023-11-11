@@ -1,0 +1,7 @@
+﻿
+@{ 
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    long id = ViewBag.UserId;
+    var user = db.View_UserLists.Where(x => x.UserId ==id ).FirstOrDefault();
+}
+<img src="~/Images/UserPicture/Original/@user.Picture"/>

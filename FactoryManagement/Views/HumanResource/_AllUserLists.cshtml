@@ -1,0 +1,97 @@
+﻿
+@using FactoryManagement.Helpers
+@{
+    var count = 0;
+}
+<table class="table table-bordered" id="tbl_AllUser">
+    <tbody>
+        <tr>
+            <th width="2%">#</th>
+            <th width="20%">Name</th>
+            <th width="10%">User Type</th>
+            <th width="15%">Designation</th>
+            <th width="10%">Join Date</th>
+            <th width="15%"></th>
+        </tr>
+        @foreach (var item in ViewBag.UserList as IEnumerable<FactoryManagement.ModelView.HR.UserInformationModelView>)
+        {
+            count++;
+            <tr>
+                <th>@count .</th>
+                <td>
+                    @if (item.Picture != null && item.Picture != "")
+                    {
+                        <img class="img-circle" src="~/Images/UserPicture/thumb/@item.Picture" />
+                    }
+                    else
+                    {
+                        <img src="~/Images/Icon/blank-person.jpg" class="img-circle" width="29" height="29" alt="">
+                    }
+                    <a href="@Html.EncodedParam("DisplayEmployeeDetails","HumanResource",new {UserId=item.UserId,isDisplay=true },null)">@Html.DisplayFor(modelItem => item.UserName)</a>
+                </td>
+                <td>@Html.DisplayFor(modelItem => item.UserTypeName)</td>
+                <td>@Html.DisplayFor(modelItem => item.Designation)</td>
+                <td>@Convert.ToDateTime(item.JoinDate).ToString("MMM dd,yyyy")</td>
+                <td>
+                    <a class="btn green"
+                       data-toggle="tooltip" title="Edit User Info"
+                       href="@Html.EncodedParam("DisplayEmployeeDetails","HumanResource",new {UserId=item.UserId,isDisplay=false },null)"><i class="fa fa-pencil"></i></a>
+                 @if (item.Status == 1)
+                 {
+                    <button type="button" data-userid="@item.UserId" data-isactive="1" class="btn btn-success activateUser" disabled data-toggle="tooltip" title="Activate User">
+                        <i class="fa fa-play" aria-hidden="true"></i>
+                    </button>
+                    <button type="button" data-userid="@item.UserId" data-isactive="0" class="btn btn-danger inactivateUser" data-toggle="tooltip" title="Inactivate User">
+                        <i class="fa fa-stop" aria-hidden="true"></i>
+                    </button>
+                 }
+                 else
+                 {                 
+                    <button type="button" data-userid="@item.UserId" data-isactive="1" class="btn btn-success activateUser" data-toggle="tooltip" title="Activate User">
+                        <i class="fa fa-play" aria-hidden="true"></i>
+                    </button>
+                    <button type="button" data-userid="@item.UserId" data-isactive="0" class="btn btn-danger inactivateUser" disabled data-toggle="tooltip" title="Inactivate User">
+                        <i class="fa fa-stop" aria-hidden="true"></i>
+                    </button>
+                 }
+                    <button type="button" data-id="@item.UserId" class="btn yellow resetPassword" data-toggle="tooltip" title="Reset Password">
+                        <i class="fa fa-key" aria-hidden="true"></i>
+                    </button>
+                   @* <span class="btn btn-danger deleteUser" data-toggle="tooltip" title="Delete User" data-userid="@item.UserId" data-usertype="@item.UserType"><i class="fa fa-trash"></i></span>*@
+                    @*@if (item.AssginSalary)
+                    {
+                        <span class="btn blue showPckDetails"
+                              data-userid="@item.UserId"
+                              data-pckid="@item.SalaryPackageId"
+                              data-toggle="tooltip" title="Show Package Details"
+                              data-usertype="@item.UserType"
+                              style="margin-right:1%;">
+                            <i class="fa fa-info-circle"></i>
+                        </span>
+                        <span class="btn yellow chngSalaryPck"
+                              data-userid="@item.UserId"
+                              data-toggle="tooltip" title="Change Salary Package"
+                              data-pckid="@item.SalaryPackageId"
+                              data-usertype="@item.UserType">
+                            <i class="fa fa-edit"></i>
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="btn blue assingSalaryPck"
+                              data-toggle="tooltip" title="Assign Salary Package"
+                              data-userid="@item.UserId"
+                              data-usertype="@item.UserType">
+                            <i class="fa fa-gear"></i>
+                        </span>
+                    }*@
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<script>
+    totalCount = '@(ViewBag.TotalUser)';
+    showCount = '@count';
+    $('[data-toggle="tooltip"]').tooltip();
+</script>

@@ -1,0 +1,169 @@
+﻿@model IEnumerable<FactoryManagement.Models.View_All_StoreWarehouseLists>
+@{
+    ViewBag.Title = "LocationWise Routed History";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    int tabCount = 0;
+    int divCount = 0;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/StoreProduct/InvenRouteVoucherList"> Routed History</a>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <span> Routed History Location Wise</span>
+        </li>
+    </ul>
+</div>
+<div class="note note-success"><p id="h4title">Showing Location Wise Routed History</p></div>
+<div class="row" style="margin-bottom:10px">
+    <div class="col-xs-12">
+        <a href="/StoreProduct/ProductWiseRoutedHistory" class="btn green" data-toggle="tooltip" data-container="body" title="View Location wise History">Location Wise</a>
+        <a href="/StoreProduct/ProductWiseRoutedHistory" class="btn purple" data-toggle="tooltip" data-container="body" title="View Product wise History">Product Wise</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">LocationWise ROuted History</span>
+                </div>
+                <div class="actions">
+                    <div class="btn-group btn-group-devided" data-toggle="buttons" id="Div_Upper_Portion1" style="display:none;">
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm active" id="btn_All" data-toggle="tooltip" title="All History" data-container="body">
+                            <input type="radio" name="options" class="toggle">All
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_today" data-toggle="tooltip" title="Today History" data-container="body">
+                            <span><input type="radio" name="options" class="toggle">Today</span>
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_seven" data-toggle="tooltip" title="Last 7 days History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 7 Days
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_thirty" data-toggle="tooltip" title="Last 30 day History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 30 Days
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="panel with-nav-tabs panel-default">
+                    <div class="panel-heading">
+                        <ul class="nav nav-tabs">
+                            <li class="active" id="liForAll">
+                                 <a href="#tab1AllRoute" data-toggle="tab">All</a>
+                            </li>
+                            @foreach (var loc in db.StoreLists.ToList())
+                            {
+                                        tabCount++;
+                                <li class="liForLocName" data-tabcount="@tabCount" data-loc="s" data-locationid="@loc.Id" data-locationname="@loc.StoreAcroynm"><a href="#LocationTab_@tabCount" data-toggle="tab">@loc.StoreAcroynm</a></li>
+                            }
+                            @foreach (var loc in db.WarehouseLists.ToList())
+                            {
+                                tabCount++;
+                                <li class="liForLocName" data-tabcount="@tabCount" data-loc="w" data-locationid="@loc.Id" data-locationname="@loc.WarehouseAcroynm"><a href="#LocationTab_@tabCount" data-toggle="tab">@loc.WarehouseAcroynm</a></li>
+                            }
+                            @*<li class="active" id="liForAllDis"><a href="#tab1AllDis" data-toggle="tab">All</a></li>
+                            <li id="liForMachine"><a href="#tab1MachineList" data-toggle="tab">Machine</a></li>
+                            <li id="liForPlace"><a href="#tab2PlaceList" data-toggle="tab">Location</a></li>*@
+                        </ul>
+                    </div>
+                    <div class="panel-body" style="border:none!important;" id="div_for_panel_body">
+                        <div class="tab-content">
+                            <div class="tab-pane fade in active" id="tab1AllRoute">                             
+                            </div>
+                            @foreach (var u in db.StoreLists.ToList())
+                            {
+                                divCount++;
+                                <div class="tab-pane fade tab_@u.Id" id="LocationTab_@divCount" data-divcount="@divCount"></div>
+                            }
+                            @foreach (var u in db.WarehouseLists.ToList())
+                            {
+                                divCount++;
+                                <div class="tab-pane fade tab_@u.Id" id="LocationTab_@divCount" data-divcount="@divCount"></div>
+                            }
+                        </div>
+                      
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="win_item_quan_info"></div>
+<div id="win_item_requan_info"></div>
+<script>
+    $(document).ready(function () {
+        $("#liForInventory").addClass("active");
+        $("#liForRouteVouHis").addClass("sublistActive");
+        $("#liForAll").click();
+    });
+    $("#liForAll").click(function () {
+        tab = 0, uid = 0;
+        $("#tab1AllRoute").empty();
+        $("#tab1AllRoute").append('<div class="loading_partial"></div>');
+        $("#tab1AllRoute").load('@Url.Action("_InvenRouteVoucherList", "StoreProduct")');
+    });
+    $(".liForLocName").click(function () {
+        var tabcount = $(this).data("tabcount");
+        var loc = $(this).data("loc");
+        var locationid = $(this).data("locationid");
+        var acronym = $(this).data("locationname");
+        $("#LocationTab_" + tabcount).empty().append('<div class="loading_partial"></div>')
+        .load('@Url.Action("_LocationWiseRoutedHistory", "StoreProduct")?location='+locationid+"-"+loc);
+    });
+    $(document).on("click", ".totalQuan", function (e) {
+        e.preventDefault();
+        var invenid = $(this).data("inventoryid");
+        var disid = $(this).data("disid");
+        var locationId = $(this).data("locationid");
+        $("#win_item_quan_info").empty();
+        $("#win_item_quan_info").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '80%',
+            height: '50%',
+            title:' Route Info'
+        });
+        $("#win_item_quan_info").html('<div class="win_loading_half"></div>');
+        var win_item_quan_info = $("#win_item_quan_info").data("kendoWindow");
+        win_item_quan_info.refresh({ url: "/StoreProduct/ShowInvenRouteQuanDetails?invenid=" + invenid + '&DisId=' + disid + "&locationId=" + locationId });
+        win_item_quan_info.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+    $(document).on("click", ".returnQuan", function (e) {
+        e.preventDefault();
+        var invenid = $(this).data("inventoryid");
+        var disid = $(this).data("disid");
+        var locationId = $(this).data("locationid");
+        $("#win_item_requan_info").empty();
+        $("#win_item_requan_info").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '80%',
+            height: '50%',
+            title: 'Route Info'
+        });
+        $("#win_item_requan_info").html('<div class="win_loading_half"></div>');
+        var win_item_requan_info = $("#win_item_requan_info").data("kendoWindow");
+        win_item_requan_info.refresh({ url: "/StoreProduct/ShowInvenRouteReQuanDetails?invenid=" + invenid + '&DisId=' + disid + "&locationId="+locationId });
+        win_item_requan_info.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+</script>

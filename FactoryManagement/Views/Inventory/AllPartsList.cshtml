@@ -1,0 +1,204 @@
+﻿@******************************** Created By Jerin Jahan (Date:26.07.2016) *********************************@
+@{
+    ViewBag.Title = "Spare Parts Lists";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml"; 
+}
+
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-building"></i>
+            <a href="/Home/EquipDash">Equipments</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Inventory/AllPartsList">All Spare Parts List</a>
+        </li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">All Spare Parts List</span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div style="display:none;" id="div_spartParts">
+                    <table class="table table-hover table-bordered table-striped table-condensed" style="margin-bottom:0px!important;border-bottom:none!important;">
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <span class="autocomplete-wrapper">
+                                        <input class="text-field" id="textForSearch" placeholder="Type parts name (e.g. Separators)" type="text" autocomplete="off">
+                                        <span class="k-icon k-i-search" style="margin-top:-25px;margin-right:10px;float:right;">&nbsp;</span>
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table class="table table-hover table-bordered table-striped table-condensed tableForSparePartsList"><tbody></tbody></table>
+                </div>
+                <div id="loading" style="display:none"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var showCount = 0, totalCount = 0,page = 0,content='', inCallback = false;
+    $(document).ready(function () {
+        $("#liEquipments").addClass("sublistActive");
+        $("#div_spartParts").show();
+        $("table.tableForSparePartsList > tbody").append('<div class="loading_partial"></div>')
+        $("table.tableForSparePartsList > tbody").load('@Url.Action("_ShowAllPartsList", "Inventory")');
+        $("#liForInventory").addClass('active');
+        $('#liForInventory > ul > li:first').addClass('open');
+        $('#liForInventory > ul > li:first >ul:first').show();
+        $("#ListForSpareParts").addClass('sublistActive');
+    });
+
+    $(function () {
+        $("#textForSearch").autocomplete({
+            minLength: 0,
+            source: function (request, response) {
+                content=$.trim(request.term);
+                $.ajax({
+                    url: '@Url.Action("PartsNameSearching", "Inventory")',
+                    type: "POST",
+                    dataType: "json",
+                    data: { prefix: content },
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return { label: item.ProductName, value: item.ProductName, id: item.InventoryId };
+                        }))
+                    }
+                })
+            },
+            minLength: 1,
+            select: function (event, ui) {
+                isloadFirstTime = true;
+                var selectTextId = ui.item.id;
+                $("table.tableForSparePartsList > tbody").append('<div class="loading_partial"></div>')
+                $("table.tableForSparePartsList > tbody").load('@Url.Action("_ShowAllPartsList", "Inventory")?PartsId='+selectTextId);
+            },
+        })
+    .keyup(function(){
+        if($.trim($("#textForSearch").val())==""){
+            showCount = 20; page = 0;
+            $("table.tableForSparePartsList > tbody").load('@Url.Action("_ShowAllPartsList", "Inventory")');
+        }
+    })
+    .autocomplete("instance")._renderItem = function (ul, item) {
+        var term=$.trim(this.term);
+
+        var re = new RegExp("(" + term + ")", "gi"),
+                   cls = "bold-text",
+                   template = "<span class='" + cls + "'>$1</span>",
+                   label = item.label.replace(re, template),
+                   $li = $("<li/>").appendTo(ul);
+        $("<a/>").attr("href", "#")
+                 .html(label)
+                 .appendTo($li);
+        return $li;
+    };
+    });
+
+    //***********************************  Spart Parts Delete Function ***********************************************************************
+
+    $("#div_spartParts").on("click", ".btnPartsDelete", function (e) {
+        if (confirm('Are you sure want to delete this parts?')) {
+            e.preventDefault();
+            var partsId = $(this).data("id");
+            notification.show({
+                message: "Deleting Spare parts ",showTime: startTime()}, "upload-progress");
+
+
+            $.ajax({
+                url: '@Url.Action("DeleteParts", "Inventory")',
+                type: 'Post',
+                data: { partsId: partsId,UserId: userId},
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({autoHideAfter: 2000});
+                    if(data === "Success"){
+                        notification.show({message: "Spare parts successfully deleted", showTime: startTime()}, "upload-success");
+                        $("#divForLoading").show();
+                        $("table.tableForSparePartsList > tbody").load('@Url.Action("_ShowAllPartsList", "Inventory")');
+                        $("#divForLoading").hide();
+                    }else{
+
+                        notification.show({
+                            message: "Spare parts deletion unsuccessful", showTime: startTime(),
+                        }, "upload-error");
+                    }
+                }
+            });
+        }
+    });
+</script>
+
+<script>
+        @******************************** OnScroll Bind Table Data *************************@
+    $(window).scroll(function () {
+        var countBytype, result;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/Inventory/GetSparePartsList',
+            data: { page: page },
+            success: function (data) {
+                var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun","Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        var date = new Date(data[i].CreatedDateName);
+                        var getdate= (monthNames[date.getMonth()]) + " " + date.getDate() + "," + date.getFullYear();
+                        $("table.tableForSparePartsList > tbody").append(
+                            '<tr><th scope="row">' + showCount + '</th>' +
+                            '<td>' + data[i].PartsName + '</td>'+
+                            '<td>' + data[i].TypeName + '</td>'+
+                            '<td>'+''+
+                            ((data[i].CreatedBy == 0)?
+                            '<img src="/Images/UserPicture/thumb/admin.jpg" class="user-photo" />'+' '+data[i].UserName
+                                :'<img class="img-circle" src="/Images/UserPicture/thumb/'+data[i].Picture+'">'+' '+data[i].UserName)+
+                            '<td>' +getdate+ '</td>' +
+                            '<td>'+
+                            '<a href="/Inventory/SparePartsCreated?q=' + getDataEncrypted("id=" + data[i].PartsId)+'">'+
+                            '<span class="btn btn-success"><i class="fa fa-pencil"></i></span></a>' +
+                            '<span data-id="'+data[i].PartsId+'"class="btn btn-danger btnPartsDelete" style="margin-left:5px;"><i class="fa fa-trash"></i></span>'+
+                            '</td>'+
+                            '</tr>'
+                            );
+                    }
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+</script>

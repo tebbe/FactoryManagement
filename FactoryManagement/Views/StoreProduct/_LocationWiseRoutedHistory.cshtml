@@ -1,0 +1,82 @@
+﻿@model IEnumerable<FactoryManagement.Models.View_Routedhistory>
+    @using FactoryManagement.Helpers
+    @{ 
+        
+        var list = Model.GroupBy(c => c.InventoryId).Select(x => new FactoryManagement.Models.View_Routedhistory
+        {
+            Quantity=x.Sum(c=>c.Quantity),
+            VoucherName=x.FirstOrDefault().VoucherName,
+            DispatchedDate=x.FirstOrDefault().DispatchedDate,
+            UserName=x.FirstOrDefault().UserName,
+            DispatchedId=x.FirstOrDefault().DispatchedId,
+            UserId=x.FirstOrDefault().UserId,
+            Picture=x.FirstOrDefault().Picture,
+            ReturnQuantity=x.Sum(c=>c.ReturnQuantity),
+            UsedQuan=x.Sum(c=>c.UsedQuan),
+            InventoryId=x.FirstOrDefault().InventoryId,
+            ProductName=x.FirstOrDefault().ProductName,
+            
+            LocationId=x.FirstOrDefault().LocationId
+        }).ToList();
+        int count = 0;
+
+        }
+<style>
+    .cursor {
+        cursor: pointer;
+        color: #5b9bd1;
+    }
+</style>
+    <table class="table table-hover table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>SL</th>
+                <th>Voucher Name</th>
+                <th>Product Name</th>
+                <th>
+                   Total Quantity
+                </th>
+                <th>Return Quantity</th>
+                <th>Total Stored Quantity</th>
+                <th>
+                    Routed Date
+                </th>
+                <th>Assigned By</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in list) {
+                count++;
+                <tr>
+                    <td>@count</td>
+                    <td>
+                    @Html.EncodedActionLink(item.VoucherName, "RoutedHistoryDetails", "StoreProduct", new { id = item.DispatchedId }, null)                    
+                    </td>
+                    <td><a href="@Html.EncodedParam("StoreProductWithLCDetails", "StoreProduct", new { id = item.LocationId}, null)">@item.ProductName</a></td>
+                    <td><span class="cursor totalQuan" data-locationid="@ViewBag.locationId" data-inventoryid="@item.InventoryId" data-disid="@item.DispatchedId">@item.Quantity</span></td>
+                    <td>
+                        @if (item.ReturnQuantity <=0)
+                        {
+                            <span>@item.ReturnQuantity</span>
+                        }
+                        else {
+                            <span class="cursor returnQuan" data-locationid="@ViewBag.locationId" data-inventoryid="@item.InventoryId" data-disid="@item.DispatchedId">
+                                @item.ReturnQuantity
+                            </span>
+                        }
+
+                    </td>
+                    <td>
+                            <span>@item.UsedQuan</span>
+                    </td>
+                    <td>@item.DispatchedDate.ToString("MMM dd,yyyy")</td>
+                    
+                    <td>
+                        <a href="@Html.EncodedParam("DisplayEmployeeDetails","HumanResource",new { isDisplay=true,userId=item.UserId},null)">
+                            <img src="~/Images/UserPicture/thumb/@item.Picture"/> @item.UserName
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>

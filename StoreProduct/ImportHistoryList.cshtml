@@ -1,0 +1,371 @@
+﻿@************************************* Created by Jerin Jahan (Date: 03.12.2016) ******************************************@
+
+@using FactoryManagement.Helpers;
+@{
+    ViewBag.Title = "Import History List";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-list" aria-hidden="true"></i>
+            <a href="/StoreProduct/ImportHistoryList">All Import History</a>
+        </li>
+    </ul>
+</div>
+<div class="note note-success"><p id="h4title">Show All Import History</p></div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">Import History</span>
+                </div>
+                <div class="actions">
+                    <div class="btn-group btn-group-devided" data-toggle="buttons" id="Div_Upper_Portion1" style="display:none;">
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm active" id="btn_All" data-toggle="tooltip" title="All History" data-container="body">
+                            <input type="radio" name="options" class="toggle">All
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_today" data-toggle="tooltip" title="Today History" data-container="body">
+                            <span><input type="radio" name="options" class="toggle">Today</span>
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_seven" data-toggle="tooltip" title="Last 7 days History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 7 Days
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_thirty" data-toggle="tooltip" title="Last 30 day History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 30 Days
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="panel with-nav-tabs panel-default">
+                    <div class="panel-heading">
+                        <ul class="nav nav-tabs">
+                            <li class="active" id="liForVoucher"><a href="#tab1Voucher" data-toggle="tab">Voucher Wise</a></li>
+                            <li id="liForLC"><a href="#tab2LC" data-toggle="tab">L/C Wise</a></li>
+                        </ul>
+                    </div>
+                    <div class="panel-body" style="border:none!important;" id="div_for_panel_body">
+                        <div class="tab-content">
+                            <div class="tab-pane fade in active" id="tab1Voucher">
+                                <div id="Div_All_Imp_His" style="display:none;"></div>
+                                @if (db.Import_History.Any())
+                                {
+                                    <script>
+                                        $("#Div_Upper_Portion1").show();
+                                        $("#Div_All_Imp_His").append('<div class="loading_partial"></div>');
+                                        $("#Div_All_Imp_His").show();
+                                        $("#Div_All_Imp_His").load('@Url.Action("_ImportHistoryList", "StoreProduct")');
+                                    </script>
+                                }
+                                else
+                                {
+                                    <script>
+                                        $("#Div_All_Imp_His").append(' <h3>There is no record to display...</h3>');
+                                        $("#Div_All_Imp_His").show();
+                                    </script>
+                                }
+                            </div>
+                            <div class="tab-pane fade" id="tab2LC">
+                                <div id="Div_All_Imp_His_LC" style="display:none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="loading" style="display:none;"></div>
+<div id="Win_show_Imp_His_Dtls"></div>
+<div id="Win_show_Imp_His_Dtls_LC"></div>
+<div id="win_imp_his_details_print"></div>
+<div id="win_show_user_details"></div>
+
+<script>
+    var showCount = 0, totalCount = 0, page = 0, inCallback = false,days = 0; var tab = 1;
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $("#liForAllImpHis").addClass('sublistActive');
+    });
+    $("#Div_All_Imp_His").on("click",".insertedby_popup_class",function (e) {
+        var userId = $(this).data("userid");
+        e.preventDefault();
+        $("#win_show_user_details").empty();
+        $("#win_show_user_details").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '40%',
+            title: 'Employee Details',
+            close: onWindowClose
+        });
+        $("#win_show_user_details").html('<div class="loading_40em"></div>');
+        var win_show_user_details = $("#win_show_user_details").data("kendoWindow");
+        win_show_user_details.refresh({ url: "/HumanResource/_EmployeeBasicDetails?UserId="+userId });
+        win_show_user_details.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+    $("#liForVoucher").click(function () {
+        $("#btn_today").removeClass('active');
+        $("#btn_last_seven").removeClass('active');
+        $("#btn_last_thirty").removeClass('active');
+        $("#btn_All").addClass('active');
+        tab = 1; showCount = 0; totalCount = 0; page = 0;
+        $("#h4title").text("Show All Import History");
+        $("#Div_All_Imp_His").empty();
+        $("#Div_All_Imp_His").append('<div class="win_loading_half"></div>');
+        $("#Div_All_Imp_His ").show();
+        $("#Div_All_Imp_His").load('@Url.Action("_ImportHistoryList", "StoreProduct")');
+    });
+    $("#liForLC").click(function () {
+        $("#btn_today").removeClass('active');
+        $("#btn_last_seven").removeClass('active');
+        $("#btn_last_thirty").removeClass('active');
+        $("#btn_All").addClass('active');
+        tab = 2; showCount = 0; totalCount = 0; page = 0;
+        $("#h4title").text("Show All Import History");
+        $("#Div_All_Imp_His_LC").empty();
+        $("#Div_All_Imp_His_LC").append('<div class="win_loading_half"></div>');
+        $("#Div_All_Imp_His_LC").show();
+        $("#Div_All_Imp_His_LC").load('@Url.Action("_ImportHistoryLCList", "StoreProduct")');
+    });
+    @******************************** OnScroll Bind Table Data *************************@
+    $(window).scroll(function () {
+        var countBytype, result;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        if (tab == 1) {
+            $.ajax({
+                type: 'GET',
+                url: '/StoreProduct/GetImportHistory',
+                data: { page: page ,tab:tab},
+                success: function (data) {
+                    if (data != '') {
+                        for (var i = 0; i < data.length; i++) {
+                            showCount++;
+                            $("table#tbl_import_history").append('<tr><th>' + showCount + '.</th>' +
+                                '<td><a style="text-decoration:none" data-id="' + data[i].ImportId + '" class="showDetailsByImportId">' + data[i].TransactionName + '</a></td>' +
+                                '<td><a style="text-decoration:none" href="/StoreProduct/StoreProductDetails?q=' + getDataEncrypted("id=" + data[i].InventoryId) + '">' + data[i].ProductName + '</a></td>' +
+                                '<td>' + data[i].InsertedDateFormat + '</td>' +
+
+                                '<td><img class="img-circle" src="/Images/UserPicture/thumb/' + data[i].InsertedUserPic + '">' +
+                                ((data[i].InsertedBy > 0) ? '<a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].InsertedBy + "?isDisplay=true") + '">' + ' ' + data[i].InsertedByUserName + '</a>' : ' <span>Super admin</span>'
+                                    ) +
+                                 '</td>' +
+                                 '</td></tr>');
+                        }
+                    }
+                    else {
+                        page = -1;
+                    }
+                    inCallback = false;
+                    $("#loading").hide();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(error);
+                }
+            });
+        }
+        else {
+            $.ajax({
+                type: 'GET',
+                url: '/StoreProduct/GetImportHistory',
+                data: { page: page, tab: tab },
+                success: function (data) {
+                    if (data != '') {
+                        for (var i = 0; i < data.length; i++) {
+                            showCount++;
+                            $("table#tbl_import_history_LC").append('<tr><th>' + showCount + '.</th>' +
+                                '<td><a style="text-decoration:none" data-lc="' + data[i].L_C + '" class="ShowLCDetails">' + data[i].L_C + '</a></td>' +
+                                '<td><a style="text-decoration:none" href="/StoreProduct/StoreProductDetails?q=' + getDataEncrypted("id=" + data[i].InventoryId) + '">' + data[i].ProductName + '</a></td>' +
+                                '<td>' + data[i].InsertedDateFormat + '</td>' +
+
+                                '<td><img class="img-circle" src="/Images/UserPicture/thumb/' + data[i].InsertedUserPic + '">' +
+                                ((data[i].InsertedBy > 0) ? '<a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].InsertedBy + "?isDisplay=true") + '">' + ' ' + data[i].InsertedByUserName + '</a>' : ' <span>Super admin</span>'
+                                    ) +
+                                 '</td>' +
+                                 '</td></tr>');
+                        }
+                    }
+                    else {
+                        page = -1;
+                    }
+                    inCallback = false;
+                    $("#loading").hide();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(error);
+                }
+            });
+        }
+    }
+</script>
+<script>
+    $("#btn_today").click(function () {
+        $("#btn_All").removeClass('active');
+        $("#btn_last_seven").removeClass('active');
+        $("#btn_last_thirty").removeClass('active');
+        $("#btn_today").addClass('active');
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0; days = 1;
+        passdata = { days: 1 };
+        if (tab == 1) {
+            $("#Div_All_Imp_His").empty();
+            $("#Div_All_Imp_His").append('<div class="loading_partial"></div>');
+            $("#h4title").text("Showing Today's Import History");
+            $("#Div_All_Imp_His").load('@Url.Action("_ImportHistoryList", "StoreProduct")?days=1');
+        }
+        else {
+            $("#Div_All_Imp_His_LC").empty();
+            $("#Div_All_Imp_His_LC").append('<div class="loading_partial"></div>');
+            $("#h4title").text("Showing Today's Import History");
+            $("#Div_All_Imp_His_LC").load('@Url.Action("_ImportHistoryListLCDayWise", "StoreProduct")?days=1');
+        }
+    });
+    $("#btn_last_seven").click(function () {
+        $("#btn_All").removeClass('active');
+        $("#btn_today").removeClass('active');
+        $("#btn_last_thirty").removeClass('active');
+        $("#btn_last_seven").addClass('active');
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0; days = 7;
+        passdata = { days: 7, isStore: '@(ViewBag.isStore)' };
+        if (tab == 1) {
+            $("#Div_All_Imp_His").empty();
+            $("#Div_All_Imp_His").append('<div class="loading_partial"></div>');
+            $("#h4title").text("Showing Last 7 Days Import History");
+            $("#Div_All_Imp_His").load('@Url.Action("_ImportHistoryList", "StoreProduct")?days=7');
+        }
+        else {
+            $("#Div_All_Imp_His_LC").empty();
+            $("#Div_All_Imp_His_LC").append('<div class="loading_partial"></div>');
+            $("#h4title").text("Showing Last 7 Days Import History");
+            $("#Div_All_Imp_His_LC").load('@Url.Action("_ImportHistoryListLCDayWise", "StoreProduct")?days=7');
+        }
+    });
+    $("#btn_last_thirty").click(function () {
+        $("#btn_All").removeClass('active');
+        $("#btn_today").removeClass('active');
+        $("#btn_last_seven").removeClass('active');
+        $("#btn_last_thirty").addClass('active');
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0; days = 30;
+        passdata = { days: 30, isStore: '@(ViewBag.isStore)' };
+        if (tab == 1) {
+            $("#Div_All_Imp_His").empty();
+            $("#Div_All_Imp_His").append('<div class="loading_partial"></div>');
+            $("#h4title").text("Showing Last 30 Days Import History");
+            $("#Div_All_Imp_His").load('@Url.Action("_ImportHistoryList", "StoreProduct")?days=30');
+        }
+        else {
+            $("#Div_All_Imp_His_LC").empty();
+            $("#Div_All_Imp_His_LC").append('<div class="loading_partial"></div>');
+            $("#h4title").text("Showing Last 30 Days Import History");
+            $("#Div_All_Imp_His_LC").load('@Url.Action("_ImportHistoryListLCDayWise", "StoreProduct")?days=30');
+        }
+    });
+    $("#btn_All").click(function () {
+        $("#btn_today").removeClass('active');
+        $("#btn_last_seven").removeClass('active');
+        $("#btn_last_thirty").removeClass('active');
+        $("#btn_All").addClass('active');
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0; days = 0;
+        if (tab == 1) {
+            $("#Div_All_Imp_His").empty();
+            $("#Div_All_Imp_His").append('<div class="loading_partial"></div>');
+            $("#h4title").text("Show All Import History");
+            $("#Div_All_Imp_His").load('@Url.Action("_ImportHistoryList", "StoreProduct")');
+
+        } else {
+            $("#Div_All_Imp_His_LC").empty();
+            $("#Div_All_Imp_His_LC").append('<div class="loading_partial"></div>');
+            $("#h4title").text("Show All Import History");
+            $("#Div_All_Imp_His_LC").load('@Url.Action("_ImportHistoryLCList", "StoreProduct")');
+
+        }
+    });
+
+    //******************* Show Import Details Transactionwise ************************
+    $("#Div_All_Imp_His").on("click", ".showDetailsByImportId", function () {
+        var importId = $(this).data("id");
+        $("#Win_show_Imp_His_Dtls").empty();
+        $("#Win_show_Imp_His_Dtls").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '50%',
+            title: 'Import History Details'
+        });
+        $("#Win_show_Imp_His_Dtls").html('<div class="win_loading_half"></div>');
+        var Win_show_Imp_His_Dtls = $("#Win_show_Imp_His_Dtls").data("kendoWindow");
+        Win_show_Imp_His_Dtls.refresh({ url: "/StoreProduct/ImportHistoryDetails?id=" + importId });
+        Win_show_Imp_His_Dtls.center().open();
+    });
+    //********************* Show Import Details LC Wise ******************************
+    $("#Div_All_Imp_His_LC").on("click", ".ShowLCDetails", function () {
+        var lc = $(this).data("lc");
+        $("#Win_show_Imp_His_Dtls_LC").empty();
+        $("#Win_show_Imp_His_Dtls_LC").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '50%',
+            title: 'Import History Details LC Wise'
+        });
+        $("#Win_show_Imp_His_Dtls_LC").html('<div class="win_loading_half"></div>');
+        var Win_show_Imp_His_Dtls_LC = $("#Win_show_Imp_His_Dtls_LC").data("kendoWindow");
+        Win_show_Imp_His_Dtls_LC.refresh({ url: "/StoreProduct/ImportHistoryDetailsLC?lc=" + lc });
+        Win_show_Imp_His_Dtls_LC.center().open();
+    });
+</script>
+<script>
+     function filterByStoreWare() {
+        var ImportedTo = $("#ImportedTo").val();
+        var text = "Showing all Import History";
+        $("#Div_All_Imp_His").empty();
+        $("#Div_All_Imp_His").append('<div class="loading_partial"></div>');
+        if (parseInt(ImportedTo) == 1) {
+            text = "Showing Import History of Warehouse";
+        } else if (parseInt(ImportedTo) == 2) {
+            text = "Showing Import History of Store";
+        }
+        $("#h4title").text(text);
+        if (ImportedTo == null || ImportedTo == "") {
+            $("#Div_All_Imp_His").load('@Url.Action("_ImportHistoryList", "StoreProduct")');
+        } else {
+            $("#Div_All_Imp_His").load('@Url.Action("_ImportHistoryListStoreWareWise", "StoreProduct")?ImportedTo='+ImportedTo);
+        }
+    }
+    $("#Win_show_Imp_His_Dtls").on("click","#imp_his_print",function () {
+        var importId = $(this).data("id");
+        window.open('/StoreProduct/ImportHistoryDetailsPrint?id=' +importId , '_blank');       
+    });
+</script>

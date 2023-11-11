@@ -1,0 +1,178 @@
+﻿
+
+
+@**************************** Created By Jerin Jahan (Date:15.06.2017) *****************************************@
+@{
+    ViewBag.Title = "Inventory Product Lists";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+<style>
+    #categoryList li {margin-top: 0px;height: 30px;padding: 0px;width: 100%;border:1px solid blue;}
+    #categoryList li a {text-decoration: none;cursor: pointer;color: black;font-weight: bold;}
+    .selected {background-color: orange;}
+    #divForCategory .treeView {
+        padding: 10px 0px 10px 10px;
+        border: 1px solid #e6e6e6;
+        background-color: #f5f5f5;
+        border-radius: 3px;
+    }
+</style>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <a href="/StoreProduct/Store">Store</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-file-text" aria-hidden="true"></i>
+            <a href="/StoreProduct/AllInvntProListForLcDetails">Inventory All Item Lists</a>
+        </li>
+    </ul>
+</div>
+<div class="portlet light bordered">
+    <div class="portlet-title">
+        <div class="caption font-green">
+            <i class="fa fa-list-ul font-green"></i>
+            <span class="caption-subject green bold uppercase">Inventory Item Lists</span>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="row">
+            <div id="divForCategory" class="col-xs-12 col-sm-3 col-md-3">
+                <div id="tv_Ware_Pro_List" class="treeView"></div>
+            </div>
+            <div id="div_for_list" class="col-xs-12 col-sm-9 col-md-9">
+                <div id="Div_Inven_List"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script id="temp_tv_Ware_Pro_List" type="text/kendo-ui-template">
+    #if(item.id.split('-')[1] === 'c'){#
+    <label style="cursor:pointer;color:grey;font-weight:normal;width: 100%;"
+           class="lblTreeViewProType child"
+           data-id="#:item.id#"
+           data-text="#: item.text #">#: item.text # (#:item.Count#)</label>
+    #}else {#
+    <label style="cursor:pointer;color:black;font-weight:bold;width: 100%;"
+           class="lblTreeViewProType parent"
+           data-id=" #:item.id#"
+           data-text="#: item.text #">#: item.text #<span class='right-count'></span></label>
+    #}#
+</script>
+<script>
+    var AllId;
+    var showCount = 0, totalCount = 0, inCallback = false;
+    var page = 0;
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        var url = '/StoreProduct/ProductCategoryAll?userId=' + userId + '&roleId=' + roleId;
+        $.getJSON(url, function (data) {
+            $("#tv_Ware_Pro_List").kendoTreeView({
+                dataSource: data,
+                template: kendo.template($("#temp_tv_Ware_Pro_List").html()),
+            }).data("kendoTreeView");
+        });
+        $("#Div_Inven_List").empty();
+        $("#Div_Inven_List").append('<div class="loading_partial"></div>');
+        $("#Div_Inven_List").load('@Url.Action("InventoryProductListByType", "StoreProduct")?productTypeId=0&page=2');
+    });
+
+    //********** Left Side Item Category Select *****************
+    $("#tv_Ware_Pro_List").on("click", ".lblTreeViewProType", function (e) {
+        e.preventDefault();
+        var proId = 0,name="";
+        $("#Div_Inven_List").empty();
+        $("#Div_Inven_List").append('<div class="loading_partial"></div>');
+        if ($(this).data("id") == 0) {
+            name = "";
+            proId = 0;
+        }
+        else {
+            name = $(this).data("text");
+            proId = $(this).data("id").split('-')[0]; 
+        }
+        sendData = { productTypeId: proId, page: 2, name: name };
+        $("#Div_Inven_List").load('@Url.Action("InventoryProductListByType", "StoreProduct")', sendData);
+    });
+
+    $("#categoryList").on('click', 'li', function () {
+        var id = $(this).data("id");
+        $("#categoryList").find('li').each(function () {
+            if ($(this).hasClass("k-in k-state-selected")) {
+                $(this).removeClass("k-in k-state-selected")
+            }
+        });
+        $(this).addClass("k-in k-state-selected");
+        $("#Div_Inven_List").empty();
+        $("#Div_Inven_List").append('<div class="loading_partial"></div>');
+        $("#Div_Inven_List").load('@Url.Action("InventoryProductListByType", "StoreProduct")?productTypeId=' + id + '&page=2');
+    });
+
+    $(window).scroll(function () {
+        var countBytype, result;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    //$("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/StoreProduct/getProListonScroll',
+            data: { page: page },
+            success: function (data) {
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        if ('@ViewBag.page==2') {
+                            $("#invenlist_table").append('<tr>' +
+                                '<td>' + showCount + '</td>' +
+                             '<td><span><input type="checkbox" data-invenid="' + data[i].InventoryId + '" class="chkInven" /></span>' +
+                             data[i].ProductName
+                             + '</td>' +
+                        '<td>' + data[i].ProductType + '</td>' +
+                        '<td>' +
+                        '<a href="/StoreProduct/StoreProductDetails?q="' + getDataEncrypted("UserId=" + data[i].UserId) + '>' +
+                        '<span type="button" class="btn blue" data-toggle="tooltip" title="Show Details" data-container="body"><i class="fa fa-list-ul"></i> Details</span>' +
+                    '</a>' +
+                        '</td>' +
+                         '</tr>');
+                        } else {
+                            $("#invenlist_table").append('<tr>' +
+                                '<td>' + showCount + '</td>' +
+                             '<td>' +
+                             data[i].ProductName
+                             + '</td>' +
+                        '<td>' + data[i].ProductType + '</td>' +
+                        '<td>' +
+                        '<a href="/StoreProduct/StoreProductDetails?q="' + getDataEncrypted("UserId=" + data[i].UserId) + '>' +
+                        '<span type="button" class="btn blue" data-toggle="tooltip" title="Show Details" data-container="body"><i class="fa fa-list-ul"></i> Details</span>' +
+                    '</a>' +
+                        '</td>' +
+                         '</tr>');
+                        }
+                    }
+                } else {
+                    page = -1;
+                    inCallback = false;
+                    $("#loading").hide();
+                }
+                $('[data-toggle="tooltip"]').tooltip();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+
+
+        });
+    }
+</script>

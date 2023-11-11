@@ -1,0 +1,41 @@
+﻿@using FactoryManagement.Helpers
+@{
+    var count = 0;
+}
+<table class="table table-bordered table-hover table-responsive table-condensed table-striped" id="tbl_AllUser">
+    <tbody>
+        <tr>
+            <th width="4%">#</th>
+            <th width="20%">Name</th>
+            <th width="10%">User Type</th>
+            <th width="15%">Designation</th>
+            <th width="10%">Department</th>
+            <th width="10%">Time</th>
+            <th width="5%">Type</th>
+            <th width="10%"></th>
+        </tr>
+        @foreach (var item in ViewBag.UserList as IEnumerable<FactoryManagement.Models.View_Attendance_BCR>)
+        {
+            count++;
+            <tr>
+                <th>@count .</th>
+                <td>
+                    <img class="img-circle" src="~/Images/UserPicture/thumb/@item.Picture" />
+                    <a href="@Html.EncodedParam("DisplayEmployeeDetails","HumanResource",new { UserId=item.UserId,isDisplay=true},null)">@Html.DisplayFor(modelItem => item.UserName)</a>
+                </td>
+                <td>@Html.DisplayFor(modelItem => item.UserTypeName)</td>
+                <td>@Html.DisplayFor(modelItem => item.DesignationName)</td>
+                <td>@item.DeptName</td>
+                <td>@item.EntryDateTimeFormate</td>
+                <td>@item.EntryType</td>
+                <td><span data-toggle="tooltip" title="View History" class="btn blue allAttHis" data-userid="@item.UserId"><i class="fa fa-list-ul"></i> History</span></td>
+            </tr>
+        }
+    </tbody>
+</table>
+<script>
+    totalCount = '@(ViewBag.TotalUser)';
+    showCount = '@count';
+    $('[data-toggle="tooltip"]').tooltip();
+</script>
+

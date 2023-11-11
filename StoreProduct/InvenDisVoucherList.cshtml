@@ -1,0 +1,281 @@
+﻿
+@************************************* Created by Jerin Jahan (Date: 03.12.2016) ******************************************@
+@{
+    ViewBag.Title = "InvenDisVoucherList";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-list"></i>
+            <a href="/StoreProduct/InvenDisVoucherList">All Dispatch History</a>
+        </li>
+    </ul>
+</div>
+<div class="note note-success"><p id="h4title">All Dispatched History</p></div>
+<p>
+    <a href="/Inventory/UnitWiseCottonDispatchList" data-toggle="tooltip" title="Show Unit Wise Dispatch History" data-container="body"><span class="btn green"><i class="fa fa-list-ul"></i> Unit Wise</span></a>
+    <a href="/StoreProduct/InventoryItemDispatchDeptWise" data-toggle="tooltip" title="Show Dept Wise Dispatch History" data-container="body"><span class="btn yellow"><i class="fa fa-list-ul"></i> Dept Wise</span></a>
+    <a href="/StoreProduct/InventoryItemDispatchHis" data-toggle="tooltip" title="Show Product Wise Dispatch History" data-container="body"><span class="btn purple"><i class="fa fa-list-ul"></i> Product Wise</span></a>
+    <a href="/StoreProduct/InventoryItemDispatchMachineWise" data-toggle="tooltip" title="Show Machine Wise Dispatch History" data-container="body"><span class="btn grey-cascade"><i class="fa fa-list-ul"></i> Machine Wise</span></a>
+</p>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">Dispatch History</span>
+                </div>
+                <div class="actions">
+                    <div class="btn-group btn-group-devided" data-toggle="buttons" id="Div_Upper_Portion1" style="display:none;">
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm active" id="btn_All" data-toggle="tooltip" title="All History" data-container="body">
+                            <input type="radio" name="options" class="toggle">All
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_today" data-toggle="tooltip" title="Today History" data-container="body">
+                            <span><input type="radio" name="options" class="toggle">Today</span>
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_seven" data-toggle="tooltip" title="Last 7 days History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 7 Days
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_thirty" data-toggle="tooltip" title="Last 30 day History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 30 Days
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="panel with-nav-tabs panel-default">
+                    <div class="panel-heading">
+                        <ul class="nav nav-tabs">
+                            <li class="active" id="liForAllDis"><a href="#tab1AllDis" data-toggle="tab">All</a></li>
+                            <li id="liForMachine"><a href="#tab1MachineList" data-toggle="tab">Machine</a></li>
+                            <li id="liForPlace"><a href="#tab2PlaceList" data-toggle="tab">Location</a></li>
+                        </ul>
+                    </div>
+                    <div class="panel-body" style="border:none!important;" id="div_for_panel_body">
+                        <div class="tab-content">
+                            <div class="tab-pane fade in active" id="tab1AllDis">
+                                <div id="divForAllDis"></div>
+                                @if (db.View_Inven_Dis_Voucher_List.Any())
+                                {
+                                    <script>
+                                        $("#Div_Upper_Portion1").show();
+                                        $("#divForAllDis").append('<div class="win_loading_half"></div>');
+                                        $("#divForAllDis").show();
+                                        $("#divForAllDis").load('@Url.Action("_InvenDisVoucherList", "StoreProduct")?isStore=' + '@(ViewBag.isStore)');
+                                    </script>
+                                }
+                                else
+                                {
+                                    <script>
+                                        $("#divForAllDis").append(' <h3>There is no record to display...</h3>');
+                                        $("#divForAllDis").show();
+                                    </script>
+                                }
+                            </div>
+                            <div class="tab-pane fade" id="tab1MachineList"><div id="divForMachine"></div></div>
+                            <div class="tab-pane fade" id="tab2PlaceList">
+                                <div id="divForPlace"></div>
+                            </div>
+                        </div>
+                        <div id="loading" style="display:none;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var showCount = 0, totalCount = 0, page = 0, inCallback = false, days = 0,tab=1;
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $("#liForDisVouHis").addClass('sublistActive');
+    });
+    $("#liForAllDis").click(function () {
+        $("#btn_today").removeClass('active');
+        $("#btn_last_seven").removeClass('active');
+        $("#btn_last_thirty").removeClass('active');
+        $("#btn_All").addClass('active');
+        tab = 1; showCount = 0, totalCount = 0, page = 0;
+        $("#divForAllDis").empty();
+        $("#divForAllDis").append('<div class="win_loading_half"></div>');
+        $("#h4title").text("Showing All Dispatched History");
+        $("#divForAllDis").load('@Url.Action("_InvenDisVoucherList", "StoreProduct")?isStore=' + '@(ViewBag.isStore)');
+    });
+    $("#liForMachine").click(function () {
+        $("#btn_today").removeClass('active');
+        $("#btn_last_seven").removeClass('active');
+        $("#btn_last_thirty").removeClass('active');
+        $("#btn_All").addClass('active');
+        tab = 2; showCount = 0, totalCount = 0, page = 0;
+        $("#divForMachine").empty();
+        $("#divForMachine").append('<div class="win_loading_half"></div>');
+        $("#h4title").text("Showing Machine Wise All Dispatched History");
+        $("#divForMachine").load('@Url.Action("_InvenDisVoucherList", "StoreProduct")?isStore=' + '@(ViewBag.isStore)' + '&AssignType=1');
+    });
+    $("#liForPlace").click(function () {
+        $("#btn_today").removeClass('active');
+        $("#btn_last_seven").removeClass('active');
+        $("#btn_last_thirty").removeClass('active');
+        $("#btn_All").addClass('active');
+        tab = 3,showCount = 0, totalCount = 0, page = 0;
+        $("#divForPlace").empty();
+        $("#divForPlace").append('<div class="win_loading_half"></div>');
+        $("#h4title").text("Showing Place Wise All Dispatched History");
+        $("#divForPlace").load('@Url.Action("_InvenDisVoucherList", "StoreProduct")?isStore=' + '@(ViewBag.isStore)' + '&AssignType=2');
+    });
+
+     @******************************** OnScroll Bind Table Data *************************@
+    $(window).scroll(function () {
+        var countBytype, result;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/StoreProduct/GetInvenVoucher',
+            data: { page: page },
+            success: function (data) {
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        $("table#tbl_inven_vou_lit").append('<tr><th>' + showCount + '.</th>' +
+                            '<td><a href="/StoreProduct/DispatchHistoryDetails?q=' + getDataEncrypted("id=" + data[i].Id) + '">' + data[i].VoucherName + '</a></td>' +
+                            '<td>' + data[i].DispatchedDateName + '</td>' +
+
+                            '<td><img class="img-circle" src="/Images/UserPicture/thumb/' + data[i].DispatchedUserPic + '">' +
+                            ((data[i].DispatchedBy > 0) ? '<a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].DispatchedBy + "?isDisplay=true") + '">' + ' ' + data[i].DispatchedUserName + '</a>' : ' <span>Super admin</span>'
+                                ) +
+                             '</td>' +
+                             '</td></tr>');
+                    }
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+</script>
+<script>
+    $("#btn_today").click(function () {
+        var passdata = '',days = 1,showCount = 0, totalCount = 0, page = 0;
+        if (tab == 1) {
+            passdata = { days: 1, isStore: '@(ViewBag.isStore)' };
+            $("#divForAllDis").empty();
+            $("#divForAllDis").append('<div class="win_loading_half"></div>');
+            $("#h4title").text("Showing Today's All Dispatched History");
+            $("#divForAllDis").load('@Url.Action("_InvenDisVoucherListDayWise", "StoreProduct")', passdata);
+        }
+        else if (tab == 2) {
+            passdata = { days: 1, isStore: '@(ViewBag.isStore)', AssignType: 1 };
+            $("#divForMachine").empty();
+            $("#divForMachine").append('<div class="win_loading_half"></div>');
+            $("#h4title").text("Showing Today's Machine Wise All Dispatched History");
+            $("#divForMachine").load('@Url.Action("_InvenDisVoucherListDayWise", "StoreProduct")', passdata);
+        }
+        else {
+            passdata = { days: 1, isStore: '@(ViewBag.isStore)', AssignType: 2 };
+            $("#divForPlace").empty();
+            $("#divForPlace").append('<div class="win_loading_half"></div>');
+            $("#h4title").text("Showing Today's Place Wise All Dispatched History");
+            $("#divForPlace").load('@Url.Action("_InvenDisVoucherListDayWise", "StoreProduct")', passdata);
+        }
+
+    });
+
+    $("#btn_last_seven").click(function () {
+        var passdata = '',days = 7,showCount = 0, totalCount = 0, page = 0;
+        if (tab == 1) {
+            passdata = { days: 7, isStore: '@(ViewBag.isStore)' };
+            $("#divForAllDis").empty();
+            $("#divForAllDis").append('<div class="win_loading_half"></div>');
+            $("#h4title").text("Showing Last 7 Days All Dispatched History");
+            $("#divForAllDis").load('@Url.Action("_InvenDisVoucherListDayWise", "StoreProduct")', passdata);
+        }
+        else if (tab == 2) {
+            passdata = { days: 7, isStore: '@(ViewBag.isStore)', AssignType: 1 };
+            $("#divForMachine").empty();
+            $("#divForMachine").append('<div class="win_loading_half"></div>');
+            $("#h4title").text("Showing Last 7 Days Machine Wise All Dispatched History");
+            $("#divForMachine").load('@Url.Action("_InvenDisVoucherListDayWise", "StoreProduct")', passdata);
+        }
+        else {
+            passdata = { days: 7, isStore: '@(ViewBag.isStore)', AssignType: 2 };
+            $("#divForPlace").empty();
+            $("#divForPlace").append('<div class="win_loading_half"></div>');
+            $("#h4title").text("Showing Last 7 DaysPlace Wise All Dispatched History");
+            $("#divForPlace").load('@Url.Action("_InvenDisVoucherListDayWise", "StoreProduct")', passdata);
+        }
+    });
+    $("#btn_last_thirty").click(function () {
+        var days = 30,passdata = '',showCount = 0, totalCount = 0, page = 0;
+        if (tab == 1) {
+            passdata = { days: 30, isStore: '@(ViewBag.isStore)' };
+            $("#divForAllDis").empty();
+            $("#divForAllDis").append('<div class="win_loading_half"></div>');
+            $("#h4title").text("Showing Last 30 Days All Dispatched History");
+            $("#divForAllDis").load('@Url.Action("_InvenDisVoucherListDayWise", "StoreProduct")', passdata);
+        }
+        else if (tab == 2) {
+            passdata = { days: 30, isStore: '@(ViewBag.isStore)', AssignType: 1 };
+            $("#divForMachine").empty();
+            $("#divForMachine").append('<div class="win_loading_half"></div>');
+            $("#h4title").text("Showing Last 30 Days Machine Wise All Dispatched History");
+            $("#divForMachine").load('@Url.Action("_InvenDisVoucherListDayWise", "StoreProduct")', passdata);
+        }
+        else {
+            passdata = { days: 30, isStore: '@(ViewBag.isStore)', AssignType: 2 };
+            $("#divForPlace").empty();
+            $("#divForPlace").append('<div class="win_loading_half"></div>');
+            $("#h4title").text("Showing Last 30 Days Place Wise All Dispatched History");
+            $("#divForPlace").load('@Url.Action("_InvenDisVoucherListDayWise", "StoreProduct")', passdata);
+        } 
+    });
+    $("#btn_All").click(function () {
+        var passdata = '',days = 0,
+        showCount = 0, totalCount = 0, page = 0;
+        if (tab == 1) {
+            passdata = {isStore: '@(ViewBag.isStore)' };
+            $("#divForAllDis").empty();
+            $("#divForAllDis").append('<div class="win_loading_half"></div>');
+            $("#h4title").text("Showing All Dispatched History");
+            $("#divForAllDis").load('@Url.Action("_InvenDisVoucherList", "StoreProduct")', passdata);
+        }
+        else if (tab == 2) {
+            passdata = {isStore: '@(ViewBag.isStore)', AssignType: 1 };
+            $("#divForMachine").empty();
+            $("#divForMachine").append('<div class="win_loading_half"></div>');
+            $("#h4title").text("Showing Machine Wise All Dispatched History");
+            $("#divForMachine").load('@Url.Action("_InvenDisVoucherList", "StoreProduct")', passdata);
+        }
+        else {
+            passdata = {isStore: '@(ViewBag.isStore)', AssignType: 2 };
+            $("#divForPlace").empty();
+            $("#divForPlace").append('<div class="win_loading_half"></div>');
+            $("#h4title").text("Showing Days Place Wise All Dispatched History");
+            $("#divForPlace").load('@Url.Action("_InvenDisVoucherList", "StoreProduct")', passdata);
+        }
+    });
+</script>

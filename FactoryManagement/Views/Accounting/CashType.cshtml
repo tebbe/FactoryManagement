@@ -1,0 +1,26 @@
+﻿
+<div class="k-edit-form-container">
+    <div class="editor-label"><label for="ClientName">Client Name</label></div>
+    <div class="editor-field">
+            <input class="form-control k-textbox text-box single-line k-valid" data-val="true" data-val-length="Invalid" data-val-length-max="40" data-val-length-min="2" data-val-required="Please enter account name" id="ClientName" name="ClientName" type="text" value="">
+       
+            @*@Html.ValidationMessageFor(model => model.Acc_Type, "", new { @class = "text-danger" })*@
+        
+    </div>
+    <div class="editor-label"><label for="ClientName">Client Company</label></div>
+    <div class="editor-field">
+        <input class="form-control k-textbox text-box single-line k-valid" data-val="true" data-val-length="Invalid" data-val-length-max="40" data-val-length-min="2" data-val-required="Please enter account name" id="ClientName" name="ClientName" type="text" value="">
+
+        @*@Html.ValidationMessageFor(model => model.Acc_Type, "", new { @class = "text-danger" })*@
+
+    </div>
+    <div class="editor-label"><label for="ClientName">Reason</label></div>
+    <div class="editor-field">
+        <textarea class="form-control k-textbox text-box single-line k-valid" rows="3" cols="40" name="txtComment-1" id="txtComment-1" value=" "></textarea>
+
+    </div>
+    <div class="k-edit-buttons k-state-default">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnAddUser"><span class="k-icon k-update"></span>Save</button>
+
+     </div>
+    </div>

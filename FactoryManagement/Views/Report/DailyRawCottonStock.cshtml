@@ -1,0 +1,207 @@
+﻿
+
+@**************************** Created By Jerin Jahan (Date:20.04.2017) *****************************************@
+@model IEnumerable<FactoryManagement.Models.CountryList>
+@{
+    var offset = Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["localTime"]);
+    DateTime today = DateTime.UtcNow.AddMinutes(offset);
+    ViewBag.Title = "Daily Raw Cotton Stock";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+
+    int loop_count = 0; int sl_count = 0;
+    var u_list = db.Site_Unit_Lists.Where(m => m.UnitStatus == 1).ToList();
+    var AllList = db.View_Dispacth_Item_Details.Where(m => System.Data.Entity.DbFunctions.TruncateTime(m.DispatchedDate) == today.Date).ToList();
+    var AllChildImport = db.Import_History.Where(m => m.ParentId > 0).Select(m => m.ImportId).ToList();
+    double grnd_ttl = 0;
+    double grnd_imp = 0;
+    double grnd_stock = 0;
+    double grnd_issue = 0;
+}
+<center><h2>Daily Raw Cotton Stock</h2></center>
+<div>
+    <span style="float:right;font-size:16px;">
+        <p style="text-align:right;margin:0px!important;">Date: @today.ToString("MMM dd,yyyy hh:mm tt")</p>
+        <p style="text-align:right;margin:0px!important;">Genegrated By: @(string.IsNullOrEmpty(Request.Cookies["CookieAdminInfo"].Values["fulname"].ToString())?"Super Admin":Request.Cookies["CookieAdminInfo"].Values["fulname"].ToString())</p>
+        <p style="text-align:right;">Employee ID: @Request.Cookies["CookieAdminInfo"].Values["empid"].ToString()</p>
+    </span>
+</div>
+<table class="table table-bordered">
+    @foreach (var country in Model)
+    {
+        loop_count++;
+       var Pro_list = db.View_ProList_WithLC.Where(m => m.ProductTypeId == 6 && m.Country == country.CountryCode && m.ImportId!=null).ToList();
+        Pro_list = (from bs in Pro_list
+                    group bs by new { bs.InventoryId, bs.ImportId } into g
+                    select new FactoryManagement.Models.View_ProList_WithLC
+                    {
+                        InventoryId = g.FirstOrDefault().InventoryId,
+                        ProductName = g.FirstOrDefault().ProductName,
+                        ImportId = g.FirstOrDefault().ImportId,
+                        LC = g.FirstOrDefault().LC,
+                        Quantity = g.Sum(x => x.Quantity),
+                        Description = g.FirstOrDefault().Description,
+                        
+                    }).OrderBy(o => o.ProductName).ToList();
+        if (db.Import_History.Where(m => m.ParentId > 0).Any())
+        {
+            Pro_list = Pro_list.Where(m => !AllChildImport.Contains(m.ImportId.Value)).ToList();        
+        }
+        if (loop_count == 1)
+        {
+            <tr style="border:2px solid black;border-bottom:0px!important;">
+                <th width="5%" rowspan="2">SL NO.</th>
+                <th width="15%" rowspan="2">Country Of Origin</th>
+                <th width="8%" rowspan="2">Staple</th>
+                <th width="8%" rowspan="2">L/C NO.</th>
+                <th width="8%" rowspan="2">O/Balance In Bales</th>
+                <th width="10%" rowspan="2">Received IN Bales</th>
+                <th width="5%" rowspan="2">Total Stock</th>
+                <th width="21%" colspan="@u_list.Count()">Issue to Mills in Bales</th>
+                <th width="5%" rowspan="2">Total Issue</th>
+                <th width="10%" rowspan="2">Closing Balance</th>
+                <th width="5%" rowspan="2">Remarks</th>
+            </tr>
+            <tr>
+                @foreach (var u in u_list)
+                {
+                    <td>@u.UnitAcryonm</td>
+                }
+            </tr>
+        }
+        double total_o_blnc = 0;
+        double total_imp = 0;
+        double total_ise = 0;
+
+        if (Pro_list.Count() > 0)
+        {
+            foreach (var item in Pro_list)
+            {
+                sl_count++;
+                double opening_blc = 0, stock = 0, total_stock = 0, total_issue = 0, imp_quan = 0;
+                var locId = db.Inventory_Item_Location.Where(m => m.InventoryId == item.InventoryId && m.ImportId == item.ImportId).Select(m => m.LocationId).ToList();
+                var imp_quan_list = (from bs in db.View_Import_Item_Details
+                                     where bs.InventoryId == item.InventoryId && (bs.ImportId == item.ImportId || bs.ParentId == item.ImportId)
+                                     && System.Data.Entity.DbFunctions.TruncateTime(bs.InsertedDate) == today.Date
+                                     group bs by new { bs.InventoryId, bs.ImportId } into g
+                                     select new
+                                     {
+                                         Quantity = g.Sum(x => x.Quantity),
+                                     }).FirstOrDefault();
+                if (imp_quan_list != null)
+                {
+                    imp_quan = imp_quan_list.Quantity;
+                }
+                double today_total_dis = AllList.Where(m => m.InventoryId == item.InventoryId && locId.Contains(m.LocationId)).Sum(m => m.Quantity);
+                double today_total_ret = AllList.Where(m => m.InventoryId == item.InventoryId && locId.Contains(m.LocationId)).Sum(m => m.ReturnQuantity.Value);      
+                opening_blc = item.Quantity - Convert.ToDouble(imp_quan);
+                opening_blc = (opening_blc < 0) ? 0 : opening_blc;
+                if (today_total_dis > 0)
+                {
+                    opening_blc = opening_blc + Convert.ToDouble(today_total_dis);
+                }
+                if (today_total_dis > 0)
+                {
+                    opening_blc = opening_blc - Convert.ToDouble(today_total_ret);
+                }
+                stock = opening_blc + Convert.ToDouble(imp_quan);
+                total_o_blnc = total_o_blnc + opening_blc;
+                total_imp = total_imp + Convert.ToDouble(imp_quan);
+                grnd_ttl = grnd_ttl + opening_blc;
+                grnd_imp = grnd_imp + imp_quan;
+                grnd_stock = grnd_stock + stock;
+                <tr style="border-left:2px solid black!important;border-right:2px solid black!important;">
+                    <td width="5%">@sl_count.</td>
+                    <td width="15%">@item.ProductName</td>
+                    <td width="8%">@item.Description</td>
+                    <td width="8%">@item.LC</td>
+                    <td width="8%">@opening_blc</td>     @***** O/Balance *****@
+                    <td width="10%">@((imp_quan > 0) ? imp_quan.ToString() : "")</td>          @***** Received *****@
+                    <td width="5%">@stock</td>      @***** Total Stock *****@
+                    @foreach (var u in u_list)
+                    {
+                        var t_uid = country.CountryCode + "" + u.UnitId;
+                        var td_uid = country.CountryCode + "" + item.InventoryId + "" + u.UnitId;
+                        var u_dis_list = (from bs in AllList
+                                          where bs.InventoryId == item.InventoryId
+                                          && bs.Site_Unit_Id == u.UnitId && locId.Contains(bs.LocationId)
+                                          group bs by new { bs.Site_Unit_Id } into g
+                                          select new
+                                          {
+                                              Quantity = g.Sum(x => x.Quantity)
+                                          }).FirstOrDefault();
+
+                        var u_ret_list = (from bs in AllList
+                                          where bs.InventoryId == item.InventoryId
+                                          && bs.Site_Unit_Id == u.UnitId && locId.Contains(bs.LocationId)
+                                          group bs by new { bs.Site_Unit_Id } into g
+                                          select new
+                                          {
+                                              Quantity = g.Sum(x => x.ReturnQuantity.Value)
+                                          }).FirstOrDefault();
+                        
+                        string str_quan = "";
+                        double u_quan = 0;
+                        if (u_dis_list != null)
+                        {
+                            u_quan = u_dis_list.Quantity;
+                            if (u_ret_list != null) { u_quan = u_quan - u_ret_list.Quantity; }
+                            total_issue = total_issue + u_quan;
+                            total_ise = total_ise + u_quan;
+                            grnd_issue = grnd_issue + u_quan;
+                            str_quan = (u_quan > 0) ? u_quan.ToString() : "";
+                        }
+                        <td class="u_@t_uid" data-quan="@u_quan">@str_quan</td>
+                    }
+                    <td width="5%">@total_issue</td>                    @***** Total Issue *****@
+                    <td width="10%">@(stock - total_issue)</td>         @***** Closing Balance *****@
+                    <td width="5%"></td>                                @***** Remarks *****@
+                </tr>
+            }
+            <tr style="border-left:2px solid black;border-right:2px solid black;border-top:2px solid black!important;">
+                <td colspan="4" style="text-align:right;font-weight:bold;">Total</td>
+                <td>@total_o_blnc</td>
+                <td>@total_imp</td>
+                <td>@total_o_blnc</td>
+                @foreach (var u in u_list)
+                {
+                    var t_uid = country.CountryCode + "" + u.UnitId;
+                    <td id="tu_@t_uid" class="td_ttl_issu_@u.UnitId"></td>
+                    <script>
+                        var total = 0;
+                        $(".u_@t_uid").each(function () {
+                            var val = $(this).data('quan');
+                            total = parseFloat(total) + parseFloat(val);
+                        });
+                        $("#tu_@t_uid").text(total);
+                    </script>
+                }
+                <td>@total_ise</td>
+                <td>@(total_o_blnc - total_ise)</td>
+                <td></td>
+            </tr>
+        }
+    }
+    <tr style="border:2px solid black;">
+        <td colspan="4" style="text-align:right;font-weight:bold;">Grand Total</td>
+        <td>@grnd_ttl</td>
+        <td>@grnd_imp</td>
+        <td>@grnd_stock</td>
+
+        @foreach (var u in u_list)
+        {
+            <td id="td_grnd_@u.UnitId"></td>
+            <script>
+                var grnd_ttl = 0;
+                $(".td_ttl_issu_@u.UnitId").each(function () {
+                    var val = $(this).text();
+                    grnd_ttl = parseFloat(grnd_ttl) + parseFloat(val);
+                });
+                $("#td_grnd_@u.UnitId").text(grnd_ttl);
+            </script>
+        }
+        <td>@grnd_issue</td>
+        <td>@(grnd_stock - grnd_issue)</td>
+        <td>Bales</td>
+    </tr>
+</table>

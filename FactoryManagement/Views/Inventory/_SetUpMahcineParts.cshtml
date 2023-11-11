@@ -1,0 +1,124 @@
+﻿
+
+
+
+@************************************** Created By Jerin Jahan (Date:06.12.2016)  ***************************************@
+
+@model FactoryManagement.ModelView.Inventory.SparePartsListModelView
+<style>
+    .k-edit-form-container .editor-label {width: 35% !important;}
+</style>
+@using (Html.BeginForm())
+{
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(m => m.Id)
+    <br />
+    <div class="k-edit-form-container" id="Div_machine_setup">
+        <div class="editor-label"><label>Quantity</label></div>
+        <div class="editor-field">
+            <input class="form-control k-textbox"
+                   required="" data-required-msg="Please enter quantity"
+                   id="txtNotInsQuan" name="txtNotInsQuan"
+                   type="text" value="" data-val-regex-pattern="\d+(\.\d{1,2})?"
+                   aria-invalid="true">
+            <span class="field-validation-valid text-danger" data-valmsg-for="txtNotInsQuan" data-valmsg-replace="true"></span>
+        </div>
+
+
+        <div class="editor-label"><label>Expired Date</label></div>
+        <div class="editor-field">
+            <input class="form-control k-textbox"
+                   required="" data-required-msg="Please enter replace date"
+                   id="txtExpireDate" name="txtExpireDate"
+                   type="text" value=""
+                   aria-invalid="true" onkeypress="return isNumber(event,this.value)">
+            <span class="field-validation-valid text-danger" data-valmsg-for="txtExpireDate" data-valmsg-replace="true"></span>
+        </div>
+
+        <div class="k-edit-buttons k-state-default">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_Machine_setUp_save"><span class="k-icon k-update"></span>SetUp</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_Machine_setUp_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+    <br />
+}
+<script>
+    var msg = "";
+    var validation = $("#Div_machine_setup").kendoValidator({
+        rules: {
+            maxQuan: function (input) {
+                if (input.is("[name=txtNotInsQuan]")) {
+                    var max = '@(Model.NotInsQuan)';
+                    var value = $("#txtNotInsQuan").val();
+                    if (parseFloat(value) > parseFloat(max)) {
+                        return false;
+                    }
+                }
+                return true;
+            },
+            Quan: function (input) {
+                if (input.is("[name=txtNotInsQuan]")) {
+                    var value = $("#txtNotInsQuan").val();
+                    alert(parseFloat(value) === 'NaN');
+                    if (parseFloat(value)) {
+                        return false;
+                    }
+                }
+                return true;
+            },
+            txtExpireDate: function (input) {
+                if (input.is("[name=txtExpireDate]") && $("#txtExpireDate").val() === '') {
+                    return false;
+                }
+                return true;
+            }
+        },
+        messages: {
+            maxQuan: "Quantity can not be greater than " + '@(Model.NotInsQuan)',
+            Quan: "Invalid number",
+            txtExpireDate:"Please enter replace date"
+        }
+    }).data("kendoValidator");
+
+    $("#btn_Machine_setUp_cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#btn_Machine_setUp_save").click(function () {
+        if (validation.validate()) {
+            var sendData = { id: $("#Id").val(), date: $("#txtExpireDate").val(), userId: userId, name: partsName };
+            $.ajax({
+                url: '@Url.Action("SparePatsInstalled", "Inventory")',
+                type: 'Post',
+                data: sendData,
+                success: function (response) {
+                    if (response === "Success") {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        msg = "Machine parts " + partsName + " has been successfully installed.";
+                        notification.show({ message: msg, showTime: startTime() }, "upload-success");
+
+                        $("#Div_Not_Installed").empty();
+                        $("#Div_Not_Installed").append('<div class="loading_half"></div>');
+
+                        $("#DivForPartsList").empty();
+                        $("#DivForPartsList").append('<div class="loading_half"></div>');
+
+                        $("#Div_Not_Installed").load('@Url.Action("NotInstalledParts", "Inventory")?machineId=' + MachineId);
+                        $("#DivForPartsList").load('@Url.Action("MachinePartsList", "Inventory")?machineId=' + MachineId);
+                        $("#btn_Machine_setUp_save").closest(".k-window-content").data("kendoWindow").close();
+                    }
+                    else {
+                        msg = "Machine parts " + partsName + " installation unsuccessful.";
+                        notification.show({ message: msg, showTime: startTime() }, "upload-error");
+                    }
+                    $("#btn_Machine_setUp_save").closest(".k-window-content").data("kendoWindow").close();
+                },
+                error: function () {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    msg = "Error occured!";
+                    notification.show({ message: msg, showTime: startTime() }, "upload-warning");
+                }
+            });
+
+        }
+    });
+</script>

@@ -1,0 +1,29 @@
+﻿
+
+@************************************** Created By Jerin Jahan (Date:22.09.2016)  ***************************************@
+
+@model IEnumerable<FactoryManagement.Models.Inventory_Image_Lists>
+
+<div class="row">
+    <div id="ulSlideshow" style="width:20%!important;float:left;">
+        <ul class="slideshow_thumbs desoslide-thumbs-vertical list-inline text-center">
+            @foreach (var item in Model)
+            {
+            <li>
+                <a href="/Images/Inventory/Store/Original/@item.ImageName">
+                    <img src="~/Images/Inventory/Store/Resize/@item.ImageName" alt="~/Images/Inventory/Store/no_img.jpg">
+                </a>
+            </li>
+            }
+        </ul>
+    </div>
+    <div id="slideshow" style="width:70%!important;"></div>
+</div>
+<script src="~/Content/desoSlide/js/jquery.desoslide.min.js"></script>
+<script>
+    $('#slideshow').desoSlide({
+        thumbs: $('ul.slideshow_thumbs li > a'),
+        effect: {provider: 'animate',name: 'fade'}
+    });
+    $(".desoslide-caption-title").hide();
+</script>

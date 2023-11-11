@@ -1,0 +1,108 @@
+﻿
+
+
+
+
+@******************************** Created By Jerin Jahan (Date:08.10.2016) *********************************@
+@model IEnumerable<FactoryManagement.ModelView.CRM.BusiOrder_ManualSpecModelView>
+@{
+    int count = 1;
+    bool? isPrint = ViewBag.IsPrint;
+  }
+<style>
+    /*#tbl_manual_spec {border: none !important;font-size:.9em;}
+    #tbl_manual_spec th {border: none !important;}
+    #tbl_manual_spec td {border: none !important;}*/
+    table tr th 
+    {
+        font-size:13px!important;
+    }
+</style>
+@if(Model.Count() > 0)
+{  
+<table class="table table-striped table-bordered table-hover" id="tbl_manual_spec">
+    <tbody>
+        <tr>
+            <th width="5%"><span style="width:10%;">#</span></th>
+            <th width="20%">
+                <span style="width:95%;">Specification</span>
+            </th>
+            <th width="10%">Quantity</th>
+            <th width="15%">Status</th>
+            <th width="30%">Description</th>
+            @if( isPrint != true)
+            { 
+                <th width="20%"></th>
+            }
+        </tr>
+        @foreach (var item in Model)
+        {
+            bool isStore = Convert.ToBoolean(item.IsStoreIntoStock);
+            string proStatus = "";
+            if (item.ProStatus == 0)
+            {
+                proStatus = "Not in production";
+            }
+            else if (item.ProStatus == 1)
+            {
+                proStatus = "In Production";
+            }
+            else if (item.ProStatus == 2)
+            {
+                proStatus = "Delay";
+            }
+            else
+            {
+                proStatus = "Complete";
+            }
+            <tr id="tr_manual_spec_@item.Id">
+                <th scope="row"><span>@count. </span></th>
+                <td>
+                    <span>@item.Spec_lbl </span>
+                </td>
+                <td>
+                    <span>@item.Quantity</span>
+                    <span> @item.UnitName</span>
+                </td>
+                <td>
+                    <span>@proStatus</span>
+                </td>
+                <td>
+                    <span>@item.Spec_Description</span>
+                </td>
+                @if( isPrint != true)
+                {
+                <td class="manual_spec_btns">
+                    <span id="btn_tick_hide_@item.Id">
+                        <span class="btn green btn_edit_manual_spec" data-toggle="tooltip" title="Edit Specification" style="cursor:pointer;" data-id="@item.Id"><i class="fa fa-pencil"></i></span>
+                        <span class="btn btn-danger  btn_delete_manual_spec" data-toggle="tooltip" title="Delete Specification" style="cursor:pointer;" data-id="@item.Id"><i class="fa fa-trash"></i></span>
+                        @if (item.ProStatus == 3 && !isStore)
+                        {
+                            <span class="btn blue  btn_Store_Stock" data-toggle="tooltip" title="Store Into Stock" style="cursor:pointer;" data-id="@item.Id" id="btn_Store_Stock_@item.Id"><i class="fa fa-pencil-square-o"></i> Stock</span>
+                        }
+                    </span>
+                </td>
+                }
+            </tr>
+            count++;
+        }
+    </tbody>
+</table>
+}
+else
+{
+    if (isPrint != true)
+    {
+        <p>There is no record to display....</p>
+    }
+}
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+    $(document).ready(function (e) {
+        if("@isPrint" == "True")
+        {
+            $("table").removeClass("table-striped");
+            $("table").removeClass("table-hover")
+        }
+    });
+</script>

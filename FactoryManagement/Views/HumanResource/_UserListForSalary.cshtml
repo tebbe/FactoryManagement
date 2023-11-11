@@ -1,0 +1,104 @@
+﻿@******************************** Created By Jerin Jahan (Date:25.10.2016) *********************************@
+@model IEnumerable<FactoryManagement.ModelView.HR.UserInformationModelView>
+@using FactoryManagement.Helpers
+@{
+    var count = 0;
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<table class="table table-bordered" id="tbl_salary_usr">
+    <tbody>
+        <tr>
+            <th width="4%"><input type="checkbox" value="All" id="chk_AllUser" /></th>
+            <th width="26%">Name</th>
+            <th width="15%">Designation</th>
+            <th width="10%">Join Date</th>
+            <th width="45%"></th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            count++;
+            bool isPay = db.EmpSalaryPaymentDetails.Where(m => m.UserId == item.UserId && m.UserType == item.UserType && m.Status == 0
+                        && (m.MonthId == DateTime.Now.Month || m.MonthId == (DateTime.Now.Month) - 1) && m.Year == DateTime.Now.Year).Any();
+            <tr>
+                <th >
+                    <span data-userid="@item.UserId"
+                          data-pckid="@item.SalaryPackageId"
+                          data-usertype="@item.UserType" id="count_@count">
+                        <input type="checkbox" value="@item.UserId" id="chk_@item.UserId" 
+                               class="chkUser" data-userid="@item.UserId" data-usertype="@item.UserType" data-ispay="@isPay" />
+                    </span>
+                </th>
+                <td >
+                    <img class="user-photo" src="~/Images/UserPicture/thumb/@item.Picture" />
+                    <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = item.UserId, isDisplay = true }, null)">@Html.DisplayFor(modelItem => item.UserName)</a>                      
+                </td>
+                <td>@Html.DisplayFor(modelItem => item.Designation)</td>
+                <td >@Convert.ToDateTime(item.JoinDate).ToString("MMM dd,yyyy")</td>
+                <td >
+                    <span class="btn blue annualDetails"
+                          data-toggle="tooltip" data-original-title="Details" data-id="@count"> <i class="fa fa-info-circle"></i>
+                    </span>
+                    <span class="btn blue monthDetails"
+                          data-toggle="tooltip" data-original-title="Month Wise" data-id="@count"><i class="fa fa-info-circle"></i>
+                    </span>
+                    @if (db.AllSalaryPayLists.Where(m => m.UserId == item.UserId && m.UserType == item.UserType).Any())
+                    {
+                        <span class="btn blue HistoryDetails"
+                              data-toggle="tooltip" data-original-title="History" data-id="@count"><i class="fa fa-history"></i>
+                        </span>
+                    }
+                    @if (db.EmpSalaryPaymentDetails.Where(m => m.UserId == item.UserId && m.UserType == item.UserType && m.Status == 0).Any())
+                    {
+                        <span class="btn yellow OutDetails"
+                              data-toggle="tooltip" data-original-title="Outstanding" data-id="@count"><i class="fa fa-info-circle"></i>
+                        </span>
+                    }
+                    @if (!db.EmpSalaryPaymentDetails.Where(m => m.UserId == item.UserId && m.UserType == item.UserType && (m.MonthId == DateTime.Now.Month || m.MonthId == (DateTime.Now.Month) - 1) && m.Year == DateTime.Now.Year).Any())
+                    {
+                        <span class="btn green CreateSalary"
+                              data-toggle="tooltip" data-original-title="Create" data-id="@count"><i class="fa fa-plus"></i>
+                        </span>
+                    }
+                    @if (db.EmpSalaryPaymentDetails.Where(m => m.UserId == item.UserId && m.UserType == item.UserType && m.Status == 0
+                        && (m.MonthId == DateTime.Now.Month || m.MonthId == (DateTime.Now.Month) - 1) && m.Year == DateTime.Now.Year).Any())
+                    {
+                        <span class="btn green PaySalary"
+                              data-toggle="tooltip" data-original-title="Pay Salary" id="achrPay_@count" data-id="@count"><i class="fa fa-pencil-square-o"></i>
+                        </span>
+                    }
+                    @if (db.EmpSalaryPaymentDetails.Where(m => m.UserId == item.UserId && m.UserType == item.UserType && m.Status == 0).Any())
+                    {
+                        <span class="btn green PayDue"
+                              data-toggle="tooltip" data-original-title="Pay Due" data-id="@count"> <i class="fa fa-pencil-square-o"></i>
+                        </span>
+                    }
+                </td>
+            </tr>        
+        }
+    </tbody>
+</table>
+<script>
+    totalCount = '@(ViewBag.count)';
+    showCount = '@(count)';
+    $('[data-toggle="tooltip"]').tooltip();
+    $("#chk_AllUser").click(function () {
+        if ($(this).is(':checked')) {
+            $(".chkUser").each(function () {
+                $(this).prop('checked',true);
+            });
+        }
+        else {
+            $(".chkUser").each(function () {
+                $(this).prop('checked', false);
+            });
+        }
+    });
+    $('.chkUser').on('click', function () {
+        if ($('.chkUser:checked').length == $('.chkUser').length) {
+            $('#chk_AllUser').prop('checked', true);
+        } else {
+            $('#chk_AllUser').prop('checked', false);
+        }
+    });
+</script>

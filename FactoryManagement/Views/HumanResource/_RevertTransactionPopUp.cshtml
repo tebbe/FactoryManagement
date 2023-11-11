@@ -1,0 +1,41 @@
+﻿@model FactoryManagement.Models.View_All_Revert_Trans
+@{
+    var Currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+<style>
+    #Div_for_revert_transaction_popUp .editor-label {
+        width: 40% !important;
+        padding-top: 5px;
+    }
+
+    #Div_for_revert_transaction_popUp .editor-field {
+        padding-top: 5px;
+    }
+</style>
+<div class="k-edit-form-container col-md-11 col-xs-11" style="margin-bottom:4%;" id="Div_for_revert_transaction_popUp">
+
+    <div class="editor-label"><label for="Transaction">Transaction</label></div>
+    <div class="editor-field">@Model.Id</div>
+
+    <div class="editor-label"><label for="UserName">Employee Name</label></div>
+    <div class="editor-field">
+        <img class="user-photo" src="~/Images/UserPicture/thumb/@Model.Picture" />
+        @Model.UserName
+    </div>
+
+    <div class="editor-label"><label for="Reason">Reason</label></div>
+    <div class="editor-field" style="float:left;">@Model.Reason</div>
+
+    <div class="editor-label"><label for="PackageName">Reverted Amount</label></div>
+    <div class="editor-field">@Currency  @Model.Amount</div>
+
+    <div class="editor-label"><label for="PackageName">Reverted By</label></div>
+    <div class="editor-field">
+        <img class="user-photo" src="~/Images/UserPicture/thumb/@Model.RevertedUserPic" />
+        @Model.RevertedUserName
+    </div>
+
+    <div class="editor-label"><label for="EditedDate">Reverted Date</label></div>
+    <div class="editor-field">@Model.EditedDate</div>
+
+</div>

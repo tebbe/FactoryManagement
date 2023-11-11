@@ -1,0 +1,38 @@
+﻿
+
+@********************************************* Created By Jerin Jahan (04.10.2016) *******************************@
+@model IEnumerable<FactoryManagement.Models.Inventory_Reserved_Item_Lists>
+@{
+    var count = 1;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<style>
+    #tbl_resvrd_item_lists td {border: none !important;}
+     #tbl_resvrd_item_lists th {border: none !important;}
+</style>
+
+<table class="table" id="tbl_resvrd_item_lists">
+    <tr>
+        <th width="5%">#</th>
+        <th width="70%">Item Name</th>
+        <th width="15%">Quantity</th>
+    </tr>
+    @foreach (var item in Model)
+    {
+        var proDetail = db.View_All_InventoryList.Where(m => m.InventoryId == item.InventoryId).FirstOrDefault();
+        int rsrvdQuan = item.Quantity;
+        if (db.Acquisitions.Where(m => m.AcquisitionOrderId == item.AcquisitionOrderId && m.ProductId == item.InventoryId && m.AssignedQuantity > 0).Any())
+        {
+            int assigned_quan = Convert.ToInt32(db.Acquisitions.Where(m => m.AcquisitionOrderId == item.AcquisitionOrderId && m.ProductId == item.InventoryId)
+                                .Select(m => m.AssignedQuantity).FirstOrDefault());
+            rsrvdQuan = rsrvdQuan - assigned_quan;
+        }
+        <tr>
+            <td>@count .</td>
+            <td>@proDetail.ProductName</td>
+            <td>@rsrvdQuan @proDetail.UnitName</td>
+        </tr>
+        count++;
+    }
+</table>
+

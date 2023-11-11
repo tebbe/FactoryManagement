@@ -1,0 +1,135 @@
+﻿
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;">
+    <div id="show_company_info"></div>
+    <div class="k-edit-buttons k-state-default">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_UpdateCompanyInfo"><span class="k-icon k-update"></span>Update</button>
+        <button type="reset" class="k-button k-button-icontext k-grid-update" id="btn_RefreshCompanyInfo"><span class="k-icon k-i-refresh"></span>Refresh</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_CancelCompanyInfo"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#show_company_info").append('<div class="loading_30"></div>');
+            $("#show_company_info").load('@Url.Action("EditCompanyInfo", "HumanResource")?UserId=' + '@ViewBag.UserId');
+        });
+    $("#btn_RefreshCompanyInfo").click(function () {
+            $("#show_company_info").empty();
+            $("#show_company_info").append('<div class="loading_30"></div>');
+            $("#show_company_info").load('@Url.Action("EditCompanyInfo", "HumanResource")?UserId=' + '@ViewBag.UserId');
+            $("#show_company_info").show();
+    });
+
+
+    var validation = $("#show_company_info").kendoValidator({
+        rules: {
+            remote: function (input) {
+                var errormessage;
+                var remoteAttr = input.attr("data-val-remote-url");
+                if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                    return true;
+                }
+                var isInvalid;
+                var data = {};
+                var UserId = $("#UserId").val();
+                var EmpId = $("#EmpId").val();
+                if (input.attr('name') === "EmpId") {
+                    data = { UserId: UserId, EmpId: EmpId };
+                }
+                $.ajax({
+                    url: remoteAttr,
+                    mode: "abort",
+                    port: "validate" + input.attr('name'),
+                    dataType: "json",
+                    type: input.attr("data-val-remote-type"),
+                    data: data,
+                    async: false,
+                    success: function (response) {
+                        isInvalid = response;
+                        if (isInvalid == true) {
+                            isInvalid = true;
+                        }
+                        else {
+                            isInvalid = false;
+                        }
+                    }
+                });
+                return isInvalid;
+            },
+            Partial_DeptId: function (input) {
+                if (input.is("[name=Partial_DeptId]") && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Partial_UnitId: function (input) {
+                if (input.is("[name=Partial_UnitId]") && input.val() === "" && ((IsComposite))) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            LineId: function (input) {
+                if (input.is("[name=Partial_LineId]") && input.val() === "" && ($("#UserType").val() === "2")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        },
+        messages: {
+            remote: function (input) {
+                return input.data('val-remote');
+            },
+            Partial_DeptId: "Please select dept.",
+            Partial_UnitId: "Please select unit",
+            LineId: "Please select line",
+        }
+    }).data("kendoValidator");
+    $("#btn_UpdateCompanyInfo").click(function () {
+        if (validation.validate()) {
+            notification.show({ message: "Company informatin updating...", showTime: startTime() }, "upload-progress");
+            var sendData = {
+                UserId: $("#UserId").val(),
+                UserTypeChange: $("#UserTypeChange").val(),
+                UserType: $("#UserType").val(),
+                UserName: $("#UserName").val(),
+                EmpId: $("#EmpId").val(),
+                DesignationId: $("#DesignationId").val(),
+                JoinDate: $("#JoinDate").val(),
+                SiteId: $("#SiteId").val(),
+                UnitId: $("#Partial_UnitId").val(),
+                DeptId: $("#Partial_DeptId").val(),
+                LineId: $("#Partial_LineId").val(),
+                MachineId: $("#Partial_MachineId").val(),
+                CreatedBy: userId
+            };
+
+            $.ajax({
+                url: '@Url.Action("CompanyInformationUpdate", "HumanResource")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === 'Error') {
+                        notification.show({ message: "Company information of user '" + sendData.UserName + "' update unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                    else {
+                        notification.show({ message: "Company information of user '" + sendData.UserName + "' has been successfully updated.", showTime: startTime() }, "upload-success");
+                    }
+                    $("#btn_CancelCompanyInfo").click();
+                    $("#div_ryt_panel").load('@Url.Action("_ShowEmpInfo", "HumanResource")?UserId=' + $("#UserId").val() + '&isDisplay=false');
+                },
+                error: function (err) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+    $("#btn_CancelCompanyInfo").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

@@ -1,0 +1,220 @@
+﻿@************************************** Created By Jerin Jahan (Date:10.11.2016)  ***************************************@
+@model IEnumerable<FactoryManagement.Models.AllUserLoanList>
+@using FactoryManagement.Helpers
+@{
+    var count = 1;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+@if (ViewBag.view == "partial")
+{
+    <style>
+        .table td,table th{border:none!important;}
+        .table th{border-bottom: 1px solid #dddddd!important;}
+    </style>
+    <table class="table">
+        <tr>
+            <th width="5%">#</th>
+            <th width="5%">Payment Type</th>
+            <th width="10%">Amount</th>
+            <th width="5%">Status</th>
+            <th width="10%">Return Amount</th>
+            <th width="15%">Deduct From Salary</th>
+            @*<th width="15%">Paid By</th>
+            <th width="10%">Paid Date & Time</th>
+            <th width="15%">Last Amount Received By</th>
+            <th width="15%">Last Amount Received Date & Time</th>*@
+        </tr>
+        @foreach (var list in Model)
+        {
+            double amount = Convert.ToDouble(list.Amount);
+            <tr>
+                <td>@count .</td>
+                <td>
+                    @if (list.PayType == 1)
+                    {<span>Cash</span>}
+                    else if (list.PayType == 2)
+                    {<span>Check</span>}
+                    else
+                    {<span>Account</span>   }
+                </td>
+                <td>@currency @list.Amount</td>
+                <td>
+                    @if (list.PaidStatus == 0)
+                    {
+                        <span>Due</span>
+                    }
+                    else
+                    {
+                        <span>Clear</span>
+                    }
+                </td>
+                <td>
+                    @if (list.PaidAmount > 0)
+                    {
+                        <span>@currency @list.PaidAmount</span>
+                    }
+                </td>
+                <td>
+                    @if (list.DeductionFromSalary)
+                    {
+                        <span>Yes (@currency @list.DeductAmountPerMonth)</span>
+                    }
+                    else
+                    {
+                        <span>No</span>
+                    }
+                </td>
+                @*<td>
+                    @if (list.LoanPaidBy > 0)
+                    {
+                        var user = db.View_UserLists.Where(m => m.UserType == 1 && m.UserId == list.LoanPaidBy).FirstOrDefault();
+                        <a href="/HumanResource/DisplayEmployeeDetails?UserId=@list.LoanPaidBy&userType=1">
+                            <img src="~/Images/UserPicture/thumb/@user.Picture" class="user-photo" /><span> @user.UserName</span>
+                        </a>
+                    }
+                    else
+                    {
+                        <img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" />
+                        @Request.Cookies["CookieAdminInfo"].Values["username"].ToString()
+                    }
+                </td>
+                <td>@Convert.ToDateTime(list.LoanPaidDate).ToString("MMMM dd,yyyy  hh:mm tt")</td>
+                <td>
+                    @if (list.LoanReceivedBy != null)
+                    {
+                        if (list.LoanReceivedBy > 0)
+                        {
+                            var user = db.View_UserLists.Where(m => m.UserType == 1 && m.UserId == list.LoanReceivedBy).FirstOrDefault();
+                            <a href="/HumanResource/DisplayEmployeeDetails?UserId=@list.LoanReceivedBy&userType=1">
+                                <img src="~/Images/UserPicture/thumb/@user.Picture" class="user-photo" /><span> @user.UserName</span>
+                            </a>
+                        }
+                        else
+                        {
+                            <img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" />
+                            @Request.Cookies["CookieAdminInfo"].Values["username"].ToString()
+                        }
+                    }
+                    else
+                    {
+                        <span>Not yet return any amount</span>
+                    }
+                </td>
+                <td>
+                    @if (list.LoanReceivedBy != null)
+                    {
+                        <span>@Convert.ToDateTime(list.LoanReceivedDate).ToString("MMMM dd,yyyy  hh:mm tt")</span>
+                    }
+                    else
+                    {
+                        <span>Not yet return any amount</span>
+                    }
+                </td>*@
+            </tr>
+            count++;
+        }
+    </table>
+}
+else
+{
+    <div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;">
+        <table class="table table-bordered">
+            <tr>
+                <td width="5%">#</td>
+                <td width="5%">Payment Type</td>
+                <td width="10%">Amount</td>
+                <td width="5%">Status</td>
+                <td width="10%">Return Amount</td>
+                <td width="15%">Paid By</td>
+                <td width="10%">Paid Date & Time</td>
+                <td width="15%">Last Amount Received By</td>
+                <td width="15%">Last Amount Received Date & Time</td>
+            </tr>
+            @foreach (var list in Model)
+            {
+                double amount = Convert.ToDouble(list.Amount);
+                <tr>
+                    <td>@count .</td>
+                    <td>
+                        @if (list.PayType == 1)
+                        {<span>Cash</span>}
+                        else if (list.PayType == 2)
+                        {<span>Check</span>}
+                        else
+                        {<span>Account</span>   }
+                    </td>
+                    <td>@currency @list.Amount</td>
+                    <td>
+                        @if (list.PaidStatus == 0)
+                        {
+                            <span>Due</span>
+                        }
+                        else
+                        {
+                            <span>Clear</span>
+                        }
+                    </td>
+                    <td>
+                        @if (list.PaidAmount > 0)
+                        {
+                            <span>@currency @list.PaidAmount</span>
+                        }
+                        <span>@currency 0</span>
+                    </td>
+                    <td>
+                        @if (list.LoanPaidBy > 0)
+                        {
+                            var user = db.View_UserLists.Where(m => m.UserType == 1 && m.UserId == list.LoanPaidBy).FirstOrDefault();
+                            <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = list.LoanPaidBy, isDisplay = true }, null)">
+                                <img src="~/Images/UserPicture/thumb/@user.Picture" class="user-photo" /><span> @user.UserName</span>
+                            </a>
+
+                        }
+                        else
+                        {
+                            <img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" />
+                            @Request.Cookies["CookieAdminInfo"].Values["username"].ToString()
+                        }
+                    </td>
+                    <td>@Convert.ToDateTime(list.LoanPaidDate).ToString("MMMM dd,yyyy  hh:mm tt")</td>
+                    <td>
+                        @if (list.LoanReceivedBy != null)
+                        {
+                            if (list.LoanReceivedBy > 0)
+                            {
+                                var user = db.View_UserLists.Where(m => m.UserType == 1 && m.UserId == list.LoanReceivedBy).FirstOrDefault();
+                                <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = list.LoanReceivedBy, isDisplay = true }, null)">
+                                    <img src="~/Images/UserPicture/thumb/@user.Picture" class="user-photo" /><span> @user.UserName</span>
+                                </a>
+                            }
+                            else
+                            {
+                                <img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" />
+                                @Request.Cookies["CookieAdminInfo"].Values["username"].ToString()
+                               
+                            }
+                        }
+                        else
+                        {
+                            <span>Not yet return any amount</span>
+                        }
+                    </td>
+                    <td>
+                        @if (list.LoanReceivedBy != null)
+                        {
+                            <span>@Convert.ToDateTime(list.LoanReceivedDate).ToString("MMMM dd,yyyy  hh:mm tt")</span>
+                        }
+                        else
+                        {
+                            <span>Not yet return any amount</span>
+                        }
+                    </td>
+                </tr>
+                        count++;
+            }
+        </table>
+    
+    </div>
+}
+

@@ -1,0 +1,346 @@
+﻿
+@************************************** Created By Jerin Jahan (Date:18.08.2016)  ***************************************@
+@model FactoryManagement.ModelView.SalaryConfig.SalayPackageConfig
+@using FactoryManagement.Helpers
+@{
+    ViewBag.Title = "SalaryPackageConfig";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-users fa-fwt"></i>
+            <span>Human Resource</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/SalaryConfig/SalaryPackageList">Salary Package</a>
+            <i class="fa fa-angle-right"> </i>
+        </li>
+        <li>
+            <i class="fa fa-cogs"> </i>
+            <a href="@Html.EncodedParam("SalaryPackageConfig","SalaryConfig",new { id=Model.PackageId},null)">Salary Package Config</a>
+        </li>
+    </ul>
+</div>
+<div class="note note-success"><p id="h4title">Showing Salary Package Details of : <span style="font-weight:bold">@Model.PackageName</span></p></div>
+
+@*@(Html.Kendo().Window()
+       .Name("WinForSalaryPackConfig")
+       .Visible(false)
+       .Modal(true)
+       .Draggable(true)
+)*@
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet light bordered">
+            <div class="portlet-title">
+                <div class="caption font-green">
+                    <i class="fa fa-info-circle font-green"></i>
+                    <span class="caption-subject bold uppercase">Salary Package Details</span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="row">
+                    <div class="form-horizontal col-md-6 col-sm-6 col-xs-12" style="border:1px solid #ddd;">
+                        <h4>
+                            <span data-toggle="tooltip" title="Add New Account Type" style="float:right;cursor:pointer;" id="btn_Acc_Add"><i class="fa fa-plus"></i></span>
+                            <span data-toggle="tooltip" title="Duplicate this Salary Package" style="float:right;cursor:pointer;margin-right:10px;" id="btn_Pck_Dup"><i class="fa fa-copy"></i></span>
+                        </h4>
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.PackageName, "Package Name", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4" })
+                            <div class="col-md-6 col-sm-6" style="padding-top:7px;">@Model.PackageName</div>
+                        </div>
+                        <div style="display:none;" id="Div_Salay_Acc_Add"></div>
+                    </div>
+                    <div class="form-horizontal col-md-6 col-sm-6 col-xs-12" style="border:1px solid #ddd;display:none;" id="Div_Already_Add_Acc"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="win_dup_pck"></div>
+<script id="temp_win_dup_pck" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">
+            Are you sure want to duplicate this salary package?
+        </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_dup_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="reset" class="k-button k-button-icontext k-grid-cancel" id="btn_dup_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script id="temp_win_edit_pck" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">
+            Are you sure want to update this account?
+        </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_up_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="reset" class="k-button k-button-icontext k-grid-cancel" id="btn_up_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    var HasBaseSalary = 0,userId,previousMonth,currentSelectedMon,ispercentaile=false,isdynamic=false;
+    $(document).ready(function () {
+        $("#liForHR").addClass('active');
+        $("#liForSalaryList").addClass('sublistActive');
+ 
+        if ('@(Model.HasBaseSalary)' === 'True') {
+            HasBaseSalary = 1;
+        }
+        if('@(ViewBag.HasAddedAccount)' === 'True'){
+            $("#Div_Already_Add_Acc").show();
+            $("#Div_Already_Add_Acc").append('<div class="win_loading_half"></div>');
+            $("#Div_Already_Add_Acc").load('@Url.Action("AddedAccountWithPackList", "SalaryConfig")?PackageId=' + '@(Model.PackageId)');
+        }else{
+            $("#Div_Salay_Acc_Add").show();
+            $("#Div_Salay_Acc_Add").append('<div class="win_loading_half"></div>');
+            $("#Div_Salay_Acc_Add").load('@Url.Action("SalaryPackageAccAdd", "SalaryConfig")?PackageId=' + '@(Model.PackageId)');
+        }
+    });
+
+    $(document).on("click","#btn_page_back",function(){
+        window.history.back();
+    });
+    function onCatagoryChange(e) {
+        var dataItem = this.dataItem(e.item);
+        HasBaseSalary = 0;
+        $("#AccPayType").val(0);
+        $("#Annual").prop("checked",false);
+        $("#DivForCheckBox").show();
+        $("#ckHoliday").show();
+        $("#CatagoryName").val("");
+        if(dataItem.SalaryCatagoryId === ""){
+            $("#Name").val('');
+            $("#DivForName").show();
+            $("#Deduction").attr('disabled', false);
+        }else{
+            $("#CatagoryName").val(dataItem.Name);
+            if(dataItem.IsBaseSalary){
+                $("#IsBaseSalary").val(true);
+                HasBaseSalary = 1;
+                $("#DivForName").hide();
+                $("#Div_Acc_type").hide();
+                $("#AccountType").val(1);
+                $("#Name").val("Basic");
+                $("#Deduction").attr('disabled', true);
+                $("#Annual").prop("checked",true);
+                $("#AccPayType").val(3);
+                $("#DivForCheckBox").hide();
+            }else{
+                $("#IsBaseSalary").val(false);
+                $("#Name").val("");
+                $("#DivForName").show();
+                $("#Deduction").attr('disabled', false);
+            }
+            if(dataItem.NameAddedAsLabel){
+                $("#lblForCatagory").text(dataItem.Name);
+                $("#lblForCatagory").show();
+            }
+            else{
+                $("#lblForCatagory").text("");
+                $("#lblForCatagory").hide();
+            }
+            if(dataItem.SalaryCatagoryId == 6){
+                $("#DivForName").hide();
+                $("#Addition").prop("checked",true);
+                $("#Name").val(dataItem.Name);
+            }
+            if(dataItem.SalaryCatagoryId == 7){
+                $("#DivForName").hide();
+                $("#Deduction").prop("checked",true);
+                $("#Name").val(dataItem.Name);
+            }
+            if(dataItem.SalaryCatagoryId === 2 || dataItem.SalaryCatagoryId === 6 || dataItem.SalaryCatagoryId === 7){
+                $("#ckHoliday").hide();
+            }
+        }
+
+    }
+    function onAccountTypeChange(e) {
+        var dataItem = this.dataItem(e.item);
+        ispercentaile = false;isdynamic=false;
+        $("#Amount").val('');
+        $("#Percentage").val('');
+        $("#DivForAmount").show();
+        $("#DivForPercentage").hide();
+        if(dataItem.Id === ""){
+            if(HasBaseSalary == 0){
+                if($("#Catagory").val() === "6" || $("#Catagory").val() === "7"){
+                    $("#Name").val($("#CatagoryName").val());$("#DivForName").hide();
+    
+                }else{
+                    $("#Name").val('');$("#DivForName").show();}
+            }
+        }
+        else{
+            if(HasBaseSalary == 0){
+                if($("#Catagory").val() === "6" || $("#Catagory").val() === "7"){
+                    $("#Name").val($("#CatagoryName").val());$("#DivForName").hide();
+                }else{
+                    $("#Name").val('');$("#DivForName").show();}
+            }
+            if (dataItem.IsFixedAmount) {
+                ispercentaile = false;
+                $("#DivForAmount").show();
+                $("#DivForPercentage").hide();
+                if(dataItem.Id === 3){
+                    $("#DivForAmount").hide();
+                    $("#DivForPercentage").hide();
+                    $("#Amount").val('');
+                    $("#Percentage").val('');
+                    isdynamic=true;
+                }
+            }
+            else {
+                ispercentaile = true;
+                $("#DivForAmount").hide();
+                $("#DivForPercentage").show();
+            }
+        }
+    }
+    function OnMonthSelect(e) {
+        previousMonth = this._savedOld;
+        currentSelectedMon = this.value();
+        var diff = [];
+        if (previousMonth) {
+            diff = $(previousMonth).not(currentSelectedMon).get();
+        }
+        this._savedOld = currentSelectedMon.slice(0);
+        if (diff.length > 0) {
+
+        } else {
+            var dataItem = this.dataSource.view()[e.item.index()];
+            AllMonthName.push(dataItem.Text);
+        }
+    };
+    function OnMonthChange(e) {
+        previousMonth = this._savedOld;
+        currentSelectedMon = this.value();
+        var diff = [];
+        if (previousMonth) {
+            diff = $(previousMonth).not(currentSelectedMon).get();
+        }
+        this._savedOld = currentSelectedMon.slice(0);
+        if (diff.length > 0) {
+            var index = parseInt(diff) -1;
+            var dataItem = $('#AllMonthId').data("kendoMultiSelect").dataSource.view()[index];
+            var removeItem = dataItem.Text;
+            AllMonthName = jQuery.grep(AllMonthName, function(value) {
+                return value != removeItem;
+            });
+        }
+    };
+
+    //*************************************** ADD NEW ACCOUNT *****************************************************
+    $("#btn_Acc_Add").click(function () {
+        $("#Div_Salay_Acc_Add").empty();
+        $("#Div_Salay_Acc_Add").show();
+        $("#Div_Salay_Acc_Add").append('<div class="loading_partial"></div>');
+        $("#Div_Salay_Acc_Add").load('@Url.Action("SalaryPackageAccAdd", "SalaryConfig")?PackageId=' + '@(Model.PackageId)');
+    });
+
+    //*************************************** DELETE ADDED ACCOUNT *****************************************************
+
+    $("#Div_Already_Add_Acc").on("click", ".btn_pack_Acc_Delete", function (e) {
+        if (confirm('Are you sure want to delete this package?')) {
+            e.preventDefault();
+            var id = $(this).data("id");
+
+            notification.show({message: "Salary package account type deleting...",showTime: startTime()}, "upload-progress");
+
+            $.ajax({
+                url: '@Url.Action("SalaryPackAccDelete", "SalaryConfig")',
+                type: 'Post',
+                data: {Id:id,UserId: userId},
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({autoHideAfter: 2000});
+
+                    if(data === "Error"){
+                        notification.show({message: "Account type deletion unsuccessful", showTime: startTime()}, "upload-error");
+                    }else{
+                        notification.show({message: "Account type successfully deleted", showTime: startTime()}, "upload-success");
+                        if(data){
+                            $("#Div_Already_Add_Acc").empty();
+                            $("#Div_Already_Add_Acc").show();
+                            $("#Div_Already_Add_Acc").append('<div class="win_loading_half"></div>');
+                            $("#Div_Already_Add_Acc").load('@Url.Action("AddedAccountWithPackList", "SalaryConfig")?PackageId=' + '@(Model.PackageId)');
+                        }else{
+                            $("#Div_Already_Add_Acc").empty();
+                            $("#Div_Already_Add_Acc").hide();
+
+                            HasBaseSalary =0;
+                            $("#Div_Salay_Acc_Add").empty();
+                            $("#Div_Salay_Acc_Add").show();
+                            $("#Div_Salay_Acc_Add").append('<div class="loading_partial"></div>');
+                            $("#Div_Salay_Acc_Add").load('@Url.Action("SalaryPackageAccAdd", "SalaryConfig")?PackageId=' + '@(Model.PackageId)');
+                        }
+                        $("#Div_Salay_Acc_Add").hide();
+                    }
+                }
+            });
+        }
+    });
+
+    //*************************************** EDIT ADDED ACCOUNT *****************************************************
+    $("#Div_Already_Add_Acc").on("click", ".btn_pack_Acc_Edit", function () {
+        var id = $(this).data("id");
+        var sendData = {HasBaseSalary:HasBaseSalary,PackageId:@(Model.PackageId),AccountId:id};
+        $("#Div_Salay_Acc_Add").empty();
+        $("#Div_Salay_Acc_Add").show();
+        $("#Div_Salay_Acc_Add").append('<div class="partial_loading_half"></div>');
+        $("#Div_Salay_Acc_Add").load('@Url.Action("SalaryPackageAccEdit", "SalaryConfig")?',sendData);
+    });
+
+
+    //***************************************  DEPLICATE PACKAGE  *****************************************************
+    $("#btn_Pck_Dup").click(function () {
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width:"30%",
+            modal: true,
+            close:onWindowClose
+        });
+        var template = kendo.template($("#temp_win_dup_pck").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+
+        kendoWindow.find("#btn_dup_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_dup_ok").click(function () {
+           
+            kendoWindow.data("kendoWindow").close();
+            showPartialViewforSalaryDup();
+        }).end();
+    });
+
+    function showPartialViewforSalaryDup(){
+        $("#win_dup_pck").empty();
+        $("#win_dup_pck").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '40%',
+            height: '25%',
+            title: 'Duplicate Salary Package '+'@(Model.PackageName)',
+            close:onWindowClose
+        });
+        $("#win_dup_pck").html('<div class="win_loading_half"></div>');
+        var win_dup_pck = $("#win_dup_pck").data("kendoWindow");
+        win_dup_pck.refresh({ url: "/SalaryConfig/_SalaryPckDupName?PackageId=" + '@(Model.PackageId)' });
+        win_dup_pck.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    }
+</script>

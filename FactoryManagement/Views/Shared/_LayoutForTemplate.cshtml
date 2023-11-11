@@ -1,0 +1,1012 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title - CostERP</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <meta content="" name="description" />
+    <meta content="" name="author" />
+    <!-- NEW TEMPLATE STYLES -->
+    
+    <script src="~/Scripts/jquery-3.1.1.js"></script>
+    <script src="~/Scripts/jquery-1.10.2.js"></script>
+    <script src="~/Scripts/kendo/2015.3.1111/kendo.all.min.js"></script>
+    <script src="~/Scripts/kendo/2015.3.1111/kendo.timezones.min.js"></script>
+    <script src="~/Scripts/kendo/2015.3.1111/kendo.aspnetmvc.min.js"></script>
+    <script src="~/Scripts/jszip.min.js"></script>
+   
+    <script src="~/Scripts/jquery.shorten.js"></script>
+
+    <link href="~/Content/kendo/2015.3.1111/kendo.common-bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/kendo/2015.3.1111/kendo.bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/kendo/2015.3.1111/kendo.dataviz.min.css" rel="stylesheet" />
+    <link href="~/Content/kendo/2015.3.1111/kendo.dataviz.bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/kendo/2015.3.1111/kendo.common.min.css" rel="stylesheet" />
+    <link href="~/Content/kendo/2015.3.1111/kendo.default.min.css" rel="stylesheet" />
+
+    
+    <link href="~/Content/Layout_Assets/global/plugins/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/Layout_Assets/global/plugins/simple-line-icons/simple-line-icons.min.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/Layout_Assets/global/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/Layout_Assets/global/plugins/uniform/css/uniform.default.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/Layout_Assets/global/plugins/bootstrap-switch/css/bootstrap-switch.min.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/Layout_Assets/global/plugins/bootstrap-daterangepicker/daterangepicker-bs3.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/Layout_Assets/global/plugins/fullcalendar/fullcalendar.min.css" rel="stylesheet" type="text/css" />
+
+
+    <link href="~/Content/Layout_Assets/admin/pages/css/tasks.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/Layout_Assets/global/css/components.css" id="style_components" rel="stylesheet" type="text/css" />
+    <link href="~/Content/Layout_Assets/global/css/plugins.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/Layout_Assets/admin/layout/css/layout2.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/Layout_Assets/admin/layout/css/themes/darkblue.css" rel="stylesheet" type="text/css" id="style_color" />
+    <link href="~/Content/loading.css" rel="stylesheet" />
+    <link href="~/Content/jquery-ui-1.12.1/jquery-ui.css" rel="stylesheet" />
+    <script src="~/Content/jquery-ui-1.12.1/jquery-ui.js"></script>
+    <link href="~/Content/loading_partail.css" rel="stylesheet" />
+    <link href="~/Content/Site.css" rel="stylesheet" />
+
+    <link href="~/Content/Date Range Picker/daterangepicker.css" rel="stylesheet" />
+    <script src="~/Content/Date Range Picker/moment.js"></script>
+    <script src="~/Content/Date Range Picker/daterangepicker.js"></script>
+
+    @{
+        var bodyCls = "";
+        var sidebarcls = "page-sidebar-menu";
+        string isSidebarClick = "";
+        if (Request.Cookies["IsSildeBarClick"] != null)
+        {
+            isSidebarClick = Request.Cookies["IsSildeBarClick"].Value;
+        }
+        if (isSidebarClick == "True")
+        {
+            bodyCls = "page-sidebar-closed";
+            sidebarcls = "page-sidebar-menu page-sidebar-menu-closed";
+        }
+    }
+    <style type="text/css">
+        div#left-sidebar {
+            position: fixed;
+            top: 50px;
+            bottom: 50px;
+            left: 0;
+            height: 100%;
+            background-color: #364150;
+            z-index:1;
+        }
+
+        div#footer {
+              position: fixed;
+              right: 0;
+              bottom: 0;
+              left: 0;
+              padding: 1rem;
+              background-color: #2b3643;
+              text-align: center;
+              z-index:2;
+        }
+
+        @@media screen {
+            body > div#left-sidebar {
+                position: fixed;
+            }
+        }
+    </style>
+</head>
+
+<body class="page-header-fixed page-quick-sidebar-over-content @bodyCls">
+    @{
+        FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+        long loginUserId = Convert.ToInt32(Request.Cookies["CookieAdminInfo"].Values["userid"].ToString());
+        int roleid = Convert.ToInt32(Request.Cookies["CookieAdminInfo"].Values["roleid"].ToString());
+        var loginUserPic = db.UserInformations.Where(x => x.UserId == loginUserId).Select(x => x.Picture).FirstOrDefault();
+        var total_user = db.UserInformations.Where(m => m.UserType == 1 && m.Status == 1).Count();
+    }
+    <div class="page-header navbar navbar-fixed-top">
+        <div class="page-header-inner">
+            <div class="page-logo">
+                <img src="~/Content/Icon/gsml_small_logo.png" class="logo-default" />
+            </div>
+            <a href="javascript:;" class="menu-toggler responsive-toggler" data-toggle="collapse" data-target=".navbar-collapse"></a>
+            
+            <!-- BEGIN TOP NAVIGATION MENU -->
+            <div class="top-menu">
+                <ul class="nav navbar-nav pull-right">
+                    <li class="dropdown dropdown-user">
+                        <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
+                            <img alt="" class="img-circle" src="~/Images/UserPicture/thumb/@Request.Cookies["CookieAdminInfo"].Values["userpic"].ToString()" />
+                            <span class="username username-hide-on-mobile">@Request.Cookies["CookieAdminInfo"].Values["userfirstname"].ToString()</span>
+                            <i class="fa fa-angle-down"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-default">
+                            @*<li>
+                                <a href="/HumanResource/DisplayEmployeeDetails?UserId=@loginUserId&isDisplay=true">
+                                    <i class="icon-user"></i> My Account
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/LeaveManagement/LeaveApplicationForm?userId=@loginUserId">
+                                    <i class="fa fa-pencil"></i> Apply For Leave
+                                </a>
+                            </li>*@
+                            <li>
+                                @if (loginUserId < 1)
+                                {
+                                    <a href="/SuperAdmin/AuditLog?IsOwn=false">
+                                        <i class="fa fa-bell"></i> Audit Logs
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a href="/SuperAdmin/AuditLog?IsOwn=true">
+                                        <i class="fa fa-bell"></i> Audit Logs
+                                    </a>
+                                }
+                            </li>
+                            <li>
+                                <a href="/Account/LogOff" id="user_logout">
+                                    <i class="icon-key"></i> Log Out
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <!-- END TOP NAVIGATION MENU -->
+        </div>
+    </div>
+    <div class="clearfix"></div>
+
+    <!-- BEGIN CONTAINER -->
+    <div class="page-container">
+
+        @***************************   LEFT SIDE BAR (START)  ******************************@
+        <div class="page-sidebar-wrapper" id="left-sidebar">
+            <div class="page-sidebar navbar-collapse collapse" id="div_lft_bar">
+                <ul class="page-sidebar-menu page-sidebar-menu-closed" data-keep-expanded="false" data-auto-scroll="true" data-slide-speed="200" id="ul_RytSideDiv">
+                    <li class="sidebar-toggler-wrapper"><div id="div_SideToggler" class="menu-toggler sidebar-toggler"><span></span></div></li>
+                    @if (roleid == 4)
+                    {
+                        <li id="liForAccounting">
+                            <a href="javascript:;"><i class="fa fa-calculator"></i><span class="title"> Finance</span><span class="arrow "></span></a>
+                            <ul class="sub-menu">
+                                <li id="liForAccountGroup"><a href="/Accounting/AccountGroup"><i class="fa fa-th-list"></i> Internal Account</a></li>
+                                <li id="liForBankList"><a href="/Accounting/AllBankList"><i class="fa fa-th-list"></i> Bank</a></li>
+                                <li id="liForHRSalary"><a href="/HumanResource/PaySalary"><i class="fa fa-money"></i> Payroll </a></li>
+                                <li id="liForHRLoan"><a href="/HumanResource/LoanManagement"><i class="fa fa-money"></i> Loan/Advance </a></li>
+                                <li id="liForVoucherList"><a href="/Voucher/VoucherList"><i class="fa fa-th-list"></i> All Voucher List </a></li>
+                                <li id="liForInvoiceTran"><a href="/Voucher/InvoiceTransactionForShow"><i class="fa fa-th-list"></i> All Transaction</a></li>
+                                <li id="liForInvoiceTran"><a href="/Voucher/InvoiceTransaction"><i class="fa fa-th-list"></i> All Approved Transaction</a></li>
+                                <li id="liForInvoiceTran"><a href="/Voucher/InvoiceTransNotReceive"><i class="fa fa-th-list"></i> All Not Received Transaction</a></li>
+                            </ul>
+                        </li>
+                        <li id="liForHR">
+                            <a href="javascript:;"><i class="fa fa-users fa-fwt"></i><span class="title"> Human Resource</span><span class="arrow "></span></a>
+                            <ul class="sub-menu">
+                                <li id="liForUserLists"><a href="/HumanResource/AllUserLists"><i class="fa fa-th-list"></i> Employee/s</a></li>
+                                @*<li id="liForSalaryList"><a href="/SalaryConfig/SalaryPackageList"><i class="fa fa-th-list"></i>  Salary Package </a></li>
+                                <li id="liForHolidayList"><a href="/Holiday/HolidayPackage"><i class="fa fa-th-list"></i>  Holiday </a></li>
+                                <li id="liForLeaveList"><a href="/LeaveManagement/LeaveManagement"><i class="fa fa-th-list"></i>  Leave Management </a></li>
+                                <li id="liForAttendance"><a href="/Attendance/Attendance"><i class="fa fa-th-list"></i>  Attendance</a></li>
+                                <li id="liForAttendanceBCR"><a href="/Attendance/AllAttendanceBCR"><i class="fa fa-th-list"></i>  Attendance(Using BarCode)</a></li>
+                                <li id="liForworkingschedule"><a href="/HumanResource/Working_Schedule"><i class="fa fa-th-list"></i> Working Schedule</a></li>*@
+                            </ul>
+                        </li>
+                    }
+                    @if (roleid == 3)
+                    {
+                        <li id="liForHR">
+                            <a href="javascript:;"><i class="fa fa-users fa-fwt"></i><span class="title"> Human Resource</span><span class="arrow "></span></a>
+                            <ul class="sub-menu">
+                                <li id="liForUserLists"><a href="/HumanResource/AllUserLists"><i class="fa fa-th-list"></i> Employee/s</a></li>
+                            </ul>
+                        </li>
+                        <li id="liForCRM">
+                            <a href="javascript:;"><i class="fa fa-users fa-fwt"></i><span class="title"> Business Management</span><span class="arrow "></span></a>
+                            <ul class="sub-menu">
+                                <li id="liForClientList"><a href="/CRMClient/AllClientList"><i class="fa fa-th-list"></i>  All Client List</a></li>
+                                <li id="liForCRMAcquisitionList"><a href="/CRM/CRMORDER"><i class="fa fa-th-list"></i>  Approved Acquisition</a></li>
+                                <li id="liForBusinessOrder"><a href="/CRM/BusinessOrder"><i class="fa fa-th-list"></i> Business Order</a></li>
+                            </ul>
+                        </li>
+                    }
+                    @if (loginUserId < 1)
+                    {
+                        <li id="liForDashboard">
+                            <a href="javascript:;">
+                                <i class="icon-home"></i>
+                                <span class="title">Dashboard</span>
+                                <span class="selected"></span>
+                                <span class="arrow open"></span>
+                            </a>
+                            <ul class="sub-menu">
+                                <li id="liForDefaultDash">
+                                    <a href="/Home/Dashboard">
+                                        <i class="icon-bar-chart"></i>
+                                        Default Dashboard
+                                    </a>
+                                </li>
+                                <li id="liForInvenDash">
+                                    <a href="/Home/InvenDashboard">
+                                        <i class="icon-basket"></i>
+                                        Inventory Dashboard
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/Home/Dashboard">
+                                        <i class="icon-user"></i>
+                                        HR Dashboard
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li id="liForInventory" class="margineffect">
+                            <a href="javascript:;"><i class="fa fa-shopping-cart"></i><span class="title"> Inventory</span><span class="arrow "></span></a>
+                            <ul class="sub-menu" id="ul">
+                                <li id="liEquipments"><a href="/Home/EquipDash" id="liForEquipments"><i class="fa fa-building"></i><span class="title"> Equipments</span></a></li>
+                                <li id="liForAllInventoryList"><a href="/StoreProduct/Store"><i class="fa fa-list-ul"></i> Store</a></li>
+                                <li id="liForInedntVou"><a href="/Acquisition/ShowAllIndentVoucher" id="Stock"><i class="fa fa-list-ul"></i> Indent History</a></li>
+                                <li id="liForReplenishment2"><a href="/StoreProduct/InventoryMinQuanFinished"><i class="fa fa-list-ul"></i> Replenishment</a></li>
+
+                                
+                                <li id="liForAllImpHis"><a href="/StoreProduct/ImportHistoryList"><i class="fa fa-list-ul"></i> Import History</a></li>
+                                <li id="liForDisVouHis"><a href="/StoreProduct/InvenDisVoucherList"><i class="fa fa-list-ul"></i> Dispatch History</a></li>
+                                <li id="liForRouteVouHis"><a href="/StoreProduct/InvenRouteVoucherList"><i class="fa fa-list-ul"></i> Routed History</a></li>
+                                <li id="liForInvenDisReturnList"><a href="/Inventory/DisItemReturnFromMachine"><i class="fa fa-list-ul"></i> Return Parts List</a></li>
+                                <li id="liForInvenReport">
+                                    <a href="j/Report/ReportDashboard"><i class="fa fa-file"></i><span class="title"> Report</span></a>
+                                    @*<ul class="sub-menu">
+                                        <li id="liForDailyRawStock"><a href="/Report/DailyRawCottonStock"><i class="fa fa-list-ul"></i> Daily Raw Cotton Stock</a></li>
+                                        <li id="liForMonthRep"><a href="/StoreProduct/Invenlist"><i class="fa fa-list-ul"></i> Monthly Report Generator</a></li>
+                                        <li id="liForWasteList"><a href="/StoreProduct/WasteList"><i class="fa fa-list-ul"></i> Manually Waste List </a></li>
+                                    </ul>*@
+                                </li>
+
+                                <li id="liForInvenConfig">
+                                    <a href="javascript:;"><i class="fa fa-gears"></i><span class="title"> Configuration </span><span class="arrow "></span></a>
+                                    <ul class="sub-menu">
+                                        <li id="liForProductTypeList"><a href="/Inventory/ProductTypeList"><i class="fa fa-list-ul"></i> Product Type List</a></li>
+                                        <li id="liForBrandList"><a href="/Inventory/AllBrandList"><i class="fa fa-list-ul"></i> All Brand List</a></li>
+                                        <li id="liForUnitList"><a href="/Inventory/AllUnitList"><i class="fa fa-list-ul"></i> All Unit List</a></li>
+                                        <li id="liForStoreList"><a href="/Inventory/AllStoreLists"><i class="fa fa-list-ul"></i>  All Store Lists</a></li>
+                                        <li id="liForWareList"><a href="/Inventory/AllWareHouseLists"><i class="fa fa-list-ul"></i>  All Ware Lists</a></li>
+                                        <li id="liForMachineList"><a href="/Inventory/MachineTypeAdd"><i class="fa fa-list-ul"></i>  All Machine Type List</a></li>
+                                    </ul>
+                                </li>
+                                
+                            </ul>
+                        </li>
+                       @* <li id="liForAccounting">
+        <a href="javascript:;"><i class="fa fa-calculator"></i><span class="title"> Finance</span><span class="arrow "></span></a>
+        <ul class="sub-menu">
+            <li id="liForAccountGroup"><a href="/Accounting/AccountGroup"><i class="fa fa-th-list"></i> Internal Account</a></li>
+            <li id="liForBankList"><a href="/Accounting/AllBankList"><i class="fa fa-th-list"></i> Bank</a></li>
+            <li id="liForHRSalary"><a href="/HumanResource/PaySalary"><i class="fa fa-money"></i> Payroll </a></li>
+            <li id="liForHRLoan"><a href="/HumanResource/LoanManagement"><i class="fa fa-money"></i> Loan/Advance </a></li>
+            <li id="liForVoucherList"><a href="/Voucher/VoucherList"><i class="fa fa-th-list"></i> All Voucher List </a></li>
+            <li id="liForInvoiceTran"><a href="/Voucher/InvoiceTransactionForShow"><i class="fa fa-th-list"></i> All Transaction</a></li>
+            <li id="liForInvoiceTran"><a href="/Voucher/InvoiceTransaction"><i class="fa fa-th-list"></i> All Approved Transaction</a></li>
+            <li id="liForInvoiceTran"><a href="/Voucher/InvoiceTransNotReceive"><i class="fa fa-th-list"></i> All Not Received Transaction</a></li>
+        </ul>
+    </li>*@
+                        <li id="liForHR">
+                            <a href="javascript:;"><i class="fa fa-users fa-fwt"></i><span class="title"> Human Resource</span><span class="arrow "></span></a>
+                            <ul class="sub-menu">
+                                <li id="liForUserLists"><a href="/HumanResource/AllUserLists"><i class="fa fa-th-list"></i> Employee/s</a></li>
+                                @*<li id="liForSalaryList"><a href="/SalaryConfig/SalaryPackageList"><i class="fa fa-th-list"></i>  Salary Package </a></li>
+    <li id="liForHolidayList"><a href="/Holiday/HolidayPackage"><i class="fa fa-th-list"></i>  Holiday </a></li>
+    <li id="liForLeaveList"><a href="/LeaveManagement/LeaveManagement"><i class="fa fa-th-list"></i>  Leave Management </a></li>
+    <li id="liForAttendance"><a href="/Attendance/Attendance"><i class="fa fa-th-list"></i>  Attendance</a></li>
+    <li id="liForAttendanceBCR"><a href="/Attendance/AllAttendanceBCR"><i class="fa fa-th-list"></i>  Attendance(Using BarCode)</a></li>
+
+    <li id="liForworkingschedule"><a href="/HumanResource/Working_Schedule"><i class="fa fa-th-list"></i> Working Schedule</a></li>
+                                *@
+                                    </ul>
+                        </li>
+                       
+                        @*<li id="liForCRM">
+                            <a href="javascript:;"><i class="fa fa-users fa-fwt"></i><span class="title"> Business Management</span><span class="arrow "></span></a>
+                            <ul class="sub-menu">
+                                <li id="liForClientList"><a href="/CRMClient/AllClientList"><i class="fa fa-th-list"></i>  All Client List</a></li>
+                                <li id="liForCRMAcquisitionList"><a href="/CRM/CRMORDER"><i class="fa fa-th-list"></i>  Approved Acquisition</a></li>
+                                <li id="liForBusinessOrder"><a href="/CRM/BusinessOrder"><i class="fa fa-th-list"></i> Business Order</a></li>
+                            </ul>
+                        </li>*@
+                        <li id="liForConfig">
+                            <a href="javascript:;"><i class="fa fa-gears fa-fwt"></i><span class="title">Configuration</span><span class="arrow "></span></a>
+                            <ul class="sub-menu">
+                                <li id="liForSiteAdd"><a href="/Configuration/SiteCreate"><i class="fa fa-plus"></i> Add New Site</a></li>
+                                <li id="liForSiteList"><a href="/Configuration/AllSiteInfo"><i class="fa fa-th-list"></i> All Site Info</a></li>
+                                <li id="liForDesigList"><a href="/Configuration/DesignationList"><i class="fa fa-th-list"></i> Designation</a></li>
+                                <li id="liForAssignMachine"><a href="/Configuration/AssignMachineWithLine"><i class="fa fa-th-list"></i> Assign Machine</a></li>
+                            </ul>
+                        </li>
+                       @* <li>
+                            <a href="javascript:;"><i class="fa fa-wrench fa-fwt"></i><span class="title">Settings</span><span class="arrow "></span></a>
+                            <ul class="sub-menu">
+                                <li id="liForRoleSet"><a href="/RoleSet/RolePermissionSet"><i class="fa fa-gear"></i> Permission Settings</a></li>
+                            </ul>
+                        </li>
+                        <li id="liSmartCardApp">
+                            <a href="javascript:;"><i class="fa fa-mobile-phone"></i><span class="title"> Smart Card</span><span class="arrow "></span></a>
+                            <ul class="sub-menu">
+                                <li><a href="#" id="Selling"><i class="fa fa-plus-circle"></i> Add Subscription</a></li>
+                                <li><a href="#" id="Buying"><i class="fa fa-list-ul"></i> All Subscription List</a></li>
+                            </ul>
+                        </li>
+                        <li id="liDownload">
+                            <a href="javascript:;"><i class="fa fa-download"></i><span class="title">Download</span><span class="arrow "></span></a>
+                            <ul class="sub-menu">
+                                <li><a href="#"><i class="fa fa-history"></i> History</a></li>
+                                <li><a href="#"><i class="fa fa-android"></i> Android</a></li>
+                                <li><a href="#"><i class="fa fa-windows"></i> Windows</a></li>
+                                <li><a href="#"><i class="fa fa-apple"></i> ios</a></li>
+                            </ul>
+                        </li>*@
+                    }
+                    @if (roleid == 2)
+                    {
+                        <li id="liForDashboard" class="margineffect">
+                            <a href="/Home/InvenDashboard">
+                                <i class="icon-home"></i>
+                                <span class="title">Dashboard</span>
+                                <span class="selected"></span>
+                            </a>
+                        </li>
+                        <li id="liForInventory" class="margineffect">
+                            <a href="javascript:;"><i class="fa fa-shopping-cart"></i><span class="title"> Inventory</span><span class="arrow "></span></a>
+                            <ul class="sub-menu" id="ul">
+                                <li id="liEquipments"><a href="/Home/EquipDash" id="liForEquipments"><i class="fa fa-building"></i><span class="title"> Equipments</span></a></li>
+                                <li id="liForAllInventoryList"><a href="/StoreProduct/Store"><i class="fa fa-list-ul"></i> Store</a></li>
+                                <li id="liForReplenishment"><a href="/Acquisition/ShowAllIndentVoucher" id="Stock"><i class="fa fa-list-ul"></i> Indent History</a></li>
+                                <li id="liForReplenishment2"><a href="/StoreProduct/InventoryMinQuanFinished"><i class="fa fa-list-ul"></i> Replenishment</a></li>
+
+                                <li id="liForAllImpHis"><a href="/StoreProduct/ImportHistoryList"><i class="fa fa-list-ul"></i> Import History</a></li>
+                                <li id="liForDisVouHis"><a href="/StoreProduct/InvenDisVoucherList"><i class="fa fa-list-ul"></i> Dispatch History</a></li>
+                                <li id="liForRouteVouHis"><a href="/StoreProduct/InvenRouteVoucherList"><i class="fa fa-list-ul"></i> Routed History</a></li>
+                                <li id="liForInvenDisReturnList"><a href="/Inventory/DisItemReturnFromMachine"><i class="fa fa-list-ul"></i> Return Parts List</a></li>
+                                <li id="liForInvenReport">
+                                    <a href="/Report/ReportDashboard"><i class="fa fa-file"></i><span class="title"> Report</span></a>
+                                    @*<ul class="sub-menu">
+                                        <li id="liForDailyRawStock"><a href="/Report/DailyRawCottonStock"><i class="fa fa-list-ul"></i> Daily Raw Cotton Stock</a></li>
+                                        <li id="liForMonthRep"><a href="/StoreProduct/Invenlist"><i class="fa fa-list-ul"></i> Monthly Report Generator</a></li>
+                                        <li id="liForWasteList"><a href="/StoreProduct/WasteList"><i class="fa fa-list-ul"></i> Manually Waste List </a></li>
+                                    </ul>*@
+                                </li>
+                            </ul>
+                        </li>
+                    }
+                    @if (roleid == 5)
+                    {
+                        <li id="liForDashboard" class="margineffect">
+                            <a href="/Home/InvenDashboard">
+                                <i class="icon-home"></i>
+                                <span class="title">Dashboard</span>
+                                <span class="selected"></span>
+                            </a>
+                        </li>
+                        <li id="liForInventory" class="margineffect">
+                            <a href="javascript:;"><i class="fa fa-shopping-cart"></i><span class="title"> Inventory</span><span class="arrow "></span></a>
+                            <ul class="sub-menu" id="ul">
+                                <li id="liEquipments"><a href="/Home/EquipDash" id="liForEquipments"><i class="fa fa-building"></i><span class="title"> Equipments</span></a></li>
+                                <li id="liForAllInventoryList"><a href="/StoreProduct/Store"><i class="fa fa-list-ul"></i> Store</a></li>
+                                <li id="liForReplenishment"><a href="/Acquisition/ShowAllIndentVoucher" id="Stock"><i class="fa fa-list-ul"></i> Indent History</a></li>
+                                <li id="liForReplenishment2"><a href="/StoreProduct/InventoryMinQuanFinished"><i class="fa fa-list-ul"></i> Replenishment</a></li>
+
+                                <li id="liForAllImpHis"><a href="/StoreProduct/ImportHistoryList"><i class="fa fa-list-ul"></i> Import History</a></li>
+                                <li id="liForDisVouHis"><a href="/StoreProduct/InvenDisVoucherList"><i class="fa fa-list-ul"></i> Dispatch History</a></li>
+                                <li id="liForRouteVouHis"><a href="/StoreProduct/InvenRouteVoucherList"><i class="fa fa-list-ul"></i> Routed History</a></li>
+                                <li id="liForInvenDisReturnList"><a href="/Inventory/DisItemReturnFromMachine"><i class="fa fa-list-ul"></i> Return Parts List</a></li>
+                                <li id="liForInvenReport">
+                                    <a href="/Report/ReportDashboard"><i class="fa fa-file"></i><span class="title"> Report</span></a>
+                                    @*<ul class="sub-menu">
+                                        <li id="liForDailyRawStock"><a href="/Report/DailyRawCottonStock"><i class="fa fa-list-ul"></i> Daily Raw Cotton Stock</a></li>
+                                        <li id="liForMonthRep"><a href="/StoreProduct/Invenlist"><i class="fa fa-list-ul"></i> Monthly Report Generator</a></li>
+                                        <li id="liForWasteList"><a href="/StoreProduct/WasteList"><i class="fa fa-list-ul"></i> Manually Waste List </a></li>
+                                    </ul>*@
+                                </li>
+                            </ul>
+                        </li>
+                    }
+                    @if (roleid == 7)
+                    {
+                        <li id="liForEquipments" class="margineffect active ">
+                            <a href="/Home/EquipDash">
+                                <i class="fa fa-building"></i>
+                                <span class="title">Equipment</span>
+                                <span class="selected"></span>
+                            </a>
+                        </li>
+                    }
+                    @if (roleid == 8 || roleid == 9 || roleid == 10)
+                    {
+                        <li id="liForInventory" class="margineffect active">
+                            <a href="javascript:;"><i class="fa fa-shopping-cart"></i><span class="title"> Inventory</span><span class="arrow "></span></a>
+                            <ul class="sub-menu" id="ul">
+                                <li id="liEquipments"><a href="/Home/EquipDash" id="liForEquipments"><i class="fa fa-building"></i><span class="title"> Equipments</span></a></li>
+                                <li id="liForAllInventoryList"><a href="/StoreProduct/Store"><i class="fa fa-list-ul"></i> Store</a></li>
+                                <li id="liForReplenishment"><a href="/Acquisition/ShowAllIndentVoucher" id="Stock"><i class="fa fa-list-ul"></i> Indent History</a></li>
+                                <li id="liForReplenishment2"><a href="/StoreProduct/InventoryMinQuanFinished"><i class="fa fa-list-ul"></i> Replenishment</a></li>
+
+                                <li id="liForAllImpHis"><a href="/StoreProduct/ImportHistoryList"><i class="fa fa-list-ul"></i> Import History</a></li>
+                                <li id="liForDisVouHis"><a href="/StoreProduct/InvenDisVoucherList"><i class="fa fa-list-ul"></i> Dispatch History</a></li>
+                                <li id="liForRouteVouHis"><a href="/StoreProduct/InvenRouteVoucherList"><i class="fa fa-list-ul"></i> Routed History</a></li>
+                                <li id="liForInvenDisReturnList"><a href="/Inventory/DisItemReturnFromMachine"><i class="fa fa-list-ul"></i> Return Parts List</a></li>
+                                <li id="liForInvenReport">
+                                    <a href="/Report/ReportDashboard"><i class="fa fa-file"></i><span class="title"> Report</span></a>
+                                    @*<ul class="sub-menu">
+                                        <li id="liForDailyRawStock"><a href="/Report/DailyRawCottonStock"><i class="fa fa-list-ul"></i> Daily Raw Cotton Stock</a></li>
+                                        <li id="liForMonthRep"><a href="/StoreProduct/Invenlist"><i class="fa fa-list-ul"></i> Monthly Report Generator</a></li>
+                                        <li id="liForWasteList"><a href="/StoreProduct/WasteList"><i class="fa fa-list-ul"></i> Manually Waste List </a></li>
+                                    </ul>*@
+                                </li>
+                            </ul>
+                        </li>
+                    }
+                    @if (roleid == 11 || roleid == 12)
+                    {
+                        <li id="liForReplenishment" class="margineffect active ">
+                            <a href="/Acquisition/ShowAllIndentVoucher">
+                                <i class="fa fa-building"></i>
+                                <span class="title">Indent History</span>
+                                <span class="selected"></span>
+                            </a>
+                        </li>
+                    }
+                    <li id="liForAbout">
+                        <a href="http://www.spicybinary.com/about-us.html"><i class="icon-info"></i><span class="title">About</span></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+
+        @***************************   LEFT SIDE BAR (END)    ******************************@
+
+        <!-- BEGIN CONTENT -->
+        <div class="page-content-wrapper" id="DivForMainBody" style="border:0px solid blue;">
+            <div class="page-content" >
+
+                <div id="examples">
+                    <span id="notification" style="display:none;"></span>
+                    <span id="ProgressNotification" style="display:none;"></span>
+                    <div id='notificationPopUp'></div>
+
+                    @RenderBody()
+                    <script id="successTemplate" type="text/x-kendo-template">
+                        <div class="upload-success">
+                            <img src="/Content/Icon/imgCloseBtn.png" />
+                            <span class="time">#= showTime #</span>
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <i class="fa fa-check"></i>
+                                </div>
+                                <div class="col-md-9" style="margin-left:-20px">
+                                    <span>#= message #</span>
+                                </div>
+                            </div>
+                        </div>
+                    </script>
+                    <script id="errorTemplate" type="text/x-kendo-template">
+                        <div class="upload-error">
+                            <img src="/Content/Icon/imgCloseBtn.png" />
+                            <span class="time">#= showTime #</span>
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <i class="fa fa-times-circle"></i>
+                                </div>
+                                <div class="col-md-9" style="margin-left:-20px">
+                                    <span>#= message #</span>
+                                </div>
+                            </div>
+                        </div>
+                    </script>
+                    <script id="warningTemplate" type="text/x-kendo-template">
+                        <div class="upload-warning">
+                            <img src="/Content/Icon/imgCloseBtn.png" />
+                            <span class="time">#= showTime #</span>
+                            <div class="row">
+                                <div class="col-md-1">
+                                    <i class="fa fa-warning"></i>
+                                </div>
+                                <div class="col-md-9" style="margin-left:-20px">
+                                    <span>#= message #</span>
+                                </div>
+                            </div>
+                        </div>
+                    </script>
+                    <script id="progreeTemplate" type="text/x-kendo-template">
+                        <div class="upload-progress">
+                            <img src="/Content/Icon/processing.gif" class="imgLoading" />
+                            <span>#= message #</span>
+                            <span class="time">#= showTime#</span>
+                            <img src="/Content/Icon/progressbar.gif" class="imgProgress" />
+                        </div>
+                    </script>
+                    <script>
+                        function startTime() {
+                            var today = new Date(),
+                                h = checkTime(today.getHours()),
+                                m = checkTime(today.getMinutes()),
+                                s = checkTime(today.getSeconds());
+                            var ampm = h >= 12 ? 'PM' : 'AM',
+                            hours = h % 12,
+                            hours = hours ? hours : 12;
+                            time = hours + ":" + m + " " + ampm;
+                            return time;
+                        }
+                        function checkTime(i) {return (i < 10) ? "0" + i : i;}
+                        function onPopUpNotifiShow(e) {
+                            if (!$("." + e.sender._guid)[1]) {
+                                var element = e.element.parent(),
+                                    eWidth = element.width(),
+                                    eHeight = element.height(),
+                                    wWidth = $(window).width(),
+                                    wHeight = $(window).height(),
+                                    newTop, newLeft;
+
+                                newLeft = Math.floor(wWidth / 2 - eWidth / 2);
+                                newTop = Math.floor(wHeight / 2 - eHeight / 2);
+
+                                e.element.parent().css({
+                                    zIndex: 22222
+                                });
+                            }
+                        }
+
+
+                        var userId = @Request.Cookies["CookieAdminInfo"].Values["userid"].ToString();
+                        var fullname = '@Request.Cookies["CookieAdminInfo"].Values["fulname"].ToString()';
+                        var desig = '@Request.Cookies["CookieAdminInfo"].Values["desig"].ToString()';
+                        var loginUserPic = '@(Request.Cookies["CookieAdminInfo"].Values["userpic"].ToString())';
+                        var CurrencyId = '@(Request.Cookies["CookieAdminInfo"].Values["currencyId"].ToString())';
+                        var Currency = '@(Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString())';
+                        var roleId = '@(Request.Cookies["CookieAdminInfo"].Values["roleid"].ToString())';
+
+                        var notification = $("#notification").kendoNotification({
+                            position: {pinned: true,top: 50,right: 30},
+                            autoHideAfter: 1000000,
+                            stacking: "down",
+                            templates: [{
+                                type: "upload-success",
+                                template: $("#successTemplate").html()
+                            }, {
+                                type: "upload-error",
+                                template: $("#errorTemplate").html()
+                            }, {
+                                type: "upload-progress",
+                                template: $("#progreeTemplate").html()
+                            }, {
+                                type: "upload-warning",
+                                template: $("#warningTemplate").html()
+                            }]
+                        }).data("kendoNotification");
+
+                        var notificationPopUp = $("#notificationPopUp").kendoNotification({
+                            position: { pinned: true, top: 50, right: 30 },
+                            show: onPopUpNotifiShow,
+                            autoHideAfter: 1000000,
+                            stacking: "down",
+                            templates: [{
+                                type: "upload-success",
+                                template: $("#successTemplate").html()
+                            }, {
+                                type: "upload-error",
+                                template: $("#errorTemplate").html()
+                            }, {
+                                type: "upload-progress",
+                                template: $("#progreeTemplate").html()
+                            }, {
+                                type: "upload-warning",
+                                template: $("#warningTemplate").html()
+                            }]
+                        }).data("kendoNotification");
+
+                    </script>
+                </div>
+
+
+
+            </div>
+        </div>
+        <!-- END CONTENT -->
+
+        @***************************   RIGHT SIDE BAR (START)  ******************************@
+        <div class="page-quick-sidebar-wrapper">
+            <div class="page-quick-sidebar">
+                <div class="nav-justified">
+                    <ul class="nav nav-tabs nav-justified">
+                        <li class="active"><a href="#quick_sidebar_tab_1" data-toggle="tab">Users (@total_user)</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane active page-quick-sidebar-chat" id="quick_sidebar_tab_1" style="overflow:hidden;overflow-y:hidden">
+                            <div class="page-quick-sidebar-chat-users" data-rail-color="#ddd" data-wrapper-class="page-quick-sidebar-list">
+                                <h3 class="list-heading">Online User</h3>
+                                <div id="div_online_users" style="overflow:hidden;overflow-y:auto;position:relative">
+                                    <ul class="media-list list-items" id="ul_online_users">
+                                        <li class="media" data-id="-1" id="user1">
+                                            <div class="media-status">
+                                                <span class="badge-success"><span style="width:8px;height:8px;background-color:green;border-radius:100px;float:right"></span></span>
+                                            </div>
+                                            <img class="media-object" src="../../Images/Icon/blank-person.jpg">
+                                            <div class="media-body">
+                                                <h4 class="media-heading" id="userName_forChat-8">Test User</h4>
+                                                <div class="media-heading-sub">Developer</div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <h3 class="list-heading">System User</h3>
+                                <div id="div_offline_users" style="overflow:hidden;overflow-y:auto;position:relative">
+                                    <ul class="media-list list-items" id="ul_sys_users"></ul>
+                                </div>
+                            </div>
+                            <div class="page-quick-sidebar-item">
+                                <div class="page-quick-sidebar-chat-user">
+                                    <div class="page-quick-sidebar-nav">
+                                        <a href="javascript:;" class="page-quick-sidebar-back-to-list" id="back_from_chat"><i class="icon-arrow-left"></i>Back</a>
+                                    </div>
+                                    <div class="page-quick-sidebar-chat-user-messages" id="messangerWindow">
+
+                                    </div>
+                                    <div class="page-quick-sidebar-chat-user-form">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="chatMessage" placeholder="Type a message here...">
+                                            <div class="input-group-btn">
+                                                <button type="button" class="btn blue" id="chatMessageSend_btn"><i class="icon-paper-clip"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        @***************************   RIGHT SIDE BAR (END)    ******************************@
+
+    </div>
+    <!-- END CONTAINER -->
+
+    <!-- BEGIN FOOTER -->
+    <div class="page-footer" id="footer" >
+        <div class="page-footer-inner">
+            2017 &copy; Powered By. <a href="http://zssofttech.com/" title="ZS-Soft Tech" target="_blank">ZS-Soft Tech!</a>
+        </div>
+        <div class="scroll-to-top">
+            <i class="icon-arrow-up"></i>
+        </div>
+    </div>
+    <!-- END FOOTER -->
+
+    <script src="~/Content/Layout_Assets/global/plugins/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+    <script src="~/Content/Layout_Assets/global/plugins/bootstrap-hover-dropdown/bootstrap-hover-dropdown.min.js" type="text/javascript"></script>
+    <script src="~/Content/Layout_Assets/global/plugins/jquery-slimscroll/jquery.slimscroll.min.js" type="text/javascript"></script>
+    <script src="~/Content/Layout_Assets/global/plugins/bootstrap-switch/js/bootstrap-switch.min.js" type="text/javascript"></script>
+    <script src="~/Content/Layout_Assets/global/scripts/metronic.js" type="text/javascript"></script>
+    <script src="~/Content/Layout_Assets/admin/layout/scripts/layout.js" type="text/javascript"></script>
+    <script src="~/Content/Layout_Assets/admin/layout/scripts/quick-sidebar.js" type="text/javascript"></script>
+    <script src="~/Content/Layout_Assets/admin/layout/scripts/demo.js" type="text/javascript"></script>
+    <script src="~/Content/Layout_Assets/admin/pages/scripts/index.js" type="text/javascript"></script>
+    <script src="~/Content/Layout_Assets/admin/pages/scripts/tasks.js" type="text/javascript"></script>
+
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+    @RenderSection("head", required: false)
+
+    <script>
+        var screenHeight = 0; var halfScreen = 0;
+        var windowHeight, selectedUserId, chatWithName,
+            chatMessage, selectedChatuserPic,
+            isuserChatting = false, loginUserId = '@loginUserId';
+
+        $(document).ready(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+            var body = $('body');
+            var totalHeaderLink = $("#top_header_link").find('span');
+            totalHeaderLink.each(function () {
+                if (!$(this).children().hasClass("fa-angle-right")) {
+                    $("#my-links").append('<li>' + $(this)[0].innerHTML + '</li>');
+                }
+            });
+            if ($("#my-links").find('li').length <= 0) {
+                $("#btn_header_small_icon").hide();
+            }
+            var available_height = Metronic.getViewPort().height - $('.page-footer').outerHeight() - $('.page-header').outerHeight();
+            var screenWidth = $(window).width();
+           
+            windowHeight = $(window).height() - $(".navbar-fixed-top").height();
+            Metronic.init();
+            Layout.init();
+            QuickSidebar.init();
+            var IsSildeBarClick = getCookie("IsSildeBarClick");
+            if (IsSildeBarClick == "") {
+                setCookie("IsSildeBarClick", "False", 1);
+            }
+
+            //$('#ul_RytSideDiv').slimScroll({height: available_height- 53});
+            //$("#left-sidebar").css('max-height', available_height);
+            //$("#div_lft_bar").css('max-height', available_height);
+            
+            if ($("#span_unseen_msg").text().trim() == 0) {
+                $("#span_unseen_msg").hide();
+            }
+            halfScreen = Math.round(available_height / 2);
+            $("#div_online_users").css('max-height', halfScreen);
+            $("#div_offline_users").slimScroll({ height: halfScreen, color: '#8e8e8e' });
+        });    
+        $(window).resize(function () {
+            screenHeight =  Metronic.getViewPort().height - $('.page-footer').outerHeight() - $('.page-header').outerHeight();
+            halfScreen = Math.round(screenHeight / 2);
+
+            $("#div_online_users").css('max-height', halfScreen);
+            $("#div_offline_users").css('max-height', halfScreen);
+            var onlineUserHeight = $("#div_online_users").height();
+            if (onlineUserHeight == halfScreen) {
+                $("#div_online_users").slimScroll({ height: halfScreen, color: '#8e8e8e' });
+            }
+        });
+
+        function getCookie(cname) {
+            var name = cname + "=";
+            var ca = document.cookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+            return "";
+        }
+        function checkCookie() {
+            var user = getCookie("IsSildeBarClick");
+            if (user == "") {
+                setCookie("IsSildeBarClick", "True", 1);
+            }
+        }
+        function setCookie(cname, cvalue, exdays) {
+            var d = new Date();
+            d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+            var expires = "expires=" + d.toUTCString();
+            document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+        }
+        function getDataEncrypted(text) {
+            var encryptedData;
+            $.ajax({
+                method: 'GET',
+                url: "/Home/GetEncryptedData?text=" + text,
+                async: false,
+                success: function (res) {
+                    encryptedData = res;
+                }
+            });
+            return encryptedData;
+        }
+        function onWindowClose() { 
+            document.documentElement.style.overflow = 'auto';
+            document.body.scroll = "yes"; 
+        }
+
+        //*************** Left Side Toggle Icon Click Function *************************
+        $("#div_SideToggler").click(function () {
+            checkCookie();
+            var value = getCookie("IsSildeBarClick");
+            if (value == "True") {
+                setCookie("IsSildeBarClick", "False", 1);
+            } else {
+                setCookie("IsSildeBarClick", "True", 1);
+            }
+        });
+        $("#back_from_chat").click(function () { selectedUserId = null; });
+        $("#loadUserNow").click(function(){
+            $("#ul_sys_users").empty();
+            $("#ul_sys_users").append('<div class="loading_half"></div>');
+
+            $.ajax({
+                url: '@Url.Action("GetAllUserForChat", "Performance")',
+                contentType: "application/json; charset=utf-8",
+                success: function (chat) {
+                    var chatPic;
+                    if(chat.length > 0){
+                        $("#ul_sys_users").empty();
+                        for(var i=0;i<chat.length;i++){
+                            if(chat[i].UserId!=loginUserId){
+                                if(chat[i].Picture==null){
+                                    chatPic="../../Images/Icon/blank-person.jpg";
+                                }else{
+                                    chatPic="../../Images/UserPicture/thumb/"+chat[i].Picture;
+                                }
+                                $("#ul_sys_users").append('<li class="media" data-id="'+chat[i].UserId+'" id="user-'+chat[i].UserId+'">'+
+                                                        '<div class="media-status"><span class="badge-success"></span></div>'+
+                                                        '<img class="media-object" src="'+chatPic+'" alt="'+chat[i].UserName+'">'+
+                                                        '<div class="media-body">'+
+                                                            '<h4 class="media-heading" id="userName_forChat-'+chat[i].UserId+'">'+chat[i].UserName+'</h4>'+
+                                                            '<div class="media-heading-sub">'+ chat[i].DesignationName+'</div></div>'+
+                                                        '</li>');
+                            }
+                        }
+                        if($("#div_offline_users").height() == halfScreen){
+                            $("#div_offline_users").slimScroll({height:halfScreen,color: '#8e8e8e'});
+                        }
+                    }
+                },error:function(err){}
+            });
+        });
+
+
+        //*********************** Messagebox Hover Function *******************************
+        @*$("#header_inbox_bar").hover(function(){
+            $.ajax({
+                url:'@Url.Action("GetAllUnseenMessage","Performance")',
+                data:{id:loginUserId},
+                contentType: "application/json; charset=utf-8",
+                success:function(data){
+                    if(data.length<=0){
+                        $("#nonewmessage").show();
+                        $("#span_unseen_msg").text("0");
+                    }else{
+                        var unseenMessageDiv=$("#unseen_messages");
+                        for(var i=0;i<data.length;i++){
+                            var isuserAlreadyExists=unseenMessageDiv.find($("#unseen-"+data[i].SenderId));
+                            if(isuserAlreadyExists.length>0){
+                                var unseenDiv=unseenMessageDiv.find($("#unseen-"+data[i].SenderId));
+                                if(data[i].Count>1){
+                                    $("#specificUnseen-"+data[i].SenderId).empty().text(data[i].Count);
+                                }
+                                var specificunseenCounter=unseenDiv.find($("#specificUnseen-"+data[i].SenderId));
+
+                                var unseenMessageLast=unseenDiv.find($(".message.wordWrap"));
+                                unseenMessageLast.text(data[i].Chat);
+                            }else{
+                                unseenMessageDiv.append('<li class="unseen" id="unseen-'+data[i].SenderId+'" data-id="'+data[i].SenderId+'">'+
+                                          '<a>'+
+                                              '<span class="photo">'+
+                                                  '<img src="../../Images/UserPicture/thumb/'+data[i].SenderImage+'" class="img-circle" alt="" />'+
+                                              '</span>'+
+                                              '<span class="subject">'+
+                                                  '<span class="from font-size-11px">'+
+                                                      data[i].SenderName+
+                                                  '</span>'+
+                                                  '<span class="time font-size-11px">'+data[i].SendTime+' <br/>'+
+                                                   '<span id="specificUnseen-'+data[i].SenderId+'"></span></span>'+
+                                              '</span>'+
+                                              '<span class="message wordWrap">'+
+                                                  data[i].Chat+
+                                              '</span>'+
+                                          '</a>'+
+                                      '</li>');
+                            }
+                        }
+                    }
+
+                },error:function(err){}
+            });
+            if($("#span_unseen_msg").text().trim()==0){
+                $("#span_unseen_msg").hide();
+            }
+        });*@
+
+
+        //******************* select an user for chat *******************************
+        @*$("#div_online_users,#div_offline_users").on("click",'.media',function(){
+            selectedUserId=$(this).data("id");
+            chatWithName=$("#userName_forChat-"+selectedUserId).text();
+            var sendData={
+                selecteduserId:selectedUserId,
+                loginUserId :loginUserId
+            };
+            $("#body").addClass("page-quick-sidebar-open");
+            var wrapper = $('.page-quick-sidebar-wrapper');
+            var wrapperChat = wrapper.find('.page-quick-sidebar-chat');
+            wrapperChat.addClass("page-quick-sidebar-content-item-shown");
+            isuserChatting=true;
+            $.ajax({
+                url: '@Url.Action("GetSelectedUserMessage", "Performance")',
+                data: sendData,
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    if(data!="Error"){
+                        var seenUnseen;
+                        $("#messangerWindow").empty();
+                        $("#messangerWindow").append('<div id="chatbox-'+selectedUserId+'"></div>')
+                        selectedChatuserPic=data.SelecteduserPic;
+                        for(var i=0;i<data.chatHistory.length;i++){
+                            if(data.chatHistory[i].SenderId==loginUserId){
+                                if(data.chatHistory[i].Seen==true){
+                                    seenUnseen='<span id="seen_unseen_img-'+data.chatHistory[i].ConversationId+'" style="font-size:9px">Seen '+data.chatHistory[i].SeenDateFormate+' '+data.chatHistory[i].SeenTime +
+                                        '<img style="margin-left:3px" width="10" src="../../Images/Icon/seen.png"/></span>'
+                                }
+                                else{
+                                    seenUnseen='<span id="seen_unseen_img-'+data.chatHistory[i].ConversationId+'" style="font-size:9px">Sent '+
+                                       '<img style="margin-left:3px" width="10" src="../../Images/Icon/unseen.png"/></span>'
+                                }
+                                $("#chatbox-"+selectedUserId).append('<div id="post_out-'+data.chatHistory[i].ConversationId+'" class="post out">'+
+                                    '<img class="avatar" src="/Images/UserPicture/thumb/@loginUserPic"/>'+
+                                                          '<div class="message">'+
+                                                                '<span class="arrow"></span>'+
+                                                                     '<a href="javascript:;" class="name font-size-11px">'+data.chatHistory[i].SenderName+'&nbsp;'+'</a>'+
+                                                                          '<span class="datetime font-size-11px">'+ data.chatHistory[i].SendTime+'</span>'+
+                                                                  '<span class="body wordWrap">'+data.chatHistory[i].Chat+'</span>'+seenUnseen+
+                                                               '</div>'+
+                                                             '</div>');
+                            }else{
+                                $("#chatbox-"+selectedUserId).append('<div id="post_in-'+data.chatHistory[i].ConversationId+'" class="post in">'+
+                                     '<img class="avatar" src="/Images/UserPicture/thumb/'+data.SelecteduserPic+'"/>'+
+                                                  '<div class="message">'+
+                                                  '<span class="arrow"></span>'+
+                                                 '<a href="javascript:;" class="name font-size-11px">'+data.chatHistory[i].SenderName+'&nbsp;'+'</a>'+
+                                                '<span class="datetime font-size-11px">'+data.chatHistory[i].SendTime+'</span>'+
+                                                '<span class="body wordWrap">'+data.chatHistory[i].Chat+'</span>'+
+                                                '</div>'+
+                                               '</div>');
+                            }
+
+                        }
+                        $('#messangerWindow').animate({
+                            scrollTop: $('#messangerWindow').get(0).scrollHeight
+                        },500);
+                    }
+                },error:function(err){}
+            });
+        });*@
+
+        //send message to other on btn click
+        $("#chatMessageSend_btn").click(function () {
+            chatMessage = $("#chatMessage").val();
+        });
+        //send message to other on enter press
+        $("#chatMessage").keypress(function (e) {
+            if (e.keyCode == 13) {  // detect the enter key
+                chatMessage = $("#chatMessage").val();
+                $("#chatMessageSend_btn").click();
+            }
+        });
+
+
+        //this method append unseen message when an user is online and bot on char with sender
+
+        //function appendUnseenMessage(history){
+        //    var unseenmessages=$("#unseen_messages");
+        //    var isAlreadyExists=unseenmessages.find($("#unseen-"+history.history.SenderId));
+        //    if(isAlreadyExists.length>0){
+        //        var counter=parseInt($("#specificUnseen-"+history.history.SenderId).text());
+        //        if(isNaN(counter)){
+        //            counter=1;
+        //        }
+        //        counter+=1;
+        //        var specificunseenCounter=isAlreadyExists.find($("#specificUnseen-"+history.history.SenderId));
+        //        specificunseenCounter.text(counter);
+        //        var unseenMessageLast=isAlreadyExists.find($(".message.wordWrap"));
+        //        unseenMessageLast.text(history.history.Chat);
+        //    }
+        //    else{
+        //        unseenmessages.append('<li class="unseen" id="unseen-'+history.history.SenderId+'" data-id="'+history.history.SenderId+'">'+
+        //                                     '<a>'+
+        //                                         '<span class="photo">'+
+        //                                             '<img src="../../Images/UserPicture/thumb/'+history.senderPic+'" class="img-circle" alt="" />'+
+        //                                         '</span>'+
+        //                                         '<span class="subject">'+
+        //                                             '<span class="from font-size-11px">'+
+        //                                                 history.history.SenderName+
+        //                                             '</span>'+
+        //                                             '<span class="time font-size-11px">'+history.history.SendTime+'<br/>'+
+        //                                             '<span id="specificUnseen-'+history.history.SenderId+'"></span>'+
+        //                                             '</span>'+
+        //                                         '</span>'+
+        //                                         '<span class="message wordWrap">'+
+        //                                             history.history.Chat+
+        //                                         '</span>'+
+        //                                     '</a>'+
+        //                                 '</li>');
+        //    }
+        //}
+    </script>
+</body>
+
+</html>
+

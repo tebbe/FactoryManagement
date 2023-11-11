@@ -1,0 +1,302 @@
+﻿@************************************* Created by Jerin Jahan (Date: 04.02.2017) ******************************************@
+@using FactoryManagement.Helpers
+@{
+    ViewBag.Title = "All Transaction";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<h3 class="page-title">
+   Transaction/s <small>List</small>
+</h3>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-calculator"></i>
+            <span> Finance</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list" aria-hidden="true"></i>
+            <a href="/Voucher/InvoiceTransactionForShow">All Transaction</a>
+        </li>
+    </ul>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div id="Div_Upper_Portion">
+            <p>
+                <span data-toggle="tooltip" title="Today's History"><span class="btn blue" id="btn_today"><i class="fa fa-list-ul"></i> Today</span></span>
+                <span data-toggle="tooltip" title="Last 7 Days History"><span class="btn blue" id="btn_last_seven"><i class="fa fa-list-ul"></i> Last 7 Days</span></span>
+                <span data-toggle="tooltip" title="Last 30 Days History"><span class="btn blue" id="btn_last_thirty"><i class="fa fa-list-ul"></i> Last 30 Days</span></span>
+                <span data-toggle="tooltip" title="All History"><span class="btn blue active" id="btn_All"><i class="fa fa-list-ul"></i> All</span></span>
+       </p>
+        </div>
+        <div class="portlet box green">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list"></i><span id="headr_title" style="margin-top: 0px!important">Showing List of All Transactions</span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div id="Div_Invoice_Tran" style="display:none;"></div>
+                @if (db.View_Voucher_Transaction.Any())
+                {
+                    <script>
+                        $("#Div_Upper_Portion").show();
+                        $("#Div_Invoice_Tran").append('<div class="loading_partial"></div>');
+                        $("#Div_Invoice_Tran").show();
+                        $("#Div_Invoice_Tran").load('@Url.Action("_InvoiceTransactionForShow", "Voucher")');
+                    </script>
+                }
+                else
+                {
+                    <script>
+                        $("#Div_Invoice_Tran").append(' <h3>There is no record to display...</h3>');
+                        $("#Div_Invoice_Tran").show();
+                    </script>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<div id="loading" style="display:none;"></div>
+<div id="win_tran_info"></div>
+
+<script id="temp_win_confirm" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">#=message#</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_confirm_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_confirm_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+
+<script>
+    var showCount = 0, totalCount = 0, page = 0, inCallback = false,days = 0;
+    $(document).ready(function () {
+        $("#liForAccounting").addClass('active');
+        $("#liForInvoiceTran").addClass('sublistActive');
+        $("#top_header_link").append('<span>Finance</span><span><i class="fa fa-angle-right fa-2x"></i></span>' +
+            '<span class="current"><a href="/Voucher/InvoiceTransaction"> All Transacton</a></span>');
+    });
+    $(document).on("click", "#btn_page_back", function () {
+        window.history.back();
+    });
+</script>
+<script>
+    @******************************** OnScroll Bind Table Data *************************@
+    $(window).scroll(function () {
+        var countBytype, result;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/Voucher/GetVouTranForShow',
+            data: { page: page },
+            success: function (data) {
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        $("table#tbl_invoice_tran").append('<tr><th>' + showCount + '.</th>' +
+                            '<td><a href="/StoreProduct/DispatchHistoryDetails?id='+ data[i].Id+'">'+ data[i].VoucherName+'</a></td>' +
+                            '<td>' + data[i].DispatchedDateName + '</td>' +
+
+                            '<td><img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].DispatchedUserPic + '">' +
+                                ((data[i].DispatchedBy > 0) ? '<a href="/HumanResource/DisplayEmployeeDetails?q='+getDataEncrypted("UserId=" + data[i].DispatchedBy + "?isDisplay=True")+'">' + data[i].DispatchedUserName + '</a>' : ' <span>Super admin</span>') +
+                             '</td>' +
+                             '</td></tr>');
+                    }
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+</script>
+<script>
+    $("#btn_today").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = { days: 1 };
+        $("#btn_All").removeClass('active');
+        $("#btn_last_seven").removeClass('active');
+        $("#btn_last_thirty").removeClass('active');
+        $("#btn_today").addClass('active');
+        $("#Div_Invoice_Tran").empty();
+        $("#Div_Invoice_Tran").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Today's Transaction/s");
+        $("#Div_Invoice_Tran").load('@Url.Action("_InvoiceTranShowDayWise", "Voucher")', passdata);
+        days = 1;
+    });
+
+    $("#btn_last_seven").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = { days: 7 };
+        $("#btn_All").removeClass('active');
+        $("#btn_last_seven").addClass('active');
+        $("#btn_last_thirty").removeClass('active');
+        $("#btn_today").removeClass('active');
+        $("#Div_Invoice_Tran").empty();
+        $("#Div_Invoice_Tran").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Last 7 Days Transactions");
+        $("#Div_Invoice_Tran").load('@Url.Action("_InvoiceTranShowDayWise", "Voucher")', passdata);
+        days = 7;
+    });
+    $("#btn_last_thirty").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = { days: 30 };
+        $("#btn_All").removeClass('active');
+        $("#btn_last_seven").removeClass('active');
+        $("#btn_last_thirty").addClass('active');
+        $("#btn_today").removeClass('active');
+        $("#Div_Invoice_Tran").empty();
+        $("#Div_Invoice_Tran").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Last 30 Days Transaction");
+        $("#Div_Invoice_Tran").load('@Url.Action("_InvoiceTranShowDayWise", "Voucher")', passdata);
+        days = 30;
+    });
+    $("#btn_All").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        $("#btn_All").addClass('active');
+        $("#btn_last_seven").removeClass('active');
+        $("#btn_last_thirty").removeClass('active');
+        $("#btn_today").removeClass('active');
+        $("#Div_Invoice_Tran").empty();
+        $("#Div_Invoice_Tran").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing All Transaction/s");
+        $("#Div_Invoice_Tran").load('@Url.Action("_InvoiceTransactionForShow", "Voucher")');
+        days = 0;
+    });
+</script>
+<script>
+    $("#Div_Invoice_Tran").on("click", ".tranname", function (e) {
+        e.preventDefault();
+        var id = $(this).data("id");
+        var name = $(this).data("name");
+        $("#win_tran_info").empty();
+        $("#win_tran_info").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '55%',
+            height: '60%',
+            title: "Transaction '" + name + "' Dispatch Details",
+            close: onWindowClose
+        });
+        $("#win_tran_info").html('<div class="win_loading_half"></div>');
+        var win_tran_info = $("#win_tran_info").data("kendoWindow");
+        win_tran_info.refresh({ url: "/Voucher/InvoiceTranDetails?id=" + id});
+        win_tran_info.center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+    });
+
+    $("#Div_Invoice_Tran").on("click", ".btn_tran_app", function (e) {
+        e.preventDefault();
+        var id = $(this).data("id");
+        var name = $(this).data("name");
+        var status = 1;
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose
+        });
+        message = "Are you sure you want to approve?";
+        var template = kendo.template($("#temp_win_confirm").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        kendoWindow.find("#btn_confirm_cancel").click(function () {          
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_confirm_ok").click(function () {
+            approveTran(id, name, status);
+            kendoWindow.data("kendoWindow").close();
+            document.documentElement.style.overflow = 'hidden';
+            document.body.scroll = "no";
+        }).end();
+    });
+    $("#Div_Invoice_Tran").on("click", ".btn_tran_reject", function (e) {
+        e.preventDefault();
+        var id = $(this).data("id");
+        var name = $(this).data("name");
+        var status = -1;
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        message = "Are you sure you want to reject this transaction?";
+        var template = kendo.template($("#temp_win_confirm").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        kendoWindow.find("#btn_confirm_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_confirm_ok").click(function () {
+            approveTran(id, name, status);
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+    });
+    function approveTran(id, name, status) {
+        var sendData = { id: id, userId: userId, status: status };
+        var msg = "";
+        $.ajax({
+            url: '@Url.Action("InvoiceTranStatusChange", "Voucher")',
+            type: 'Post',
+            data: sendData,
+            success: function (data) {
+                notification.hide();
+                notification.setOptions({ autoHideAfter: 5000 });
+                if (data === "Error") {
+                    if (status == 1) {
+                        msg = "Transaction '" + name + "' approve was unsuccessful.";
+                    } else {
+                        msg = "Transaction '" + name + "' reject was unsuccessful.";
+                    }
+                    notification.show({ message: msg, showTime: startTime() }, "upload-error");
+                } else {
+                    if (status == 1) {
+                        msg = "Transaction '" + name + "' has been successfully approved.";
+                    } else {
+                        msg = "Transaction '" + name + "' has been successfully rejected.";
+                    }
+                    notification.show({ message: msg, showTime: startTime() }, "upload-success");
+                    showCount = 0, totalCount = 0, page = 0;
+                    $("#h4title").text("Showing All Transaction/s");
+                    $("#Div_Invoice_Tran").empty();
+                    $("#Div_Invoice_Tran").append('<div class="loading_partial"></div>');
+                    $("#Div_Invoice_Tran").load('@Url.Action("_InvoiceTransactionForShow", "Voucher")');
+                }
+            },
+            error: function (err) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+            }
+        });
+    }
+</script>

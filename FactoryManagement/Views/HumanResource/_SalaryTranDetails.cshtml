@@ -1,0 +1,283 @@
+﻿@************************************** Created By Jerin Jahan (Date:17.12.2016)  ***************************************@
+
+@model FactoryManagement.Models.View_All_Salary_Pay_His
+
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var Currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    var list = db.SalaryPaymentPckDetails.Where(m => m.PaymentId == Model.EmpSalaryPayId).ToList();
+    int count = 0;
+    int count_edit = 0;
+    var salaryAccountCount = 1;
+    double total = 0;
+    double monthlyTotal = 0;
+    double baseAmount = 0;
+    var salaryPackage = db.Salary_Package_List.Where(x => x.PackageId == db.View_UserLists.Where(c => c.UserId == Model.UserId).Select(c => c.SalaryPackageId).FirstOrDefault()).FirstOrDefault();
+    var allAccofsalaryPck = db.Salary_Package_Account_Lists.Where(x => x.PackageId == salaryPackage.PackageId).ToList();
+    if (salaryPackage.HasBaseSalary)
+    {
+        baseAmount = (double)allAccofsalaryPck.Where(x => x.IsBaseSalary == true).Select(x => x.Amount).FirstOrDefault();
+    }
+    bool HasAddedAccount = (allAccofsalaryPck.Count > 0) ? true : false;
+}
+<style>
+    #tbl_pay_edit_details td, #tbl_pay_pak_details td {
+        border: none !important;
+    }
+
+    #div_Salary_tran_left .k-edit-label, .k-edit-form-container .editor-label {
+        width: 35% !important;
+    }
+
+    #div_Salary_tran_left .k-edit-field, .k-edit-form-container .editor-field {
+        width: 55% !important;
+    }
+
+    #salary_details_pop_table td {
+        border: none !important;
+    }
+</style>
+<div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">Employee Name</label></div>
+<div class="editor-field" style="float:left;">
+    <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;padding-top:7px;">
+        @Model.UserName
+    </div>
+</div>
+
+<div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">Designation Name</label></div>
+<div class="editor-field" style="float:left;">
+    <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;padding-top:7px;">
+        @Model.DesignationName
+    </div>
+</div>
+
+<div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">Amount</label></div>
+<div class="editor-field" style="float:left;">
+    <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;padding-top:7px;">
+        @if (Model.EmpSalaryPayId == 0)
+        {
+            <span>@Currency @Model.Amount (Due amount)</span>
+            <span id="btn_show_payment_details"><a href=""><i class="fa fa-info-circle"></i></a></span>
+        }
+        else
+        {
+            <span>@Currency @Model.Amount (Salary)</span>
+            <span id="btn_show_payment_details"><a href=""><i class="fa fa-info-circle"></i></a></span>
+        }
+    </div>
+</div>
+
+<div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">Paid By</label></div>
+<div class="editor-field" style="float:left;">
+    <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;padding-top:7px;">
+        @Model.InsertUser
+    </div>
+</div>
+
+<div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">Paid Date</label></div>
+<div class="editor-field" style="float:left;">
+    <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;padding-top:7px;">
+        @Model.InsertedDateFormate
+    </div>
+</div>
+
+<div class="col-sm-11" style="text-align:center;">
+    @if (db.TransactionsEditCounts.Where(m => m.RefTableColumnId == Model.Id && m.TransactionId == 0).Any())
+    {
+        var editList = db.View_All_TransactionEdit.Where(x => x.TransactionId == 0 && x.RefTableColumnId == Model.Id).ToList();
+        int edit_count = db.TransactionsEditCounts.Where(m => m.RefTableColumnId == Model.Id).Count();
+        if (edit_count > 1)
+        {
+            <label>This transaction has been edited @edit_count times.</label>
+        }
+        else
+        {
+            <label>This transaction has been edited @edit_count time.</label>
+        }
+        <span id="btn_tran_edit_details"><a href="#"><i class="fa fa-info-circle"></i></a></span>
+
+        <script id="temp_edit_tooltip" type="text/x-kendo-template">
+            <br />
+            <br />
+            <table class="table table-condensed" id="tbl_pay_edit_details">
+                <tr>
+                    <th>Edited By</th>
+                    <th>Reason For Edit</th>
+                    <th>Amount( Before Edit)</th>
+                    <th>Amount( After Edit)</th>
+                    <th>Edited Date</th>
+                </tr>
+                @foreach (var edit in editList)
+                {
+                    count_edit++;
+                    <tr>
+                        <td>@count_edit. @edit.EditedByUserName</td>
+                        <td>@edit.ReasonName</td>
+                        <td>@Currency @edit.PreAmount</td>
+                        <td>@Currency @edit.NewAmount</td>
+                        <td>@edit.EditedDateFormate</td>
+                    </tr>
+                }
+            </table>
+        </script>
+
+        @*@(Html.Kendo().Tooltip()
+            .For("#btn_show_payment_details")
+            .Filter("a")
+            .ContentTemplateId("temp_tooltip")
+            .Position(TooltipPosition.Right)
+            .Width(400)
+                )*@
+
+        @(Html.Kendo().Tooltip()
+    .For("#btn_tran_edit_details")
+    .Filter("a")
+    .ContentTemplateId("temp_edit_tooltip")
+    .Position(TooltipPosition.Right)
+        )
+
+        <script id="temp_tooltip" type="text/x-kendo-template">
+            <br />
+            <br />
+            <table class="table table-condensed" id="tbl_pay_pak_details">
+                @foreach (var info in list)
+                {
+                    count++;
+                    <tr>
+                        <td>@count.@info.Acc_Name</td>
+                        <td>@Currency @info.Amount</td>
+                    </tr>
+                }
+            </table>
+        </script>
+        <script>
+
+            $("#btn_show_payment_details").click(function () {
+                $("#div_payment_details").show();
+            });
+        </script>
+    }
+</div>
+<script id="temp_view_salary" type="text/x-kendo-template">
+    <br />
+    <table class="table" id="salary_details_pop_table">
+        @foreach (var account in allAccofsalaryPck)
+        {
+
+            double BaseSalary = baseAmount;
+            double amount;
+            double monthlyAmount = 0;
+            string MonthName = "";
+            string Eventname = "";
+            <tr>
+                <td style="text-align:left">@salaryAccountCount . @account.Name</td>
+                <td width="15%"></td>
+                @if (account.AccPayType == 1)
+                {
+                    var monthList = db.Salary_Acc_Pay_MonthList.Where(m => m.Salary_Pck_Acc_Id == account.Id).Select(m => m.MonthName).ToList();
+                    foreach (var m in monthList)
+                    {
+                        MonthName += m + ",";
+                    }
+                }
+                else if (account.AccPayType == 1)
+                {
+                    Eventname = db.HolidayLists.Where(m => m.Id == account.HolidayId).Select(m => m.HolidayName).FirstOrDefault();
+                }
+                @if (account.AccountType == 2)
+                {
+                    amount = BaseSalary * Convert.ToDouble(account.Percentage) / 100;
+                    if (account.AccPayType == 1)
+                    {
+                        <td style="text-align:left;">
+                            @Currency @amount  ; @MonthName.Remove(MonthName.Length - 1)
+                            (@account.Percentage% of @Currency @BaseSalary)
+                        </td>
+                    }
+                    else if (account.AccPayType == 1)
+                    {
+                        <td style="text-align:left;">
+                            @Currency @amount Eventname (@account.Percentage% of @Currency @BaseSalary )
+                        </td>
+                    }
+                    else
+                    {
+                        <td style="text-align:left;">
+                            @Currency @amount (@account.Percentage% of @Currency @BaseSalary)
+                        </td>
+                    }
+                }
+                else
+                {
+                    amount = Convert.ToDouble(account.Amount);
+                    if (account.AccPayType == 1)
+                    {
+                        <td style="text-align:left;">
+                            @Currency @account.Amount (@MonthName.Remove(MonthName.Length - 1))
+                        </td>
+                    }
+                    else if (account.AccPayType == 1)
+                    {
+                        <td style="text-align:left;">
+                            @Currency @account.Amount ; Eventname
+                        </td>
+                    }
+                    else
+                    {
+                        <td style="text-align:left;">@Currency @account.Amount</td>
+                    }
+                }
+            </tr>
+
+                salaryAccountCount++;
+                count++;
+                if (account.AccPayType == 3)
+                {
+                    monthlyAmount = amount;
+                    amount = 12 * amount;
+                }
+                else
+                {
+                    if (account.AccountType != 4 && account.AccountType != 6)
+                    {
+                        int monthCount = db.Salary_Acc_Pay_MonthList.Where(m => m.Salary_Pck_Acc_Id == account.Id).Count();
+                        amount = monthCount * amount;
+                    }
+                }
+                if (account.IsAddition)
+                {
+                    if (account.AccountType != 4 && account.AccountType != 6)
+                    {
+                        total = total + Convert.ToDouble(amount);
+                        monthlyTotal = monthlyTotal + Convert.ToDouble(monthlyAmount);
+                    }
+                }
+                else
+                {
+                    if (account.AccountType != 4 && account.AccountType != 6)
+                    {
+                        total = total - Convert.ToDouble(amount);
+                        monthlyTotal = monthlyTotal - Convert.ToDouble(monthlyAmount);
+                    }
+                }
+        }
+        <tr>
+            <td></td>
+            <td></td>
+            <td style="text-align:left;">
+                <span> Total = @Currency @monthlyTotal (Monthly)</span>
+                @*<span style="margin-top:5px;margin-left:10px"> Total = @Currency @total (Annual)</span>*@
+            </td>
+        </tr>
+    </table>
+</script>
+@(Html.Kendo().Tooltip()
+    .For("#btn_show_payment_details")
+    .Filter("a")
+    .ContentTemplateId("temp_view_salary")
+    .Position(TooltipPosition.Right)
+)
+
+
+
+

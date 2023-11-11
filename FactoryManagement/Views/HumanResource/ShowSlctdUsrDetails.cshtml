@@ -1,0 +1,75 @@
+﻿
+
+
+@************************** Created By Jerin Jahan (Date:08.11.2016)  *********************************@
+@model FactoryManagement.Models.View_UserLists
+@{
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+
+<h4>Selected User Information</h4><hr />
+<div style="float:left;width:100%;">
+    <div class="editor-label" style="margin-left:2em!important;width:30%!important;"><label for="PackageName">User Name</label></div>
+    <div class="editor-field" style="padding-top:5px;">
+        <span><img src="~/Images/UserPicture/thumb/@Model.Picture" class="user-photo" /></span>
+        <a href="/HumanResource/DisplayEmployeeDetails?UserId=@Model.UserId&userType=@Model.UserType">@Model.UserName</a>
+    </div>
+</div>
+<div style="float:left;width:100%;">
+    <div class="editor-label" style="margin-left:2em!important;width:30%!important;"><label for="PackageName">Site name</label></div>
+    <div class="editor-field" style="padding-top:5px;">
+        <a href="/Configuration/ShowSiteInfoWithDeptList?siteId=@Model.SiteId&IsDisplay=true">@Model.SiteName</a>
+    </div>
+</div>
+<div style="float:left;width:100%;">
+    <div class="editor-label" style="margin-left:2em!important;width:30%!important;"><label for="PackageName">Dept. Name</label></div>
+    <div class="editor-field" style="padding-top:5px;">
+        <a href="/Configuration/ShowDeptWithLineInfo?deptId=@Model.DeptId&display=True&IsInfo=true">@Model.DeptName</a>
+    </div>
+</div>
+<div style="float:left;width:100%;">
+    <div class="editor-label" style="margin-left:2em!important;width:30%!important;"><label for="PackageName">Designation</label></div>
+    <div class="editor-field" style="padding-top:5px;">
+        @Model.DesignationName
+    </div>
+</div>
+<div style="float:left;width:100%;">
+    <div class="editor-label" style="margin-left:2em!important;width:30%!important;"><label for="PackageName">Join Date</label></div>
+    <div class="editor-field" style="padding-top:5px;">
+        @Convert.ToDateTime(Model.JoinDate).ToString("MMMM dd,yyyy")
+    </div>
+</div>
+<div style="float:left;width:100%;">
+    <div class="editor-label" style="margin-left:2em!important;width:30%!important;"><label for="PackageName">Current Salary Package</label></div>
+    <div class="editor-field" style="padding-top:5px;">
+        @if(Model.AssginSalary)
+        {
+            <a href="/SalaryConfig/SalaryPackageConfig/@Model.SalaryPackageId">
+                <span id="userSalaryPackage">@db.Salary_Package_List.Where(m => m.PackageId == Model.SalaryPackageId).Select(m => m.PackageName).FirstOrDefault()</span>
+            </a>
+        }
+        else
+        {
+            <span>Not yet assign any salary package</span>
+        }
+    </div>
+</div>
+
+@if (ViewBag.PayType == "Receive")
+{
+    var amount = db.AllUserLoanLists.Where(m => m.UserId == Model.UserId && m.PaidStatus == 0).Sum(m => m.Amount);
+    var allPaidAmnt = db.AllUserLoanLists.Where(m => m.UserId == Model.UserId && m.PaidStatus == 0).Sum(m => m.PaidAmount);
+    var remain = Convert.ToDecimal(amount) - Convert.ToDecimal(allPaidAmnt);
+    <div style="float:left;width:100%;">
+        <div class="editor-label" style="margin-left:2em!important;width:30%!important;"><label for="PackageName">Total Loan Amount</label></div>
+        <div class="editor-field" style="padding-top:5px;">
+            <span>@remain @currency</span>
+        </div>
+    </div>
+}
+<script>
+    $(document).ready(function () {
+        username = '@Model.UserName';
+    });
+</script>

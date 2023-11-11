@@ -1,0 +1,48 @@
+﻿@model IEnumerable<FactoryManagement.ModelView.CRM.Client_User_ListsModelView>
+@{var count = 1;}
+@if ((Enumerable.Count(ViewBag.UserList)) > 0){
+<table class="table" style="border:none;">
+        <tr style="border:none;">
+            <th>#</th>
+            <th>User</th>
+            <th>Designation</th>
+            <th></th>
+        </tr>
+        @foreach (var item in ViewBag.UserList as IEnumerable<FactoryManagement.ModelView.CRM.Client_User_ListsModelView>)
+        {
+            <tr id="tr_user_@item.UserId" class="form-horizontal form-widget">
+                <td scope="row" style="font-weight:bold;" >@count</td>
+                <td>
+                    @if (item.PictureName != "")
+                    {
+                        <img class="user-photo" src="~/Images/Client/ClientUserImage/thumb/@item.PictureName" />
+                    }
+                    else
+                    {
+                        <img class="user-photo" src="~/Images/Icon/blank-person.jpg" />
+                    }
+                    <a href="#" id="nameClickId" data-userid="@item.UserId" data-cid="@item.ClientId">@Html.DisplayFor(modelItem => item.UserName)</a>
+                </td>
+
+                <td>@Html.DisplayFor(modelItem => item.Designation)</td>
+                @if (!ViewBag.isDisplay) { 
+                <td class="divUserList">
+                    <a href="#" class="btn btn-success userDetailsEdit" id="userDetailsEdit" data-toggle="tooltip" data-userid="@item.UserId" title="Edit    User Details"><i class="fa fa-pencil"></i></a>
+                    <a class="btn btn-danger deleteUser" data-toggle="tooltip" data-userid="@item.UserId" style="margin-left:3px;"
+                       title="Delete user info"><i class="fa fa-trash"></i></a>
+                </td>
+                }
+          </tr>
+         count++;
+        }
+</table>
+}
+else
+{
+  <h4>No record to show</h4>
+}
+<script>
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip();       
+    });
+</script>

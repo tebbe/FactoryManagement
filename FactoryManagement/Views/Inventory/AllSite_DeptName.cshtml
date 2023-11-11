@@ -1,0 +1,11 @@
+﻿
+
+@(Html.Kendo().MultiSelect()
+         .Name("UnitDeptId")
+         .AutoClose(false)
+         .Placeholder("Select dept...")
+         .BindTo(ViewBag.DeptList as SelectList)
+         .Events(e=> e.Change("onSiteDeptSelectChange").Select("onSiteDeptSelect"))
+         .HtmlAttributes(new { style = "width: 75%;" })
+)
+<span class="field-validation-valid text-danger" data-valmsg-for="UnitDeptId" data-valmsg-replace="true"></span>

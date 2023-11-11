@@ -1,0 +1,49 @@
+﻿
+
+
+
+
+@************************************** Created By Jerin Jahan (Date:27.07.2016)  ***************************************@
+
+@model FactoryManagement.ModelView.Inventory.Store.StoreListsModelView
+
+@{
+    ViewBag.Title = "Store Details";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+
+<h2>@ViewBag.Title</h2><hr />
+
+@using (Html.BeginForm())
+{
+    @Html.HiddenFor(m => m.Id)
+
+    <div class="form-horizontal col-md-12 col-sm-12 col-xs-12" id="DivForMachineDefine">
+        <h4>Store Name : @Model.StoreName</h4>
+        <h4>Unit : @Model.AllSiteLists</h4>
+        <div class="row">
+            <div class="col-md-2">
+                <a href="/StoreProduct/StoreProductCreate?StoreId=@Model.Id" style="text-decoration: none !important;" class="k-button">
+                    <span class="k-icon k-i-plus" style="margin-right: .3rem;"></span>Add New Product
+                </a>
+            </div>
+            <div class="col-md-2">
+                <a href="/StoreProduct/ShowAllInventoryList" style="text-decoration: none !important;" class="k-button">
+                    <span class="fa fa-list-ul" style="margin-right: .3rem;"></span>Show All Store Items
+                </a>
+            </div>
+        </div>
+        <div id="Div_All_Acq_List_Load"></div>
+    </div>
+}
+<script>
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $('#liForStore').addClass('open');
+        $('#liForStore .sub-menu').show();
+        $("#liForStoreDetails_"+@Model.Id).addClass('sublistActive');
+    });
+    $("#btn_show_acq_list").click(function(){
+        $("#Div_All_Acq_List_Load").load();
+    });
+</script>

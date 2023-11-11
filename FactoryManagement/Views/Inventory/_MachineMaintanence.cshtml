@@ -1,0 +1,47 @@
+﻿
+
+@****************************** Created By Jerin Jahan (Date:19.01.2017) ***************************************************************@
+@using FactoryManagement.Helpers
+@{
+    var count = 0;
+}
+<table class="table table-bordered table-striped table-condensed table-hover" id="tblForAddedPart">
+    <tbody>
+        <tr>
+            <th width="2%">#</th>
+            <th width="20%">Parts Name</th>
+            <th width="10%">Machine Name</th>
+            <th width="15%">Replaceable Date</th>
+            <th width="10%">Days Left</th>
+            <th width="10%"></th>
+        </tr>
+        @foreach (var list in ViewBag.allPartsList as IEnumerable<FactoryManagement.Models.View_Machine_Parts>)
+        {
+            count++;
+            <tr>
+                <th>@count.</th>
+                <td id="partname-@list.Id">@list.ProductName</td>
+                <td>@Html.EncodedActionLink(list.MachineAcronym, "MachineDetails", "Inventory", new { machineId = list.MachineId },null)</td>
+                <td><span id="spanForDesRepDate-@list.Id" class="spanForRep" data-id="@list.Id">@list.ReplaceDateName</span></td>
+                <td><span id="spanForDesDateLft-@list.Id" data-id="@list.Id">@list.Left_Day</span></td>
+                <td>
+                    <span data-toggle="tooltip" title="Edit" class="btn green btnReplaceChange" data-id="@list.Id"
+                          data-machinname="@list.MachineAcronym" id="btnReplaceChange-@list.Id" data-partsname="@list.ProductName">
+                        <i class="fa fa-pencil"></i>
+                    </span>
+                    <span data-toggle="tooltip" title="Replace this Parts" class="btn blue btn_replace" data-uid="@list.Id" data-id="@list.MachineId" data-invenid="@list.PartsId"
+                          data-machinname="@list.MachineAcronym" id="btnReplaceChange-@list.Id" data-partsname="@list.ProductName">
+                        <i class="fa fa-retweet"></i>
+                    </span>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<script>
+    totalCount = '@(ViewBag.TotalCount)';
+    showCount = '@count';
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>

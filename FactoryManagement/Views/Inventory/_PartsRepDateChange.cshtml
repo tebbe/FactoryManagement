@@ -1,0 +1,108 @@
+﻿
+@model FactoryManagement.Models.View_Machine_Parts
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-top:2%;" id="div_parts_rep_chng">
+
+    <div class="editor-label"><label>Parts Name</label></div>
+    <div class="editor-field" style="padding-top:6px!important;">@Model.ProductName</div>
+
+    <div class="editor-label"><label>Mahcine Name</label></div>
+    <div class="editor-field" style="padding-top:6px!important;">@Model.MachineAcronym</div>
+
+    <div class="editor-label"><label>Expired Date</label></div>
+    <div class="editor-field" style="padding-top:6px!important;">@Model.ReplaceDateName</div>
+
+    <div class="editor-label"><label>Left Day</label></div>
+    <div class="editor-field" style="padding-top:6px!important;">@Model.Left_Day</div>
+
+    <div class="editor-label"><label>New Replace Date</label></div>
+    <div class="editor-field">
+        <input class="form-control k-textbox"
+               required="" data-required-msg="*" id="txtLeftDate"
+               name="txtLeftDate" type="text"
+               value="@Model.Left_Day" aria-invalid="true"
+               data-val-regex="Invalid"
+               data-val-regex-pattern="([1-9][0-9]*)"
+               style="width:50%;float:left;">
+        <span class="field-validation-valid text-danger" data-valmsg-for="txtLeftDate" data-valmsg-replace="true"></span>
+    </div>
+
+    <div class="k-edit-buttons k-state-default">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnReplaceTick"><span class="k-icon k-update"></span>Update</button>
+        <button type="reset" class="k-button k-button-icontext k-grid-update" id="btnReplaceTickResh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnReplaceClose"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+<script>
+    $("#btnReplaceClose").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+        document.documentElement.style.overflow = 'auto';
+        document.body.scroll = "yes";
+    });
+    $("#btnReplaceTickResh").click(function () {
+        $("#win_part_date_change").empty();
+        $("#win_part_date_change").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '40%',
+            title: '@(Model.ProductName)' + ' Replace'
+        });
+        $("#win_part_date_change").html('<div class="win_loading_half"></div>');
+        var win_part_date_change = $("#win_part_date_change").data("kendoWindow");
+        win_part_date_change.refresh({ url: "/Inventory/_PartsRepDateChange?id=" + @Model.Id });
+        win_part_date_change.center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+    });
+
+    var msg = "";
+    var validation = $("#div_parts_rep_chng").kendoValidator({
+        rules: {
+            txtExpireDate: function (input) {
+                if (input.is("[name=txtLeftDate]") && $("#txtLeftDate").val() === '') {
+                    return false;
+                }
+                return true;
+            }
+        },
+        messages: {
+            txtExpireDate: "Please enter new replace dates"
+        }
+    }).data("kendoValidator");
+    $("#btnReplaceTick").click(function () {
+        if (validation.validate()) {
+            notification.show({ message: "Machine '" + '@(Model.MachineAcronym)' + "' spare parts is replace date is changing...", showTime: startTime() }, "upload-progress");
+            var sendData = {
+                PartsId: '@Model.Id',repDate: $("#txtLeftDate").val(),
+                partName: '@(Model.ProductName)',
+                MachineAcronym: '@(Model.MachineAcronym)',
+                CreatedBy: userId
+            };
+            $.ajax({
+                url: '@Url.Action("MachineReplaceDateUpdate", "Inventory")',
+                type: 'Post',
+                data: sendData,
+                success: function (response) {
+                    if (response === "Success") {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        notification.show({ message: "Spare parts replace date has been successfully updated.", showTime: startTime() }, "upload-success");
+                    }
+                    else {
+                        notification.show({message: "Spare parts replace date update unsuccessful.", showTime: startTime()}, "upload-error");
+                    }
+                    $("#btnReplaceTick").closest(".k-window-content").data("kendoWindow").close();
+                    $("#Div_All_Machi_Main").empty();
+                    $("#Div_All_Machi_Main").append('<div class="loading_partial"></div>');
+                    var passData = { machineId: machineId, machineTypeId: machineTypeId };
+                    $("#Div_All_Machi_Main").load('@Url.Action("_MachineMaintanence", "Inventory")?',passData);
+                },
+                error: function () {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occured!", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+</script>

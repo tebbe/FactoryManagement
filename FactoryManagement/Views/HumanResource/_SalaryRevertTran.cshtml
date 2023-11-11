@@ -1,0 +1,69 @@
+﻿
+
+
+@************************************** Created By Jerin Jahan (Date:17.12.2016)  ***************************************@
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="div_Salary_trans_revert">
+    <div id="div_trans_revert_partial"><div class="win_loading_half"></div></div>
+    <div class="k-edit-buttons k-state-default col-xs-11">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_Revert_Save">
+            <span class="k-icon k-update"></span>OK
+        </button>
+        <button type="reset" class="k-button k-button-icontext k-grid-cancel" id="btn_Revert_Cancle">
+            <span class="k-icon k-cancel"></span>Cancel
+        </button>
+    </div>
+</div>
+<script>
+    var id = '@(ViewBag.id)';
+    $("#div_trans_revert_partial").load('@Url.Action("_SalaryRevertTranPartail", "HumanResource")?id=' + id);
+    $("#btn_Revert_Cancle").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+
+    $("#btn_Revert_Save").click(function () {
+        var validation = $("#div_Salary_trans_revert").kendoValidator({
+            rules: {
+                option: function (input) {
+                    if (input.attr('ReasonId') === "ReasonId" && $("#ReasonId").val() === '0') {
+                        return false;
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                option:"Please select one"
+            }
+        }).data("kendoValidator");
+
+        if (validation.validate()) {
+            notification.show({ message: "Transaction is reverting...", showTime: startTime() }, "upload-progress");
+
+            var sendData = { RefTableColumnId: $("#RefTableColumnId").val(), ReasonId: $("#ReasonId").val(), EditedBy: userId };
+            $.ajax({
+                url: '@Url.Action("RevertSalaryTransaction", "HumanResource")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if(data === "Success"){
+                        $("#btn_Revert_Save").closest(".k-window-content").data("kendoWindow").close();
+                        notification.show({ message: "Transaction has been successfully reverted.", showTime: startTime() }, "upload-success");
+                        
+                        showCount = 0, totalCount = 0, page = 0;
+                        $("#Div_AllPaid_His").empty();
+                        $("#Div_AllPaid_His").append('<div class="loading_partial"></div>');
+                        $("#Div_AllPaid_His").load('@Url.Action("_AllPaidHis", "HumanResource")?siteId=' + siteId);
+                    }else{
+                        notification.show({ message: "Transaction revert was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                },
+                error: function (xhr) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occured.", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+</script>
+

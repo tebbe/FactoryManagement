@@ -1,0 +1,656 @@
+﻿@*********************************************** Created By Jerin Jahan Date(07.06.2017) ************************@
+@using FactoryManagement.Helpers;
+
+@model FactoryManagement.Models.ManualIndentVoucher
+@{
+    ViewBag.Title = "Manual Indent Voucher Details";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int roleid = Convert.ToInt32(Request.Cookies["CookieAdminInfo"].Values["roleid"].ToString());
+}
+@if (roleid == 11 || roleid == 12)
+{
+
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <i class="icon-basket"></i>
+                <a href="javascript:;">Inventory</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <i class="fa fa-th-list"></i>
+                <a href="/Acquisition/ShowAllIndentVoucher">Indent History</a>
+            </li>
+        </ul>
+    </div>
+}
+else
+{
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <i class="icon-basket"></i>
+                <a href="javascript:;">Inventory</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <i class="fa fa-th-list"></i>
+                <a href="/Acquisition/ShowAllIndentVoucher">Indent History</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <i class="fa fa-info-circle"></i>
+                <a href="@Html.EncodedParam("IndentVoucherDetails", "Acquisition", new { id = @Model.VoucherId,v="edit" }, null)">Indent Voucher Details</a>
+            </li>
+        </ul>
+    </div>
+}
+<div class="portlet light portlet-fit bordered">
+    <div class="form-body">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-info-circle font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">Indent Voucher Details</span>
+                </div>
+                <span class="green bold" data-toggle="tooltip" data-container="body" title="Print Indent Transaction" style="float:right;margin-left:10px;cursor:pointer;font-size:16px!important;">
+                    <a href="@Html.EncodedParam("IndentVoucherDetailsPrint", "Acquisition", new { id = Model.VoucherId }, null)" target="_blank">
+                        <small style="color:#3C8DBC"> <i class="fa fa-print"></i> Print </small>
+                    </a>
+                </span>
+                <span class="green bold" data-toggle="tooltip" data-container="body" title="Print Indent Transaction With List" style="float:right;cursor:pointer;font-size:16px!important;">
+                    <a href="@Html.EncodedParam("Print", "Acquisition", new { id = Model.VoucherId }, null)" target="_blank">
+                        <small style="color:#3C8DBC"> <i class="fa fa-print"></i> Print </small>
+                    </a>
+                </span>
+            </div>
+            <div class="portlet-body">
+                @if (Model.VoucherStatus != -1)
+                {
+                <div class="row">
+                    <div class="col-lg-12 col-xs-12">
+                        <div class="row">
+                            <div class="col-md-12">
+                                
+                                <div class="text-left">
+                                    <h2>@Model.Name</h2><br />
+                                    <span style="float:right">
+                                        @if(ViewBag.v !="dis"){
+                                           if (Model.VoucherStatus == 0)
+                                           {
+                                            <span class="btn green" data-toggle="tooltip" title="Approve Manual Indent" data-container="body" id="btn_app_indent_voucher"><i class="fa fa-check"></i></span>
+                                           }
+                                        }
+   
+                                    </span><br />
+                                    <span>
+                                        @if (Model.CreatedBy != null)
+                                        {
+                                            if (Model.CreatedBy > 0)
+                                            {
+                                                <span>Created By : @db.View_UserLists.Where(m => m.UserId == Model.CreatedBy).Select(m => m.UserName).FirstOrDefault()</span><br />
+                                            }
+                                            else
+                                            {
+                                                <span>Created By : Super Admin</span><br />
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span>Created By Undefined</span><br />
+                                        }
+                                    </span><br />
+                                    <span>
+                                        @if (Model.CreatedBy !=null)
+                                        {
+                                            <span> Created Date : @Convert.ToDateTime(Model.CreatedDate).ToString("MMM dd,yyyy hh:mm tt")</span><br />
+                                        }
+                                    </span><br />
+                                    
+                                    <span> Status : @if (Model.VoucherStatus == 0)
+                                        { <span class="text-warning">Pending Approval</span>}
+                                        @if (db.ManualIndents.Where(m => m.VoucherId == Model.VoucherId && m.IndentStatus < 2 && m.IndentStatus != -1).Any() && Model.VoucherStatus != -1 && Model.VoucherStatus > 0)
+                                        {<span class="text-center text-info bold">Approved but not completed</span>
+                                            if(ViewBag.v !="dis"){
+                                                <span class="btn green" id="IdForCompleteBtn" style="text-align:right;float:right;" data-toggle="tooltip" data-placement="bottom" data-original-title="Receive all product">Receive All</span>
+                                            }
+
+                                        }
+                                        @if (!db.ManualIndents.Where(m => m.VoucherId == Model.VoucherId && m.IndentStatus < 2 && m.IndentStatus != -1).Any() && Model.VoucherStatus != 2 && Model.VoucherStatus != -1)
+                                        {
+                                            <span class="text-info bold">Partially Completed</span>
+                                            if (ViewBag.v != "dis")
+                                            {
+                                                <span class="btn green" id="IdForProductCompleteBtn" data-toggle="tooltip" data-placement="bottom" data-original-title="Complete Voucher" style="text-align:right;float:right;">Complete</span>
+                                            }
+                                        }
+                                        @if (Model.VoucherStatus == 2)
+                                        {<span class="text-success">Completed</span>}
+                                    </span><br />
+                                </div>                         
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                }
+                @if (Model.VoucherStatus == -1)
+                {
+                <div class="row">
+                    <div class="col-lg-6  col-xs-6">
+                        <div class="row">
+                            <div class="col-md-12">
+                                    <div  style="text-align:left;">
+                                            <h2>@Model.Name</h2><br />
+                                            <span>
+                                                @if (ViewBag.v != "dis")
+                                                {
+                                                    if (Model.VoucherStatus == 0)
+                                                    {
+                                                        <span class="btn green" data-toggle="tooltip" title="Approve Manual Indent" data-container="body" id="btn_app_indent_voucher"><i class="fa fa-check"></i></span>
+                                                    }
+                                                }
+                                            </span><br />
+                                            <span>
+                                                @if (Model.CreatedBy != null)
+                                                {
+                                                    if (Model.CreatedBy > 0)
+                                                    {
+                                                        <span>Created By : @db.View_UserLists.Where(m => m.UserId == Model.CreatedBy).Select(m => m.UserName).FirstOrDefault()</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>Created By : Super Admin</span>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <span>CreatedBy Undefined</span><br />
+                                                }
+                                             
+                                            </span><br />
+                                            <span>
+                                                @if (Model.CreatedBy !=null)
+                                                {
+                                                    <span> Created Date : @Convert.ToDateTime(Model.CreatedDate).ToString("MMM dd,yyyy hh:mm tt")</span><br />
+                                                }
+                                            </span><br />
+                                        </div>                          
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6  col-xs-6">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div  style="text-align:right;">
+                                    <span>
+                                        @if (Model.UpdatedBy != null)
+                                        {
+                                            if (Model.UpdatedBy > 0)
+                                            {
+                                                <span>Deleted By: @db.View_UserLists.Where(m => m.UserId == Model.UpdatedBy).Select(m => m.UserName).FirstOrDefault()</span><br />
+                                            }
+                                            else
+                                            {
+                                                <span>Deleted By: Super Admin</span><br />
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span>Deleted By Undefined</span>
+                                        }
+                                    </span>
+                                    <span>
+                                        @if (Model.UpdatedBy !=null)
+                                        {
+                                            <span>Deleted Date: @Convert.ToDateTime(Model.UpdatedDate).ToString("MMM dd,yyyy hh:mm tt")</span><br />
+                                        }
+                                        else
+                                        {
+                                            <span>Not Updated Yet</span>
+                                        }
+                                   
+                                    </span><br />
+                                    <span><b>Status: Deleted</b></span><br />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<div class="form-horizontal" id="div_manual_indent">
+ <div class="form-body">
+     <div class="portlet light portlet-fit bordered">
+           <div class="portlet-title">
+                        <div class="caption">
+                            <i class="fa fa-list font-green"></i>
+                            <span class="caption-subject font-green bold uppercase">Indent List</span>
+                        </div>
+                    </div>
+           <div class="portlet-body">
+                        <div class="table-responsive">
+                            <div id="Div_Manual_Indent"></div>
+                        </div>
+                    </div>
+     </div>
+  </div>
+</div>
+<div id="win_indent_edit"></div>
+<div id="win_indent_info"></div>
+<div id="win_receive_quan"></div>
+<div id="divForUserDetails"></div>
+<script id="temp_win_indent_edit" type="text/x-kendo-template">
+            <div style="padding:1em;">
+                <p style="font-size: 14px; padding: 10px"> #=msg# </p>
+                <div style="text-align: right;">
+                    <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_indent_noty_ok"><span class="k-icon k-update"></span>OK</button>
+                    <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_indent_noty_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+                </div>
+            </div>
+        </script>
+<script id="temp_win_indent_complete" type="text/x-kendo-template">
+            <div style="padding:1em;">
+                <p style="font-size: 14px; padding: 10px"> #=msg# </p>
+                <div style="text-align: right;">
+                    <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_indent_complete_ok"><span class="k-icon k-update"></span>OK</button>
+                    <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_indent_complete_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+                </div>
+            </div>
+        </script>
+<script>
+            $(document).ready(function () {
+                $("#liForInventory").addClass('active');
+                $("#liForInedntVou").addClass('sublistActive');
+                $("#Div_Manual_Indent").append('<div class="win_loading_half"></div>');
+                $("#Div_Manual_Indent").load('@Url.Action("_AllManualIndent", "Acquisition")?v=' + '@(ViewBag.v)' + '&status=' +@Model.VoucherStatus +'&id='+@Model.VoucherId);
+
+            });
+            @**************Confirmation  for complete btn***********@
+
+
+            console.log("IndentVoucherDetails");
+            $("#IdForCompleteBtn").click( function (e) {
+                var kendoWindow = $("<div />").kendoWindow({
+                    actions: ["Close"],
+                    title: "Alert",
+                    resizable: false,
+                    width: "30%",
+                    modal: true,
+                    close: onWindowClose
+                });
+
+                msg = "Are you sure want to complete all product quantity at atime?";
+                var template = kendo.template($("#temp_win_indent_complete").html());
+                kendoWindow.data("kendoWindow").content(template).center().open();
+                document.documentElement.style.overflow = 'hidden';
+                document.body.scroll = "no";
+                kendoWindow.find("#btn_indent_complete_cancel").click(function () {
+                    kendoWindow.data("kendoWindow").close();
+                }).end();
+                kendoWindow.find("#btn_indent_complete_ok").click(function () {
+                    kendoWindow.data("kendoWindow").close();
+                    CompleteAllProduct();
+                }).end();
+            });
+            function CompleteAllProduct() {
+                notification.show({ message: "Completing voucher...", showTime: startTime() }, "upload-progress");
+                var sendData = {
+                    VoucherId:'@Model.VoucherId',
+                    InsertedBy:userId,
+                };
+                $.ajax({
+                    url: '@Url.Action("ReceiveAllProdQuantity", "Acquisition")',
+                    type: 'Post',
+                    data:sendData,
+                    success: function (data) {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        if (data != "Error") {
+                            notification.show({ message: "Voucher has been successfully completed.", showTime: startTime() }, "upload-success");
+                            $("#Div_Manual_Indent").empty();
+                            $("#Div_Manual_Indent").append('<div class="win_loading_half"></div>');
+                            $("#Div_Manual_Indent").load('@Url.Action("_AllManualIndent", "Acquisition")?v=' + '@(ViewBag.v)' + '&status=' +@Model.VoucherStatus +'&id='+@Model.VoucherId);
+                            location.reload();
+                        } else {
+                            notification.show({ message: "Voucher completion was unsuccessful.", showTime: startTime() }, "upload-error");
+                        }
+                    },
+                    error: function (err) {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                    }
+
+                });
+            }
+
+
+            $("#IdForProductCompleteBtn").click(function(){
+                var kendoWindow = $("<div />").kendoWindow({
+                    actions: ["Close"],
+                    title: "Alert",
+                    resizable: false,
+                    width: "30%",
+                    modal: true,
+                    close: onWindowClose
+                });
+
+                msg = "Are you sure want to complete this voucher?";
+                var template = kendo.template($("#temp_win_indent_complete").html());
+                kendoWindow.data("kendoWindow").content(template).center().open();
+                document.documentElement.style.overflow = 'hidden';
+                document.body.scroll = "no";
+
+                kendoWindow.find("#btn_indent_complete_cancel").click(function () {
+                    kendoWindow.data("kendoWindow").close();
+
+                }).end();
+                kendoWindow.find("#btn_indent_complete_ok").click(function () {
+                    kendoWindow.data("kendoWindow").close();
+                    CompleteVoucher();
+                }).end();
+            });
+            function CompleteVoucher() {
+                notification.show({ message: "Completing voucher...", showTime: startTime() }, "upload-progress");
+                var sendData = {
+                    VoucherId:'@(Model.VoucherId)',
+                    InsertedBy: userId,
+                    comState:2
+                };
+                $.ajax({
+                    url: '@Url.Action("CompleteVoucher", "Acquisition")',
+                    type: 'Post',
+                    data:sendData,
+                    success: function (data) {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        if (data != "Error") {
+                            notification.show({ message: "Voucher has been successfully completed.", showTime: startTime() }, "upload-success");
+                            $("#Div_Manual_Indent").empty();
+                            $("#Div_Manual_Indent").append('<div class="win_loading_half"></div>');
+                            $("#Div_Manual_Indent").load('@Url.Action("_AllManualIndent", "Acquisition")?v=' + '@(ViewBag.v)' + '&status=' +@Model.VoucherStatus +'&id='+@Model.VoucherId);
+                            location.reload();
+                        } else {
+                            notification.show({ message: "Voucher completion was unsuccessful.", showTime: startTime() }, "upload-error");
+                        }
+                    },
+                    error: function (err) {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                    }
+
+                });
+            }
+            //******************************** Show Indent Information *****************************************************
+            $("#Div_Manual_Indent").on("click", ".txtManuProName", function (e) {
+                var id = $(this).data("id");
+                $("#win_indent_info").empty();
+                $("#win_indent_info").kendoWindow({
+                    actions: ["Close"],
+                    draggable: false,
+                    modal: true,
+                    visible: false,
+                    width: '45%',
+                    height: '25%',
+                    title: 'Indent Product Details',
+                    close: onWindowClose
+                });
+                $("#win_indent_info").html('<div class="win_loading_half"></div>');
+                var win_indent_info = $("#win_indent_info").data("kendoWindow");
+                win_indent_info.refresh({ url: "/Acquisition/_IndentInfo?id=" + id });
+                win_indent_info.center().open();
+                document.documentElement.style.overflow = 'hidden';
+                document.body.scroll = "no";
+            });
+            $("#Div_Manual_Indent").on("click", "#IdForIndentUserDetails", function (e) {
+                e.preventDefault();
+                var id = $(this).data("uid");
+                $("#divForUserDetails").empty();
+                $("#divForUserDetails").kendoWindow({
+                    actions: ["Close"],
+                    draggable: false,
+                    modal: true,
+                    visible: false,
+                    width: '50%',
+                    height: '50%',
+                    title: "User Details",
+                    close: onWindowClose
+                });
+                $("#divForUserDetails").html('<div class="win_loading_half"></div>');
+                var divForUserDetails = $("#divForUserDetails").data("kendoWindow");
+                divForUserDetails.refresh({ url: "/Acquisition/DisplayUserDetails?UserId="+id});
+                divForUserDetails.center().open();
+                document.documentElement.style.overflow = 'hidden';
+                document.body.scroll = "no";
+            });
+            //******************************** Edit Indent *****************************************************
+            $("#Div_Manual_Indent").on("click", ".btn_edit_indent", function (e) {
+                var id = $(this).data("id");
+                var kendoWindow = $("<div />").kendoWindow({
+                    actions: ["Close"],
+                    title: "Alert",
+                    resizable: false,
+                    width: "30%",
+                    modal: true,
+                    close: onWindowClose
+                });
+
+                msg = "Are you sure want to edit this?";
+                var template = kendo.template($("#temp_win_indent_edit").html());
+                kendoWindow.data("kendoWindow").content(template).center().open();
+                document.documentElement.style.overflow = 'hidden';
+                document.body.scroll = "no";
+                kendoWindow.find("#btn_indent_noty_cancel").click(function () {
+                    kendoWindow.data("kendoWindow").close();
+                }).end();
+                kendoWindow.find("#btn_indent_noty_ok").click(function () {
+                    editIndent(id);
+                    kendoWindow.data("kendoWindow").close();
+                }).end();
+            });
+            function editIndent(id) {
+                $("#win_indent_edit").empty();
+                $("#win_indent_edit").kendoWindow({
+                    actions: ["Close"],
+                    draggable: false,
+                    modal: true,
+                    visible: false,
+                    width: '60%',
+                    height: '35%',
+                    title: 'Edit Indent Product Details',
+                    close: onWindowClose
+                });
+                $("#win_indent_edit").html('<div class="win_loading_half"></div>');
+                var win_indent_edit = $("#win_indent_edit").data("kendoWindow");
+                win_indent_edit.refresh({ url: "/Acquisition/_EditIndent?id=" + id });
+                win_indent_edit.center().open();
+                document.documentElement.style.overflow = 'hidden';
+                document.body.scroll = "no";
+            }
+
+            //******************************** Cancel Indent *****************************************************
+            $("#Div_Manual_Indent").on("click", ".btn_cancel_indent", function (e) {
+                var id = $(this).data("id");
+                var kendoWindow = $("<div />").kendoWindow({
+                    actions: ["Close"],
+                    title: "Alert",
+                    resizable: false,
+                    width: "30%",
+                    modal: true,
+                    close: onWindowClose
+                });
+
+                msg = "Are you sure want to cancel this?";
+                var template = kendo.template($("#temp_win_indent_edit").html());
+                kendoWindow.data("kendoWindow").content(template).center().open();
+                document.documentElement.style.overflow = 'hidden';
+                document.body.scroll = "no";
+
+                kendoWindow.find("#btn_indent_noty_cancel").click(function () {
+                    kendoWindow.data("kendoWindow").close();
+                    document.documentElement.style.overflow = 'auto';
+                    document.body.scroll = "yes";
+                }).end();
+                kendoWindow.find("#btn_indent_noty_ok").click(function () {
+                    kendoWindow.data("kendoWindow").close();
+                    document.documentElement.style.overflow = 'auto';
+                    document.body.scroll = "yes";
+                    cancelIndent(id);
+                }).end();
+            });
+            function cancelIndent(id) {
+                notification.show({ message: "Canceling...", showTime: startTime() }, "upload-progress");
+                $.ajax({
+                    url: '@Url.Action("CancelManualIndent", "Acquisition")',
+                    type: 'Post',
+                    data: { IndentId: id, UserId: userId },
+                    success: function (data) {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        if (data != "Error") {
+                            notification.show({ message: "Indent has been successfully canceled.", showTime: startTime() }, "upload-success");
+                            $("#Div_Manual_Indent").empty();
+                            $("#Div_Manual_Indent").append('<div class="win_loading_half"></div>');
+                            $("#Div_Manual_Indent").load('@Url.Action("_AllManualIndent", "Acquisition")?v=' + '@(ViewBag.v)' + '&status=' +@Model.VoucherStatus +'&id='+@Model.VoucherId);
+                        } else {
+                            notification.show({ message: "Indent cancel was unsuccessful.", showTime: startTime() }, "upload-error");
+                        }
+                    },
+                    error: function (err) {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                    }
+
+                });
+            }
+
+            //******************************** Receive Indent Item *****************************************************
+            $("#Div_Manual_Indent").on("click", ".btn_tran_item", function (e) {
+                var id = $(this).data("id");
+                $("#win_receive_quan").empty();
+                $("#win_receive_quan").kendoWindow({
+                    actions: ["Close"],
+                    draggable: false,
+                    modal: true,
+                    visible: false,
+                    width: '55%',
+                    height: '25%',
+                    title: 'Enter Receive Quantity',
+                    close: onWindowClose
+                });
+                $("#win_receive_quan").html('<div class="win_loading_half"></div>');
+                var win_receive_quan = $("#win_receive_quan").data("kendoWindow");
+                win_receive_quan.refresh({ url: "/Acquisition/_EnterQuantity?id=" + id });
+                win_receive_quan.center().open();
+                document.documentElement.style.overflow = 'hidden';
+                document.body.scroll = "no";
+            });
+            //************************* Receive Full Remaing Indent Item Quantity **************************************
+            $("#Div_Manual_Indent").on("click", ".btn_rcv_full_qty", function (e) {
+                var id = $(this).data("id");
+                var qty = $(this).data('qty');
+                var uname= $(this).data('uname');
+                var kendoWindow = $("<div />").kendoWindow({
+                    actions: ["Close"],
+                    title: "Alert",
+                    resizable: false,
+                    width: "30%",
+                    modal: true,
+                    close: onWindowClose
+                });
+
+                msg = "Are you sure want to receive "+qty+" "+uname+" ?";
+                var template = kendo.template($("#temp_win_indent_edit").html());
+                kendoWindow.data("kendoWindow").content(template).center().open();
+                document.documentElement.style.overflow = 'hidden';
+                document.body.scroll = "no";
+
+                kendoWindow.find("#btn_indent_noty_cancel").click(function () {
+                    kendoWindow.data("kendoWindow").close();
+                }).end();
+                kendoWindow.find("#btn_indent_noty_ok").click(function () {
+                    kendoWindow.data("kendoWindow").close();
+                    recFullQty(id,qty);
+                }).end();
+            });
+            function recFullQty(id,qty)
+            {
+                notification.show({ message: "Receiving quantity...", showTime: startTime() }, "upload-progress");
+                var senddata = {
+                    VoucherId:'@(Model.VoucherId)',
+                    IndentId: id,
+                    Quantity: qty,
+                    InsertedBy: userId
+                };
+                $.ajax({
+                    url: '@Url.Action("RcvManualIndentQty", "Acquisition")',
+                    type: 'Post',
+                    data: senddata,
+                    success: function (data) {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+
+                        if (data !== "Error") {
+                            notification.show({ message: "Indent product quantity has been successfully received.", showTime: startTime() }, "upload-success");
+                            $("#Div_Manual_Indent").empty();
+                            $("#Div_Manual_Indent").append('<div class="win_loading_half"></div>');
+                            $("#Div_Manual_Indent").load('@Url.Action("_AllManualIndent", "Acquisition")?v=edit&status='+data+'&id='+@Model.VoucherId);
+                            location.reload();
+                        } else {
+                            notification.show({ message: "Indent product quantity receive was unsuccessful.", showTime: startTime() }, "upload-error");
+                        }
+
+                    },
+                    error: function (err) {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                    }
+
+                });
+            }
+
+            $("#btn_app_indent_voucher").click(function(){
+                var kendoWindow = $("<div />").kendoWindow({
+                    actions: ["Close"],
+                    title: "Alert",
+                    resizable: false,
+                    width: "30%",
+                    modal: true,
+                    close:onWindowClose
+                });
+
+                msg = "Are you sure want to approve this voucher?";
+                var template = kendo.template($("#temp_win_indent_edit").html());
+                kendoWindow.data("kendoWindow").content(template).center().open();
+                document.documentElement.style.overflow = 'hidden';
+                document.body.scroll = "no";
+
+                kendoWindow.find("#btn_indent_noty_cancel").click(function () {
+                    kendoWindow.data("kendoWindow").close();
+                }).end();
+                kendoWindow.find("#btn_indent_noty_ok").click(function () {
+                    notification.show({ message: "Approving...", showTime: startTime() }, "upload-progress");
+                    $.ajax({
+                        url: '@Url.Action("IndentVoucherStatusChange", "Acquisition")',
+                        type: 'Post',
+                        data: { voucherId: '@(Model.VoucherId)', CreatedBy: userId, voucherStatus: 1 },
+                        success: function (data) {
+                            notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                            if (data != "Error") {
+                                notification.show({ message: "Indent has been successfully approved.", showTime: startTime() }, "upload-success");
+                                location.reload();
+
+                            } else {
+                                notification.show({ message: "Indent approved was unsuccessful.", showTime: startTime() }, "upload-error");
+                            }
+                        },
+                        error: function (err) {
+                            notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                            notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                        }
+
+                    });
+                    kendoWindow.data("kendoWindow").close();
+                }).end();
+            });
+        </script>

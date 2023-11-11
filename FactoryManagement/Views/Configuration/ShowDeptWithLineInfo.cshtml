@@ -1,0 +1,503 @@
+﻿@******************************** Created By Mabia Mishu (Date:17.09.2016) *********************************@
+@using FactoryManagement.Helpers
+@model FactoryManagement.ModelView.Configuration.DepartmentListModelView
+@{
+    ViewBag.Title = "Department Details";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    var backtolist = (Model.Displaytype == true) ? "true" : "false";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-gears fa-fwt"></i>
+            <span>Configuration</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Configuration/AllSiteInfo">All Site Info</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        @*<li>
+                <i class="fa fa-th-list"></i>
+                <a href="@Html.EncodedParam("ShowSiteInfoWithDeptList", "Configuration", new { siteId = Model.Id, IsDisplay = Model.IsDisplay }, null)">Site Details</a>
+            </li>*@
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="@Html.EncodedParam("ShowSiteInfoWithDeptList", "Configuration", new { siteId = Model.SiteId, IsDisplay = Model.IsInfo, }, null)">Site Details</a>
+            
+            <i class="fa fa-angle-right"></i>
+        </li>
+        @if (ViewBag.IsComposite == true)
+        {
+            <li>
+                <i class="fa fa-th-list"></i>
+                <a href="@Html.EncodedParam("ShowUnitWithDeptList", "Configuration", new { unitId = Model.UnitId, IsDisplay = Model.Displaytype, display = Model.IsInfo }, null)">Site Unit Details</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+        }
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="@Html.EncodedParam("ShowDeptWithLineInfo", "Configuration", new { deptId = Model.DeptId, display = Model.Displaytype, }, null)">Departement Details</a>
+        </li>
+    </ul>
+</div>
+<div class="portlet light bordered">
+    <div class="portlet-title">
+        <div class="caption font-green">
+            <i class="fa fa-info-circle font-green"></i>
+            <span class="caption-subject bold uppercase">Department Information</span>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-horizontal">
+            <div class="form-body">
+                @if (Model.DeptId > 0)
+                {
+                    <div id="divFor_dept_Info"></div>
+                    <script>
+                        $("#divFor_dept_Info").append('<div class="partial_loading_half"></div>');
+                        $("#divFor_dept_Info").load('@Url.Action("_ShowDeptDetails", "Configuration")?deptId=' +@Model.DeptId+'&isDisplay=true');
+                    </script>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<div id="divFor_Line_Info"></div>
+@if (Model.DeptId > 0 && Model.NumberOfLine > 0)
+{
+    <script>
+        $("#divFor_Line_Info").append('<div class="partial_loading_half"></div>');
+        $("#divFor_Line_Info").load('@Url.Action("_ShowAllLineInfoByDept", "Configuration")?deptId=' +@Model.DeptId +'&isDisplay='+ '@Model.Displaytype');
+    </script>
+}
+<div id="win_dept_edit"></div>
+<div id="Win_line_eidt"></div>
+<script id="temp_for_confirmation" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">#=message#</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_confirm_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_confirm_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script id="temp_alert_error" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">#=errmsg#</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_err_alert_ok"><span class="k-icon k-update"></span>OK</button>
+        </div>
+    </div>
+</script>
+<script>
+    var firstpress=true;
+    var SiteName='';
+    var DeptName='',Deptstatus;
+    var display='', displayInfo='',message='';
+    $(document).ready(function () {
+        $("#liForConfig").addClass('active');
+        $("#liForSiteList").addClass('sublistActive');
+        display='@Model.Displaytype';displayInfo='@Model.IsInfo';
+        if (parseInt('@(Model.SiteId)') > 0)
+        {
+            $("#top_header_link").append('<span>Configuration</span>'+
+                       '<span><i class="fa fa-angle-right fa-2x"></i></span>'+
+                       '<span><a href="/Configuration/AllSiteInfo"> All Site Info</a></span>'+
+                       '<span><i class="fa fa-angle-right fa-2x"></i></span>' +
+                       '<span><a href="/Configuration/AllSiteInfo"> Site Information</a> </span>'+
+                       '<span><i class="fa fa-angle-right fa-2x"></i></span>' +
+                       '<span class="current"> Dept. Details</span>'+
+                       '<span><a href="/Configuration/ShowSiteInfoWithDeptList?siteId=@Model.SiteId&IsDisplay=@backtolist"><i class="fa fa-reply"> Back</i></a></span>');
+        }
+        else
+        {
+            $("#top_header_link").append('<span>Configuration</span>'+
+                       '<span><i class="fa fa-angle-right fa-2x"></i></span>'+
+                       '<span><a href="/Configuration/AllSiteInfo"> All Site Info</a></span>'+
+                       '<span><i class="fa fa-angle-right fa-2x"></i></span>' +
+                       '<span> Site Information </span>'+
+                       '<span><i class="fa fa-angle-right fa-2x"></i></span>' +
+                       '<span><a href="/Configuration/ShowUnitWithDeptList?unitId=@Model.UnitId&IsDisplay=@ViewBag.Parent&display=@ViewBag.Page"> Site Unit Details </a></span>'+
+                       '<span><i class="fa fa-angle-right fa-2x"></i></span>' +
+                       '<span class="current"> Dept. Details</span>'+
+                       '<span><a href="/Configuration/ShowUnitWithDeptList?unitId=@Model.UnitId&IsDisplay=@ViewBag.Parent&display=@ViewBag.Page"><i class="fa fa-reply"> Back</i></a></span>');
+        }
+    });
+    function isNumber(e) {
+        e = (e) ? e : window.event;
+        var charCode = (e.which) ? e.which : e.keyCode;
+        if(firstpress && charCode==48){
+            firstpress=false;
+            return false;
+        }
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+        return true;
+    }
+    function isvalueNull(value){
+        firstpress=(value=='')?true:false;
+    }
+    function onDeptStatusChange(e) {
+        var dataItem = this.dataItem(e.item);
+        Deptstatus=dataItem.Value;
+    }
+
+    ////////////////////////////// Click of partial( Dept. Info) ////////////////////////////
+
+    $("#divFor_dept_Info").on("click","#btnForDefineLine",function(){
+        $("#lblForAdd").show();
+        $("#inputForAdd").show();
+    });
+    $("#divFor_dept_Info").on("click","#btnForAddLine",function(){
+        var validation = $("#inputForAdd").kendoValidator({
+            rules: {
+                LineNo: function (input) {
+                    if (input.is("[name=LineNumber]") && input.val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
+                maxLine:function (input) {
+                    if (input.is("[name=LineNumber]") && parseInt($("#LineNumber").val())>50) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            },
+            messages: {
+                LineNo: "Please enter line number",
+                maxLine:"Line number cannot be more than 50"
+            }
+        }).data("kendoValidator");
+        if (validation.validate()) {
+            location.href='@Url.Action("DefineLine", "Configuration")?deptId='+@Model.DeptId +'&lineNo='+$("#LineNumber").val();
+        }
+    });
+    $("#divFor_dept_Info").on("click","#btnForCancleLine",function(){
+        $("#lblForAdd").hide();
+        $("#inputForAdd").hide();
+        $("#inputForAdd").empty();
+        $("#inputForAdd").append('<div>'+
+            '<input input type="text" onkeypress="return isNumber(event)" onkeyup="isvalueNull(this.value)" class="k-textbox text-box single-line k-invalid" '+
+                   'name="LineNumber" id="LineNumber" maxlength="2" style="width:10%!important;height: 1.7em!important;" /> '+
+            '<span id="btnForAddLine"><i class="fa fa-check fa-2"></i></span> '+
+            '<span id="btnForCancleLine"><i class="fa fa-times fa-2"></i></span>'+
+        '</div>'+
+        '<span class="field-validation-valid text-danger" data-valmsg-for="LineNumber" data-valmsg-replace="true"></span>');
+    });
+
+    ///////////////////////////////////// Edit Dept /////////////////////////////////////
+    function showPartialViewforDeptEdit(){
+        $("#win_dept_edit").empty();
+        $("#win_dept_edit").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '30%',
+            title: 'Update Department Details'
+        });
+        $("#win_dept_edit").html('<div class="partial_loading_half"></div>');
+        var win_dept_edit = $("#win_dept_edit").data("kendoWindow");
+        win_dept_edit.refresh({ url: "/Configuration/DepartmentEditPopUp?deptId="+@Model.DeptId });
+        win_dept_edit.center().open();
+    }
+    function DeptUpdateSave(senddata){
+        $.ajax({
+            url: '@Url.Action("DepartmentCreateSave", "Configuration")',
+            type: 'Post',
+            data: senddata,
+            success: function (data) {
+                notification.hide();
+                notification.setOptions({autoHideAfter: 2000});
+                if (data !== "Error") {
+                    notification.show({message: "Department successfully updated .", showTime: startTime()}, "upload-success");
+                    $("#divFor_dept_Info").empty();
+                    $("#divFor_dept_Info").append('<div class="partial_loading_half"></div>');
+                    $("#divFor_dept_Info").load('@Url.Action("_ShowDeptDetails", "Configuration")?deptId=' +@Model.DeptId+'&isDisplay=true');
+                } else {
+                    notification.show({ message: "Department update unsuccessful .", showTime: startTime()}, "upload-error");
+                }
+            }
+        });
+    }
+    $("#divFor_dept_Info").on("click","#btnForDeptEdit",function(){
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width:"30%",
+            modal: true
+        });
+        message="Are you sure want to update this department information?";
+        var template = kendo.template($("#temp_for_confirmation").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+
+        kendoWindow.find("#btn_confirm_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_confirm_ok").click(function () {
+            showPartialViewforDeptEdit();
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+    });
+    $("#divFor_dept_Info").on("click", "#btnDeptEditSave", function () {
+        alert();
+    });
+    $("#divFor_dept_Info").on("click","#btnDeptEditCancel",function(){
+        $("#divFor_dept_Info").empty();
+        $("#divFor_dept_Info").append('<div class="partial_loading_half"></div>');
+        $("#divFor_dept_Info").load('@Url.Action("_ShowDeptDetails", "Configuration")?deptId=' +@Model.DeptId+'&isDisplay=true');
+    });
+
+    ////////////////////////////// Click of partial( line List) ////////////////////////////
+
+    function LineDelete(lineId,name){
+        notification.show({ message: "Deleting '" + name + "' Line...",showTime: startTime()}, "upload-progress");
+        @*$.ajax({
+            url: '@Url.Action("CheckDeptLineCount", "Configuration")',
+            type: 'Post',
+            data: { DeptId:@Model.DeptId,UserId: userId},
+            success: function (count) {*@
+        $.ajax({
+            url: '@Url.Action("RemoveLineFromDept", "Configuration")',
+            type: 'Post',
+            data: { LineId: lineId,DeptId:@Model.DeptId,SiteName:'@(Model.SiteName)',UserId: userId},
+            success: function (data) {
+                notification.hide();
+                notification.setOptions({autoHideAfter: 5000});
+                if(data === "Success"){
+                    notification.show({message: "Line '"+name+"' deletion was successful.", showTime: startTime()}, "upload-success");
+                    $("#divFor_dept_Info").empty();
+                    $("#divFor_dept_Info").append('<div class="partial_loading_half"></div>');
+                    $("#divFor_dept_Info").load('@Url.Action("_ShowDeptDetails", "Configuration")?deptId=' +@Model.DeptId+'&isDisplay=true');
+
+                    $("#divFor_Line_Info").empty();
+                    $("#divFor_Line_Info").append('<div class="partial_loading_half"></div>');
+                    $("#divFor_Line_Info").load('@Url.Action("_ShowAllLineInfoByDept", "Configuration")?deptId=' +@Model.DeptId);
+                }
+                else{
+                    notification.show({message: "Line '"+name+"' deletion was unsuccessful.", showTime: startTime()}, "upload-error");
+                }
+            }
+        });
+        // }
+        //});
+    }
+    $("#divFor_Line_Info").on("click",".btn_Line_Delete",function(e){
+        e.preventDefault();
+        var lineId=$(this).data("id");
+        var name=$(this).data("name");
+        var status=$(this).data("status");
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width:"30%",
+            modal: true,
+            close: onWindowClose
+        });
+        message="Are you sure want to delete this line from department?";
+        var template = kendo.template($("#temp_for_confirmation").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+        kendoWindow.find("#btn_confirm_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_confirm_ok").click(function () {
+            if(status == 0){
+                kendoWindow.data("kendoWindow").close();
+                LineDelete(lineId,name);
+            }else{
+                var kendoWindow2 = $("<div />").kendoWindow({
+                    actions: ["Close"],
+                    title: "Alert",
+                    resizable: false,
+                    width:"30%",
+                    modal: true,
+                    close: onWindowClose
+                });
+                errmsg="You can not delete this line.Because it is in use.";
+                var template2 = kendo.template($("#temp_alert_error").html());
+                kendoWindow2.data("kendoWindow").content(template2).center().open();
+                document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+                document.body.scroll = "no"; // ie only
+                kendoWindow2.find("#btn_err_alert_ok").click(function () {
+                    kendoWindow2.data("kendoWindow").close();
+                }).end();
+            }
+        }).end();
+    });
+    function LineEditFuc(lineId,count,Name,Acrm){
+        $("#divForDisplayLineInfo_"+lineId).hide();
+        $("#divForEditLineInfo_"+lineId).empty();
+        $("#divForEditLineInfo_"+lineId).append('<td class="col-md-1 col-sm-4 col-xs-8"><span style="margin-right:0.5em">'+count+' .</span>'+
+                '<input type="text" style="width:62%!important" class="k-textbox text-box single-line k-invalid" data-val-remote="exists" '+
+                'data-val-remote-additionalfields="*.LineName,*.LineId,*.DeptId"data-val-remote-type="Post" '+
+                'data-val-remote-url="/RemoteValidation/LineNameExist"'+
+                'value="'+Name+'" name="LineName" id="LineName_'+lineId+'" />'+
+                '<span class="field-validation-valid text-danger" data-valmsg-for="LineName_'+lineId+'" data-valmsg-replace="true"></span>'+
+                '</td>'+
+                '<td class="col-md-1 col-sm-3 col-xs-4">'+
+                '<input type="text" style="width:90%!important" class="k-textbox text-box single-line k-invalid" data-val-remote="exists"'+
+                'data-val-remote-additionalfields="*.LineAcronym,*.LineId,*.DeptId" data-val-remote-type="Post"'+
+                'data-val-remote-url="/RemoteValidation/LineAcronymExist"'+
+                'value="'+Acrm+'" name="LineAcronym" id="LineAcronym_'+lineId+'" />'+
+                '<span class="field-validation-valid text-danger" data-valmsg-for="LineAcronym_'+lineId+'" data-valmsg-replace="true"></span>'+
+                '</td>'+
+                 '<td>'+
+                     '<span class="btnUpdateForLineInfo" data-id="'+lineId+'"><i class="fa fa-check fa-2"></i></span> '+
+                     ' <span class="btnEditLineInfoCancle" data-id="'+lineId+'"><i class="fa fa-times fa-2"></i></span>'+
+                 '</td>');
+        $("#divForEditLineInfo_"+lineId).show();
+    }
+
+    $("#divFor_Line_Info").on("click",".btnUpdateForLineInfo",function(e){
+        e.preventDefault();
+        var lineId=$(this).data("id");
+        var linevalidation = $("#divForEditLineInfo_"+lineId).kendoValidator({
+            rules: {
+                remoteName: function (input) {
+                    var remoteAttr = input.attr("data-val-remote-url");
+                    if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                        return true;
+                    }
+                    var isInvalid;
+                    var data = {};
+                    var LineId = lineId;
+                    var LineName = $.trim($("#LineName_" + lineId).val());
+                    var deptId='@Model.DeptId';
+                    if (input.attr('name') === "LineName") {
+                        data = { LineId: LineId, LineName: LineName,DeptId:deptId };
+                    }
+                    $.ajax({
+                        url: remoteAttr,
+                        mode: "abort",
+                        port: "validate" + input.attr('name'),
+                        dataType: "json",
+                        type: input.attr("data-val-remote-type"),
+                        data: data,
+                        async: false,
+                        success: function (response) {
+                            isInvalid = response;
+                            if (isInvalid == true) {
+                                isInvalid = true;
+                            }
+                            else {
+                                isInvalid = false;
+                            }
+                        }
+                    });
+                    return isInvalid;
+                },
+
+                remoteAcronym: function (input) {
+                    var remoteAttr = input.attr("data-val-remote-url");
+                    if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                        return true;
+                    }
+                    var isInvalid;
+                    var data = {};
+                    var LineId = lineId;
+                    var LineAcronym = $.trim($("#LineAcronym_" + lineId).val());
+                    var deptId='@Model.DeptId';
+                    if (input.attr('name') === "LineAcronym") {
+                        data = { LineId: LineId, LineAcronym: LineAcronym,DeptId:deptId  };
+                    }
+                    $.ajax({
+                        url: remoteAttr,
+                        mode: "abort",
+                        port: "validate" + input.attr('name'),
+                        dataType: "json",
+                        type: input.attr("data-val-remote-type"),
+                        data: data,
+                        async: false,
+                        success: function (response) {
+                            isInvalid = response;
+                            if (isInvalid == true) {
+                                isInvalid = true;
+                            }
+                            else {
+                                isInvalid = false;
+                            }
+                        }
+                    });
+                    return isInvalid;
+                },
+                lineName: function (input) {
+                    if (input.is("[name=LineName]") && $("#LineName_" + lineId).val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
+                lineAcronym: function (input) {
+                    if (input.is("[name=LineAcronym]") && $("#LineAcronym_" + lineId).val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+
+            },
+            messages: {
+                remoteName:function (input) {return input.data('val-remote');},
+                remoteAcronym: function (input) {return input.data('val-remote');},
+                lineName: "*",
+                lineAcronym:"*",
+            }
+        }).data("kendoValidator");
+
+        if (linevalidation.validate()) {
+            notification.show({ message: "Updating Line Information...", showTime: startTime() }, "upload-progress");
+            var senddata = { LineId: lineId, LineName: $("#LineName_" + lineId).val(), LineAcronym: $("#LineAcronym_" + lineId).val(),
+                DeptName:DeptName,SiteName:'@(Model.SiteName)', CreatedBy: userId };
+            $.ajax({
+                url: '@Url.Action("UpdateLineInfo", "Configuration")',
+                type: 'Post',
+                data: senddata,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({autoHideAfter: 2000});
+                    if(data === "Success"){
+                        notification.show({message: "Line successfully updated", showTime: startTime()}, "upload-success");
+                        $("#divFor_Line_Info").empty();
+                        $("#divFor_Line_Info").append('<div class="partial_loading_half"></div>');
+                        $("#divFor_Line_Info").load('@Url.Action("_ShowAllLineInfoByDept", "Configuration")?deptId=' +@Model.DeptId);
+                    }else{
+                        notification.show({message: "Line update unsuccessful", showTime: startTime()}, "upload-error");
+                    }
+                }
+            });
+        }
+    });
+    $("#divFor_Line_Info").on("click",".btnEditLineInfoCancle",function(e){
+        e.preventDefault();
+        var lineId=$(this).data("id");
+        $("#divForEditLineInfo_"+lineId).hide();
+        $("#divForDisplayLineInfo_"+lineId).show();
+    });
+    function reloadUnit() {
+    }
+    $("#divFor_Line_Info").on("click", ".btn_Line_Edit", function (e) {
+        e.preventDefault();
+        var lineId, count, Name, Acrm;
+        var id = $(this).data("id");
+        location.href = "/Configuration/ShowMachineWithLine?q=" + getDataEncrypted("LineId=" + id );
+    });
+
+</script>
+
+
+
+
+

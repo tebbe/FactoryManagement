@@ -1,0 +1,495 @@
+﻿@******************************** Created By Jerin Jahan (Date:25.10.2016) *********************************@
+@model FactoryManagement.ModelView.Accounting.AccountGroupModelView
+
+<div class="k-edit-form-container col-xs-12" style="margin-bottom:4%;" id="Div_For_Acc_Grp_Add">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        @Html.HiddenFor(m => m.AccId)
+        @Html.HiddenFor(m => m.CreatedBy)
+        @Html.HiddenFor(m => m.AllAssignUserId)
+        @Html.HiddenFor(m => m.UnitId)
+        @Html.HiddenFor(m => m.SiteId)
+        <div class="col-xs-12" style="float:left;">
+            <div class="editor-label"><label for="AccountName">Account Name</label></div>
+            <div class="editor-field">
+                @Html.EditorFor(model => model.AccountName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                @Html.ValidationMessageFor(model => model.AccountName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-xs-12" style="float:left;">
+            <div class="editor-label"><label for="AccountName">Account Cash Flow Type</label></div>
+            <div class="editor-field">
+                @Html.RadioButtonFor(m => m.Acc_CashType, "1") Payable
+                @Html.RadioButtonFor(m => m.Acc_CashType, "2") Receivable
+                @Html.RadioButtonFor(m => m.Acc_CashType, "3") Both
+            </div>
+        </div>
+        <div id="Div_ForPay" style="display:none;">
+            <div class="col-xs-12" style="float:left;">
+                <div class="editor-label"><label for="Acc_Type">Account Type</label></div>
+                <div class="editor-field">
+                    @(Html.Kendo().DropDownListFor(model => model.Acc_Type)
+                    .OptionLabel("--Select One Type--")
+                    .BindTo(ViewBag.Acc_Type as SelectList)
+                    .Events(e => e.Select("onAccountType"))
+                    .HtmlAttributes(new { style = "width:100%" })
+                    )
+                    @Html.ValidationMessageFor(model => model.Acc_Type, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div id="Div_Appn_Site"></div>
+            <div class="col-xs-12" style="float:left;">
+                <div class="editor-label"><label for="WorkingBalance">Working Balance</label></div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.WorkingBalance, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                    @Html.ValidationMessageFor(model => model.WorkingBalance, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-xs-12" style="float:left;">
+                <div class="editor-label"><label for="TotalCreditLimit">Total Credit Limit</label></div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.TotalCreditLimit, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                    @Html.ValidationMessageFor(model => model.TotalCreditLimit, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-xs-12" style="float:left;">
+                <div class="editor-label"><label for="TransactionHigestAmount">Transaction Highest Amount(Per Month)</label></div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.TransactionHigestAmount, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                    @Html.ValidationMessageFor(model => model.TransactionHigestAmount, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="col-xs-12" style="float:left;">
+                <div class="editor-label"><label for="NoOfTranPerMonth">No.Of Transaction(Per Month)</label></div>
+                <div class="editor-field">
+                    @Html.EditorFor(model => model.NoOfTranPerMonth, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                    @Html.ValidationMessageFor(model => model.NoOfTranPerMonth, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12" style="float:left;" id="Div_ForRcv">
+            <div class="editor-label"><label for="Balance">Current Balance</label></div>
+            <div class="editor-field">
+                @Html.EditorFor(model => model.Balance, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                @Html.ValidationMessageFor(model => model.Balance, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div id="Div_Appn_Revenue"></div>
+        <div class="col-xs-12" style="float:left;">
+            <div class="editor-label"><label for="Description">Description</label></div>
+            <div class="editor-field">
+                <textarea class="form-control k-textbox valid k-valid" cols="65" id="Description" name="Description" rows="5"></textarea>
+            </div>
+        </div>
+        <div class="k-edit-buttons k-state-default col-xs-11">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_AccGrp_Update"><span class="k-icon k-update"></span>Update</button>
+            <button type="reset" class="k-button k-button-icontext k-grid-cancel" id="btn_edit_AccGrp_Cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    
+</div>
+<script>
+    $(document).ready(function () {
+        if(@Model.Acc_CashType == 1)
+        {
+            $("#Div_ForRcv").hide();
+            $("#Div_ForPay").show();
+            $("#Div_Appn_Revenue").hide();
+            $("#Div_Appn_Revenue").empty();
+        }
+        else if(@Model.Acc_CashType == 2)
+        {
+            $("#Div_Appn_Revenue").empty();
+            $("#Div_ForPay").hide();
+            $("#Div_ForRcv").show();
+            $("#Div_Appn_Revenue").append('<div class="col-xs-12" style="float:left;">' +
+                   '<div class="editor-label"><label for="SiteName">Site/Unit/Dept</label></div>' +
+                   '<div class="editor-field">' +
+                       '<input id="site_Revenue" name="site_Revenue" style="width:100%;" />' +
+                       '<span class="field-validation-valid text-danger" data-valmsg-for="site_Revenue" data-valmsg-replace="true"></span></div>' +
+                   '</div>' +
+               '</div>');
+            var id=0;
+            if('@Model.SiteId' > 0)
+            {
+                id = '@Model.SiteId' +'-s';
+            }
+            else if('@Model.UnitId' > 0 )
+            {
+                id = @Model.UnitId + '-u';
+            }
+            else if('@Model.DeptId' > 0 )
+            {
+                id = @Model.DeptId+'-d';
+            }
+            $("#site_Revenue").kendoDropDownList({
+                dataTextField: "Name",
+                dataValueField: "IdWithChar",
+                value: id,
+                optionLabel: "--Select One Site--",
+                dataSource: { transport: { read: { url: "@Url.Action("AllSiteListRevenue", "Accounting")", type: "GET" } } }
+            });
+            $("#Div_Appn_Revenue").show();
+        }
+        else if(@Model.Acc_CashType == 3)
+        {
+            $("#Div_Appn_Revenue").empty();
+            $("#Div_ForPay").show();
+            $("#Div_ForRcv").show();
+            $("#Div_Appn_Revenue").show();
+        }
+
+        if( $("#UnitId").val() > 0)
+        {
+            $("#Div_salary_unit").append('<div class="col-xs-12" style="float:left;">' +
+               '<div class="editor-label"><label for="UnitName">Unit Name</label></div>' +
+               '<div class="editor-field">'+
+                   '<label id="unit_salary" style="width:100%;"></label>' +
+                   '<span class="field-validation-valid text-danger" data-valmsg-for="site_salary" data-valmsg-replace="true"></span></div>' +
+               '</div>' +
+            '</div>');
+            var id =0;
+            if($("#UnitId").val() > 0)
+            {
+                id='@Model.UnitId';
+            }
+            $("#unit_salary").kendoDropDownList({
+                dataValueField: "UnitId",
+                dataTextField: "UnitName",
+                value:id,
+                optionLabel: "--Select One--",
+                change: onSalaryUnitChange,
+                dataSource: {
+                    transport: { read: { url: "@Url.Action("AllUnitList", "Accounting")?siteId=" + $("#SiteId").val(), type: "GET" } }
+                }
+            });
+        }
+
+        $("input[type='radio'][name='Acc_CashType']").change(function () {
+            if($("input[name='Acc_CashType']:checked").val() == '1') {
+                $("#Div_ForRcv").hide();
+                $("#Div_ForPay").show();
+                $("#Div_Appn_Revenue").hide();
+                $("#Div_Appn_Revenue").empty();
+            }
+            if ($("input[name='Acc_CashType']:checked").val() == '2') {
+                $("#Div_Appn_Revenue").empty();
+                $("#Div_ForPay").hide();
+                $("#Div_ForRcv").show();
+                $("#Div_Appn_Revenue").append('<div class="col-xs-12" style="float:left;">' +
+                       '<div class="editor-label"><label for="SiteName">Site/Unit/Dept</label></div>' +
+                       '<div class="editor-field">' +
+                           '<input id="site_Revenue" name="site_Revenue" style="width:100%;" />' +
+                           '<span class="field-validation-valid text-danger" data-valmsg-for="site_Revenue" data-valmsg-replace="true"></span></div>' +
+                       '</div>' +
+                   '</div>');
+                var id=0;
+                if('@Model.SiteId' !=null )
+                {
+                    id = '@Model.SiteId' +'-s';
+                }
+                else if('@Model.UnitId'!= null )
+                {
+                    id = @Model.UnitId+'-u';
+                }
+                else if('@Model.DeptId' !=null )
+                {
+                    id = @Model.DeptId+'-d';
+                }
+                $("#site_Revenue").kendoDropDownList({
+                    dataTextField: "Name",
+                    dataValueField: "IdWithChar",
+                    value: id,
+                    optionLabel: "--Select One Site--",
+                    dataSource: { transport: { read: { url: "@Url.Action("AllSiteListRevenue", "Accounting")", type: "GET" } } }
+                });
+                $("#Div_Appn_Revenue").show();
+            }
+
+            if ($("input[name='Acc_CashType']:checked").val() == '3') {
+                $("#Div_Appn_Revenue").empty();
+                $("#Div_ForPay").show();
+                $("#Div_ForRcv").show();
+                $("#Div_Appn_Revenue").show();
+
+            }
+        });
+
+        if(@Model.Acc_Type == 1)
+        {
+            $("#Div_Appn_Site").empty();
+            $("#Div_Appn_Site").append('<div class="col-xs-12" style="float:left;">'+
+               '<div class="editor-label"><label for="SiteName">Site Name</label></div>' +
+               '<div class="editor-field">'+
+                   '<label id="site_salary" style="width:100%;"></label>' +
+                   '<span class="field-validation-valid text-danger" data-valmsg-for="site_salary" data-valmsg-replace="true"></span></div>' +
+               '</div>' +
+           '</div><div id="Div_salary_unit"></div><div class="col-xs-12" style="float:left;">' +
+               '<div class="editor-label"><label for="User">User</label></div>' +
+               '<div class="editor-field">' +
+                   '<label id="customers" style="width:100%;"></label>' +
+                   '<span class="field-validation-valid text-danger" data-valmsg-for="customers" data-valmsg-replace="true"></span></div>' +
+               '</div>' +
+           '</div>');
+            var id = '@Model.SiteId';
+            if(id==null)
+            {
+                id=0;
+            }
+            $("#site_salary").kendoDropDownList({
+                dataTextField: "SiteName",
+                dataValueField: "SiteId",
+                value: id,
+                change: onSalarySiteChange,
+                optionLabel: "--Select One Site--",
+                dataSource: { transport: { read: { url: "@Url.Action("AllSiteList", "Accounting")", type: "GET" } } }
+            });
+
+            var id = new Array();
+            id = '@Model.AllAssignUserId'.split(',');
+            $("#customers").kendoMultiSelect({
+                placeholder: "Select users...",
+                dataTextField: "Username",
+                dataValueField: "UserId",
+                value: id,
+                headerTemplate: '<div class="dropdown-header k-widget k-header"><span>Photo</span><span>User info</span></div>',
+                itemTemplate: '<span class="k-state-default" style="background-image: url(\'/Images/UserPicture/thumb/#: data.Picture #\')"></span>' +
+                          '<span class="k-state-default"><h3>#: data.Username #</h3><p>#: data.UserEmpId #      #:data.UserType#</p></span>',
+                tagTemplate: '<span class="selected-value" style="background-image: url(\'/Images/UserPicture/thumb/#: data.Picture #\')"></span><span>#:data.Username#</span>',
+
+                dataSource: { transport: { read: { url: "@Url.Action("AllUserList", "Accounting")?SiteId=0", type: "GET" } } }
+            });
+
+        }
+        else if (@Model.Acc_Type == 2) {
+            $("#Div_Appn_Site").empty();
+            $("#Div_Appn_Site").append('<div class="col-xs-12" style="float:left;">'+
+              '<div class="editor-label"><label for="SiteName">Site Name</label></div>' +
+              '<div class="editor-field">'+
+                  '<label id="site_utility" style="width:100%;"></label>' +
+                  '<span class="field-validation-valid text-danger" data-valmsg-for="site_utility" data-valmsg-replace="true"></span></div>' +
+              '</div>' +
+          '</div>');
+            id = '@Model.SiteId';
+            if(id==null)
+            {
+                id=0;
+            }
+            $("#site_utility").kendoDropDownList({
+                dataTextField: "SiteName",
+                dataValueField: "SiteId",
+                value: id,
+                optionLabel: "--Select One Site--",
+                dataSource: { transport: { read: { url: "@Url.Action("AllSiteList", "Accounting")", type: "GET" } } }
+            });
+
+        }
+        else if (@Model.Acc_Type == 3) {
+            $("#Div_Appn_Site").empty();
+            $("#Div_Appn_Site").append('<div class="col-xs-12" style="float:left;">'+
+              '<div class="editor-label"><label for="SiteName">Dept/Store/Ware</label></div>' +
+              '<div class="editor-field">'+
+                  '<label name="site_Cash" id="site_Cash" style="width:100%;"></label>' +
+                  '<span class="field-validation-valid text-danger" data-valmsg-for="site_Cash" data-valmsg-replace="true"></span></div>' +
+              '</div>' +
+             '</div>');
+            var id = 0;
+            if('@Model.DeptId' >0 )
+            {
+                id = '@Model.DeptId' +'-d';
+            }
+            else if('@Model.StoreId'>0)
+            {
+                id = @Model.StoreId+'-d';
+            }
+            else if('@Model.WareId' >0 )
+            {
+                id = @Model.WareId+'-w';
+            }
+            $("#site_Cash").kendoMultiSelect({
+                placeholder: "Type dept/store/warehouse name....",
+                dataTextField: "Name",
+                value: id,
+                dataValueField: "IdWithChar",
+                dataSource: { transport: { read: { url: "@Url.Action("AllStoreWareDept", "Accounting")?", type: "GET" } } },
+
+            });
+        }
+    });
+
+
+
+    var validations = $("#Div_For_Acc_Grp_Add").kendoValidator({
+        rules: {
+            AccType: function (input) {
+                if (input.is("[name=Acc_Type]") && $("#Acc_Type").val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            WorkingBalance: function (input) {
+                if (input.is("[name=WorkingBalance]") && $("#WorkingBalance").val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            HighestAmnt: function (input) {
+                if (input.is("[name=TransactionHigestAmount]") && $("#TransactionHigestAmount").val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            NoOfTranPerMonth: function (input) {
+                if (input.is("[name=NoOfTranPerMonth]") && $("#NoOfTranPerMonth").val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            HigestAmount: function (input) {
+                if (input.is("[name=TransactionHigestAmount]") && $("#TransactionHigestAmount").val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            NoOfTranPerMonth: function (input) {
+                if (input.is("[name=NoOfTranPerMonth]") &&  $("#NoOfTranPerMonth").val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Balance: function (input) {
+                if (input.is("[name=Balance]") && $("#Balance").val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            site_Revenue: function (input) {
+                if (input.is("[name=site_Revenue]") && $("#site_Revenue").val() < 1) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            site_cash: function (i) {
+                console.log(i);
+                if(i.is("#site_Cash")) {
+                    alert("I m in");
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+
+
+        },
+        messages: {
+            AccType: "Please select one type",
+            WorkingBalance: "Please enter balance",
+            HighestAmnt: "Please enter balance",
+            NoOfTranPerMonth: "Please enter number",
+            HigestAmount: "Please enter amount",
+            NoOfTranPerMonth: "Please enter per month transaction number",
+            Balance: "Please enter balance",
+            site_Revenue: "Please enter balance",
+            site_cash: "Invalid Arguments"
+        }
+    }).data("kendoValidator");
+
+    $("#btn_edit_AccGrp_Cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+
+    $("#btn_AccGrp_Update").click(function(){
+        if (validations.validate())
+        {
+            notification.show({ message: "Adding new account group...", showTime: startTime() }, "upload-progress");
+            var senddata;
+            if($("input[name='Acc_CashType']:checked").val() == '1'){
+                senddata = {
+                    AccountName: $("#AccountName").val(), Acc_CashType: 1, AccId: $("#AccId").val(),
+                    Acc_Type: $("#Acc_Type").val(), Balance: $("#WorkingBalance").val(),
+                    TotalCreditLimit: $("#TotalCreditLimit").val(),
+                    TransactionHigestAmount: $("#TransactionHigestAmount").val(),
+                    NoOfTranPerMonth: $("#NoOfTranPerMonth").val(),
+                    Description: $("#Description").val(), UpdatedBy: userId,
+                    AllAssignUserId: $("#AllAssignUserId").val()
+                };
+                if ($("#Acc_Type").val() === "1") {
+                    senddata.AllUserId = $("#customers").data("kendoMultiSelect").value().join(",");
+                    senddata.SiteId = $("#site_salary").val();
+                    senddata.UnitId = UnitSalary;
+                } else if ($("#Acc_Type").val() === "2") {
+                    senddata.SiteId = $("#site_utility").val();
+                } else if ($("#Acc_Type").val() === "3") {
+                    senddata.AllLocationId = $("#site_Cash").data("kendoMultiSelect").value().join(",");
+                }
+            }
+            else if($("input[name='Acc_CashType']:checked").val() == '2')
+            {
+                var selectedValue = $("#site_Revenue").val();
+
+                senddata = {
+                    AccountName: $("#AccountName").val(), Acc_CashType: 2,
+                    AccId: $("#AccId").val(),
+                    Balance: $("#Balance").val(),
+                    Description: $("#Description").val(), UpdatedBy: userId
+                };
+                if (selectedValue.split('-')[1] === 's') {
+                    senddata.SiteId = selectedValue.split('-')[0];
+                } else if (selectedValue.split('-')[1] === 'u') {
+                    senddata.UnitId = selectedValue.split('-')[0];
+                } else {
+                    senddata.DeptId = selectedValue.split('-')[0];
+                }
+            }
+            else if($("input[name='Acc_CashType']:checked").val() == '3')
+            {
+                senddata = {
+                    AccountName: $("#AccountName").val(), Acc_CashType: 1,
+                    Acc_Type: $("#Acc_Type").val(), Balance: $("#WorkingBalance").val(),
+                    TotalCreditLimit: $("#TotalCreditLimit").val(),
+                    TransactionHigestAmount: $("#TransactionHigestAmount").val(),
+                    NoOfTranPerMonth: $("#NoOfTranPerMonth").val(),
+                    Description: $("#Description").val(), CreatedBy: userId
+                };
+                if ($("#Acc_Type").val() === "1") {
+                    senddata.AllUserId = $("#customers").data("kendoMultiSelect").value().join(",");
+                    senddata.SiteId = $("#site_salary").val();
+                    senddata.UnitId = UnitSalary;
+                } else if ($("#Acc_Type").val() === "2") {
+                    senddata.SiteId = $("#site_utility").val();
+                } else if ($("#Acc_Type").val() === "3") {
+                    senddata.AllLocationId = $("#site_Cash").data("kendoMultiSelect").value().join(",");
+                }
+            }
+
+            $.ajax({
+                url: '@Url.Action("UpdateAccGroup", "Accounting")',
+                type: 'Post',
+                data: senddata,
+                success: function (data) {
+                    $("#btn_AccGrp_Update").closest(".k-window-content").data("kendoWindow").close();
+
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 2000 });
+
+                    if (data === "Error") {
+                        notification.show({ message: "Account group update unsuccessful", showTime: startTime() }, "upload-error");
+                    } else {
+                        notification.show({ message: "Account group successfully created", showTime: startTime() }, "upload-success");
+
+                        $("#Div_Acc_Group").empty();
+                        $("#Div_Acc_Group").append('<div class="loading_partial"></div>');
+                        $("#Div_Acc_Group").show();
+                        $("#Div_Acc_Group").load('@Url.Action("_ShowAllAcc_Group", "Accounting")');
+                    }
+                }
+            });
+        }
+    });
+</script>

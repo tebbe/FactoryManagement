@@ -1,0 +1,21 @@
+﻿
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="divforPresentAddressEdit">
+    <div id="edit_user_present_address"></div>
+    <div class="k-edit-buttons k-state-default">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnPresentAddressUpdate"><span class="k-icon k-update"></span>Update</button>
+        <button type="reset" class="k-button k-button-icontext k-grid-update" id="btn_RefreshPresentAddress"><span class="k-icon k-i-refresh"></span>Refresh</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_CancelPresentAddress"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#edit_user_present_address").load('@Url.Action("EditPresentAddress", "HumanResource")?UserId=' + '@ViewBag.UserId');
+    });
+    $("#btn_RefreshPresentAddress").click(function () {
+        $("#edit_user_present_address").empty();
+        $("#edit_user_present_address").append('<div class="partial_loading_half"></div>');
+        $("#edit_user_present_address").load('@Url.Action("EditPresentAddress", "HumanResource")?UserId=' + '@ViewBag.UserId');
+        $("#edit_user_present_address").show();
+    })
+</script>

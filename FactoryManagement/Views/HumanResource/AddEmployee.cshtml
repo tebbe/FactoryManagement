@@ -1,0 +1,1050 @@
+﻿@***********************************Created By : Tasnim Tuli (12.7.2016)**************************************@
+
+@model FactoryManagement.ModelView.HR.UserInformationModelView
+
+@{
+    ViewBag.Title = "AddEmployee";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+<link href="~/Scripts/intl-tel-input-master/build/css/intlTelInput.css" rel="stylesheet" />
+
+@Html.HiddenFor(m => m.UserId)
+@Html.HiddenFor(m => m.PictureOriginalName)
+
+
+@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+<h3 class="page-title">
+   Add New <small>Employee</small>
+</h3>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-users fa-fwt"></i>
+            <span>Human Resource</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/HumanResource/AllUserLists">Employee/s</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-plus" aria-hidden="true"></i>
+            <a href="/HumanResource/AddEmployee"> Add New Employee</a>
+        </li>
+     
+    </ul>
+</div>
+<div class="portlet light bordered">
+    <div class="portlet-title">
+        <div class="caption font-green">
+            <i class="fa fa-plus-circle font-green"></i>
+            <span class="caption-subject bold uppercase">Add New Employee</span>
+        </div>
+    </div>
+    <div class="portlet-body">
+       <div class="row">
+           <div class="col-sm-12 row" id="Div_Add_Employee">
+               <div class="form-horizontal form-widgets">
+                   <div class="form-horizontal form-widgets col-sm-6">
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.Picture, "Upload User Picture", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-4 col-sm-5 col-xs-8 divForPic" id="divForPic-0">
+                               <span id="UserImgClose-0" style="display:none;">
+                                   <img src="/Content/Icon/modal_close.png" class="previewImgClose" id="UserImgClose-0" data-count="0" />
+                               </span>
+                               <div id="imgPreview-0" class="imgPreview"></div>
+                               <div id="imgUpload-0" class="image-uploader">
+                                   <input type="file" name="files" id="file-0" class="inputfile inputfile-4" data-count="0" style="display:none;" />
+                                   <label for="file-0" id="lbl-0" class="lblForPics">
+                                       <span style="font-size: 26px;padding-top:1em;display:block;" class="lbl_Span_plus">+</span>
+                                       <span style="font-size: 15px;font-weight:bold;">Add Photos</span>
+                                   </label>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+                   <div class="form-horizontal form-widgets col-sm-6"></div>
+                   <div class="clearfix"></div>
+               </div>
+               <br />
+               <div class="form-horizontal form-widgets">
+                   <h4 class="ra-well-title" style="font-size: 1.5em!important;">Personal Information</h4>
+                   <div class="form-horizontal form-widgets col-sm-6">
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.Title, "Title", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @(Html.Kendo().DropDownListFor(model => model.Title)
+                              .OptionLabel("--Select One--")
+                              .BindTo(ViewBag.TitleId)
+                              .HtmlAttributes(new { style = "width:100%" })
+                               )
+                               @Html.ValidationMessageFor(model => model.Title, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.MiddleName, "Middle Name", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @Html.EditorFor(model => model.MiddleName, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                               @Html.ValidationMessageFor(model => model.MiddleName, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.DateOfBirth, "Date of Birth", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @(Html.Kendo().DatePickerFor(model => model.DateOfBirth).Format("MM/dd/yyyy")
+                        .ParseFormats(new List<string>()
+                        {
+                            "dd/MM/yyyy",
+                            "dd/MM/yy",
+                            "dd MMM yyyy",
+                            "MM-dd-yyyy",
+                            "dd-MMM-yyyy",
+                            "dd-MM-yyyy",
+                            "dd-MM-yy"
+                        })
+                        .HtmlAttributes(new { style = "width:100%" }))
+                               @Html.ValidationMessageFor(model => model.DateOfBirth, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.Gender, "Gender", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @(Html.Kendo().DropDownList()
+                       .Name("Gender")
+                       .DataTextField("Text")
+                       .DataValueField("Value")
+                       .OptionLabel("--Select One--")
+                       .HtmlAttributes(new { style = "width:100%" })
+                       .BindTo(new List<SelectListItem>() {
+                          new SelectListItem() {
+                              Text = "Male",
+                              Value = "1"
+                          },
+                          new SelectListItem() {
+                              Text = "Female",
+                              Value = "2"
+                          },
+                          new SelectListItem() {
+                              Text = "Other",
+                              Value = "3"
+                          },
+                      })
+                               )
+                               @Html.ValidationMessageFor(model => model.Gender, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.NationalId, "National Id No", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @Html.EditorFor(model => model.NationalId, new { htmlAttributes = new { @class = "form-control k-textbox", @type = "tel" } })
+                               @Html.ValidationMessageFor(model => model.NationalId, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.NationalIdBackImg, "National Id Back Image", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-4 col-sm-5 col-xs-8 divForPic" id="divForPic-2">
+                               <span id="UserImgClose-2" style="display:none;">
+                                   <img src="/Content/Icon/modal_close.png" class="previewImgClose" id="UserImgClose-2" data-count="2" />
+                               </span>
+                               <div id="imgPreview-2" class="imgPreview"></div>
+                               <div id="imgUpload-2" class="image-uploader">
+                                   <input type="file" name="files" id="file-2" class="inputfile inputfile-4" data-count="2" style="display:none;" />
+                                   <label for="file-2" id="lbl-2" class="lblForPics">
+                                       <span style="font-size: 26px;padding-top:1em;display:block;" class="lbl_Span_plus">+</span>
+                                       <span style="font-size: 15px;font-weight:bold;">Add Photos</span>
+                                   </label>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+                   <div class="form-horizontal form-widgets col-sm-6">
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.FirstName, "First Name", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @Html.EditorFor(model => model.FirstName, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                               @Html.ValidationMessageFor(model => model.FirstName, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.LastName, "Last Name", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @Html.EditorFor(model => model.LastName, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                               @Html.ValidationMessageFor(model => model.LastName, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.Religion, "Religion", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @(Html.Kendo().DropDownListFor(model => model.Religion)
+                              .Name("Religion")
+                              .OptionLabel("--Select Religion--")
+                              .BindTo(ViewBag.Religion)
+                              .HtmlAttributes(new { style = "width:100%" })
+                               )
+                               @Html.ValidationMessageFor(model => model.Religion, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.Nationality, "National", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @(Html.Kendo().DropDownListFor(model => model.Nationality)
+                              .OptionLabel("--Select Country--")
+                              .BindTo(ViewBag.CountryId)
+                              .HtmlAttributes(new { style = "width:100%" })
+                               )
+                               @Html.ValidationMessageFor(model => model.Nationality, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.NationalIdFontImg, "National Id Front Image", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-4 col-sm-5 col-xs-8 divForPic" id="divForPic-1">
+                               <span id="UserImgClose-1" style="display:none;">
+                                   <img src="/Content/Icon/modal_close.png" class="previewImgClose" id="UserImgClose-1" data-count="1" />
+                               </span>
+                               <div id="imgPreview-1" class="imgPreview"></div>
+                               <div id="imgUpload-1" class="image-uploader">
+                                   <input type="file" name="files" id="file-1" class="inputfile inputfile-4" data-count="1" style="display:none;" />
+                                   <label for="file-1" id="lbl-1" class="lblForPics">
+                                       <span style="font-size: 26px;padding-top:1em;display:block;" class="lbl_Span_plus">+</span>
+                                       <span style="font-size: 15px;font-weight:bold;">Add Photos</span>
+                                   </label>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+                   <div class="clearfix"></div>
+               </div>
+               <br />
+               <div class="form-horizontal form-widgets">
+                   <h4 class="ra-well-title" style="font-size: 1.5em!important;">Company Information</h4>
+                   <div class="form-horizontal form-widgets col-sm-6">
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.UserType, "User Type", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @(Html.Kendo().DropDownList()
+                       .Name("UserType")
+                       .DataTextField("Text")
+                       .DataValueField("Value")
+                       .OptionLabel("--Select One User Type--")
+                       .Events(e => e.Change("onChangeUserType"))
+                       .HtmlAttributes(new { style = "width:100%" })
+                       .BindTo(new List<SelectListItem>() {
+                          new SelectListItem() {
+                              Text = "User",
+                              Value = "1"
+                          },
+                          new SelectListItem() {
+                              Text = "Labour",
+                              Value = "2"
+                          },
+                      })
+                               )
+                               @Html.ValidationMessageFor(model => model.UserType, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.EmpId, "Employee Id", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @Html.EditorFor(model => model.EmpId, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                               @Html.ValidationMessageFor(model => model.EmpId, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.SiteId, "Site", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @(Html.Kendo().DropDownListFor(model => model.SiteId)
+                          .DataTextField("SiteName")
+                          .DataValueField("Id")
+                          .OptionLabel("--Select Site--")
+                          .Events(e => e.Select("onSiteSelect"))
+                          .BindTo(ViewBag.SiteId)
+                          .HtmlAttributes(new { style = "width:100%" })
+                               )
+                               @Html.ValidationMessageFor(model => model.SiteId, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div id="divForUnit"></div>
+                       <div id="divForDepartment"></div>
+                       <div id="divForLine"></div>
+                       <div id="divForMachine"></div>
+                   </div>
+                   <div class="form-horizontal form-widgets col-sm-6">
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.DesignationId, "Designation", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @(Html.Kendo().DropDownListFor(model => model.DesignationId).BindTo(ViewBag.DesignationId).OptionLabel("--Select One--").DataTextField("Text").HtmlAttributes(new { @style = "width:100%;" }))
+                               @Html.ValidationMessageFor(model => model.DesignationId, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.JoinDate, "Join Date", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @(Html.Kendo().DatePickerFor(model => model.JoinDate).Format("MM/dd/yyyy")
+                        .ParseFormats(new List<string>()
+                        {
+                            "dd/MM/yyyy",
+                            "dd/MM/yy",
+                            "dd MMM yyyy",
+                            "MM-dd-yyyy",
+                            "dd-MMM-yyyy",
+                            "dd-MM-yyyy",
+                            "dd-MM-yy"
+                        })
+                        .HtmlAttributes(new { style = "width:100%" }))
+                               @Html.ValidationMessageFor(model => model.JoinDate, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                   </div>
+                   <div class="clearfix"></div>
+               </div>
+               <br />
+               <div class="form-horizontal form-widgets">
+                   <h4 class="ra-well-title" style="font-size: 1.5em!important;">Identification Card</h4>
+                   <div class="form-horizontal form-widgets col-sm-6">
+                       <div class="form-group">
+                           <label class="control-label col-md-4 col-sm-5 col-xs-12">Smart Card Id</label>
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @Html.EditorFor(model => model.SmartCardId, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                               @Html.ValidationMessageFor(model => model.SmartCardId, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                   </div>
+                   <div class="form-horizontal form-widgets col-sm-6">
+                       <div class="form-group">
+                           <label class="control-label col-md-4 col-sm-5 col-xs-12">Card Number</label>
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @Html.EditorFor(model => model.CardNumber, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                               @Html.ValidationMessageFor(model => model.CardNumber, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                   </div>
+                   <div class="clearfix"></div>
+               </div>
+               <br />
+               <div class="form-horizontal form-widgets">
+                   <h4 class="ra-well-title" style="font-size: 1.5em!important;">Contact Information</h4>
+                   <div class="form-horizontal form-widgets col-sm-6">
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.EmailAddress, "E-mail", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @Html.EditorFor(model => model.EmailAddress, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                               @Html.ValidationMessageFor(model => model.EmailAddress, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.Phone, "Phone Number", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @Html.EditorFor(model => model.Phone, new { htmlAttributes = new { @class = "k-textbox form-control", @type = "tel" } })
+                               @Html.ValidationMessageFor(model => model.Phone, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                   </div>
+                   <div class="form-horizontal form-widgets col-sm-6">
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.MobileNo, "Cell Phone Number", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @Html.EditorFor(model => model.MobileNo, new { htmlAttributes = new { @class = "k-textbox form-control", @type = "tel" } })
+                               @Html.ValidationMessageFor(model => model.MobileNo, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                   </div>
+                   <div class="clearfix"></div>
+               </div>
+               <br />
+               <div class="form-horizontal form-widgets">
+                   <h4 class="ra-well-title" style="font-size: 1.5em!important;">Address</h4>
+                   <div class="form-horizontal form-widgets col-sm-6">
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.ParAddress, "Address", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @Html.EditorFor(model => model.ParAddress, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                               @Html.ValidationMessageFor(model => model.ParAddress, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.ParAddressLine1, "Address Line1", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @Html.EditorFor(model => model.ParAddressLine1, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                               @Html.ValidationMessageFor(model => model.ParAddressLine1, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.ParCountry, "Country", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @(Html.Kendo().DropDownListFor(model => model.ParCountry)
+                              .OptionLabel("--Select Country--")
+                              .Events(e => e.Change("onChangeofParCountry"))
+                              .BindTo(ViewBag.CountryId)
+                              .HtmlAttributes(new { style = "width:100%" })
+                               )
+                               @*<input type="text" name="ParCountry" value="Bangladesh" readonly class="k-textbox form-control" />*@
+                               @Html.ValidationMessageFor(model => model.ParCountry, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group" id="div_State">
+                           @Html.LabelFor(model => model.ParState, "State", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @Html.EditorFor(model => model.ParState, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                               @Html.ValidationMessageFor(model => model.ParState, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group" id="div_division">
+                           @Html.LabelFor(model => model.ParDivisionId, "Division", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @(Html.Kendo().DropDownListFor(model => model.ParDivisionId)
+                         .Name("ParDivisionId")
+                         .OptionLabel("--Select Division--")
+                         .BindTo(ViewBag.DivisionList)
+                         .HtmlAttributes(new { style = "width:100%" })
+                               )
+                               @Html.ValidationMessageFor(model => model.ParDivisionId, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group">
+                           <div class="col-md-offset-4  col-sm-offset-4 col-sm-7 col-xs-8">
+                               @Html.CheckBoxFor(model => model.SamePresentAddress) Use also as present address
+                           </div>
+                       </div>
+                   </div>
+                   <div class="form-horizontal form-widgets col-sm-6">
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.ParCity, "City", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @Html.EditorFor(model => model.ParCity, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                               @Html.ValidationMessageFor(model => model.ParCity, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.ParArea, "Area", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @Html.EditorFor(model => model.ParArea, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                               @Html.ValidationMessageFor(model => model.ParArea, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.ParPotalCode, "Postal Code", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @Html.EditorFor(model => model.ParPotalCode, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                               @Html.ValidationMessageFor(model => model.ParPotalCode, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                   </div>
+                   <div class="clearfix"></div>
+               </div>
+               <br />
+               <div class="form-horizontal form-widgets" id="divForPresentAddress">
+                   <h4 class="ra-well-title" style="font-size: 1.5em!important;">Present Address</h4>
+                   <div class="form-horizontal form-widgets col-sm-6">
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.PreAddress, "Address", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @Html.EditorFor(model => model.PreAddress, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                               @Html.ValidationMessageFor(model => model.PreAddress, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.PreAddressLine1, "Address Line1", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @Html.EditorFor(model => model.PreAddressLine1, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                               @Html.ValidationMessageFor(model => model.PreAddressLine1, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.PreCountry, "Country", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @(Html.Kendo().DropDownListFor(model => model.PreCountry)
+                              .OptionLabel("--Select Country--")
+                              .Events(e => e.Change("onChangeofPreCountry"))
+                              .BindTo(ViewBag.CountryId)
+                              .HtmlAttributes(new { style = "width:100%" })
+                               )
+                               @*<input type="text" name="PreCountry" value="Bangladesh" readonly class="k-textbox form-control" />*@
+
+                               @Html.ValidationMessageFor(model => model.PreCountry, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group" id="Div_PreState">
+                           @Html.LabelFor(model => model.PreState, "State", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @Html.EditorFor(model => model.PreState, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                               @Html.ValidationMessageFor(model => model.PreState, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group" id="Div_PreDivision">
+                           @Html.LabelFor(model => model.PreDivisionId, "Division", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @(Html.Kendo().DropDownListFor(model => model.PreDivisionId)
+                              .Name("PreDivisionId")
+                              .OptionLabel("--Select One Division--")
+                              .BindTo(ViewBag.DivisionList)
+                              .HtmlAttributes(new { style = "width:100%" })
+                               )
+                               @Html.ValidationMessageFor(model => model.PreDivisionId, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                   </div>
+                   <div class="form-horizontal form-widgets col-sm-6">
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.PreCity, "City", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @Html.EditorFor(model => model.PreCity, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                               @Html.ValidationMessageFor(model => model.PreCity, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.PreArea, "Area", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @Html.EditorFor(model => model.PreArea, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                               @Html.ValidationMessageFor(model => model.PreArea, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                       <div class="form-group">
+                           @Html.LabelFor(model => model.PrePostalCode, "Postal Code", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                           <div class="col-md-6 col-sm-7 col-xs-8">
+                               @Html.EditorFor(model => model.PrePostalCode, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                               @Html.ValidationMessageFor(model => model.PrePostalCode, "", new { @class = "text-danger" })
+                           </div>
+                       </div>
+                   </div>
+                   <div class="clearfix"></div>
+               </div>
+
+               <div class="form-horizontal form-widgets">
+                   <div class="form-horizontal form-widgets col-sm-6">
+                       <div class="form-group">
+                           <div class="col-md-offset-4 col-sm-offset-5 col-md-8 col-sm-7 col-xs-8">
+                               <input type="button" value="Save" id="btnCreate" data-id="0" class="k-button k-state-default" />
+                               <input type="button" value="Next" id="btnNext" data-id="1" class="k-button k-state-default" />
+                               <input type="reset" value="Refresh" id="btnRefresh" class="k-button k-state-default" />
+                               <input type="button" value="Cancel" id="btnCancel" class="k-button k-state-default" />
+                           </div>
+                       </div>
+                   </div>
+               </div>
+           </div>
+       </div>
+    </div>
+</div>
+
+
+
+<script src="~/Scripts/intl-tel-input-master/build/js/intlTelInput.min.js"></script>
+<style>
+    .image-uploader {
+        width: 100%;
+        /*height: 260px;*/
+        height: 160px;
+        display: block;
+        text-align: center;
+    }
+    .imgPreview {
+        background-color: #e8e4d0;
+        margin-bottom: 20px;
+        position: relative;
+        width: 100%;
+        height: 135px;
+        border: 1px solid #808080;
+        display: none;
+        overflow: hidden;
+    }
+    .imgPreview img {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+    .lblForPics {
+        text-align: center;
+        max-width: 100%;
+        width: 100%;
+        height: 130px;
+        vertical-align: middle;
+        border: 1px dashed blue;
+    }
+    .lblForPics span {color: #083bb5 !important;}
+    .previewImgClose {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        float: right;
+        right: -1.8em;
+        bottom: -1.8em;
+        z-index: 9999;
+        margin-top: -3em;
+    }
+</style>
+<script>
+    var allMainFile = [];
+    var allFileCount = [];
+    var id;
+    var IsComposite = true;
+    var UserId;
+    var PictureName;
+    var telInput, SiteId = 0;
+    var telInput1;
+    var UnitId = 0;
+    $(document).ready(function () {
+        $("#liForHR").addClass('active');
+        $("#liForUserLists").addClass('sublistActive');
+        $("#top_header_link").append('<span>HR</span>' +
+            '<span><i class="fa fa-angle-right fa-2x"></i></span>' +
+            '<span><a href="/HumanResource/AllUserLists">All User List</a></span>' +
+            '<span><i class="fa fa-angle-right fa-2x"></i></span>' +
+            '<span class="current"><a href="/HumanResource/AddEmployee">Add Employee</a></span>' +
+            '<span><a href="/HumanResource/AllUserLists"><i class="fa fa-reply"> Back</i></a></span>');
+        $("#DateOfBirth").val("");
+        if ($("#UserId").val() === '0') {
+            $("btnCreate").val("Save");
+        } else {
+            $("#btnCreate").val("Update");
+        }
+        $("#SiteId").data("kendoDropDownList").enable(false);
+        $('#SamePresentAddress').val(false);
+        //Phone function
+        telInput1 = $("#Phone");
+        telInput1.intlTelInput({
+            geoIpLookup: function (callback) {
+                $.get("http://ipinfo.io", function () { }, "jsonp").always(function (resp) {
+                    var countryCode = (resp && resp.country) ? resp.country : "";
+                    var nationality = $("#Nationality").data("kendoDropDownList");
+                    var precountry = $("#PreCountry").data("kendoDropDownList");
+                    var parcountry = $("#ParCountry").data("kendoDropDownList");
+                    nationality.value(countryCode);
+                    parcountry.value(countryCode);
+                    precountry.value(countryCode);
+                    if (countryCode == 'BD') {
+                        $("#Div_PreDivision").show();
+                        $("#Div_PreState").hide();
+                        $("#div_division").show();
+                        $("#div_State").hide();
+                    }
+                    else {
+                        $("#Div_PreState").show();
+                        $("#Div_PreDivision").hide();
+                        $("#div_State").show();
+                        $("#div_division").hide();
+                    }
+                    callback(countryCode);
+                });
+            },
+            initialCountry: "auto",
+            utilsScript: "../Scripts/intl-tel-input-master/build/js/utils.js"
+        });
+        var reset = function () {
+            telInput1.removeClass("error");
+        };
+        telInput1.on("keyup change", reset);
+        //mobile
+        telInput = $("#MobileNo");
+        telInput.intlTelInput({
+            geoIpLookup: function (callback) {
+                $.get("http://ipinfo.io", function () { }, "jsonp").always(function (resp) {
+                    var countryCode = (resp && resp.country) ? resp.country : "";
+
+                    callback(countryCode);
+
+                });
+            },
+            initialCountry: "auto",
+            utilsScript: "../Scripts/intl-tel-input-master/build/js/utils.js"
+        });
+        var reset = function () {
+            telInput.removeClass("error");
+        };
+        telInput.on("keyup change", reset);
+    });
+
+    function onChangeUserType(e) {
+        e.preventDefault();
+        if ($("#UserType").val() === '') {
+            $("#SiteId").data("kendoDropDownList").value(null);
+            $("#SiteId").data("kendoDropDownList").enable(false);
+        } else {
+            $("#SiteId").data("kendoDropDownList").enable(true);
+        }
+        $("#SiteId").data("kendoDropDownList").value(null);
+        $("#divForUnit").empty();
+        $("#divForUnit").hide();
+        $("#divForDepartment").empty();
+        $("#divForDepartment").hide();
+        $("#divForLine").empty();
+        $("#divForLine").hide();
+        $("#divForMachine").empty();
+        $("#divForMachine").hide();
+    };
+    function onSiteSelect(e) {
+        var dataItem = this.dataSource.view()[e.item.index()];
+        IsComposite = dataItem.IsComposite;
+        $("#divForDepartment").empty();
+        $("#divForDepartment").hide();
+        $("#divForLine").empty();
+        $("#divForLine").hide();
+        $("#divForMachine").empty();
+        $("#divForMachine").hide();
+        $("#divForUnit").empty();
+        $("#divForUnit").hide();
+        if (dataItem.Id > 0) {
+            SiteId = dataItem.Id;
+            if (dataItem.IsComposite) {
+                var passData = { SiteId: SiteId, UserType: $("#UserType").val() };
+                $("#divForUnit").load('@Url.Action("_GetUnitList", "HumanResource")', passData);
+                $("#divForUnit").show();
+            } else {
+                $("#divForUnit").empty();
+                $("#divForUnit").hide();
+                if ($("#UserType").val() !== "") {
+                    var UserType = $("#UserType").val();
+                    $("#divForDepartment").load('@Url.Action("_GetDept", "HumanResource")?SiteId=' + SiteId + '&UserType=' + UserType);
+                    $("#divForDepartment").show();
+                }
+            }
+        }
+    }
+    function onChangeUnit(e) {
+        $("#divForDepartment").empty();
+        $("#divForDepartment").hide();
+        $("#divForLine").empty();
+        $("#divForLine").hide();
+        $("#divForMachine").empty();
+        $("#divForMachine").hide();
+        if ($("#UnitId").val() > 0) {
+            UnitId = $("#UnitId").val();
+            UserType = $("#UserType").val();
+            $("#divForDepartment").load('@Url.Action("_GetDept", "HumanResource")?UnitId=' + UnitId + '&UserType=' + UserType);
+            $("#divForDepartment").show();
+        }
+    }
+    function onDepartmentchange(e) {
+        e.preventDefault();
+        if ($("#UserType").val() === '2') {
+            $("#divForLine").empty();
+            $("#divForLine").hide();
+            $("#divForMachine").empty();
+            $("#divForMachine").hide();
+            if ($("#DeptId").val() > 0) {
+                var DeptId = $("#DeptId").val();
+                $("#divForLine").load('@Url.Action("_GetLineList", "HumanResource")?DeptId=' + DeptId);
+                $("#divForLine").show();
+            }
+        }
+    };
+    function onLinechange(e) {
+        e.preventDefault();
+        $("#divForMachine").empty();
+        $("#divForMachine").hide();
+        if ($("#LineId").val() > 0) {
+            var LineId = $("#LineId").val();
+            $("#divForMachine").load('@Url.Action("_GetMachineList", "HumanResource")?LineId=' + LineId);
+            $("#divForMachine").show();
+        }
+    };
+    function onChangeofParCountry() {
+        var country = $("#ParCountry").val();
+        if (country == "BD") {
+            $("#div_division").show();
+            $("#div_State").hide();
+        }
+        else {
+            $("#div_State").show();
+            $("#div_division").hide();
+        }
+    };
+    function onChangeofPreCountry() {
+        var country = $("#PreCountry").val();
+        if (country == "BD") {
+            $("#Div_PreDivision").show();
+            $("#Div_PreState").hide();
+        }
+        else {
+            $("#Div_PreState").show();
+            $("#Div_PreDivision").hide();
+        }
+    };
+    $('#btnCancel').click(function () {
+        location.href = '@Url.Action("AllUserLists", "HumanResource")';
+    });
+
+    $('#btnCancel').click(function () {
+        location.href = '@Url.Action("AllUserLists", "HumanResource")';
+    });
+
+    $(".divForPic").on('change', '.inputfile-4', function (e) {
+        id = $(this).data("count");
+        var countFiles = $("#file-" + id)[0].files.length;
+        var imgPath = $("#file-" + id)[0].value;
+        var extn = imgPath.substring(imgPath.lastIndexOf('.') + 1).toLowerCase();
+        var image_holder = $("#imgPreview-" + id);
+        var files = e.target.files;
+        image_holder.empty();
+        if (extn == "gif" || extn == "png" || extn == "jpg" || extn == "jpeg") {
+            if (typeof (FileReader) != "undefined") {
+                allFileCount.push(id);
+                allMainFile[id] = files[0];
+                //for (var i = 0; i < countFiles; i++) {
+
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $("<img />", { "src": e.target.result }).appendTo(image_holder);
+                }
+                $("#imgUpload-" + id).hide();
+                $("#UserImgClose-" + id).show();
+                image_holder.show();
+                $("#file-" + id).hide();
+                $("#lblfile-" + id).hide();
+                $("#PictureName").val($("#file-" + id)[0].files[0]);
+                reader.readAsDataURL($("#file-" + id)[0].files[0]);
+                $(".lbl_Span_plus").text("+");
+                //}
+                id++;
+            } else {
+                alert("This browser does not support FileReader.");
+            }
+        } else {
+            alert("Pls select only images");
+        }
+    });
+
+    $(".divForPic").on('click', '.previewImgClose', function (e) {
+        var id = $(this).data("count");
+        allMainFile[id] = "";
+        $("#imgPreview-" + id).empty();
+        $("#imgPreview-" + id).hide();
+        $("#UserImgClose-" + id).hide();
+        $("#imgUpload-" + id).show();
+    });
+    $('#SamePresentAddress').change(function () {
+        if ($(this).is(":checked")) {
+            $("#divForPresentAddress").hide();
+            $('#SamePresentAddress').val(true);
+        } else {
+            $("#divForPresentAddress").show();
+            $('#SamePresentAddress').val(false);
+        }
+    });
+    var validation = $("#Div_Add_Employee").kendoValidator({
+        rules: {
+            remote: function (input) {
+                var errormessage;
+                var remoteAttr = input.attr("data-val-remote-url");
+                if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                    return true;
+                }
+                var isInvalid;
+                var data = {};
+                var UserId = $("#UserId").val();
+                var EmpId = $("#EmpId").val();
+                if (input.attr('name') === "EmpId") {
+                    data = { UserId: UserId, EmpId: EmpId };
+                }
+                $.ajax({
+                    url: remoteAttr,
+                    mode: "abort",
+                    port: "validate" + input.attr('name'),
+                    dataType: "json",
+                    type: input.attr("data-val-remote-type"),
+                    data: data,
+                    async: false,
+                    success: function (response) {
+                        isInvalid = response;
+                        if (isInvalid == true) {
+                            isInvalid = true;
+                        }
+                        else {
+                            isInvalid = false;
+                        }
+                    }
+                });
+                return isInvalid;
+            },
+            MobileNo: function (input) {
+                if (input.is("[name=MobileNo]")) {
+                    if (telInput.intlTelInput("isValidNumber")) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+                return true;
+            },
+            Phone: function (input) {
+                if (input.is("[name=Phone]")) {
+                    if (telInput1.intlTelInput("isValidNumber")) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+                return true;
+            },
+            LineId: function (input) {
+                if (input.is("[name=LineId]") && input.val() === "" && ($("#UserType").val() === "2")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            UnitId: function (input) {
+                if (input.is("[name=UnitId]") && input.val() === "" && ((IsComposite))) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            ParState: function (input) {
+                if (input.is("[name=ParState]") && input.val() === "" && ($("#ParCountry").val() != "BD")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            ParDivisionId: function (input) {
+                if (input.is("[name=ParDivisionId]") && input.val() === "" && ($("#ParCountry").val() === "BD")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            PresentAddress: function (input) {
+                if (input.is("[name=PreAddress]") && input.val() === "" && (!$("#SamePresentAddress").is(':checked'))) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            PresentDivision: function (input) {
+                if (input.is("[name=PreDivisionId]") && input.val() === "" && ($("#PreCountry").val() === "BD") && (!$("#SamePresentAddress").is(':checked'))) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            PreCountry: function (input) {
+                if (input.is("[name=PreCountry]") && input.val() === "" && (!$("#SamePresentAddress").is(':checked'))) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            PreState: function (input) {
+                if (input.is("[name=PreState]") && input.val() === "" && ($("#PreCountry").val() != "BD") && (!$("#SamePresentAddress").is(':checked'))) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            PreCity: function (input) {
+                if (input.is("[name=PreCity]") && input.val() === "" && (!$("#SamePresentAddress").is(':checked'))) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        },
+        messages: {
+            remote: function (input) {return input.data('val-remote');},
+            MobileNo: "Please enter valid contact number",
+            Phone: "Please enter valid contact number",
+            LineId: "Please select line",
+            UnitId: "Please select unit",
+            ParDivisionId: "Please select division",
+            ParState: "Please enter permanent state",
+            PreState: "Please enter present state",
+            PresentAddress: "Please enter present address",
+            PresentDivision: "Please select division",
+            PreCountry: "Please select present country",
+            PreCity: "Please select present city"
+        }
+    }).data("kendoValidator");;
+    $("#btnCreate , #btnNext").click(function () {
+        var MobileNo = $("#MobileNo").intlTelInput("getNumber");
+        var Phone = $("#Phone").intlTelInput("getNumber");
+        if (validation.validate()) {
+            var id = $(this).data('id');
+            notification.show({ message: "User information saving...", showTime: startTime() }, "upload-success");
+            var sendData = new FormData();
+            sendData.append("UserId", $("#UserId").val());
+            sendData.append("EmpId", $("#EmpId").val());
+            sendData.append("SiteId", $("#SiteId").val());
+            sendData.append("UnitId", $("#UnitId").val());
+            sendData.append("DeptId", $("#DeptId").val());
+            sendData.append("LineId", $("#LineId").val());
+            sendData.append("MachineId", $("#MachineId").val());
+            sendData.append("DesignationId", $("#DesignationId").val());
+            sendData.append("Title", $("#Title").val());
+            sendData.append("FirstName", $("#FirstName").val());
+            sendData.append("MiddleName", $("#MiddleName").val());
+            sendData.append("EmailAddress", $("#EmailAddress").val());
+            sendData.append("MiddleName", $("#MiddleName").val());
+            sendData.append("LastName", $("#LastName").val());
+            sendData.append("UserType", $("#UserType").val());
+            sendData.append("JoinDate", $("#JoinDate").val());
+            sendData.append("DateOfBirth", $("#DateOfBirth").val());
+            sendData.append("Gender", $("#Gender").val());
+            sendData.append("Nationality", $("#Nationality").val());
+            sendData.append("NationalId", $("#NationalId").val());
+            sendData.append("NationalIdBackImg", $("#NationalIdBackImg").val());
+            sendData.append("NationalIdFontImg", $("#NationalIdFontImg").val());
+            sendData.append("EmailAddress", $("#EmailAddress").val());
+            sendData.append("Religion", $("#Religion").val());
+            sendData.append("Phone", Phone);
+            sendData.append("MobileNo", MobileNo);
+            sendData.append("BasicSalary", $("#BasicSalary").val());
+            sendData.append("ParAddress", $("#ParAddress").val());
+            sendData.append("ParState", $("#ParState").val());
+            sendData.append("ParAddressLine1", $("#ParAddressLine1").val());
+            sendData.append("ParCountry", $("#ParCountry").val());
+            sendData.append("ParDivisionId", $("#ParDivisionId").val());
+            sendData.append("ParCity", $("#ParCity").val());
+            sendData.append("ParArea", $("#ParArea").val());
+            sendData.append("ParPotalCode", $("#ParPotalCode").val());
+            sendData.append("SamePresentAddress", $("#SamePresentAddress").val());
+            sendData.append("PreAddress", $("#PreAddress").val());
+            sendData.append("PreAddressLine1", $("#PreAddressLine1").val());
+            sendData.append("PreCountry", $("#PreCountry").val());
+            sendData.append("PreDivisionId", $("#PreDivisionId").val());
+            sendData.append("PreCity", $("#PreCity").val());
+            sendData.append("PreState", $("#PreState").val());
+            sendData.append("PreArea", $("#PreArea").val());
+            sendData.append("PreCity", $("#PreCity").val());
+            sendData.append("PrePostalCode", $("#PrePostalCode").val());
+            sendData.append("CreatedBy", userId);
+            for (var i = 0; i < allMainFile.length; i++) {
+                sendData.append("files[" + i + "]", allMainFile[i]);
+            }
+            $.ajax({
+                url: '@Url.Action("AddEmployeeInfo", "HumanResource")',
+                type: 'Post',
+                data: sendData,
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === "Error") {
+                        notification.show({ message: "Add new user was unsuccessful.", showTime: startTime() }, "upload-error");
+
+                    } else {
+                        notification.show({ message: "User info has been successfully added.", showTime: startTime() }, "upload-success");
+                        if (id == 0) {
+                            location.href = '@Url.Action("AllUserLists", "HumanResource")';
+                        } else {
+                            location.href = '@Url.Action("SetUserSalary", "HumanResource")?UserId='+data;
+                        }
+                    }
+                },
+                error: function (error) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Upload unsuccessful", showTime: startTime() }, "upload-warning");
+                }
+            });
+
+        }
+
+    });
+</script>

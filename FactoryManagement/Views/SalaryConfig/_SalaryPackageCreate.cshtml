@@ -1,0 +1,28 @@
+﻿
+@************************************** Created By Jerin Jahan (Date:18.08.2016)  ***************************************@
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-top:2%;">
+    <div id="div_SalaryPackage"><div class="tiny_loading"></div></div>
+    <div class="k-edit-buttons k-state-default">
+        @if (ViewBag.id > 0)
+        {
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnPackageCreate"><span class="k-icon k-update"></span>Update</button>
+        }
+        else
+        {
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnPackageCreate"><span class="k-icon k-update"></span>Create</button>
+        }
+        <button type="reset" class="k-button k-button-icontext k-grid-update" id="btnPackageRefresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnPackageCreateCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+<script>
+    $("#div_SalaryPackage").load('@Url.Action("SalaryPackageCreate", "SalaryConfig")?id=' + '@(ViewBag.id)');
+    $("#btnPackageRefresh").click(function () {
+        $("#div_SalaryPackage").empty();
+        $("#div_SalaryPackage").append('<div class="tiny_loading"></div>');
+        $("#div_SalaryPackage").load('@Url.Action("SalaryPackageCreate", "SalaryConfig")?id=' + '@(ViewBag.id)');
+    });
+    $("#btnPackageCreateCancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

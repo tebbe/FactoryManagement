@@ -1,0 +1,125 @@
+﻿
+
+
+@************************************** Created By Jerin Jahan (Date:27.12.2016)  ***************************************@
+
+@model FactoryManagement.ModelView.Inventory.MachineTypeModelView
+<style>
+    #Div_Add_More_Equip .k-edit-label, .k-edit-form-container .editor-label {width: 30%!important;}
+    #Div_Add_More_Equip .k-edit-label, .k-edit-form-container .editor-field {width: 40%!important;padding-top:6px!important;}
+</style>
+@using (Html.BeginForm())
+{
+    <div class="k-edit-form-container col-md-10 col-sm-10 col-xs-10" id="Div_Add_More_Equip" style="margin-bottom:4%;">
+        <div id="div_Add_More_Display">
+            <div class="editor-label"><label for="MachineType">Machine Type</label></div>
+            <div class="editor-field">@Model.MachineTypeName</div>
+
+            <div class="editor-label"><label for="Name">Name</label></div>
+            <div class="editor-field">@Model.Name</div>
+
+            <div class="editor-label"><label for="Acroynm">Acroynm</label></div>
+            <div class="editor-field">@Model.Acroynm</div>
+
+            <div class="editor-label"><label for="ModelName">ModelName</label></div>
+            <div class="editor-field">@Model.ModelName</div>
+
+
+            <div class="editor-label"><label for="BrandId">Brand Name</label></div>
+            <div class="editor-field">@Model.BrandName</div>
+
+            <div class="editor-label"><label for="CountryOfOrigin">Country Of Origin</label></div>
+            <div class="editor-field">@Model.CountryName</div>
+
+            <div class="editor-label"><label for="CountryOfOrigin">Current Quantity</label></div>
+            <div class="editor-field">@Model.Quantity</div>
+
+            <div class="editor-label"><label>Quantity</label></div>
+            <div class="editor-field">
+                <input class="k-textbox" data-val="true"
+                       data-val-number="The field Quantity must be a number."
+                       data-val-required="Please enter quantity."
+                       data-val-regex="Only integer number and greater than zero"
+                       data-val-regex-pattern="^[1-9]+\d*$"
+                       id="MoreQuantity" name="MoreQuantity" type="number" value="" min="1" max="200">
+                <span class="field-validation-valid text-danger" data-valmsg-for="MoreQuantity" data-valmsg-replace="true"></span>
+            </div>
+        </div>
+        <div id="Div_Add_More_Define"></div>
+        <div class="col-sm-11 col-xs-11">
+            <div class="k-edit-buttons k-state-default">
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_equip_add_next"><span class="k-icon k-update"></span>Next</button>
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_equip_add_save" style="display:none;"><span class="k-icon k-update"></span>Save</button>
+                <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_eqip_add_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+            </div>
+        </div>
+    </div>
+}
+<script>
+    $("#btn_eqip_add_cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#btn_equip_add_next").click(function () {
+        var validation = $("#Div_Add_More_Equip").kendoValidator().data("kendoValidator");
+        if (validation.validate()) {
+            $("#div_Add_More_Display").hide();
+            $("#btn_equip_add_next").hide();
+            $("#win_add_equip").css(style="height:30%");
+            $("#btn_equip_add_save").show();
+            $("#Div_Add_More_Define").append('<div class="editor-label"><label for="MachineType"></label></div>' +
+                    '<div class="editor-field"><table class="table" id="tbl_Add_More">' +
+                    '<tbody><tr><th width="5%">SL</th><th width="95%">Machine Name</th></tr></tbody></table></div>');
+            var acrynm = '@(Model.Acroynm)';
+            var pre_count = '@(Model.Quantity)';
+            for (var i = 0; i < parseInt($("#MoreQuantity").val()) ; i++) {
+                var count = (i + 1);
+                pre_count++;
+                var place = acrynm + pre_count;
+                $("#tbl_Add_More").append('<tr>' +
+                           '<td>' + count + '.</td>' +
+                           '<td>' +
+                               '<input type="text" class="k-textbox txtMachineName k-valid" value="" name="MachineName_' + count + '" id="MachineName_' + count + '" style="width:50%!important;" placeholder=" ' + place + ' " onfocus="this.placeholder = \'\'" onblur="this.placeholder = \' ' + place + ' \' ">' +
+                               '<span class="field-validation-valid text-danger" data-valmsg-for="MachineName_' + count + '" data-valmsg-replace="true"></span>' +
+                           '</td>' +
+                       '</tr>');
+            }
+        }
+    });
+
+
+    $("#btn_equip_add_save").click(function () {
+        var validation = $("#Div_Add_More_Define").kendoValidator().data("kendoValidator");
+        if (validation.validate()) {
+            notification.show({ message: "Adding new machine....", showTime: startTime() }, "upload-progress");
+            var sendData = "";
+            var allMachineName = [];
+            var pre_count = '@(Model.Quantity)';
+            for (i = 0; i < parseInt($("#MoreQuantity").val()) ; i++) {
+                var count = (i + 1);
+                pre_count++;
+                if ($('#MachineName_' + count).val() === '') {
+                    allMachineName.push("@(Model.Acroynm)" + pre_count);
+                }
+                else {
+                    allMachineName.push($('#MachineName_' + count).val());
+                }
+            }
+            sendData = { id: '@(Model.Id)', quan: $("#MoreQuantity").val(), userId: userId, allMachineName: allMachineName };
+            $.ajax({
+                url: '@Url.Action("AddMachine", "Inventory")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide();notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === "Error") {
+                        notification.show({ message: "Machine type addition was unsuccessful.", showTime: startTime() }, "upload-error");
+                    } else {
+                        notification.show({ message: "Add new machine has been successfully added. ", showTime: startTime() }, "upload-success");
+                        location.href='@Url.Action("AllEquipmentList", "Inventory")?MachineTypeId=' + sendData.id;
+                    }
+                }
+            });
+        }
+    });
+</script>
+

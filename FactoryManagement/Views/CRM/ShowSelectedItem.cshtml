@@ -1,0 +1,401 @@
+﻿
+@******************************** Created By Jerin Jahan (Date:01.10.2016) *********************************@
+@model FactoryManagement.ModelView.CRM.BusinessOrderListModelView
+
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var count = 1;
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+<style>
+    #tbl_apprv_item {border: none !important;}
+    #tbl_apprv_item th {border: none !important;}
+    #tbl_apprv_item td {border: none !important;}
+
+    #tbl_Others_Cost {border: none !important;}
+    #tbl_Others_Cost th {border: none !important;}
+    #tbl_Others_Cost td {border: none !important;}
+</style>
+<div class="k-edit-form-container col-xs-12" style="margin-bottom:4%;" id="Div_For_Direct_Sup_Order">
+    @using (Html.BeginForm())
+    {
+        <div class="col-xs-12" style="float:left;">
+            <div class="editor-label"><label for="PackageName">Suppliers</label></div>
+            <div class="editor-field">
+                @(Html.Kendo().DropDownListFor(m => m.ClientId)
+                .OptionLabel("--Select One Type--")
+                .BindTo(ViewBag.ClientId)
+                .HtmlAttributes(new { style = "width:50%!important;" })
+                )
+                @Html.ValidationMessageFor(model => model.ClientId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="col-xs-12" style="float:left;">
+            <div class="editor-label"><label for="totalCost">Total Cost</label></div>
+            <div class="editor-field">
+                <input class="k-textbox text-box single-line k-invalid"
+                       type="text" data-val-required="*" id="txttotalCost" name="txttotalCost" style="width:50%!important;"
+                       onkeypress="return isNumber(event, this.value)">
+                <span>@currency</span>
+                <span class="field-validation-valid text-danger" data-valmsg-for="txttotalCost" data-valmsg-replace="true"></span>
+            </div>
+        </div>
+        <div class="col-sm-offset-2 col-sm-9" style="float:left;">
+            <table class="table table-bordered" id="tbl_apprv_item">
+                <tbody>
+                    <tr>
+                        <th width="5%">#</th>
+                        <th width="35%">Product Name</th>
+                        <th width="25%">Quantity</th>
+                        <th width="20%">Per Piece</th>
+                        <th width="15%">Total</th>
+                    </tr>
+                        @foreach (var item in ViewBag.acq_list as IEnumerable<FactoryManagement.Models.View_All_Approved_AcquisitionList>)
+                        {
+                            <tr class="tbl_tr">
+                                <th scope="row">@count</th>
+                                <td>@item.ProductName</td>
+                                <td>
+                                    <div style="width:100%;">
+                                        <input class="k-textbox text-box single-line k-invalid txt_quantity"
+                                               type="number" min="1" max="@item.Quantity" data-val-required="*" data-id="@item.AcquisitionId"
+                                               id="txtQuan_@item.AcquisitionId" name="txtQuan_@item.AcquisitionId" style="width:40%;">
+                                        <span>out of @item.Quantity  @item.UnitName</span>
+                                    </div>
+                                    <div style="width:100%;">
+                                        <span class="field-validation-valid text-danger" data-valmsg-for="txtQuan_@item.AcquisitionId" data-valmsg-replace="true"></span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <input class="k-textbox text-box single-line k-invalid txt_Amount"
+                                           type="text" data-val-required="*" data-id="@item.AcquisitionId"
+                                           id="txtAmnt_@item.AcquisitionId" name="txtAmnt_@item.AcquisitionId" style="width:50%;"
+                                           onkeypress="return isNumber(event, this.value)">
+                                    <span class="field-validation-valid text-danger" data-valmsg-for="txtAmnt_@item.AcquisitionId" data-valmsg-replace="true"></span>
+                                </td>
+                                <td><span id="lblAmn_@item.AcquisitionId"></span></td>
+                            </tr>
+                            count++;
+                        }
+                </tbody>
+            </table>
+        </div>
+        <div class="col-xs-12" style="float:left;padding-left:0px!important;padding-right:0px!important;">
+            <hr />
+            <div>
+                <label for="PackageName" class="col-sm-10" style="text-align:right;padding-right:0px!important;">Total Product Price = </label>
+                <span id="lblTotalCost" class="col-sm-1" style="padding-left:0px!important;padding-right:0px!important;">0.00 @currency</span>
+            </div> 
+        </div>
+        <div class="col-xs-12" style="float:left;padding-left:0px!important;padding-right:0px!important;">
+            <label for="PackageName" class="col-sm-10" style="text-align:right;padding-right:0px!important;">Others = </label>
+            <span class="col-sm-1" style="padding-left:0px!important;padding-right:0px!important;width:14.666666666666664%!important;">
+                <span id="lblOthersCost">0.00 @currency</span>
+                <span class="fa fa-pencil-square-o" id="btn_Other_Cost_Define" style="display:none;">Define</span>
+            </span>
+        </div>
+        <div class="col-sm-offset-2 col-sm-6" style="float:left;display:none;" id="div_tbl_Others_Cost">
+            <h4>Define Others Costs</h4><hr />
+            <table class="table table-bordered" id="tbl_Others_Cost"></table>
+            <hr />
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnOrthesCostCancel"><span class="k-icon k-cancel"></span>Cancel</button> 
+        </div>
+        <div class="k-edit-buttons k-state-default col-xs-11">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_Sup_Save"><span class="k-icon k-update"></span>Save</button>
+            <button type="reset" class="k-button k-button-icontext k-grid-cancel" id="btn_Sup_Ord_Cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    }
+</div>
+
+<script>
+    var totalCost = 0.00, totalProCost = 0.00, others = 0.00;
+    var TypeQuan = [], ProPerPrice = [], ProTotal = [];
+    var othersCostCount = 1, other_Cost_max = 0.00;
+    var costValidate;
+    var allCostType = [], allCostAmnt = [];
+
+    var validation = $("#Div_For_Direct_Sup_Order").kendoValidator({
+        rules: {
+            clientId: function (input) {
+                if (input.attr('id') === "ClientId") {
+                    if ($("#ClientId").val() === '') {
+                        return false;
+                    }
+                    return true;
+                }
+                return true;
+            }
+        },
+        messages: {
+            clientId: "*"
+        }
+    }).data("kendoValidator");
+
+    
+    function getAllQuantity() {
+        quantity = [];
+        $('.txt_quantity').each(function (i) {
+            var quan = $("#txtQuan_" + $(this).data("id")).val();
+            var price = $("#txtAmnt_" + $(this).data("id")).val();
+            var totalPerPrice = (parseFloat(quan) * parseFloat(price)).toFixed(2);
+            TypeQuan[i] = quan;
+            ProPerPrice[i] = price;
+            ProTotal[i] = totalPerPrice;
+        });
+    }
+    function countAllProTotal() {
+        totalProCost = 0.00; others = 0.00;
+        $('.txt_quantity').each(function (i) {
+            var quan = $("#txtQuan_" + $(this).data("id")).val();
+            var price = $("#txtAmnt_" + $(this).data("id")).val();
+            if (quan !== "" && price !== "") {
+                var total = (parseFloat(quan) * parseFloat(price)).toFixed(2);
+                totalProCost = (parseFloat(total) + parseFloat(totalProCost)).toFixed(2);
+            }
+        });
+        if ($("#txttotalCost").val() !== "" && totalProCost > 0) {
+            others = (parseFloat(totalCost) - parseFloat(totalProCost)).toFixed(2);
+            if (others > 0) {
+                $("#btn_Other_Cost_Define").show();
+            } else {
+                $("#btn_Other_Cost_Define").hide();
+                $("#div_tbl_Others_Cost").hide();
+                $("#tbl_Others_Cost").empty();
+            }
+        } else {
+            $("#btn_Other_Cost_Define").hide();
+            $("#div_tbl_Others_Cost").hide();
+            $("#tbl_Others_Cost").empty();
+        }
+    }
+    function getAllOthersCost() {
+        $(".txt_Others_amnt").each(function (i) {
+            var id = $(this).data('id');
+            allCostType[i] = $("#txt_other_type_" + id).val();
+            allCostAmnt[i] = $("#txt_other_Amnt_" + id).val();
+        });
+    }
+
+    $("#txttotalCost").change(function () {
+        totalCost = 0.00; others = 0.00;
+        totalCost = $(this).val();
+        if ($(this).val() !== "" && totalProCost !== 0.00) {
+            others = (parseFloat(totalCost) - parseFloat(totalProCost)).toFixed(2);
+            if (others > 0) {
+                $("#btn_Other_Cost_Define").show();
+            } else {
+                $("#btn_Other_Cost_Define").hide();
+                $("#div_tbl_Others_Cost").hide();
+                $("#tbl_Others_Cost").empty();
+            }
+        } else {
+            $("#btn_Other_Cost_Define").hide();
+            $("#div_tbl_Others_Cost").hide();
+            $("#tbl_Others_Cost").empty();
+        }
+        $("#lblOthersCost").text(others + ' @(currency)');
+    });
+
+    //****************************** Per Product Quantity Change Function ************************************
+    $("#Div_For_Direct_Sup_Order").on("change", ".txt_quantity", function () {
+        var id = $(this).data("id");
+        var amnt = $("#txtAmnt_" + id).val();
+        var quan = $("#txtQuan_" + id).val();
+        if (quan !== '') {
+            if (parseFloat(amnt) > 0) {
+                var total = (parseFloat(quan) * parseFloat(amnt)).toFixed(2);
+                $("#lblAmn_" + id).text(total + ' @(currency)');
+            }
+        }
+        else {
+            $("#lblAmn_" + id).text('');
+        }
+        countAllProTotal();
+        $("#lblTotalCost").text(totalProCost + ' @(currency)');
+        $("#lblOthersCost").text(others + ' @(currency)');
+    });
+
+    //****************************** Per Piece Amount Change Function ************************************
+    $("#Div_For_Direct_Sup_Order").on("change", ".txt_Amount", function () {
+        var id = $(this).data("id");
+        var amnt = $("#txtAmnt_" + id).val();
+        var quan = $("#txtQuan_" + id).val();
+        if (amnt !== '') {
+            if (parseInt(quan) > 0) {
+                var total = (parseFloat(quan) * parseFloat(amnt)).toFixed(2);
+                $("#lblAmn_" + id).text(total + ' @(currency)');
+            }
+        } else {
+            $("#lblAmn_" + id).text('');
+        }
+        countAllProTotal();
+        $("#lblTotalCost").text(totalProCost + ' @(currency)');
+        $("#lblOthersCost").text(others + ' @(currency)');
+    });
+
+
+    //********************** Others Cost Define ***************************
+    $("#btn_Other_Cost_Define").click(function () {
+        other_Cost_max = others;
+
+        $("#tbl_Others_Cost").append('<tr><th width="5%">#</th><th width="40%">Type</th><th width="40%">Amount</th><th width="15%"></th></tr><tr id="tbl_tr_others_1">' +
+                    '<th scope="row">' + othersCostCount + '</th>' +
+                    '<td>' +
+                        '<input id="txt_other_type_' + othersCostCount + '"  name="txt_other_type_' + othersCostCount + '" style="width: 80%;" />' +
+                        '<span class="field-validation-valid text-danger" data-valmsg-for="txt_other_type_' + othersCostCount + '" data-valmsg-replace="true"></span>' +
+                    '</td>' +
+                    '<td>' +
+                        '<input class="k-textbox text-box single-line k-invalid txt_Others_amnt"' +
+                        'type="number" min="1" max="' + other_Cost_max + '" data-val-required="*" data-id="' + othersCostCount + '"' +
+                        'id="txt_other_Amnt_' + othersCostCount + '" name="txt_other_Amnt_' + othersCostCount + '" style="width:50%;"' +
+                        'onkeypress="return isNumber(event, this.value)">' +
+
+                 '<span class="field-validation-valid text-danger" data-valmsg-for="txt_other_Amnt_' + othersCostCount + '" data-valmsg-replace="true"></span>' +
+                '</td>' +
+                '<td><span id="btn_OrthersCost_' + othersCostCount + '"><span class="k-icon k-i-plus btn_OtherCostAdd" id="btn_OtherCostAdd_' + othersCostCount + '"></span></span></td>' +
+                '</tr>');
+        $("#txt_other_type_" + othersCostCount).kendoDropDownList({
+            dataTextField: "ExtraServiceName",
+            dataValueField: "Id",
+            optionLabel: "--Select One--",
+            dataSource: {
+                transport: {
+                    read: {
+                        url: "@Url.Action("GetAllExtraService", "CRM")", type: "GET"
+                    }
+                }
+            }
+        });
+        $("#div_tbl_Others_Cost").show();
+        $(this).hide();
+    });
+    //*************************** ADD OTHER COSTS TYPE ***************************
+    $("#div_tbl_Others_Cost").on('click', ".btn_OtherCostAdd", function () {
+       costValidate = $("#div_tbl_Others_Cost").kendoValidator({
+            rules: {
+                ContactTypeLast: function (input) {
+                    if (input.attr("id") === "txt_other_type_" + othersCostCount && input.val() === "") {
+                        return false;
+                    }
+                    else {
+                        return true;
+                    }
+                }
+            },
+            messages: {
+                ContactTypeLast: "*"
+            }
+        }).data("kendoValidator");
+        if (costValidate.validate()) {
+            $("#btn_OrthersCost_" + othersCostCount).hide();
+            other_Cost_max = (parseFloat(other_Cost_max) - parseFloat($("#txt_other_Amnt_" + othersCostCount).val())).toFixed();
+            othersCostCount++;
+            $("#tbl_Others_Cost").append('<tr id="tbl_tr_others_' + othersCostCount + '">' +
+                        '<th scope="row">' + othersCostCount + '</th>' +
+                        '<td>' +
+                            '<input id="txt_other_type_' + othersCostCount + '"  name="txt_other_type_' + othersCostCount + '" style="width: 80%;" />' +
+                            '<span class="field-validation-valid text-danger" data-valmsg-for="txt_other_type_' + othersCostCount + '" data-valmsg-replace="true"></span>' +
+                        '</td>' +
+                        '<td>' +
+                            '<input class="k-textbox text-box single-line k-invalid txt_Others_amnt"' +
+                            'type="number" min="1" max="' + other_Cost_max + '" data-val-required="*" data-id="' + othersCostCount + '"' +
+                            'id="txt_other_Amnt_' + othersCostCount + '" name="txt_other_Amnt_' + othersCostCount + '" style="width:50%;"' +
+                            'onkeypress="return isNumber(event, this.value)">' +
+                     '<span class="field-validation-valid text-danger" data-valmsg-for="txt_other_Amnt_' + othersCostCount + '" data-valmsg-replace="true"></span>' +
+                    '</td>' +
+                    '<td><span id="btn_OrthersCost_' + othersCostCount + '">' +
+                        '<span class="k-icon k-i-plus btn_OtherCostAdd" id="btn_OtherCostAdd_' + othersCostCount + '"></span>' +
+                        '<span class="k-icon k-i-close btn_OtherCostRemv" id="btn_OtherCostRemv_' + othersCostCount + '"></span>' +
+                    '</span></td></tr>');
+
+            $("#txt_other_type_" + othersCostCount).kendoDropDownList({
+                dataTextField: "ExtraServiceName",
+                dataValueField: "Id",
+                optionLabel: "--Select One--",
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "@Url.Action("GetAllExtraService", "CRM")", type: "GET"
+                        }
+                    }
+                }
+            });
+        }
+    });
+
+
+    //*************************** REMOVE OTHER COSTS TYPE ***************************
+    $("#div_tbl_Others_Cost").on('click', ".btn_OtherCostRemv", function () {
+        $("#tbl_tr_others_" + othersCostCount).remove();
+        othersCostCount--;
+        $("#btn_OrthersCost_" + othersCostCount).show();
+    });
+    $("#btnOrthesCostCancel").click(function () {
+        $("#div_tbl_Others_Cost").hide();
+        $("#btn_Other_Cost_Define").show();
+        $("#tbl_Others_Cost").empty();
+    });
+
+    $("#btn_Sup_Ord_Cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#btn_Sup_Save").click(function (e) {
+        var sendData;
+        alert(validation.validate());
+
+        if (validation.validate()) {
+            var url = "";
+            url = '@Url.Action("BusinessOrderSave", "CRM")';
+            getAllQuantity();
+            getAllOthersCost();
+
+            sendData = {
+                OrderName: '@(Model.OrderName)',
+                OrderType: 2,
+                ClientId: $("#ClientId").val(),
+                TotalCost: totalCost,
+                TotalProCost: totalProCost,
+                TotalOthersCost: others,
+                AllAcquisitionOrderId: selectedId,
+                AllQuantity: TypeQuan,
+                ProPerPrice: ProPerPrice,
+                ProTotal: ProTotal,
+
+                AllCostType: allCostType,
+                AllCostAmnt: allCostAmnt,
+
+                OrderStatus: 1,
+                CreatedBy: userId
+            };
+
+            notification.show({ message: "Saving...", showTime: startTime() }, "upload-progress");
+            $.ajax({
+                url: url,
+                type: 'Post',
+                data: sendData,
+                success: function (response) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 2000 });
+                    if (response === 'Success') {
+                        $("#btn_Sup_Save").closest(".k-window-content").data("kendoWindow").close();
+                        notification.show({ message: "Successfully saved.", showTime: startTime() }, "upload-success");
+                        $('#Div_Load_Appvd_Order').empty();
+                        $('#Div_Load_Appvd_Order').append('<div class="loading_partial"></div>');
+
+                        $('#Div_Sup_aprvd_ord_list').empty();
+                        $('#Div_Sup_aprvd_ord_list').append('<div class="loading_partial"></div>');
+
+                        $('#Div_Sup_aprvd_ord_list').empty();
+                        $('#Div_Sup_aprvd_ord_list').append('<div class="loading_partial"></div>');
+                        $('#Div_Sup_aprvd_ord_list').show();
+                        $('#Div_Load_Appvd_Order').load('@Url.Action("AllApprovedOrderList", "CRM")?order=false');
+                        $('#Div_Sup_aprvd_ord_list').load('@Url.Action("AllBusinessOrderForsupplier", "CRM")?status=1');
+                    }
+                    else {
+                        notification.show({ message: "Save Unsuccessful", showTime: startTime() }, "upload-error");
+                    }
+                }
+            });
+        }
+    });
+</script>

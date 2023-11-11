@@ -1,0 +1,142 @@
+﻿
+
+@************************************** Created By Jerin Jahan (Date:14.07.2016)  ***************************************@
+
+@model FactoryManagement.ModelView.Configuration.LineInfoModelView
+
+@{
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    int j = 1;
+    if (Model.LineCount > 0)
+    {
+        j =Convert.ToInt32(Model.LineCount) + 1;
+    }
+    string name = "L";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var siteId = db.DepartmentLists.Where(m => m.DeptId == Model.DeptId).Select(m => m.SiteId).FirstOrDefault();
+    var sName =db.View_SiteLists.Where(m => m.Id == siteId).Select(m => m.SiteName).FirstOrDefault();
+}
+
+<h2>@ViewBag.Title</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.HiddenFor(m => m.DeptId)
+    @Html.HiddenFor(m => m.LineId)
+    @Html.HiddenFor(m => m.CreatedBy)
+    @Html.HiddenFor(m => m.Status)
+
+    <div class="form-horizontal col-md-12 col-sm-12 col-xs-12" id="DivForLineDefine">
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.DeptName, htmlAttributes: new { @class = "control-label col-md-2 col-sm-3" })
+            <div class="col-md-3 col-sm-4" style="padding-top:7px;">
+                @Html.DisplayFor(model => model.DeptName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.DeptAcronym, htmlAttributes: new { @class = "control-label col-md-2 col-sm-3" })
+            <div class="col-md-3 col-sm-4" style="padding-top:7px;">
+                @Html.DisplayFor(model => model.DeptAcronym, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.NumberOfLine, htmlAttributes: new { @class = "control-label col-md-2 col-sm-3" })
+            <div class="col-md-3 col-sm-4" style="padding-top:7px;">
+                @Html.DisplayFor(model => model.NumberOfLine, new { })
+            </div>
+        </div>
+        <div class="col-md-offset-2 col-sm-offset-3" id="divForLineDetailsValidate">
+            <div class="form-group">
+                @Html.Label("Line Number", htmlAttributes: new { @class = "col-md-2 col-sm-4 col-xs-5" })
+                @Html.Label("Line Name", htmlAttributes: new { @class = "col-md-3 col-sm-4 col-xs-5" })
+            </div>
+            
+            @for (int i = 1; i <= Model.NumberOfLine; i++)
+            {
+              <div class="form-group">
+                <div class="col-md-2 col-sm-4 col-xs-5">
+                    <input type="text" class="k-textbox txtDeptLineNum" value="" data-j="@j"
+                           name="LineNumber" id="LineNumber_@i" style="width:80%!important;"
+                           placeholder="@name@j" onfocus="this.placeholder = ''" onblur="this.placeholder = '@name@j' "
+                           data-val-remote="exists" data-val-remote-additionalfields="*.LineName,*.LineId,*.DeptId"
+                           data-val-remote-type="Post" data-val-remote-url="/RemoteValidation/LineNameExist" />
+                    <span class="field-validation-valid text-danger" data-valmsg-for="LineNumber_@i" data-valmsg-replace="true"></span>
+                </div>
+                <div class="col-md-3 col-sm-4 col-xs-5">
+                    <input type="text" class="k-textbox txtDeptLineName" value="" name="LineName_@i" id="LineName_@i" data-j="@j"
+                           style="width:60%!important;" placeholder="@Model.DeptAcronym@j" onfocus="this.placeholder = ''" onblur="this.placeholder = ' @Model.DeptAcronym@j ' " />
+                    <span class="field-validation-valid text-danger" data-valmsg-for="LineName_@i" data-valmsg-replace="true"></span>
+                </div>
+              </div>
+              j++;
+            }
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10 col-sm-offset-3 col-sm-9">
+                <input type="button" value="Update" class="k-button k-state-default" id="btnLineCreate" />
+                <input type="reset" value="Refresh" class="k-button k-state-default" id="btnRefresh" />
+                <input type="button" value="Cancel" class="k-button k-state-default" id="btnLineCreateCancle" />
+            </div>
+        </div>
+    </div>
+}
+<script>
+    var AllLineDetails = "";
+    $(document).ready(function () {
+        $("#liForHR").removeClass('active');
+        $("#liForConfig").addClass('active');
+    });
+    var validation = $("#DivForLineDefine").kendoValidator().data("kendoValidator");
+    $("#btnLineCreate").click(function () {
+        if (validation.validate()) {
+            //notification.show({message: "Adding line to department...",showTime: startTime()}, "upload-progress");
+            var AllLineNumber = [], AllLineName = [];
+            $(".txtDeptLineNum").each(function () {
+                if ($(this).val() === '') {
+                    AllLineNumber.push("@(name)" + $(this).data('j'));
+                }
+                else {
+                    AllLineNumber.push($(this).val());
+                }
+            });
+            $(".txtDeptLineName").each(function () {
+                if ($(this).val() === '') {
+                    AllLineName.push("@(Model.DeptAcronym)" + $(this).data('j'));
+                }
+                else {
+                    AllLineName.push($(this).val());
+                }
+            });
+
+            var data = {
+                DeptId: $("#DeptId").val(), SiteName: '@(sName)', Status: $("#Status").val(),
+                AllLineNumber: AllLineNumber, AllLineName: AllLineName, CreatedBy: userId
+            };
+
+            $.ajax({
+                url: '@Url.Action("SaveLineInfo", "Configuration")',
+                type: 'Post',
+                data: data,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({autoHideAfter: 5000});
+                    if (data !== "Error") {
+                        notification.show({message: "Line successfully added", showTime: startTime()}, "upload-success");
+                        location.href='@Url.Action("ShowDeptWithLineInfo", "Configuration")?deptId='+$("#DeptId").val()+'&display=False'+'&IsInfo=false';
+                    } else {
+                        notification.show({message: "Line add unsuccessful", showTime: startTime()}, "upload-error");
+                    }
+                }
+            });
+        }
+    });
+    $("#btnRefresh").click(function () {
+        location.reload();
+    });
+    $("#btnLineCreateCancle").click(function () {
+        location.href = '@Url.Action("ShowDeptWithLineInfo", "Configuration")?deptId=' +@Model.DeptId +'&display=False' + '&IsInfo=false';
+    });
+
+</script>

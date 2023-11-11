@@ -1,0 +1,27 @@
+﻿
+
+@************************************** Created By Jerin Jahan (Date:24.08.2016)  ***************************************@
+@model IEnumerable<FactoryManagement.Models.View_UserLists>
+@{
+    int count = 1;
+}
+
+<div class="col-sm-offset-2 col-sm-7" style="margin-bottom:20px;">
+    <table class="table" id="tbl_user_lists">
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @count.<span><img src="~/Images/UserPicture/thumb/@item.Picture" class="user-photo" /></span> @item.UserName
+                </td>
+            </tr>
+            count++;
+        }
+    </table>
+</div>
+
+<style>
+    #tbl_user_lists td{
+        border:none!important;
+    }
+</style>

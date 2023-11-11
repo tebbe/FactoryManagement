@@ -1,0 +1,100 @@
+﻿@using FactoryManagement.Helpers
+@{
+    int count = 0;
+    int roleid = Convert.ToInt32(Request.Cookies["CookieAdminInfo"].Values["roleid"].ToString());
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    long loginusrid = Convert.ToInt64(Request.Cookies["CookieAdminInfo"].Values["userid"].ToString());
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+
+<table class="table table-bordered table-condensed table-hover table-responsive" id="tbl_manu_indent_list">
+    <tr>
+        <th width="4%">#</th>
+        <th width="15%">Name</th>
+        <th width="18%">Created By</th>
+        <th width="10%">Created Date</th>
+        <th width="18%">Updated By</th>
+        <th width="10%">Updated Date</th>
+        <th width="20%"></th>
+    </tr>
+    @foreach (var item in ViewBag.list as IEnumerable<FactoryManagement.Models.WorkingScheduleList>)
+    {
+        count++;
+        <tr>
+            <th scope="row">@count.</th>
+            <td><span class="txtHoliPckName" data-id="@item.WorkingScheduleId" style="color:#357ebd;cursor:pointer;">@item.SchedulName</span></td>
+            <td>
+                @if (item.CreatedBy == 0)
+                {
+                    <img src="~/Images/UserPicture/thumb/admin.jpg" class="img-circle" /><span>Admin</span>
+                }
+                else
+                {
+                    if (roleid == 1 || roleid == 4)
+                    {
+                        var picname = db.UserInformations.Where(x => x.UserId == item.CreatedBy).Select(x => new { Pic = x.Picture, Name = x.FirstName + " " + x.MiddleName + " " + x.LastName }).FirstOrDefault();
+                        <a href="@Html.EncodedParam("DisplayEmployeeDetails","HumanResource",new {UserId=item.CreatedBy,isDisplay=true },null)">
+                            <img src="~/Images/UserPicture/thumb/@picname.Pic" class="img-circle" /> @picname.Name
+                        </a>
+                    }
+                    else
+                    {
+                        var picname = db.UserInformations.Where(x => x.UserId == item.CreatedBy).Select(x => new { Pic = x.Picture, Name = x.FirstName + " " + x.MiddleName + " " + x.LastName }).FirstOrDefault();
+
+                        <img src="~/Images/UserPicture/thumb/@picname.Pic" class="img-circle" /><span>@picname.Name</span>
+                    }
+                }
+            </td>
+            <td>@item.CreatedDate.ToString("MMM dd, yyyy")</td>
+            <td>
+                @if (item.UpdatedBy > -1)
+                {
+                    if (item.UpdatedBy == 0)
+                    {
+                                
+                        <img src="~/Images/UserPicture/thumb/admin.jpg" class="img-circle" /><span>Admin</span>
+                    }
+                    else
+                    {
+                        if (roleid == 1 || roleid == 4)
+                        {
+                            var picname = db.UserInformations.Where(x => x.UserId == item.UpdatedBy).Select(x => new { Pic = x.Picture, Name = x.FirstName + " " + x.MiddleName + " " + x.LastName }).FirstOrDefault();
+
+                            <a href="@Html.EncodedParam("DisplayEmployeeDetails","HumanResource",new { UserId=item.CreatedBy,isDisplay=true},null)">
+                                <img src="~/Images/UserPicture/thumb/@picname.Pic" class="img-circle" /> @picname.Name
+                            </a>
+                        }
+                        else
+                        {
+                            var picname = db.UserInformations.Where(x => x.UserId == item.CreatedBy).Select(x => new { Pic = x.Picture, Name = x.FirstName + " " + x.MiddleName + " " + x.LastName }).FirstOrDefault();
+
+                            <img src="~/Images/UserPicture/thumb/@picname.Pic" class="img-circle" /><span>@picname.Name</span>
+                        }
+                    }
+
+                }
+                else
+                {
+                    <span>Not Yet Updated</span>
+                }
+            </td>
+            <td>@if (item.UpdatedDate == null) { 
+                <span>Not Yet Updated</span>
+                }
+                else
+                {
+                   <span> @item.UpdatedDate.Value.ToString("MMM dd, yyyy")</span>
+                }
+               
+                  
+            </td>
+            <td>
+                <span data-toggle="tooltip" title="Edit Working Schedule" class="btn green btn_working_schedule_edit" data-id="@item.WorkingScheduleId" data-name="@item.SchedulName"><i class="fa fa-pencil"></i></span>
+                <span data-toggle="tooltip" title="Delete Working Schedule" class="btn btn-danger btn_working_schedule_delete" data-id="@item.WorkingScheduleId" data-name="@item.SchedulName"><i class="fa fa-trash"></i></span>
+            </td>
+        </tr>
+    }
+</table>
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+</script>

@@ -1,0 +1,398 @@
+﻿@************************************** Created By Jerin Jahan (Date:12.07.2016)  ***************************************@
+
+@model FactoryManagement.ModelView.Configuration.SiteListModelView
+
+@{
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+
+
+@using (Html.BeginForm())
+{
+    @Html.HiddenFor(m => m.Id)
+    @Html.HiddenFor(m => m.CreatedBy)
+    @Html.HiddenFor(m => m.Status)
+    @Html.HiddenFor(m => m.IsComposite)
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <i class="fa fa-gears fa-fwt"></i>
+                <a href="javascript:;">Configuration</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <i class="fa fa-plus"></i>
+                <a href="/Configuration/SiteCreate">Add New Site</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="portlet light bordered">
+        <div class="portlet-title">
+          
+            <div class="caption font-green">
+                <i class="fa fa-plus font-green"></i>
+                <span class="caption-subject bold uppercase">Add New Site</span>
+            </div>
+        </div>
+        <div class="portlet-body form">
+            <div class="form-horizontal" id="divForSiteCreate">
+                <div class="form-body">
+                    <div class="form-group" style="display:none;">
+                        <div class="col-md-offset-2 col-md-3 col-sm-offset-3 col-sm-4">
+                            <input id="ChkOperational" name="ChkResidential" type="radio" checked> Operational
+                            <input id="ChkResidential" name="ChkResidential" type="radio"> Residential
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.SiteName, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+                        <div class="col-md-3 col-sm-5">
+                            @Html.EditorFor(model => model.SiteName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                            @Html.ValidationMessageFor(model => model.SiteName, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.SiteAcronym, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+                        <div class="col-md-3 col-sm-5">
+                            @Html.EditorFor(model => model.SiteAcronym, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                            @Html.ValidationMessageFor(model => model.SiteAcronym, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Address, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+                        <div class="col-md-3 col-sm-5">
+                            @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                            @Html.ValidationMessageFor(model => model.Address, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.AddressLine1, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+                        <div class="col-md-3 col-sm-5">
+                            @Html.EditorFor(model => model.AddressLine1, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                            @Html.ValidationMessageFor(model => model.AddressLine1, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Country, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+                        <div class="col-md-3 col-sm-5">
+                            @(Html.Kendo().DropDownListFor(model => model.Country)
+                              .OptionLabel("--Select Country--")
+                              .Events(e => e.Change("onCountryChange"))
+                              .BindTo(ViewBag.CountryId)
+                              .HtmlAttributes(new { style = "width:100%" })
+                            )
+                            @Html.ValidationMessageFor(model => model.Country, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="form-group" id="Div_Division">
+                        @Html.LabelFor(model => model.DivisionId, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+                        <div class="col-md-3 col-sm-5">
+                            @(Html.Kendo().DropDownListFor(model => model.DivisionId)
+                      .OptionLabel("--Select One Division--")
+                      .BindTo(ViewBag.DivisionList)
+                      .HtmlAttributes(new { style = "width:100%" })
+                            )
+                            @Html.ValidationMessageFor(model => model.DivisionId, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="form-group" id="Div_State">
+                        @Html.LabelFor(model => model.Statename, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+                        <div class="col-md-3 col-sm-5">
+                            @Html.EditorFor(model => model.Statename, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                            @Html.ValidationMessageFor(model => model.Statename, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.City, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+                        <div class="col-md-3 col-sm-5">
+                            @Html.EditorFor(model => model.City, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                            @Html.ValidationMessageFor(model => model.City, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Area, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+                        <div class="col-md-3 col-sm-5">
+                            @Html.EditorFor(model => model.Area, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                            @Html.ValidationMessageFor(model => model.Area, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.PostalCode, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+                        <div class="col-md-3 col-sm-5">
+                            @Html.EditorFor(model => model.PostalCode, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                            @Html.ValidationMessageFor(model => model.PostalCode, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    @if (Model.Id > 0)
+                    {
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.Status, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+                            <div class="col-md-3 col-sm-5">
+                                @(Html.Kendo().DropDownList()
+                       .Name("StatusValue")
+                       .DataTextField("Text")
+                       .DataValueField("Value")
+                       .OptionLabel("--Select One Type--")
+                       .HtmlAttributes(new { style = "width:100%" })
+                       .Events(e => e.Change("onStatusChange"))
+                       .BindTo(new List<SelectListItem>() {
+                          new SelectListItem() {
+                              Text = "Active",
+                              Value = "1"
+                          },
+                          new SelectListItem() {
+                              Text = "Inactive",
+                              Value = "0"
+                          },
+                      })
+                      .Value(Model.Status.ToString())
+                                )
+                                @Html.ValidationMessageFor(model => model.Status, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    }
+                    <div class="form-group" id="DivForChkUnit">
+                        <div class="col-md-offset-3 col-md-5 col-sm-offset-4 col-sm-7">
+                            @Html.CheckBox("ChkboxForUnit", new { @onchange = "ShowLineNumber(this);" }) Check If There Is Any Unit
+                        </div>
+                    </div>
+                    <div class="form-group" id="DivForUnitNumber">
+                        @Html.LabelFor(model => model.UnitNumber, "Unit Number", htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+                        <div class="col-md-3 col-sm-5" style="padding-top:7px;">
+                            @Html.EditorFor(model => model.UnitNumber, new { htmlAttributes = new { @class = "form-control k-textbox", type = "text", onkeypress = "return isNumber(event)", onkeyup = "isvalueNull(this.value)", maxlength = "2" } })
+                            @Html.ValidationMessageFor(model => model.UnitNumber, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-3 col-sm-5"><span class=""></span></div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <div class="row">
+                        <div class="col-md-offset-3 col-md-9 col-sm-offset-4 col-sm-8">
+                            <button type="button" class="btn green" id="btnSiteCreate">Create</button>
+                            <button type="button" class="btn yellow" id="btnRefresh">Refresh</button>
+                            <button type="button" class="btn red" id="btnSiteCreateCancel">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<script>
+    var firstpress = true,IsResidential= false; var telInput;
+    $(document).ready(function () {
+        $("#liForConfig").addClass('active');
+        $("#liForSiteAdd").addClass('sublistActive');
+        $("#top_header_link").append('<span>Configuration</span><span><i class="fa fa-angle-right fa-2x"></i></span>'+
+            '<span><a href="/Configuration/SiteCreate"> Add New Site </a></span>');
+
+        if(@Model.Id > 0){
+            $("#btnSiteCreate").val('Update');
+            if($("#IsComposite").val()=="True"){
+                $("#ChkboxForUnit").prop("checked",true);
+            }
+            else{
+                $("#DivForUnitNumber").hide();
+            }
+        }else{
+            $("#DivForUnitNumber").hide();
+        }
+        $.getJSON('http://freegeoip.net/json/', function (location) {
+            var countryCode = location.country_code;
+            var dropdownlist = $("#Country").data("kendoDropDownList");
+            dropdownlist.value(countryCode);
+            if (countryCode == 'BD') {
+                $("#Div_State").hide();
+                $("#Div_Division").show();
+            }
+            else {
+                $("#Div_Division").hide();
+                $("#Div_State").show();
+            }
+        });
+    });
+
+    function isNumber(e) {
+        e = (e) ? e : window.event;
+        var charCode = (e.which) ? e.which : e.keyCode;
+        if (firstpress && charCode == 48) {
+            firstpress = false;
+            return false;
+        }
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+        return true;
+    }
+    function isvalueNull(value) {
+        firstpress = (value == '') ? true : false;
+    }
+    function ShowLineNumber(cb) {
+        if (cb.checked === true) {
+            $("#DivForUnitNumber").show();
+            $("#IsComposite").val(true);
+        } else {
+            $("#DivForUnitNumber").hide();
+            $("#IsComposite").val(false);
+        }
+        $("#UnitNumber").val('');
+    }
+    function onStatusChange(e){
+        var dataItem = this.dataItem(e.item);
+        $("#Status").val(dataItem.Value);
+    }
+    function onCountryChange() {
+        if ($("#Country").val() == "BD") {
+            $("#Div_State").hide();
+            $("#Div_Division").show();
+            $("#Statename").val('');
+        }
+        else {
+            $("#Div_Division").hide();
+            $("#Div_State").show();
+        }
+    };
+    //***************************************** Checkbox Click Function For Opraretional ********************************************
+    $("#ChkOperational").click(function(){
+        if($(this).is(':checked')){
+            $("#DivForChkUnit").show();
+            IsResidential= false;
+        }
+    });
+    //***************************************** Checkbox Click Function For Residential ********************************************
+    $("#ChkResidential").click(function(){
+        if($(this).is(':checked')){
+            $("#DivForChkUnit").hide();
+            $("#DivForUnitNumber").hide();
+            $("#UnitNumber").val('');
+            $("#ChkboxForUnit").prop('checked',false);
+            IsResidential= true;
+        }
+    });
+
+    var validation= $("#divForSiteCreate").kendoValidator({
+        rules: {
+            remote: function (input) {
+                var errormessage;
+                var remoteAttr = input.attr("data-val-remote-url");
+                if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                    return true;
+                }
+                var isInvalid;
+                var data = {};
+                var Id = $("#Id").val();
+                var SiteName = $.trim($("#SiteName").val());
+                data = { Id: Id, SiteName: SiteName };
+                $.ajax({
+                    url: remoteAttr,
+                    mode: "abort",
+                    port: "validate" + input.attr('name'),
+                    dataType: "json",
+                    type: input.attr("data-val-remote-type"),
+                    data: data,
+                    async: false,
+                    success: function (response) {
+                        isInvalid = response;
+                        if (isInvalid === true) {
+                            isInvalid = true;
+                        }
+                        else {
+                            isInvalid = false;
+                        }
+                    }
+                });
+
+                return isInvalid;
+            },
+            UnitNumber: function (input) {
+                if (input.is("[name=UnitNumber]") && $("#ChkboxForUnit").prop("checked") == true && $("#UnitNumber").val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            maxUnit: function (input) {
+                if (input.is("[name=UnitNumber]") && parseInt($("#UnitNumber").val()) > 20) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            minUnit: function (input) {
+                if (input.is("[name=UnitNumber]") && parseInt($("#UnitNumber").val()) < 1) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Statename:function (input) {
+                if (input.is("[name=Statename]") && $("#Country").val() !== "BD" && $("#Statename").val() == '') {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            DivisionId: function (input) {
+                if (input.is("[name=DivisionId]") && input.val() === "" && $("#Country").val() === "BD" ) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        },
+        messages: {
+            remote: function (input) {return input.data('val-remote');},
+            UnitNumber: "Please enter unit number",
+            maxUnit:"Unit number cannot be more than 20",
+            minUnit:"Unit number must be greater than 0 ",
+            Statename:"Please type state name",
+            DivisionId:"Please select division"
+        }
+    }).data("kendoValidator");
+    $("#btnSiteCreate").click(function () {
+        if (validation.validate()) {
+            notification.show({ message: "Creating new site...", showTime: startTime() }, "upload-progress");
+            var senddata = {
+                SiteId: $("#SiteId").val(), SiteName: $("#SiteName").val(),SiteAcronym: $("#SiteAcronym").val(),
+                Address:$("#Address").val(),AddressLine1:$("#AddressLine1").val(),Country:$("#Country").val(),Statename:$("#Statename").val(),
+                DivisionId:$("#DivisionId").val(),City: $("#City").val(), Area: $("#Area").val(),PostalCode:$("#PostalCode").val(),
+                Status:$("#Status").val(),IsComposite:$("#IsComposite").val(),UnitNumber:$("#UnitNumber").val(),IsResidential:IsResidential,CreatedBy: userId };
+            $.ajax({
+                url: '@Url.Action("SiteCreateSave", "Configuration")',
+                type: 'Post',
+                data: senddata,
+                success: function (data) {
+                    notification.hide();notification.setOptions({autoHideAfter: 5000});
+                    if (data !== "Error") {
+                        notification.show({ message: "New Site has been successfully created.", showTime: startTime() }, "upload-success");
+                        if (data.IsComposite > 0) {
+                            @*location.href = '@Url.Action("DefineUnitOfSite", "Configuration")?SiteId=' + data.Id + '&UnitNo=' + data.UnitNumber+'&isResi='+IsResidential+'&page=1';*@
+
+                            location.href = "/Configuration/DefineUnitOfSite?q=" + getDataEncrypted("SiteId=" + data.Id + "?UnitNo=" + data.UnitNumber +"?isResi=" +IsResidential+ "?page=1");
+                        }
+                        else {
+                            location.href = '@Url.Action("AllSiteInfo", "Configuration")';
+                        }
+                    } else {
+                        notification.show({ message: "New Site creation was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                },error:function(data){
+                    notification.hide();notification.setOptions({autoHideAfter: 5000});
+                    notification.show({ message: "Error occured.", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+    $("#btnRefresh").click(function () {
+        location.reload();
+    });
+    $("#btnSiteCreateCancel").click(function () {
+        if(@Model.Id>0){
+            @*location.href = '@Url.Action("ShowSiteInfoWithDeptList", "Configuration")?siteId=@Model.Id';*@
+            location.href = "/Configuration/ShowSiteInfoWithDeptList?q=" + getDataEncrypted("siteId=" + '@Model.Id');
+        }
+        else{
+            location.href = '@Url.Action("AllSiteInfo", "Configuration")';
+        }
+    });
+</script>

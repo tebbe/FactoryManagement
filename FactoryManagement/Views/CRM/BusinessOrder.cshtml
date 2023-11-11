@@ -1,0 +1,677 @@
+﻿
+
+
+
+
+@using FactoryManagement.Helpers;
+@model FactoryManagement.ModelView.CRM.BusinessOrderListModelView
+@{
+    ViewBag.Title = "BusinessOrder";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<style>
+    .tab-content {
+        overflow:auto;
+    }
+</style>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-users fa-fwt"></i>
+            <span>Business Mangement</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/CRM/BusinessOrder">Business Order</a>
+        </li>
+    </ul>
+</div>
+<div class="note note-success">
+    <p id="ShowingTitle">Showing All Business Order</p>
+</div>
+<div style="padding-bottom:5px!important;">
+    <span data-toggle="tooltip" title="Add New Busuness Order" id="btn_businessOrder_create" data-placement="right"><span class="btn green"><i class="fa fa-plus"></i> Add New </span></span>
+</div>
+
+<div id="div_full_Pannel">
+    <div class="profile-content" id="div_ryt_panel_FrmByr">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-settings font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">Business Order <small>(From Buyer)</small></span>
+                </div>
+                <div class="actions">
+                    <div class="btn-group btn-group-devided" data-toggle="buttons" id="btns_DayWise_FrmByr">
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm active" id="btn_All_FrmByr" data-toggle="tooltip" title="All History" data-container="body">
+                            <input type="radio" name="options" class="toggle">All
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_today_FrmByr" data-toggle="tooltip" title="Today History" data-container="body">
+                            <span><input type="radio" name="options" class="toggle">Today</span>
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_seven_FrmByr" data-toggle="tooltip" title="Last 7 days History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 7 Days
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_thirty_FrmByr" data-toggle="tooltip" title="Last 30 day History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 30 Days
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div style="padding-left:0px!important;padding-right:0px!important;">
+                <div class="panel with-nav-tabs panel-default" id="FrmByrPanel">
+                    <div class="panel-heading">
+                        <ul class="nav nav-tabs">
+                            <li class="active" id="liAllListFrmByr"><a href="#tab1AllListFrmByr" data-toggle="tab">All</a></li>
+                            <li id="liPendingListFrmByr"><a href="#tab2PendingListFrmByr" data-toggle="tab">Pending</a></li>
+                            <li id="liApprvdListFrmByr"><a href="#tab3ApprvdListFrmByr" data-toggle="tab">Approved</a></li>
+                            <li id="liCompletedListFrmByr"><a href="#tab4CompletedListFrmByr" data-toggle="tab">Completed</a></li>
+                        </ul>
+                    </div>
+                    <div class="panel-body" style="border:none!important;" id="div_for_panel_body">
+                        <div class="tab-content">
+                            <div class="tab-pane fade in active" id="tab1AllListFrmByr">
+                                <div class="win_loading_half"></div>
+                                @if (db.BusinessOrderLists.Where(m => m.OrderType == 1).Any())
+                                {
+                                    <script>
+                                        $("#Div_Upper_Portion_FrmByr").show();
+                                        $("#tab1AllListFrmByr").empty();
+                                        $("#tab1AllListFrmByr").append('<div class="win_loading_half"></div>');
+                                        $("#tab1AllListFrmByr").load('@Url.Action("_ShowAllBusinessOrder", "CRM")?OrderType=1');
+                                    </script>
+                                }
+                            </div>
+                            <div class="tab-pane fade" id="tab2PendingListFrmByr"></div>
+                            <div class="tab-pane fade" id="tab3ApprvdListFrmByr"></div>
+                            <div class="tab-pane fade" id="tab4CompletedListFrmByr"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="profile-content" id="div_ryt_panel_InHouse">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="icon-settings font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">Business Order <small>(In House)</small></span>
+                </div>
+                <div class="actions">
+                    <div class="btn-group btn-group-devided" data-toggle="buttons" id="btns_DayWise_InHouse">
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm active" id="btn_All_InHouse" data-toggle="tooltip" title="All History" data-container="body">
+                            <input type="radio" name="options" class="toggle">All
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_today_InHouse" data-toggle="tooltip" title="Today History" data-container="body">
+                            <span><input type="radio" name="options" class="toggle">Today</span>
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_seven_InHouse" data-toggle="tooltip" title="Last 7 days History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 7 Days
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_thirty_InHouse" data-toggle="tooltip" title="Last 30 day History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 30 Days
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div style="padding-left:0px!important;padding-right:0px!important;">
+                <div class="panel with-nav-tabs panel-default" id="InHousePanel">
+                    <div class="panel-heading">
+                        <ul class="nav nav-tabs">
+                            <li class="active" id="liAllListInHouse"><a href="#tab1AllListInHouse" data-toggle="tab">All</a></li>
+                            <li id="liPendingListInHouse"><a href="#tab2PendingListInHouse" data-toggle="tab">Pending</a></li>
+                            <li id="liApprvdListInHouse"><a href="#tab3ApprvdListInHouse" data-toggle="tab">Approved</a></li>
+                            <li id="liCompletedListInHouse"><a href="#tab4CompletedListInHouse" data-toggle="tab">Completed</a></li>
+                        </ul>
+                    </div>
+                    <div class="panel-body" style="border:none!important;" id="div_for_panel_body">
+                        <div class="tab-content">
+                            <div class="tab-pane fade in active" id="tab1AllListInHouse">
+                                <div class="win_loading_half"></div>
+                                @if (db.BusinessOrderLists.Where(m => m.OrderType == 2).Any())
+                                {
+                                    <script>
+                                        $("#Div_Upper_Portion_InHouse").show();
+                                        $("#tab1AllListInHouse").empty();
+                                        $("#tab1AllListInHouse").append('<div class="win_loading_half"></div>');
+                                        $("#tab1AllListInHouse").load('@Url.Action("_ShowAllBusinessOrder", "CRM")?OrderType=2');
+                                    </script>
+                                }
+                            </div>
+                            <div class="tab-pane fade" id="tab2PendingListInHouse"></div>
+                            <div class="tab-pane fade" id="tab3ApprvdListInHouse"></div>
+                            <div class="tab-pane fade" id="tab4CompletedListInHouse"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="BusinessOrderwindow"></div>
+<div id="BusinessOrderwindowEdit"></div>
+<script id="temp_win_businessOrder_edit" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px"> #=msg# </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_busOrder_noty_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_busOrder_noty_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+
+<script>
+
+    var showCount = 0, totalCount = 0, inCallback = false, page = 0, content = '', tab_FrmByr = 1, tab_InHouse = 1, checkDayBtn_FrmByr = -1, checkDayBtn_InHouse = -1;
+    $(document).ready(function () {
+        $("#liForCRM").addClass('active');
+        $("#liForBusinessOrder").addClass('sublistActive');
+    });
+    //************* KENDO POPUP FOR CREATE NEW BUSINESS ORDER************************
+    $("#btn_businessOrder_create").click(function () {
+        $("#BusinessOrderwindow").empty();
+        $("#BusinessOrderwindowEdit").empty();;
+        $("#BusinessOrderwindow").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            title: 'Create New Business Order',
+            width: '50%',
+            height: '28%',
+            close: onWindowClose
+        });
+        $("#BusinessOrderwindow").html('<div class="loading_15"></div>');
+        var BusinessOrderwindow = $("#BusinessOrderwindow").data("kendoWindow");
+        BusinessOrderwindow.refresh({ url: "/CRM/BusinessOrderCreatePopUp?BusinessOrderId=0&OrderType=1" });
+        BusinessOrderwindow.center().open();
+
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+
+    //************* SHOWING ALL ORDER LIST (FROM Buyer) ************************
+    $("#liAllListFrmByr").click(function () {
+        tab_FrmByr = 1;
+        reloadTab(1);
+        $("#tab2PendingListFrmByr").empty();
+        $("#tab3ApprvdListFrmByr").empty();
+        $("#tab4CompletedListFrmByr").empty();
+    });
+    //************* SHOWING ALL PENDING ORDER (FROM Buyer) ************************
+    $("#liPendingListFrmByr").click(function () {
+        tab_FrmByr = 2;
+        reloadTab(1);
+        $("#tab1AllListFrmByr").empty();
+        $("#tab3ApprvdListFrmByr").empty();
+        $("#tab4CompletedListFrmByr").empty();
+    });
+    //************* SHOWING ALL APPROVED ORDER (FROM Buyer) ************************
+    $("#liApprvdListFrmByr").click(function () {
+        tab_FrmByr = 3;
+        reloadTab(1);
+        $("#tab1AllListFrmByr").empty();
+        $("#tab2PendingListFrmByr").empty();
+        $("#tab4CompletedListFrmByr").empty();
+    });
+    //************* SHOWING ALL COMPLETED ORDER (FROM Buyer) ************************
+    $("#liCompletedListFrmByr").click(function () {
+        tab_FrmByr = 4;
+        reloadTab(1);
+        $("#tab1AllListFrmByr").empty();
+        $("#tab2PendingListFrmByr").empty();
+        $("#tab3ApprvdListFrmByr").empty();
+    });
+
+    //************* SHOWING ALL ORDER LIST (In House) ************************
+    $("#liAllListInHouse").click(function () {
+        tab_InHouse = 1;
+        reloadTab(2);
+        $("#tab2PendingListInHouse").empty();
+        $("#tab3ApprvdListInHouse").empty();
+        $("#tab4CompletedListInHouse").empty();
+    });
+    //************* SHOWING ALL PENDING ORDER (In House) ************************
+    $("#liPendingListInHouse").click(function () {
+        tab_InHouse = 2;
+        reloadTab(2);
+        $("#tab1AllListInHouse").empty();
+        $("#tab3ApprvdListInHouse").empty();
+        $("#tab4CompletedListInHouse").empty();
+    });
+    //************* SHOWING ALL APPROVED ORDER (In House) ************************
+    $("#liApprvdListInHouse").click(function () {
+        tab_InHouse = 3;
+        reloadTab(2);
+        $("#tab1AllListInHouse").empty();
+        $("#tab2PendingListInHouse").empty();
+        $("#tab4CompletedListInHouse").empty();
+    });
+    //************* SHOWING ALL COMPLETED ORDER (In House) ************************
+    $("#liCompletedListInHouse").click(function () {
+        tab_InHouse = 4;
+        reloadTab(2);
+        $("#tab1AllListInHouse").empty();
+        $("#tab2PendingListInHouse").empty();
+        $("#tab4CompletedListInHouse").empty();
+    });
+
+    //************* KENDO POPUP FOR EDIT BUSINESS ORDER************************
+    $("#div_full_Pannel").on("click", ".btn_businessOrder_edit", function () {
+        var BusinessOrderId = $(this).data("id");
+        $("#BusinessOrderwindow").empty();
+        $("#BusinessOrderwindowEdit").empty();
+        $("#BusinessOrderwindowEdit").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            title: 'Edit Business Order',
+            width: '50%',
+            height: '28%',
+            close: onWindowClose
+        });
+        $("#BusinessOrderwindowEdit").html('<div class="loading_15"></div>');
+        var BusinessOrderwindowEdit = $("#BusinessOrderwindowEdit").data("kendoWindow");
+        BusinessOrderwindowEdit.refresh({ url: "/CRM/BusinessOrderCreatePopUp?BusinessOrderId=" + BusinessOrderId });
+        BusinessOrderwindowEdit.center().open();
+
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+
+    //*******************************  APPROVE BUSINESS ORDER *****************************************
+    $("#div_ryt_panel_FrmByr").on("click", ".btn_app_businessOrder", function () {
+        var orderId = $(this).data("id");
+        app_Bus_Order(orderId, 1);
+    });
+    $("#div_ryt_panel_InHouse").on("click", ".btn_app_businessOrder", function () {
+        var orderId = $(this).data("id");
+        app_Bus_Order(orderId, 2);
+    });
+    function app_Bus_Order(orderId, orderType) {
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose
+        });
+        msg = "Are you sure want to approve this order?";
+        var template = kendo.template($("#temp_win_businessOrder_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+
+        kendoWindow.find("#btn_busOrder_noty_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_busOrder_noty_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            document.documentElement.style.overflow = 'auto';
+            document.body.scroll = "yes";
+            notification.show({ message: "Business ording is approving...", showTime: startTime() }, "upload-progress");
+            $.ajax({
+                url: '@Url.Action("BusinessOrderStatusChange", "CRM")',
+                type: 'Post',
+                data: { BusinessOrderId: orderId, ApprovedBy: userId, OrderStatus: 1 },
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if (data == "Success") {
+                        notification.show({ message: "Business order has been successfully approved.", showTime: startTime() }, "upload-success");
+                        reloadTab(orderType);
+
+                    } else {
+                        notification.show({ message: "Business order approved was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                },
+                error: function (err) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }).end();
+    }
+
+    //*******************************  DELETE BUSINESS ORDER *****************************************
+    $("#div_ryt_panel_FrmByr").on("click", ".btn_delete_businessOrder", function () {
+        var orderId = $(this).data("id");
+        deleteBusOrder(orderId, 1);
+    });
+    $("#div_ryt_panel_InHouse").on("click", ".btn_delete_businessOrder", function () {
+        var orderId = $(this).data("id");
+        deleteBusOrder(orderId, 2);
+    });
+
+    function deleteBusOrder(orderId, orderType) {
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose
+        });
+        msg = "Are you sure you want to delete this order? It may cause problem in your system.";
+        var template = kendo.template($("#temp_win_businessOrder_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+
+        kendoWindow.find("#btn_busOrder_noty_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            document.documentElement.style.overflow = 'auto';
+            document.body.scroll = "yes";
+        }).end();
+
+        kendoWindow.find("#btn_busOrder_noty_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            document.documentElement.style.overflow = 'auto';
+            document.body.scroll = "yes";
+            notification.show({ message: "Business order is deleting...", showTime: startTime() }, "upload-progress");
+            $.ajax({
+                url: '@Url.Action("DeleteBusinessOrder", "CRM")',
+                type: 'Post',
+                data: { BusinessOrderId: orderId, ApprovedBy: userId, indentStatus: -1 },
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === "Error") {
+                        notification.show({ message: "Business order deletion was unsuccessful", showTime: startTime() }, "upload-error");
+                    }
+                    else {
+                        notification.show({ message: "Business order has been successfully deleted.", showTime: startTime() }, "upload-success");
+                        reloadTab(orderType);
+                    }
+                }
+            });
+        }).end();
+    }
+</script>
+<script>
+    //************* RELOAD TAB AFTER CREATE,EDIT,APROVE,DELETR **********
+    function reloadTab(orderType) {
+        if (checkDayBtn_FrmByr > 0 && orderType == 1) {
+            loadTab_FrmByr(checkDayBtn_FrmByr);
+        }
+        else if (checkDayBtn_InHouse > 0 && orderType == 2) {
+
+            loadTab_InHouse(checkDayBtn_InHouse);
+        }
+        else {
+            if (orderType == 1) {
+                if (tab_FrmByr == 1) {
+                    $("#ShowingTitle").text('Showing All Business Order (FROM Buyer)');
+                    $("#tab1AllListFrmByr").empty();
+                    $("#tab1AllListFrmByr").append('<div class="win_loading_half"></div>');
+                    $("#tab1AllListFrmByr").load('@Url.Action("_ShowAllBusinessOrder", "CRM")?OrderType=1');
+                }
+                else if (tab_FrmByr == 2) {
+                    $("#ShowingTitle").text('Showing All Pending Order (FROM Buyer)');
+                    $("#tab2PendingListFrmByr").empty();
+                    $("#tab2PendingListFrmByr").append('<div class="win_loading_half"></div>');
+                    $("#tab2PendingListFrmByr").load('@Url.Action("_ShowAllBusinessOrder", "CRM")?OrderType=1&OrderStatus=0');
+                }
+                else if (tab_FrmByr == 3) {
+                    $("#ShowingTitle").text('Showing All Approved Order (FROM Buyer)');
+                    $("#tab3ApprvdListFrmByr").empty();
+                    $("#tab3ApprvdListFrmByr").append('<div class="win_loading_half"></div>');
+                    $("#tab3ApprvdListFrmByr").load('@Url.Action("_ShowAllBusinessOrder", "CRM")?OrderType=1&OrderStatus=1');
+                }
+                else if (tab_FrmByr == 4) {
+                    $("#ShowingTitle").text('Showing All Completed Order (FROM Buyer)');
+                    $("#tab4CompletedListFrmByr").empty();
+                    $("#tab4CompletedListFrmByr").append('<div class="win_loading_half"></div>');
+                    $("#tab4CompletedListFrmByr").load('@Url.Action("_ShowAllBusinessOrder", "CRM")?OrderType=1&OrderStatus=3');
+                }
+            }
+            else {
+                if (tab_InHouse == 1) {
+                    $("#ShowingTitle").text('Showing All Business Order (FROM Buyer)');
+                    $("#tab1AllListInHouse").empty();
+                    $("#tab1AllListInHouse").append('<div class="win_loading_half"></div>');
+                    $("#tab1AllListInHouse").load('@Url.Action("_ShowAllBusinessOrder", "CRM")?OrderType=2');
+                }
+                else if (tab_InHouse == 2) {
+                    $("#ShowingTitle").text('Showing All Pending Order (FROM Buyer)');
+                    $("#tab2PendingListInHouse").empty();
+                    $("#tab2PendingListInHouse").append('<div class="win_loading_half"></div>');
+                    $("#tab2PendingListInHouse").load('@Url.Action("_ShowAllBusinessOrder", "CRM")?OrderType=2&OrderStatus=0');
+                }
+                else if (tab_InHouse == 3) {
+                    $("#ShowingTitle").text('Showing All Approved Order (FROM Buyer)');
+                    $("#tab3ApprvdListInHouse").empty();
+                    $("#tab3ApprvdListInHouse").append('<div class="win_loading_half"></div>');
+                    $("#tab3ApprvdListInHouse").load('@Url.Action("_ShowAllBusinessOrder", "CRM")?OrderType=2&OrderStatus=1');
+                }
+                else if (tab_InHouse == 4) {
+                    $("#ShowingTitle").text('Showing All Completed Order (FROM Buyer)');
+                    $("#tab4CompletedListInHouse").empty();
+                    $("#tab4CompletedListInHouse").append('<div class="win_loading_half"></div>');
+                    $("#tab4CompletedListInHouse").load('@Url.Action("_ShowAllBusinessOrder", "CRM")?OrderType=2&OrderStatus=3');
+                }
+            }
+
+        }
+
+    }
+    //************************** SHOW TAB DAYWISE ******************************
+    function loadTab_FrmByr(day) {
+        if (tab_FrmByr == 1) {
+            var passdataType1 = { days: day, OrderType: 1 };
+            $("#tab1AllListFrmByr").empty();
+            $("#tab1AllListFrmByr").append('<div class="win_loading_half"></div>');
+            $("#tab1AllListFrmByr").load('@Url.Action("_ShowAllBusinessOrderDayWise", "CRM")', passdataType1);
+        }
+        else if (tab_FrmByr == 2) {
+            var passdataType1 = { days: day, OrderType: 1, OrderStatus: 0 };
+            $("#tab2PendingListFrmByr").empty();
+            $("#tab2PendingListFrmByr").append('<div class="win_loading_half"></div>');
+            $("#tab2PendingListFrmByr").load('@Url.Action("_ShowAllBusinessOrderDayWise", "CRM")', passdataType1);
+        }
+        else if (tab_FrmByr == 3) {
+            var passdataType1 = { days: day, OrderType: 1, OrderStatus: 1 };
+            $("#tab3ApprvdListFrmByr").empty();
+            $("#tab3ApprvdListFrmByr").append('<div class="win_loading_half"></div>');
+            $("#tab3ApprvdListFrmByr").load('@Url.Action("_ShowAllBusinessOrderDayWise", "CRM")', passdataType1);
+        }
+        else if (tab_FrmByr == 4) {
+            var passdataType1 = { days: day, OrderType: 1, OrderStatus: 3 };
+            $("#tab4CompletedListFrmByr").empty();
+            $("#tab4CompletedListFrmByr").append('<div class="win_loading_half"></div>');
+            $("#tab4CompletedListFrmByr").load('@Url.Action("_ShowAllBusinessOrderDayWise", "CRM")', passdataType1);
+        }
+    }
+
+    function loadTab_InHouse(day) {
+        if (tab_InHouse == 1) {
+            var passdataType2 = { days: day, OrderType: 2 };
+            $("#tab1AllListInHouse").empty();
+            $("#tab1AllListInHouse").append('<div class="win_loading_half"></div>');
+            $("#tab1AllListInHouse").load('@Url.Action("_ShowAllBusinessOrderDayWise", "CRM")', passdataType2);
+        }
+        else if (tab_InHouse == 2) {
+            var passdataType2 = { days: day, OrderType: 2, OrderStatus: 0 };
+            $("#tab2PendingListInHouse").empty();
+            $("#tab2PendingListInHouse").append('<div class="win_loading_half"></div>');
+            $("#tab2PendingListInHouse").load('@Url.Action("_ShowAllBusinessOrderDayWise", "CRM")', passdataType2);
+        }
+        else if (tab_InHouse == 3) {
+            var passdataType2 = { days: day, OrderType: 2, OrderStatus: 1 };
+            $("#tab3ApprvdListInHouse").empty();
+            $("#tab3ApprvdListInHouse").append('<div class="win_loading_half"></div>');
+            $("#tab3ApprvdListInHouse").load('@Url.Action("_ShowAllBusinessOrderDayWise", "CRM")', passdataType2);
+        }
+        else if (tab_InHouse == 4) {
+            var passdataType2 = { days: day, OrderType: 2, OrderStatus: 3 };
+            $("#tab4CompletedListInHouse").empty();
+            $("#tab4CompletedListInHouse").append('<div class="win_loading_half"></div>');
+            $("#tab4CompletedListInHouse").load('@Url.Action("_ShowAllBusinessOrderDayWise", "CRM")', passdataType2);
+        }
+    }
+    //************************** TAB BUTTON DAYWISE (From Byer) ******************************
+    $("#btn_today_FrmByr").click(function () {
+        var showCount = 0, totalCount = 0, page = 0;
+        $("#ShowingTitle").text("Showing Today's Business Order (FROM Buyer)");
+        checkDayBtn_FrmByr = 1;
+        loadTab_FrmByr(1);
+    });
+    $("#btn_last_seven_FrmByr").click(function () {
+        showCount = 0, totalCount = 0, page = 0;
+        $("#ShowingTitle").text("Showing Last 7 Day's Business Order (FROM Buyer)");
+        checkDayBtn_FrmByr = 7;
+        loadTab_FrmByr(7);
+    });
+    $("#btn_last_thirty_FrmByr").click(function () {
+        showCount = 0, totalCount = 0, page = 0;
+        $("#ShowingTitle").text("Showing Last 30 Day's Business Order (FROM Buyer)");
+        checkDayBtn_FrmByr = 30;
+        loadTab_FrmByr(30);
+    });
+    $("#btn_All_FrmByr").click(function () {
+        showCount = 0, totalCount = 0, page = 0;
+        $("#ShowingTitle").text("Showing All Day's Business Order (FROM Buyer)");
+        checkDayBtn_FrmByr = 0;
+        loadTab_FrmByr(0);
+    });
+    //************************** TAB BUTTON DAYWISE (In House) ******************************
+    $("#btn_today_InHouse").click(function () {
+        var showCount = 0, totalCount = 0, page = 0;
+        $("#ShowingTitle").text("Showing Today's Business Order (In House)");
+        checkDayBtn_InHouse = 1;
+        loadTab_InHouse(1);
+    });
+    $("#btn_last_seven_InHouse").click(function () {
+        showCount = 0, totalCount = 0, page = 0;
+        $("#ShowingTitle").text("Showing Last 7 Day's Business Order (In House)");
+        checkDayBtn_InHouse = 7;
+        loadTab_InHouse(7);
+    });
+    $("#btn_last_thirty_InHouse").click(function () {
+        showCount = 0, totalCount = 0, page = 0;
+        $("#ShowingTitle").text("Showing Last 30 Day's Business Order (In House)");
+        checkDayBtn_InHouse = 30;
+        loadTab_InHouse(30);
+    });
+    $("#btn_All_InHouse").click(function () {
+        showCount = 0, totalCount = 0, page = 0;
+        $("#ShowingTitle").text("Showing All Day's Business Order (In House)");
+        checkDayBtn_InHouse = 0;
+        loadTab_InHouse(0);
+    });
+
+    //************************** SHOW TAB (StartDate To End Date) ******************************
+    function loadTab_DateWise_FrmByr(fromDate, toDate) {
+        if (tab_FrmByr == 1) {
+            var passdataType1 = { fromDate: fromDate, toDate: toDate, OrderType: 1 };
+            $("#ShowingTitle").text("Showing Date Wise Business Order (FROM Buyer)");
+            $("#tab1AllListFrmByr").empty();
+            $("#tab1AllListFrmByr").append('<div class="win_loading_half"></div>');
+            $("#tab1AllListFrmByr").load('@Url.Action("_ShowAllBusinessOrderDateWise", "CRM")', passdataType1);
+        }
+        else if (tab_FrmByr == 2) {
+            var passdataType1 = { fromDate: fromDate, toDate: toDate, OrderType: 1, OrderStatus: 0 };
+            $("#ShowingTitle").text("Showing Date Wise Pending Order (FROM Buyer)");
+            $("#tab2PendingListFrmByr").empty();
+            $("#tab2PendingListFrmByr").append('<div class="win_loading_half"></div>');
+            $("#tab2PendingListFrmByr").load('@Url.Action("_ShowAllBusinessOrderDateWise", "CRM")', passdataType1);
+        }
+        else if (tab_FrmByr == 3) {
+            var passdataType1 = { fromDate: fromDate, toDate: toDate, OrderType: 1, OrderStatus: 1 };
+            $("#ShowingTitle").text("Showing Date Wise Approved Order (FROM Buyer)");
+            $("#tab3ApprvdListFrmByr").empty();
+            $("#tab3ApprvdListFrmByr").append('<div class="win_loading_half"></div>');
+            $("#tab3ApprvdListFrmByr").load('@Url.Action("_ShowAllBusinessOrderDateWise", "CRM")', passdataType1);
+        }
+        else if (tab_FrmByr == 4) {
+            var passdataType1 = { fromDate: fromDate, toDate: toDate, OrderType: 1, OrderStatus: 3 };
+            $("#ShowingTitle").text("Showing Date Wise Completed Order (FROM Buyer)");
+            $("#tab4CompletedListFrmByr").empty();
+            $("#tab4CompletedListFrmByr").append('<div class="win_loading_half"></div>');
+            $("#tab4CompletedListFrmByr").load('@Url.Action("_ShowAllBusinessOrderDateWise", "CRM")', passdataType1);
+        }
+        clearDayBtn(1);
+    }
+
+    function loadTab_DateWise_InHouse(fromDate, toDate) {
+        if (tab_InHouse == 1) {
+            var passdataType2 = { fromDate: fromDate, toDate: toDate, OrderType: 2 };
+            $("#ShowingTitle").text("Showing Date Wise Business Order (In House)");
+            $("#tab1AllListInHouse").empty();
+            $("#tab1AllListInHouse").append('<div class="win_loading_half"></div>');
+            $("#tab1AllListInHouse").load('@Url.Action("_ShowAllBusinessOrderDateWise", "CRM")', passdataType2);
+        }
+        else if (tab_InHouse == 2) {
+            var passdataType2 = { fromDate: fromDate, toDate: toDate, OrderType: 2, OrderStatus: 0 };
+            $("#ShowingTitle").text("Showing Date Wise Pending Order (In House)");
+            $("#tab2PendingListInHouse").empty();
+            $("#tab2PendingListInHouse").append('<div class="win_loading_half"></div>');
+            $("#tab2PendingListInHouse").load('@Url.Action("_ShowAllBusinessOrderDateWise", "CRM")', passdataType2);
+        }
+        else if (tab_InHouse == 3) {
+            var passdataType2 = { fromDate: fromDate, toDate: toDate, OrderType: 2, OrderStatus: 1 };
+            $("#ShowingTitle").text("Showing Date Wise Approved Order (In House)");
+            $("#tab3ApprvdListInHouse").empty();
+            $("#tab3ApprvdListInHouse").append('<div class="win_loading_half"></div>');
+            $("#tab3ApprvdListInHouse").load('@Url.Action("_ShowAllBusinessOrderDateWise", "CRM")', passdataType2);
+        }
+        else if (tab_InHouse == 4) {
+            var passdataType2 = { fromDate: fromDate, toDate: toDate, OrderType: 2, OrderStatus: 3 };
+            $("#ShowingTitle").text("Showing Date Wise Completed Order (In House)");
+            $("#tab4CompletedListInHouse").empty();
+            $("#tab4CompletedListInHouse").append('<div class="win_loading_half"></div>');
+            $("#tab4CompletedListInHouse").load('@Url.Action("_ShowAllBusinessOrderDateWise", "CRM")', passdataType2);
+        }
+        clearDayBtn(2);
+    }
+
+    //************************** BACK If Recond Not Fount ******************************
+    $("#div_ryt_panel_FrmByr , #div_ryt_panel_InHouse").on("click", ".btn_Back_To_Tab", function () {
+        var ordType = $(this).data("id");
+        clearDayBtn(ordType);
+        if (ordType == 1) {
+            if (tab_FrmByr == 1) {
+                $("#liAllListFrmByr").click();
+            }
+            else if (tab_FrmByr == 2) {
+                $("#liPendingListFrmByr").click();
+            }
+            else if (tab_FrmByr == 3) {
+                $("#liApprvdListFrmByr").click();
+            }
+            else if (tab_FrmByr == 4) {
+                $("#liCompletedListFrmByr").click();
+            }
+        }
+        else if (ordType == 2) {
+            if (tab_InHouse == 1) {
+                $("#liAllListInHouse").click();
+            }
+            else if (tab_InHouse == 2) {
+                $("#liPendingListInHouse").click();
+            }
+            else if (tab_InHouse == 3) {
+                $("#liApprvdListInHouse").click();
+            }
+            else if (tab_InHouse == 4) {
+                $("#liCompletedListInHouse").click();
+            }
+        }
+    });
+    //************* Cleat Day Buttons Active Class ************************
+    function clearDayBtn(ordType) {
+        if (ordType == 1) {
+            checkDayBtn_FrmByr = -1;
+            $("#btns_DayWise_FrmByr").find("*").removeClass("active");
+            $("#btn_All_FrmByr").addClass("active");
+        }
+        else {
+            checkDayBtn_InHouse = -1;
+            $("#btns_DayWise_InHouse").find("*").removeClass("active");
+            $("#btn_All_InHouse").addClass("active");
+        }
+    }
+</script>

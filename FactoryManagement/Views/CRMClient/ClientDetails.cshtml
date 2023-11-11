@@ -1,0 +1,472 @@
+﻿@model FactoryManagement.ModelView.CRM.ClientListModelView
+@{
+    ViewBag.Title = "ClientDetails";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var clientContactList = db.ClientContactLists.Where(m => m.ClientId == Model.ClientId).ToList();
+}
+<link href="~/Scripts/intl-tel-input-master/build/css/intlTelInput.css" rel="stylesheet" />
+<script src="~/Scripts/intl-tel-input-master/build/js/intlTelInput.min.js"></script>
+<link href="~/Content/Employee/profile.css" rel="stylesheet" />
+
+<script id="temp_confirmation" type="text/x-kendo-template" >
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">#= message #</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script id="temp_pass" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">#= pass #</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_pass_show"><span class="k-icon k-update"></span>OK</button>
+        </div>
+    </div>
+</script>
+
+<h2 class="page-title">Client Information</h2>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span href="javascript:;">CRMClient</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/CRMClient/AllClientList">All Client List</a>
+        </li>
+        <li>
+            <i class="fa fa-info-circle"></i>
+            <span> Client Details Information</span>
+        </li>
+    </ul>
+</div>
+
+<div class="portlet light bordered">
+    <div class="portlet-title">
+        <div class="caption font-green">
+            <i class="fa fa-info-circle font-green"></i>
+            <span class="caption-subject bold uppercase">Client Details</span>
+        </div>
+    </div>
+    <div class="portlet-body">
+        <div class="row profile">
+            <div class="col-md-2 col-sm-3">
+                <div class="profile-sidebar" style="border:1px solid #ddd;">
+                    <div class="profile-usertitle">
+                        <div class="profile-usertitle-name">@Model.Name</div>
+                        <div class="profile-usertitle-job">@Model.ClientType</div>
+                    </div>
+                    <div class="profile-usermenu">
+                        <ul class="nav">
+                            <li class="active" id="li_basic_info">
+                                <a href="javascript:;">
+                                    <i class="fa fa-home"></i>
+                                    Basic Info
+                                </a>
+                            </li>
+                            <li id="li_contact_info">
+                                <a href="javascript:;">
+                                    <i class="fa fa-phone"></i>
+                                    Contact Info
+                                </a>
+                            </li>
+                            <li id="li_user">
+                                <a href="javascript:;">
+                                    <i class="fa fa-user"></i>
+                                    Users
+
+                                </a>
+                            </li>
+                            @if (Model.IsLogistic)
+                            {
+                                <li id="li_vehicle">
+                                    <a href="javascript:;">
+                                        <i class="fa fa-car"></i>
+                                        Vehicle
+
+                                    </a>
+                                </li>
+                            }
+                            <li id="li_business_history">
+                                <a href="javascript:;">
+                                    <i class="fa fa-history"></i>
+                                    Business History
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-10 col-sm-9">
+                <div class="profile-content" id="div_ryt_panel">
+                    <div class="loading_30"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="div_Entry_panel"></div>
+<div id="div_Edit_panel"></div>
+<div id="div_userEntry_panel"></div>
+<div id="div_Display_panel"></div>
+<div id="AddNewVehicelPopUp"></div>
+<div id="UpdateNewVehicelPopUp"></div>
+<div id="displayNewVehicelPopUp"></div>
+<div id="clientContactEditPopUp"></div>
+
+
+<script>
+    var vId=0,
+    CliId = '@(Model.ClientId)', 
+    isDisplay = '@(Model.IsDisplay)', 
+    @*clientBdIp='@Model.Ip',*@
+    clientType = '@(Model.ClientType)', 
+    clientTypeId = '@(Model.ClientTypeId)';
+
+    $(document).ready(function () {
+        $("#liForCRM").addClass('active');
+        $("#liForClientList").addClass('sublistActive');
+        $("#div_ryt_panel").load('@Url.Action("_ClientBasicInfoDisplay", "CRMClient")?Id=' + CliId + '&isDisplay=' + isDisplay);
+    });
+
+    //******************************** Left Side Basic Info Click ************************************
+    $("#li_basic_info").click(function () {
+        $("#li_contact_info").removeClass("active");
+        $("#li_user").removeClass('active');
+        $("#li_vehicle").removeClass("active");
+        $("#li_business_history").removeClass("active");
+        $("#li_basic_info").addClass("active");
+        $("#div_ryt_panel").empty();
+        $("#div_ryt_panel").append('<div class="loading_half"></div>');
+        $("#div_ryt_panel").load('@Url.Action("_ClientBasicInfoDisplay", "CRMClient")?Id='+CliId + '&isDisplay='+isDisplay);
+    });
+    //******************************** Left Side Contact Info Click ************************************
+    $("#li_contact_info").click(function () {
+        $("#li_basic_info").removeClass("active");
+        $("#li_user").removeClass('active');
+        $("#li_vehicle").removeClass("active");
+        $("#li_business_history").removeClass("active");
+        $("#li_contact_info").addClass("active");
+        $("#div_ryt_panel").empty();
+        $("#div_ryt_panel").append('<div class="loading_half"></div>');
+        $("#div_ryt_panel").load('@Url.Action("_ClientContactInfoDisplay", "CRMClient")?Id=' + CliId+'&isDisplay=' + isDisplay);
+    });
+
+    //******************************** Left Side User Click ************************************
+    $("#li_user").click(function () {
+        $("#li_basic_info").removeClass('active');
+        $("#li_contact_info").removeClass("active");
+        $("#li_vehicle").removeClass("active");
+        $("#li_business_history").removeClass("active");
+        $("#li_user").addClass("active");
+        $("#div_ryt_panel").empty();
+        $("#div_ryt_panel").append('<div class="loading_half"></div>');
+        $("#div_ryt_panel").load('@Url.Action("UserList", "CRMClient")?Id='+CliId+'&isDisplay=' + isDisplay);
+    });
+    //******************************** Left Side Vehicle Click ************************************
+    $("#li_vehicle").click(function () {
+        $("#li_vehicle").addClass("active");
+        $("#li_basic_info").removeClass('active');
+        $("#li_contact_info").removeClass("active");
+        $("#li_user").removeClass('active');
+        $("#li_business_history").removeClass("active");
+        $("#div_ryt_panel").empty();
+        $("#div_ryt_panel").append('<div class="loading_half"></div>');
+        $("#div_ryt_panel").load('@Url.Action("VehicleList", "CRMClient")?Id='+ CliId+'&isDisplay=' + isDisplay);
+    });
+    //******************************** Left Side Business History Click ************************************
+    $("#li_business_history").click(function () {
+        $("#li_contact_info").removeClass("active");
+        $("#li_user").removeClass('active');
+        $("#li_vehicle").removeClass("active");
+        $("#li_basic_info").removeClass('active');
+        $("#li_business_history").addClass("active");
+        $("#div_ryt_panel").empty();
+        $("#div_ryt_panel").append('<div class="loading_half"></div>');
+        $("#div_ryt_panel").load('@Url.Action("_DisplayBusinessOrderHistory", "CRMClient")?ClientId=' + CliId);
+    });
+    function onChangeOfClientCountry(e) {
+        e.preventDefault();
+        var country = $("#clientCountry").val();
+        var division = $("#clientDivisionId").val();
+        var state = $("#State").val();
+        if (country == "BD") {
+            $("#DivForClientEditDivision").show();
+            $("#DivForClientEditState").hide();
+            $("#State").val(state);
+        }
+        else {
+            $("#DivForClientEditDivision").hide();
+            $("#DivForClientEditState").show();
+            $("#clientDivisionId").val(division);
+        }
+    };
+    function onChangeOfUserCountry(e) {
+        e.preventDefault();
+        var coun = $("#userCountry").val();
+        var  uDiv = $("#userDivisionId").val();
+        var  uSta = $("#State").val();
+        if (coun == "BD") {
+            $("#DivForUserDivision").show();
+            $("#DivForUserState").hide();
+            $("#State").val('');
+            $("#userDivisionId").val(uDiv);
+        }
+        else {
+            $("#DivForUserDivision").hide();
+            $("#DivForUserState").show();
+            $("#State").val(uSta);
+            $("#userDivisionId").val('');
+        }
+    };
+    function onChangeOfVehicleCountry(e) {
+        e.preventDefault();
+        var coun = $("#vehicleCountry").val();
+        var vDiv = $("#vehicleDivisionId").val();
+        var vSta = $("#State").val();
+        if (coun == "BD") {
+            $("#DivForVehicleDivision").show();
+            $("#DivForVehicleState").hide();
+            $("#State").val('');
+            $("#vehicleDivisionId").val(vDiv);
+        }
+        else {
+            $("#DivForVehicleDivision").hide();
+            $("#DivForVehicleState").show();
+            $("#vehicleDivisionId").val('');
+            $("#State").val(vSta);
+        }
+    };
+
+
+    //***********************CLIENT BASIC INFORMATION EDIT(START) *****************************
+    $("#div_ryt_panel").on("click", "#editBasicInfo", function (e) {
+        e.preventDefault();
+        $("#Display_Client_basic_info").hide();
+        $("#div_Edit_panel").empty();
+        $("#div_Edit_panel").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '80%',
+            height: '80%',
+            title: 'Edit Client Basic Info'
+        });
+        $("#div_Edit_panel").html('<div class="loading_half"></div>');
+        var div_client_basic_info_edit = $("#div_Edit_panel").data("kendoWindow");
+        div_client_basic_info_edit.refresh({ url: "/CRMClient/LaunchEditView?Id=" + CliId + '&isDisplay=' + isDisplay });
+        div_client_basic_info_edit.center().maximize().open();
+    });
+    //**************Cancel and Refresh btn*******************************************
+    $("#div_Edit_panel").on("click", "#btnCancelBasicInfo", function (e) {
+        $("#div_Edit_panel").empty();
+        $("#div_Edit_panel").data("kendoWindow").close();
+    });
+    $("#div_Edit_panel").on("click", "#btnInfoEditResfresh", function () {
+        $("#div_Edit_panel").empty();
+        $("#div_Edit_panel").append('<div class="win_loading_30"></div>');
+        var sendData = { Id:@Model.ClientId,isDisplay: false, };
+        $("#div_Edit_panel").load('@Url.Action("LaunchEditView", "CRMClient")',sendData);
+    });
+    //**************Add new user info popup*******************************************
+    $("#div_ryt_panel").on("click","#userInfoEntry",function (e) {
+        e.preventDefault();
+        $("#div_userEntry_panel").empty();
+        $("#div_userEntry_panel").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '80%',
+            height: '70%',
+            title: 'Add New User'
+        });
+        $("#div_userEntry_panel").append('<div class="loading_half"></div>');
+        var Desigwindow = $("#div_userEntry_panel").data("kendoWindow");
+        Desigwindow.refresh({ url: "/CRMClient/AddNewUserPopUp?ClientId=" +CliId});
+        Desigwindow.center().maximize().open();
+    });
+//**************user add  Cancel and Refresh btn*******************************************
+    $("#div_userEntry_panel").on("click","#btnRefreshAddnewUser",function () {
+        $("#div_userEntry_panel").empty();
+        $("#div_userEntry_panel").append('<div class="loading_half"></div>');
+        $("#div_userEntry_panel").load('@Url.Action("AddNewUserPopUp","CRMClient")?ClientId=' + CliId);
+    });
+
+//****************Vehicle info Edit Save and Display**************************************************
+    @*****************Add new Vehicel***************************@
+    $("#div_ryt_panel").on("click","#addNewVehicel",function (e) {
+        e.preventDefault();
+        $("#AddNewVehicelPopUp").empty();
+        $("#AddNewVehicelPopUp").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '70%',
+            title: 'Add Client Vehicel'
+        });
+        $("#AddNewVehicelPopUp").html('<div class="loading_half"></div>');
+        var Desigwindow = $("#AddNewVehicelPopUp").data("kendoWindow");
+        Desigwindow.refresh({ url: "/CRMClient/AddVehicleView?ClientId="+CliId });
+        Desigwindow.center().maximize().open();
+    });
+    $("#AddNewVehicelPopUp").on("click", "#btnAddVehicleCancel", function () {
+        $("#AddNewVehicelPopUp").empty();
+        $("#AddNewVehicelPopUp").data("kendoWindow").close();
+    });
+    //**************************Name Click Details show***********************
+    $("#div_ryt_panel").on("click", "#vehicleNameId", function (e) {
+        vId = $(this).data('vehicleid');
+        e.preventDefault();
+        $("#displayNewVehicelPopUp").empty();
+        $("#displayNewVehicelPopUp").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '40%',
+            title: 'Vehicle Info'
+        });
+        $("#displayNewVehicelPopUp").html('<div class="loading_half"></div>');
+        var vehicleDisplayWindow = $("#displayNewVehicelPopUp").data("kendoWindow");
+        vehicleDisplayWindow.refresh({ url: "/CRMClient/_DisplayVehicleInformation?ClientId=" +CliId +'&VehicleId=' + vId });
+        vehicleDisplayWindow.center().open();
+    });
+    $("#displayNewVehicelPopUp").on("click", "#btnDisplayCancel", function (e) {
+        $("#displayNewVehicelPopUp").empty();
+        $("#displayNewVehicelPopUp").data("kendoWindow").close();
+    });
+    //***********************Edit Vehicel info ***************************
+    $("#div_ryt_panel").on("click", "#VehicleDetailsEdit", function (e){
+        vId = $(this).data('vehicleid');
+        e.preventDefault();
+        $("#UpdateNewVehicelPopUp").empty();
+        $("#UpdateNewVehicelPopUp").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '57%',
+            height: '55%',
+            title: 'Edit vehicle Info'
+        });
+        $("#UpdateNewVehicelPopUp").html('<div class="loading_half"></div>');
+        var VehicenEdit = $("#UpdateNewVehicelPopUp").data("kendoWindow");
+        VehicenEdit.refresh({ url: "/CRMClient/LoadVehicleEditPopUp?VehicleId=" + vId });
+        VehicenEdit.center().open();
+    });
+    $("#UpdateNewVehicelPopUp").on("click", ".btnVehicleWindowCancel", function () {
+        $("#UpdateNewVehicelPopUp").empty();
+        $("#UpdateNewVehicelPopUp").data("kendoWindow").close();
+        $("#div_ryt_panel").load('@Url.Action("VehicleList", "CRMClient")?Id=' + CliId+'&isDisplay=' + isDisplay);
+
+    });
+    //*******************UserInfo display on name click*****************************
+    $("#div_ryt_panel").on("click", "#nameClickId", function (e) {
+        var cliId = $(this).data('cid');
+        userId = $(this).data('userid');
+        e.preventDefault();
+        $("#div_Display_panel").empty();
+        $("#div_Display_panel").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '60%',
+            title: 'User Basic Information'
+        });
+        $("#div_Display_panel").html('<div class="loading_half"></div>');
+        var div_user_basic_info = $("#div_Display_panel").data("kendoWindow");
+        div_user_basic_info.refresh({ url: "/CRMClient/_DisplayUserInformation?ClientId=" + cliId + '&UserId=' + userId});
+        div_user_basic_info.center().open();
+    });
+
+    $("#div_Display_panel").on("click", "#btnUserInfoDisplayCancel", function () {
+        $("#div_Display_panel").empty();
+        $("#div_Display_panel").data("kendoWindow").close();
+
+    });
+    //*******************UserInfo Edit on btn click*****************************
+    $("#div_ryt_panel").on("click", "#userDetailsEdit", function (e) {
+        var userId = $(this).data('userid');
+        e.preventDefault();
+        $("#div_Edit_panel").empty();
+        $("#div_Edit_panel").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '57%',
+            title: 'Edit User Basic Information'
+        });
+        $("#div_Edit_panel").html('<div class="loading_half"></div>');
+        var div_user_basic_info = $("#div_Edit_panel").data("kendoWindow");
+        div_user_basic_info.refresh({ url: "/CRMClient/_EditUserDetails?UserId=" + userId });
+        div_user_basic_info.center().open();
+    });
+    $("#div_Edit_panel").on("click", "#btnUserBasicInfoCancel", function () {
+        $("#div_Edit_panel").empty();
+        $("#div_Edit_panel").data("kendoWindow").close();
+        $("#div_ryt_panel").load('@Url.Action("UserList", "CRMClient")?Id=' + CliId + '&isDisplay=' + isDisplay);
+    });
+    $("#div_Edit_panel").on("click", ".btnUserDetailsCancel", function () {
+        $("#div_Edit_panel").empty();
+        $("#div_Edit_panel").data("kendoWindow").close();
+        $("#div_ryt_panel").empty();
+        $("#div_ryt_panel").append('<div class="loading_half"></div>');
+        $("#div_ryt_panel").load('@Url.Action("UserList", "CRMClient")?Id=' + CliId+'&isDisplay='+isDisplay);
+    });
+    //**************client contact Add popUp*******************************************
+    $("#div_ryt_panel").on("click", "#btnForAddContact", function (e) {
+        e.preventDefault();
+        $("#div_Entry_panel").empty();
+        $("#div_Entry_panel").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '30%',
+            title: 'Edit Client Contact'
+        });
+        $("#div_Entry_panel").html('<div class="loading_half"></div>');
+        var Desigwindow = $("#div_Entry_panel").data("kendoWindow");
+        Desigwindow.refresh({ url: "/CRMClient/ClientNewContact?ClientId=" + CliId });
+        Desigwindow.center().open();
+    });
+    //**************client contact edit popUp*******************************************
+    $("#div_ryt_panel").on("click", ".editClientContactInfo", function (e) {
+        var cCId = $(this).data('contactid');
+        e.preventDefault();
+        $("#clientContactEditPopUp").empty();
+        $("#clientContactEditPopUp").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '30%',
+            title: 'Edit Client Contact'
+        });
+        $("#clientContactEditPopUp").html('<div class="loading_half"></div>');
+        var Desigwindow = $("#clientContactEditPopUp").data("kendoWindow");
+        Desigwindow.refresh({ url: "/CRMClient/ClientNewContactEditLoad?ClientContactId=" + cCId });
+        Desigwindow.center().open();
+    });
+
+</script>
+
+

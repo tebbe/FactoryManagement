@@ -1,0 +1,436 @@
+﻿@******************************** Created By Jerin Jahan (Date:28.07.2016) *********************************@
+@using FactoryManagement.Helpers
+@model IEnumerable<FactoryManagement.Models.View_Machine_Lists>
+
+@{
+    ViewBag.Title = "ShowAllEquipmentList";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    string acronynm = ViewBag.acronynm;
+}
+
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-building"></i>
+            <a href="/Home/EquipDash">Equipments</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Inventory/AllEquipmentList">All Equipment List </a>
+        </li>
+    </ul>
+</div>
+<p><button data-toggle="tooltip" title="Add New Equipment" type="button" class="btn green" id="btn_Add_Equip"><i class="fa fa-plus"></i> Add New Equipment</button></p>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">All Equipment List</span>
+                </div>
+                <div class="actions">
+                    <div class="btn-group btn-group-devided" data-toggle="buttons">
+                        <label class="btn btn-transparent blue btn-outline btn-circle btn-sm active" id="btn_All_Machine" data-toggle="tooltip" title="All Equipment List" data-container="body">
+                            <input type="radio" name="options" class="toggle">All
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_Active_Machine" data-toggle="tooltip" title="All Active Equipment List" data-container="body">
+                            <span><input type="radio" name="options" class="toggle">Active</span>
+                        </label>
+                        <label class="btn btn-transparent red btn-outline btn-circle btn-sm" id="btn_InActive_Machine" data-toggle="tooltip" title="All Inactive Equipment List" data-container="body">
+                            <input type="radio" name="options" class="toggle">Inactive
+                        </label> 
+                    </div>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <table class="table table-bordered table-striped table-condensed table-hover" style="margin-bottom:0px!important;border-bottom:none!important;">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <span class="col-sm-9" style="padding-left:0px!important;">
+                                    @*<span class="autocomplete-wrapper">
+                                        <input class="text-field" id="textForSearch" name="country" placeholder="Type Machine Acronym (e.g. CD HP - 01)" type="text" autocomplete="off">
+                                        <span class="k-icon k-i-search" style="margin-top:-25px;margin-right:10px;float:right;">&nbsp;</span>
+                                    </span>*@
+                                    @(Html.Kendo().MultiSelect()
+                              .Name("multiselectSearch")
+                              .DataTextField("MachineAcronym")
+                              .DataValueField("MachineTypeId")
+                              .Placeholder("Type Machine Acronym (e.g. CD HP - 01)")
+                              .Events(e => e.Change("onSearchChange"))
+                              .AutoClose(false)
+                              .DataSource(source =>
+                              {
+                                  source.Read(read =>
+                                  {
+                                      read.Action("MachineAcronymList", "Inventory");
+
+                                  });
+                                  source.ServerFiltering(false);
+                              })
+                                    )
+                                    <span class="k-icon k-i-search" style="margin-top:-27px;margin-right:10px;float:right;">&nbsp;</span>
+                                </span>
+                                <span class="col-sm-3">
+                                    @(Html.Kendo().DropDownList().Name("MachineTypeId")
+                                    .OptionLabel("All")
+                                    .BindTo(ViewBag.MachineTypeId as SelectList)
+                                    .Events(e => e.Change("onMachineTypeChange"))
+                                    .HtmlAttributes(new { style = "width:100%" })
+                                    )
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div id="Div_All_Euip" style="display:none;"><div class="loading_partial"></div></div>
+                @if (db.View_Machine_Lists.Any())
+                {
+                    <script>
+                        $("#Div_All_Euip").show();
+                        $("#Div_All_Euip").load('@Url.Action("_ShowAllMachineList", "Inventory")?acronynm=' + encodeURIComponent('@acronynm'));
+                    </script>
+                }
+                else { 
+                <p>There is no records to show...</p>
+                }
+                <div id="loading" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="win_machine_edit"></div>
+<script id="temp_for_confirmation" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px"> #=message# </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_confirm_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_confirm_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    var showCount = 0, total = 0, inCallback = false, page = 0, content = '';
+    var acronynm = '@(ViewBag.acronynm)';
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $('#liForInventory > ul > li:first').addClass('open');
+        $('#liForInventory > ul > li:first >ul:first').show();
+        $("#liForAllEquipmentList").addClass('sublistActive');
+    });
+    //************************* Machine Type Name ***********************************
+    function onMachineTypeChange() {
+        $("#Div_All_Euip").empty(); showCount = 0, total = 0, page = 0;
+        $("#Div_All_Euip").append('<div class="loading_partial"></div>');
+        if (this.value() === '') {
+            acronynm = "";
+        } else {
+            acronynm = this.value();
+        }
+        $("#Div_All_Euip").load('@Url.Action("_ShowAllMachineList", "Inventory")?acronynm=' + encodeURIComponent(acronynm));
+    }
+    $("#btn_All_Machine").click(function () {
+        $("#Div_All_Euip").load('@Url.Action("_ShowAllMachineList", "Inventory")?acronynm=' + encodeURIComponent(acronynm));
+    });
+    $("#btn_Active_Machine").click(function () {
+        $("#Div_All_Euip").load('@Url.Action("_ShowAllMachineList", "Inventory")?Status=1');
+    });
+    $("#btn_InActive_Machine").click(function () {
+        $("#Div_All_Euip").load('@Url.Action("_ShowAllMachineList", "Inventory")?Status=0');
+    });
+    @********************************          OnScroll Bind Table Data             *************************@
+    $(window).scroll(function () {
+        var countBytype, result;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(total)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function onSearchChange() {
+        var current = this.value();
+        $("#Div_All_Euip").empty();
+        $("#Div_All_Euip").append('<div class="loading_partial"></div>');
+        $("#Div_All_Euip").load('@Url.Action("_ShowAllMachineList", "Inventory")?acronymIds='+ current);
+    }
+
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/Inventory/GetMachineList',
+            data: { page: page },
+            success: function (data) {
+                var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        var abc = {
+                            userId: data[i].CreatedBy,
+                            isDisplay: true
+                        }
+                        showCount++;
+                        var date = new Date(data[i].CreatedDateName);
+                        var getdate = (monthNames[date.getMonth()]) + " " + date.getDate() + "," + date.getFullYear();
+                        $("#tbl_Machine_List").append('<tr>' +
+                            '<th>' + showCount + '.</th>' +
+                            '<td><a href="/Inventory/MachineDetails?q=' + getDataEncrypted("machineId=" + data[i].MachineId) +
+                            '">' + data[i].MachineAcronym + '</a></td>' +
+                            '<td>' + data[i].MachineTypeName + '</td>' +
+                            '<td>' + data[i].BrandName + '</td>' +
+                            '<td>' + data[i].ModelName + '</td>' +
+                            '<td>' + data[i].Mgf + '</td>' +
+                            '<td>' + data[i].CountryName + '</td>' +
+
+                            '<td>' + ((data[i].Status == 1) ? '<span>Active</span>' : '<span>Inactive</span>') + '</td>' +
+
+                            '<td>' +
+                            '<span data-toggle="tooltip" title="Edit Macine" class="btn green btn_Edit_Machine" style="margin-right:3px!important; data-id="' + data[i].MachineId + '" data-name="' + data[i].MachineAcronym + '"><span class="fa fa-pencil"></span></span>' +
+                            '<a data-toggle="tooltip" title="Machine information" href="/Inventory/MachineDetails?q=' + getDataEncrypted("machineId=" + data[i].MachineId) + '" style="margin-right:3px!important;">' +
+                            '<span class="btn btn blue"><i class="fa fa-info-circle"></i></span></a>' +
+
+                            '<span data-toggle="tooltip" title="Delete Machine" data-id="' + data[i].MachineId + '" style="cursor:pointer;" class="btn btn-danger btnDeleteMachine"' +
+                            ' data-name="' + data[i].MachineAcronym + '" data-assignstatus="' + data[i].AssignStatus + '">' +
+                            '<i class="fa fa-trash"></i></span>' +
+
+                            '<a data-toggle="tooltip" title="Machine Maintanence" href="/Inventory/MachineMaintanence?q=' + getDataEncrypted("machineId=" + data[i].MachineId) + '" style="margin-left:3px!important;">' +
+                            '<span class="btn btn blue"><i class="fa fa-info-circle"></i></span></a>' +
+                            ((data[i].Status == 1) ? '<span class="btn btn-danger BtnForStatus"  data-id=' + data[i].MachineId + ' data-status=' + data[i].Status + ' data-toggle="tooltip" title="Change to Inactive"><i class="fa fa-stop"></i></span>' : '<span class="btn green BtnForStatus"  data-id=' + data[i].MachineId + ' data-status=' + data[i].Status + ' data-toggle="tooltip" title="Change to Active"><i class="fa fa-play-circle"></i></span>') +
+
+                            '</td></tr>');
+
+                    }
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+                $('[data-toggle="tooltip"]').tooltip();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+
+    @*$("#textForSearch").autocomplete({
+        minLength: 0,
+        source: function (request, response) {
+            content = $.trim(request.term);
+            $.ajax({
+                url: '@Url.Action("MachineNameSearching", "Inventory")',
+                type: "POST",
+                dataType: "json",
+                data: { prefix: content },
+                success: function (data) {
+                    response($.map(data, function (item) {
+                        return { label: item.MachineAcronym, value: item.MachineAcronym, id: item.MachineId };
+                    }))
+                }
+            })
+        },
+        minLength: 1,
+        select: function (event, ui) {
+            isloadFirstTime = true;
+            var selectTextId = ui.item.id;
+            $("#Div_All_Euip").load('@Url.Action("_ShowAllMachineList", "Inventory")?MachineId=' + selectTextId);
+        },
+    })
+       .keyup(function () {
+           if ($.trim($("#textForSearch").val()) == "") {
+               showCount = 0, page = 0, total = 0;
+               $("#Div_All_Euip").load('@Url.Action("_ShowAllMachineList", "Inventory")');
+           }
+       })
+       .autocomplete("instance")._renderItem = function (ul, item) {
+           var term = $.trim(this.term);
+           var re = new RegExp("(" + term + ")", "gi"),
+               cls = "bold-text",
+               template = "<span class='" + cls + "'>$1</span>",
+               label = item.label.replace(re, template),
+               $li = $("<li/>").appendTo(ul);
+           $("<span>").html(label).appendTo($li);
+           return $li;
+       };*@
+
+    $("#iconForSearch").click(function () {
+        if ($.trim($("#textForSearch").val()) !== "") {
+            $.ajax({
+                type: 'GET',
+                url: '/Inventory/MachineNameSearching',
+                data: { prefix: $.trim($("#textForSearch").val()) },
+                success: function (data) {
+                    var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                    if (data != '') {
+                        $("#tbl_Machine_List").empty();
+                        for (var i = 0; i < data.length; i++) {
+                            var date = new Date(data[i].CreatedDateName);
+                            var getdate = (monthNames[date.getMonth()]) + " " + date.getDate() + "," + date.getFullYear();
+                            $("#tbl_Machine_List").append('<tr>' +
+                              '<th>' + i + '</th>' +
+                              '<td><a href="/Inventory/MachineDetails?machineId=' + data[i].MachineId + '">' + data[i].MachineAcronym + '</a></td>' +
+                              '<td>' + data[i].Name + '</td>' +
+                              '<td>' + data[i].MachineTypeName + '</td>' +
+                              '<td><img src="/Images/UserPicture/thumb/' + data[i].PictureName + '" class="user-photo">' + data[i].UserName + '</td>' +
+                              '<td>' + getdate + '</td>' +
+                              '<td>' +
+                              '<a href="/Inventory/MachineDetails?machineId=' + data[i].MachineId + '">' +
+                              '<span class="fa fa-info-circle">Details</span></a> |' +
+                              '<span data-id="' + data[i].MachineId + '" style="cursor:pointer;" class="btnDesigDelete">' +
+                              '<span class="fa fa-trash"></span></span> |' +
+                              '</td></tr>');
+                        }
+                        showCount = data.length;
+                    }
+                    else {
+                        page = -1;
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(error);
+                }
+            });
+        }
+    });
+    $("#btn_Add_Equip").click(function () {
+        location.href = '@Url.Action("MachineTypeCreate", "Inventory")?q=' + getDataEncrypted("v=add");
+    });
+
+    //*********************** Delete Machine *************************************
+   
+    $("#Div_All_Euip").on("click", ".btnDeleteMachine", function (e) {
+        e.preventDefault();
+        var id = $(this).data("id");
+        var status = $(this).data("status");
+        var name = $(this).data("name");
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        message = "Are you sure want to delete this machine?";
+        var template = kendo.template($("#temp_for_confirmation").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        kendoWindow.find("#btn_confirm_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_confirm_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            DeleteEuip(id, status, name);
+        }).end();
+    });
+    function DeleteEuip(id, status, name) {
+        if (status > 0) {
+            notification.hide(); notification.setOptions({ autoHideAfter: 2000 });
+            notification.show({ message: "Equipment can not be deleted because it is in used.", showTime: startTime() }, "upload-error");
+        }
+        else {
+            notification.show({ message: "Machine deleting...", showTime: startTime() }, "upload-progress");
+            $.ajax({
+                url: '@Url.Action("DeleteMachine", "Inventory")',
+                type: 'Post',
+                data: { id: id, name: name, userId: userId },
+                success: function (data) {
+                    if (data === "Success") {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        notification.show({ message: "Equipment has been successfully deleted", showTime: startTime() }, "upload-success");
+                        $("#Div_All_Euip").empty(); showCount = 0, total = 0, page = 0;
+                        $("#Div_All_Euip").append('<div class="loading_partial"></div>');
+                        $("#Div_All_Euip").load('@Url.Action("_ShowAllMachineList", "Inventory")?acronynm=' + '@(ViewBag.acronynm)');
+                    } else {
+                        var msg = (data !== "Error") ? data : "Equipment deletion was unsuccessful.";
+                        notification.show({ message: msg, showTime: startTime() }, "upload-error");
+                    }
+                },
+                error: function (err) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred", showTime: startTime() }, "upload-warning");
+                }
+
+            });
+        }
+    }
+</script>
+<script>
+    $("#Div_All_Euip").on("click", ".btn_Edit_Machine", function () {
+        var id = $(this).data("id");
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose
+        });
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+        message = "Are you sure want to edit this machine?";
+        var template = kendo.template($("#temp_for_confirmation").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        kendoWindow.find("#btn_confirm_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_confirm_ok").click(function () {
+            $("#win_machine_edit").kendoWindow({
+                actions: ["Close"],
+                draggable: false,
+                modal: false,
+                visible: false,
+                width: '50%',
+                height:'25%',
+                title: 'Edit Machine Acronynm'
+            });
+            $("#win_machine_edit").html('<div class="loading_15"></div>');
+            var win_machine_edit = $("#win_machine_edit").data("kendoWindow");
+            win_machine_edit.refresh({ url: "/Inventory/_EditMachineAcrynm?Id=" + id });
+            win_machine_edit.center().open();
+        }).end();
+    });
+    console.log("AllEquipmentList");
+    $("#Div_All_Euip").on("click", ".BtnForStatus", function () {
+        var machinId = $(this).data('id');
+        var status = $(this).data('status');
+        
+        if (machinId > 0) {
+            notification.hide(); notification.setOptions({ autoHideAfter: 2000 });
+            notification.show({ message: "Equipment status changing......", showTime: startTime() }, "upload-progress");
+      
+            $.ajax({
+                url: '@Url.Action("ChangeEquipmentStatus", "Inventory")',
+                type: 'Post',
+                data: { MachineId: machinId, Status: status, UserId: loginUserId },
+                success: function (data) {
+                    if (data === "Success") {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        notification.show({ message: "Equipment status has been successfully Changed", showTime: startTime() }, "upload-success");
+                        $("#Div_All_Euip").empty(); showCount = 0, total = 0, page = 0;
+                        $("#Div_All_Euip").append('<div class="loading_partial"></div>');
+                        $("#Div_All_Euip").load('@Url.Action("_ShowAllMachineList", "Inventory")?acronynm=' + '@(ViewBag.acronynm)');
+                    } else {
+                        var msg = (data !== "Error") ? data : "Equipment status change was unsuccessful.";
+                        notification.show({ message: msg, showTime: startTime() }, "upload-error");
+                    }
+                },
+                error: function (err) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred", showTime: startTime() }, "upload-warning");
+                }
+
+            });
+        }
+    });
+</script>

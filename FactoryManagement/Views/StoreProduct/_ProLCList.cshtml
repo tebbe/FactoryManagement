@@ -1,0 +1,46 @@
+﻿
+@************************ Created By Jerin Jahan Date(17.06.2017) *******************************@
+
+@using FactoryManagement.Helpers
+@model IEnumerable<FactoryManagement.Models.View_Import_History_Details>
+@{
+    int count = 1;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+@if (Model.Count() > 0)
+{
+    <table class="table table-hover table-bordered table-striped table-condensed" id="tbl_import_history_LC">
+        <tr>
+            <th>#</th>
+            <th>L/C</th>
+            <th>Import Date</th>
+            <th>Imported By</th>
+        </tr>
+        @foreach (var list in Model)
+        {
+            count++;
+            <tr>
+                <th>@count.</th>
+                <td><a data-lc="@list.L_C" class="ShowLCDetails" style="text-decoration:none">@list.L_C</a></td>
+                <td>@list.InsertedDateFormat</td>
+                <td>
+                    @if (list.InsertedBy > 0)
+                    {
+                        <a href="@Html.EncodedParam("DisplayEmployeeDetails","HumanResource",new { UserId=list.InsertedBy,isDisplay=true},null)">
+                            <img class="img-circle" src="/Images/UserPicture/thumb/@list.InsertedUserPic"> @list.InsertedByUserName
+                        </a>
+                    }
+                    else
+                    {
+                        <img class="img-circle" src="/Images/UserPicture/thumb/@list.InsertedUserPic">
+                        <span>@list.InsertedByUserName</span>
+                    }
+                </td>
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <center><label>There is no record to display</label></center>
+}

@@ -1,0 +1,50 @@
+﻿@************************************** Created By Jerin Jahan (Date:17.12.2016)  ***************************************@
+@model FactoryManagement.Models.View_Transaction
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var Currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;">
+    <div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">Transaction Name</label></div>
+    <div class="editor-field" style="float:left;">
+        <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;padding-top:7px;">
+            @Html.DisplayFor(model => model.TranName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        </div>
+    </div>
+
+    <div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">Employee Name</label></div>
+    <div class="editor-field" style="float:left;">
+        <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;padding-top:7px;">
+            @Model.UserName
+        </div>
+    </div>
+
+    <div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">Designation Name</label></div>
+    <div class="editor-field" style="float:left;">
+        <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;padding-top:7px;">
+            @Model.DesignationName
+        </div>
+    </div>
+
+    <div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">Amount</label></div>
+    <div class="editor-field" style="float:left;">
+        <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;padding-top:7px;">
+            <span>@Currency @Model.Amount (@Model.Name)</span>
+        </div>
+    </div>
+
+    <div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">Paid By</label></div>
+    <div class="editor-field" style="float:left;">
+        <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;padding-top:7px;">
+            @Model.InsertUser
+        </div>
+    </div>
+
+    <div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">Paid Date</label></div>
+    <div class="editor-field" style="float:left;">
+        <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;padding-top:7px;">
+            @Model.InsertedDateFormate
+        </div>
+    </div>
+</div>

@@ -1,0 +1,57 @@
+﻿
+
+
+
+@********************* Created By Jerin Jahan (Date: 13-11-2016) ****************************@
+
+@model IEnumerable<FactoryManagement.Models.Acquisition_List>
+@{
+    int count = 1;
+}
+
+<table class="table bootstrap-datatable datatable small-font dataTable no-footer" id="DataTables_Table_0" role="grid">
+    <thead>
+        <tr role="row">
+            <th>SI.NO</th>
+            <th>Name</th>
+            <th>Status</th>
+            @*<th>Quantity</th>*@
+            @*<th>Status</th>*@
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var list in Model)
+        {
+            <tr role="row">
+                <td>@count.</td>
+                <td>
+                    <a href="/Acquisition/AcquisitionOrderDetails?AcqOrderId=@list.AcquisitionOrderId">@list.Name</a>
+                </td>
+                <td>
+                    @if (list.AcquisitionStatus == 0)
+                    {
+                        <span class="text-center text-success">Not yet approved</span>
+                    }
+                    else if (list.AcquisitionStatus == 1)
+                    {
+                        <span class="text-center text-primary">Approved from store</span>
+                    }
+                    else if (list.AcquisitionStatus == 2)
+                    {
+                        <span class="text-center text-info">Approved from head offce</span>
+                    }
+                    else if (list.AcquisitionStatus == -2)
+                    {
+                        <span class="text-center text-danger">Rejected</span>
+                    }
+                    else if (list.AcquisitionStatus == 3)
+                    {
+                        <span class="text-center text-success">Completed</span>
+                    }
+                </td>
+                @*<td>@list.Quantity @list.UnitName</td>*@
+            </tr>
+                    count++;
+        }
+    </tbody>
+</table>

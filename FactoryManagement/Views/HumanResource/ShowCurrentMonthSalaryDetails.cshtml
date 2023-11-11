@@ -1,0 +1,104 @@
+﻿
+
+
+@************************************** Created By Jerin Jahan (Date:20.10.2016)  ***************************************@
+
+@model FactoryManagement.ModelView.SalaryConfig.SalayPackageConfig
+@{
+    var count = 0;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    double total = 0;
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;">
+    <div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">Package Name</label></div>
+    <div class="editor-field" style="float:left;">
+        <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;padding-top:7px;">
+            @Html.DisplayFor(model => model.PackageName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        </div>
+    </div>
+
+    <div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName"></label></div>
+    <div class="editor-field" style="float:left;">
+        <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;padding-top:7px;">
+            @foreach (var list in ViewBag.allAccName as IEnumerable<FactoryManagement.ModelView.SalaryConfig.SalaryAccAddModelView>)
+            {
+                count++;
+                double BaseSalary = ViewBag.baseAmount;
+                double amount = 0;
+                <p>
+                    @if (list.AccPayType == 3)
+                    {
+                        if (list.Percentage == null)
+                        {
+                            amount = Convert.ToDouble(list.Amount);
+                        }
+                        else
+                        {
+                            amount = BaseSalary * Convert.ToDouble(list.Percentage) / 100;
+                        }
+                        <span>@count . @list.Name  @currency @amount </span>
+                        <span id="btn_Edit_selected_Pck" style="display:none;">
+                        <span class="k-icon k-i-pencil btn_pack_Acc_Edit" data-id="@list.Id" data-packageid="@list.PackageId"></span>
+                        <span class="k-icon k-i-close btn_pack_Acc_Delete" data-id="@list.Id" data-packageid="@list.PackageId"></span>
+                        </span>
+                        
+                        if (list.IsAddition)
+                        {
+                            total = total + Convert.ToDouble(amount);
+                        }
+                        else
+                        {
+                            total = total - Convert.ToDouble(amount);
+                        }
+                    }
+                    else
+                    {
+                        var monthList = db.Salary_Acc_Pay_MonthList.Where(m => m.Salary_Pck_Acc_Id == list.Id).Select(m => m.MonthId).ToList();
+                        foreach (var month in monthList)
+                        {
+                            if (month == DateTime.Now.Month)
+                            {
+                                if (list.Percentage == null)
+                                {
+                                    amount = Convert.ToDouble(list.Amount);
+                                }
+                                else
+                                {
+                                    amount = BaseSalary * Convert.ToDouble(list.Percentage) / 100;
+                                }
+                                <span>@count . @list.Name  @currency @amount</span>
+                                <span id="btn_Edit_selected_Pck" style="display:none;">
+                                    <span class="k-icon k-i-pencil btn_pack_Acc_Edit" data-id="@list.Id" data-packageid="@list.PackageId"></span>
+                                    <span class="k-icon k-i-close btn_pack_Acc_Delete" data-id="@list.Id" data-packageid="@list.PackageId"></span>
+                                </span>
+                        
+                                if (list.IsAddition)
+                                {
+                                    total = total + Convert.ToDouble(amount);
+                                }
+                                else
+                                {
+                                    total = total - Convert.ToDouble(amount);
+                                }
+                            }
+                        }
+                    }
+                </p>
+                  
+            }
+        </div>
+    </div>
+
+    <div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName"></label></div>
+    <div class="editor-field" style="float:left;">
+        <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;padding-top:7px;">
+            Total = @currency @total  (Current Month)
+        </div>
+    </div>
+
+</div>
+
+
+
+

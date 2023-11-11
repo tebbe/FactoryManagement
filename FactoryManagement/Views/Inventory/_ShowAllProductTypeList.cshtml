@@ -1,0 +1,100 @@
+﻿@************************************** Created By Mabia Mishu (Date:01.09.2016)  ***************************************@
+@using FactoryManagement.Helpers
+@{
+    var count = 1;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<table class="table table-hover table-bordered table-condensed table-striped tableForProductTypeList">
+    <tbody>
+        <tr>
+            <th width="20%">Name</th>
+            <th width="20%">Created By</th>
+            <th width="15%">Created Date</th>
+            <th width="15%">Last Updated By</th>
+            <th width="15%">Last Updated Date</th>
+            <th width="15%"></th>
+        </tr>
+        @foreach (var item in ViewBag.AllParentProType as IEnumerable<FactoryManagement.ModelView.Inventory.Product.ProductTypeViewModel>)
+        {
+            <tr id="tr_@item.ProductTypeId">
+                <td>
+                    <span>@count. </span>
+                    <span id="spanForName_@item.ProductTypeId">
+                        @if (item.HasChild == "True")
+                        {
+                            <span class="btn_expandProductType" id="newtrForAp_@item.ProductTypeId"
+                                  data-id="@item.ProductTypeId"
+                                  data-isclick="0">
+                                <i class="fa fa-plus-square-o fa-2"></i>
+                            </span>
+                        }
+                        @if (item.CanBeDeleted)
+                        {
+                            <span>@Html.DisplayFor(modelItem => item.ProductTypeName)</span>
+                        }
+                        else
+                        {
+                            @Html.DisplayFor(modelItem => item.ProductTypeName)<span style="color:red;">***</span>
+                        }
+                    </span>
+                </td>
+                <td>
+                    @if (item.CreatedBy == 0)
+                    {
+                        <img src="~/Images/UserPicture/thumb/admin.jpg" class="img-circle" />
+                        <span>Super admin</span>
+                    }
+                    else
+                    {
+                        <img src="~/Images/UserPicture/thumb/@item.Picture" class="img-circle" />
+                        @Html.EncodedActionLink(item.UserName, "DisplayEmployeeDetails", "HumanResource", new { UserId = item.CreatedBy, isDisplay = true }, null)
+                    }
+                </td>
+                <td>@Html.DisplayFor(modelItem => item.CreatedDateName)</td>
+                <td>
+                    @if (item.UpdatedBy != null)
+                    {
+                        if (item.UpdatedBy == 0)
+                        {
+                            <img src="~/Images/UserPicture/thumb/@item.UpdatedUserPic" class="img-circle" />
+                            <span>@item.UpdatedUserName</span>
+                        }
+                        else
+                        {
+                            <img src="~/Images/UserPicture/thumb/@item.UpdatedUserPic" class="img-circle" />
+                            @Html.EncodedActionLink(item.UpdatedUserName, "DisplayEmployeeDetails", "HumanResource", new { UserId = item.UpdatedBy, isDisplay = true }, null)
+                        }
+                    }
+                    else
+                    {
+                        <span>@item.UpdatedUserName</span>
+                    }
+                </td>
+                <td>@Html.DisplayFor(modelItem => item.UpdatedDateFormate)</td>
+                <td>
+                    @if (item.CanBeDeleted)
+                    {
+                        <span class="btn green btn_pro_type_Edit" data-toggle="tooltip" title="Update type info" data-id="@item.ProductTypeId"><i class="fa fa-pencil"></i></span>
+                        <span data-toggle="tooltip" title="New sub type" class="btn blue btn_protype_child_add" data-name="@item.ProductTypeName" data-id="@item.ProductTypeId"><i class="fa fa-plus-circle"></i></span>
+                        if (item.HasChild == "False")
+                        {
+                            <span data-toggle="tooltip" title="Delete product Type" class="btn btn-danger btn_pro_type_Delete" data-id="@item.ProductTypeId"><i class="fa fa-trash"></i></span>
+                        }
+                    }
+                </td>
+            </tr>
+            count++;
+        }
+    </tbody>
+   
+</table>
+
+@if (db.ProductTypeLists.Where(m => m.CanBeDeleted == false).Any())
+{
+    <span style="float:right;"><span style="color:red;"> ***Required by the system to function.</span></span>
+}
+<script>
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>

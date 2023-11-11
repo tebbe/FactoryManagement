@@ -1,0 +1,91 @@
+﻿@******************************** Tasnim Tuli (31.12.16) *************************************@
+
+@model FactoryManagement.ModelView.Accounting.BankListModelView
+
+    <div class="editor-label"><label for="BankName">Bank Name</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.BankName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        @Html.ValidationMessageFor(model => model.BankName, "", new { @class = "text-danger" })
+    </div>
+<script>
+    var validation = $("#create_bank").kendoValidator({
+        rules: {
+            custom: function (input) {
+                var errormessage;
+                var remoteAttr = input.attr("data-val-remote-url");
+                if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                    return true;
+                }
+                var isInvalid;
+                var data = {};
+                var BankId = '@Model.BankId';
+                var BankName = input.val();
+                data = { BankId: BankId, BankName: BankName };
+                $.ajax({
+                    url: remoteAttr,
+                    mode: "abort",
+                    port: "validate" + input.attr('name'),
+                    dataType: "json",
+                    type: input.attr("data-val-remote-type"),
+                    data: data,
+                    async: false,
+                    success: function (response) {
+                        isInvalid = response;
+                        if (isInvalid === true) {
+                            isInvalid = true;
+                        }
+                        else {
+                            isInvalid = false;
+                        }
+                    }
+                });
+                return isInvalid;
+            }
+        },
+        messages: {
+            custom: function (input) {
+                return "Bank name already exist...!!!";
+            },
+        }
+    }).data("kendoValidator");
+    $("#btnCreateBank").click(function () {
+        if (validation.validate()) {
+            notification.show({ message: "Bank information saving...", showTime: startTime() }, "upload-progress");
+            var sendData = { BankId: '@Model.BankId', BankName: $("#BankName").val(), CreatedBy: userId };
+            $.ajax({
+                url: '@Url.Action("BankAdd", "Accounting")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === "Success") {
+                        if ('@Model.BankId' > 0) {
+                            notification.show({ message: "Bank '" + sendData.BankName + "' has been successfully updated.", showTime: startTime() }, "upload-success");
+                            $("#bank_Name_edit").load('@Url.Action("_ShowBankName", "Accounting")?BankId=' + '@Model.BankId');
+                        }
+                        else {
+                            notification.show({ message: "Bank  '" + sendData.BankName + "' has been successfully created.", showTime: startTime() }, "upload-success");
+                            $("#Div_All_Bank").load('@Url.Action("_AllBankList", "Accounting")');
+                        }
+                        $("#btnCreateBank").closest(".k-window-content").data("kendoWindow").close();
+                    } else {
+                        if ('@Model.BankId' > 0) {
+                            notification.show({ message: "Bank '" + sendData.BankName + "' update was unsuccessfull.", showTime: startTime() }, "upload-error");
+                        } else {
+                            notification.show({ message: "Bank '" + sendData.BankName + "' creation was unsuccessfull.", showTime: startTime() }, "upload-error");
+                        }
+                    }
+                },
+                error: function (err) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+
+    $("#btnBankListCancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

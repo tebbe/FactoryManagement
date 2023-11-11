@@ -1,0 +1,21 @@
+﻿@************************ Created By Jerin Jahan Date(07.12.2016) *******************************@
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int id = ViewBag.id;
+}
+<div class="k-edit-form-container" id="Div_Dis_His" style="padding-left:10px;"></div>
+
+@if (db.DispatchedItemLists.Where(m => m.InventoryId == id).Any())
+{
+    <script>
+        $("#Div_Dis_His").append('<div class="win_loading_half"></div>');
+        $("#Div_Dis_His").load('@Url.Action("_AllProDisHis", "StoreProduct")?id=' + '@(ViewBag.id)'+'&type='+'@(ViewBag.type)'+'&locId='+'@(ViewBag.locId)');
+    </script>
+}
+else
+{
+    <script>
+        $("#Div_Dis_His").append('<center><label>Not yet dispatched</label></center>');
+    </script>
+}
+

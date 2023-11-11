@@ -1,0 +1,188 @@
+﻿
+
+@model IEnumerable<FactoryManagement.Models.View_User_Salary_Details>
+@{
+    var si = 0;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+<style>
+    #tbl_AllUser{font-size:12px!important;}
+</style>
+<table class="table table-bordered" id="tbl_AllUser">
+    <tbody>
+        <tr>
+            <th width="">Emp Id</th>
+            <th width="">Name</th>
+            <th width="">Designation</th>
+            <th width="">Dept.</th>
+            <th width="">Join Date</th>
+            <th width="">Base Salary</th>
+            @*<th width=""></th>
+            <th width=""></th>
+            <th width=""></th>*@
+            <th width="">Total Salary</th>
+            <th width="">Total Attendance</th>
+            <th width="">Total Attendance Salary</th>
+            <th width="">Attendance Bonus</th>
+            <th width="">Overtime(Attendance)</th>
+            <th width="">Percentage(Attendance)</th>
+            <th width="">Overtime Salary</th>
+            <th width="">Deduct Amount</th>
+            <th width="">Total Earned Amount</th>
+            <th width="">Signature</th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            si++;
+            var remainAmnt = Convert.ToDecimal(item.TotalAmount) - Convert.ToDecimal(item.PaidAmount);
+            int packCount = 0;
+            decimal total_pck_amnt = 0, calculate_loan_amnt = 0;
+            int total_work_days_full_month = 30, noPaidLeave = 0, total_work_days_till_today = 0;
+            var allSalaryPck = db.SalaryPaymentPckDetails.Where(m => m.PaymentId == item.Id).ToList();
+            ViewBag.allSalaryPck = allSalaryPck;
+
+            DateTime now = DateTime.Now;
+            var startDate = new DateTime(now.Year, item.MonthId, 1);
+            var endDate = startDate.AddMonths(1).AddDays(-1);
+
+            List<string> total_days_fullmoth = new List<string>();
+            List<string> total_days_till_today = new List<string>();
+            List<string> dayslist_for_week = new List<string>();
+
+            var CurrentMonthPresentList = db.Daily_Attendance.Where(m => m.UserId == item.UserId && m.Year == item.Year && m.MonthId == item.MonthId).ToList();
+            var count = db.Daily_Attendance.Where(m => m.UserId == item.UserId && m.Year == item.Year && m.MonthId == item.MonthId).Count();
+
+            if (db.UserInformations.Where(m => m.HolidayPackId > 0 && m.UserId == item.UserId).Any())
+            {
+                int alread_taken_leave = db.EmployeeLeaveRecords.Where(m => m.UserId == item.UserId && m.Year == now.Year).Count();
+                total_work_days_full_month = 0;
+                int HolypackId = Convert.ToInt32(db.UserInformations.Where(m => m.HolidayPackId > 0 && m.UserId == item.UserId).Select(m => m.HolidayPackId).FirstOrDefault());
+                noPaidLeave = db.HolidayPackageLists.Where(m => m.HolidayPackId == HolypackId).Select(m => m.NoOfPaidLeave).FirstOrDefault();
+                int week_days = 0;
+                if (item.WorkingScheduleId > 0)
+                {
+                    week_days = db.WorkingDayLists.Where(m => m.WorkingScheduleId == item.WorkingScheduleId).Count();
+                    dayslist_for_week = db.WorkingDayLists.Where(m => m.WorkingScheduleId == item.WorkingScheduleId).Select(m => m.Day).ToList();
+                }
+
+                if (alread_taken_leave > 0)
+                {
+                    noPaidLeave = noPaidLeave - alread_taken_leave;
+                }
+                for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
+                {
+                    if (dayslist_for_week.Contains(date.DayOfWeek.ToString()))
+                    {
+                        total_days_fullmoth.Add(date.ToShortDateString());
+                        total_work_days_full_month++;
+                    }
+                }
+            }
+            for (DateTime date = startDate; date <= now; date = date.AddDays(1))
+            {
+                if (dayslist_for_week.Count() > 0)
+                {
+                    if (dayslist_for_week.Contains(date.DayOfWeek.ToString()))
+                    {
+                        total_days_till_today.Add(date.ToShortDateString());
+                        total_work_days_till_today++;
+                    }
+                }
+                else
+                {
+                    total_work_days_till_today++;
+                }
+
+            }
+            bool loanDeduct = db.AllUserLoanLists.Where(m => m.UserId == item.UserId && m.PaidStatus == 0 && m.DeductionFromSalary == true).Any();
+            decimal Loan_Amn_Deduct = 0;
+            if (loanDeduct)
+            {
+                var loan_details = db.AllUserLoanLists.Where(m => m.UserId == item.UserId && m.PaidStatus == 0 && m.DeductionFromSalary == true).FirstOrDefault();
+                decimal unPaid_Amnt = loan_details.Amount - Convert.ToDecimal(loan_details.PaidAmount);
+                if (unPaid_Amnt > Convert.ToDecimal(loan_details.DeductAmountPerMonth))
+                {
+                    Loan_Amn_Deduct = Convert.ToDecimal(loan_details.DeductAmountPerMonth);
+                }
+                else
+                {
+                    Loan_Amn_Deduct = unPaid_Amnt;
+                }
+                remainAmnt = remainAmnt - Loan_Amn_Deduct;
+            }
+            int absent_days = total_work_days_till_today - count;
+
+            decimal per_day_amnt = 0, final_amnt = 0, base_amount = 0;
+            //****************** Calculate Salary Using Deduction  **********************************
+            if (absent_days > 0 && allSalaryPck.Where(m => m.IsBasic).Any())
+            {
+                base_amount = allSalaryPck.Where(m => m.IsBasic).Select(m => m.Amount).FirstOrDefault();
+                per_day_amnt = Convert.ToDecimal(base_amount) / total_work_days_full_month;
+                final_amnt = (per_day_amnt * count);
+                foreach (var amnt in allSalaryPck)
+                {
+                    if (!amnt.IsBasic)
+                    {
+                        if (amnt.IsDeduct)
+                        {
+                            final_amnt = final_amnt - Convert.ToDecimal(amnt.Amount);
+                        }
+                        else
+                        {
+                            final_amnt = final_amnt + Convert.ToDecimal(amnt.Amount);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                final_amnt = Convert.ToDecimal(item.TotalAmount);
+            }
+            final_amnt = Math.Round(final_amnt, 2);
+            decimal final_amnt_after_loandeduct = 0;
+            if (Loan_Amn_Deduct > 0)
+            {
+                if (Loan_Amn_Deduct > final_amnt)
+                {
+                    calculate_loan_amnt = final_amnt;
+                    final_amnt_after_loandeduct = 0;
+                }
+                else
+                {
+                    final_amnt_after_loandeduct = Math.Round((final_amnt - Loan_Amn_Deduct), 2);
+                }
+
+            }
+            else
+            {
+                final_amnt_after_loandeduct = Math.Round(final_amnt, 2);
+            }
+            <tr>
+                <th>@item.EmpId</th>
+                <td><a href="/HumanResource/DisplayEmployeeDetails?UserId=@item.UserId&isDisplay=true">@Html.DisplayFor(modelItem => item.UserName)</a></td>
+                <td>@item.DesignationName</td>
+                <td>@item.DeptName</td>
+                <td>@item.JoinDateFormate</td>
+                <td>@base_amount</td>
+                @*<td></td>
+                <td></td>
+                <td></td>*@
+                <td>@Convert.ToDouble(item.TotalAmount)</td>
+                <td>@count</td>
+                <td>@final_amnt</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>0</td>
+                <td>0</td>
+                <td>@final_amnt</td>
+                <td></td>
+            </tr>
+        }
+    </tbody>
+</table>
+<script>
+    totalCount = '@(ViewBag.TotalUser)';
+    showCount = '@si';
+</script>

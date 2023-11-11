@@ -1,0 +1,87 @@
+﻿
+
+
+
+@******************************** Created By Tasnim Tuli (Date:23.07.2017) *********************************@
+@using FactoryManagement.Helpers
+@model FactoryManagement.ModelView.Configuration.LineInfoModelView
+
+@{
+    ViewBag.Title = "ShowMachineWithLine";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-gears fa-fwt"></i>
+            <span>Configuration</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Configuration/AllSiteInfo">All Site Info</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="#">Site Details</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        @if (ViewBag.IsComposite == true)
+        {
+            <li>
+                <i class="fa fa-th-list"></i>
+                <a href="#">Site Unit Details</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+        }
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="#">Departement Details</a>
+        </li>
+    </ul>
+</div>
+<div class="portlet light bordered">
+    <div class="portlet-title">
+        <div class="caption font-green">
+            <i class="fa fa-info-circle font-green"></i>
+            <span class="caption-subject bold uppercase">Line Information</span>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-horizontal">
+            <div class="form-body">
+                <div id="divFor_line_Info" style="display:none;"></div>
+                @if (Model.LineId > 0)
+                {
+                    <script>
+                        $("#divFor_line_Info").show();
+                        $("#divFor_line_Info").append('<div class="partial_loading_half"></div>');
+                        $("#divFor_line_Info").load('@Url.Action("_ShowLineDetails", "Configuration")?LineId=' +@Model.LineId+'&isDisplay=true');
+                    </script>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<div class="portlet light portlet-fit bordered">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-list font-green"></i>
+            <span class="caption-subject font-green bold uppercase">Machine List</span>
+        </div>
+    </div>
+    <div class="portlet-body">
+        <div id="divFor_machine_Info" style="display:none;" class="row"></div>
+    </div>
+</div>
+
+@if (db.LineMachineLists.Where(m => m.LineId == Model.LineId).Any())
+{
+    <script>
+        $("#divFor_machine_Info").show();
+        $("#divFor_machine_Info").append('<div class="partial_loading_half"></div>');
+        $("#divFor_machine_Info").load('@Url.Action("_ShowAllMachineOfLine", "Configuration")?LineId=' +@Model.LineId);
+    </script>
+}

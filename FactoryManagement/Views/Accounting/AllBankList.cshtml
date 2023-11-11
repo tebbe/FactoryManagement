@@ -1,0 +1,414 @@
+﻿@using FactoryManagement.Helpers
+@{
+    ViewBag.Title = "AllBankList";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+
+<link href="~/Scripts/intl-tel-input-master/build/css/intlTelInput.css" rel="stylesheet" />
+<script src="~/Scripts/intl-tel-input-master/build/js/intlTelInput.min.js"></script>
+
+<h3 class="page-title">
+    Bank <small>List</small>
+</h3>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-calculator"></i>
+            <span>Finance</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list" aria-hidden="true"></i>
+            <a href="/Accounting/AllBankList">Bank</a>
+        </li>
+    </ul>  
+</div>
+
+
+<div class="row">
+    <div class="col-md-12">  
+        <p><span class="btn green" id="btn_bank_Add" data-toggle="tooltip" data-placement="bottom" data-original-title="Add New Bank"><i class="fa fa-plus"></i> Add New Bank</span></p>      
+        <div class="portlet box green">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list"></i>    <span id="headr_title" style="margin-top: 0px!important">Showing List of All Bank </span>
+                </div>
+            </div>
+            <div class="portlet-body">
+
+                <div id="DivForBankList">
+                    <table class="table table-bordered" style="margin-bottom:0px!important;margin-top:10px!important;border-bottom:none!important;">
+                        <tr>
+                            <td>
+                                <span style="padding-left:0px!important;">
+                                    <span class="autocomplete-wrapper">
+                                        <input class="text-field" id="autocomplete" name="country" placeholder="Start typing bank name" type="text" autocomplete="off">
+                                        <span class="k-icon k-i-search" style="margin-top:-25px;margin-right:10px;float:right;">&nbsp;</span>
+                                    </span>
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div id="Div_All_Bank"></div>
+                @if (db.BankLists.Any())
+                {
+                 <script>            
+                        $("#Div_All_Bank").empty();
+                        $("#Div_All_Bank").append('<div class="loading_partial"></div>');
+                        $("#Div_All_Bank").load('@Url.Action("_AllBankList", "Accounting")');
+                 </script>
+                }
+            </div>
+        </div>
+     </div>
+</div>
+        <div id="loading" style="display:none"></div>
+        <div id="div_new_bank_add"></div>
+        <div id="div_new_branch"></div>
+
+
+
+        <script id="temp_win_site_edit" type="text/x-kendo-template">
+            <div style="padding:1em;">
+                <p style="font-size: 14px; padding: 10px">#=message#</p>
+                <div style="text-align: right;">
+                    <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_editUnit_ok"><span class="k-icon k-update"></span>OK</button>
+                    <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_editUnit_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+                </div>
+            </div>
+        </script>
+ <script>
+   
+    var inCallback = false;
+    var page;
+    var content = '';
+    var bankId;
+    var telInput;
+
+    $('[data-toggle="tooltip"]').tooltip();
+    $(document).ready(function () {
+        $("#liForAccounting").addClass('active');
+        $("#liForBankList").addClass('sublistActive');
+
+        $("#top_header_link").append('<span>Accounce</span><span><i class="fa fa-angle-right fa-2x"></i></span>' +
+           '<span class="current"><a href="/Accounting/AllBankList"> Bank Lists </a></span>');     
+    });
+    $(window).scroll(function () {
+        var Bpage = 0;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {              
+                if (Bpage > -1 && !inCallback) {
+                    inCallback = true;
+                    Bpage++;                 
+                    $("#loading").show();
+                    loadMoreData(Bpage);
+                }
+            }
+        }
+    });
+    function loadMoreData(Bpage) {
+        $.ajax({
+            type: 'GET',
+            url: '/Accounting/GetBankList',
+            data: { page: Bpage },
+            success: function (data) {
+                var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        var date = new Date(data[i].CreatedDateName);
+                        var getdate = (monthNames[date.getMonth()]) + " " + date.getDate() + "," + date.getFullYear();
+                        var update = new Date(data[i].UpdatedDateName);
+                        var getUpdate = (monthNames[update.getMonth()]) + " " + update.getDate() + "," + update.getFullYear();
+                        $("#tbl_bank_list").append('<tr id="tr_bank_' + data[i].BankId + '">' +
+
+                    '<th scope="row">' + showCount + '.</th><td>' +
+                      '<a href="/Accounting/BankBranchDetails?q=' + getDataEncrypted("BankId=" + data[i].BankId + "?forDisplay=1") + '">' + data[i].BankName + '</a>' +
+                      '</td>' +
+                      '<td><img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].CreatedByPicture + '">' +
+                    ((data[i].CreatedBy == 0) ? ' ' + data[i].CreatedByName + '' :
+                    '<a href="/HumanResource/DisplayEmployeeDetails?q='+getDataEncrypted("UserId="+ data[i].CreatedBy+"?isDisplay=True")+'">' + data[i].CreatedByName + '</a>') +
+                    '</td>' +
+                     '<td>' + getdate + '</td>' +
+                      '<td>' + ((data[i].UpdatedBy != null) ? ' ' + ((data[i].UpdatedBy > 0) ? '<img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].UpdatedByPicture + '">' +
+                         '<a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].UpdatedBy + "?isDisplay=True") + '">' + data[i].UpdatedByName + '</a>' :
+                          '<img class="user-photo" src="~/Images/UserPicture/thumb/' + data[i].UpdatedByPicture + '" />' + data[i].UpdatedByName + ' ') + '  ' : ' ' + "Not Yet Updated" + ' ') + '</td>' +
+                       
+                        '<td>' + ((data[i].UpdatedDate == null) ? ' ' + "Not yet Updated" + ' ' : ' ' + getUpdate + '') + '</td>' +
+                        '<td>' +
+                        '<a class="btn green  editBank" style="margin-right:.3em;"  data-id="' + data[i].BankId + '" data-toggle="tooltip" data-original-title="Edit Bank"><i class="fa fa-pencil"></i></a>' +
+                        '<a class="btn btn-danger  deletebank" style="margin-right:.2em;" data-id="' + data[i].BankId + '" id="deleteBank" data-toggle="tooltip" data-original-title="Delete Bank"><i class="fa fa-trash"></i></a>' +
+                        '<a class="btn green addBranch"  data-id="' + data[i].BankId + '" data-toggle="tooltip" data-original-title="Add New Branch"><i class="fa fa-plus"></i></a>' +
+                        '</td></tr>');
+                        $('[data-toggle="tooltip"]').tooltip();
+                    }
+                }
+                else {
+                    Bpage = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            
+            }
+        });
+    }
+    $(function () {
+        $("#autocomplete").autocomplete({
+            minLength: 0,
+            source: function (request, response) {
+                content = $.trim(request.term);
+                $.ajax({
+                    url: '@Url.Action("SearchBankList", "Accounting")',
+                    type: "POST",
+                    dataType: "json",
+                    data: { prefix: content },
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return { label: item.BankName, value: item.BankName, id: item.BankId };
+                        }))
+                    }
+                })
+            },
+            minLength: 1,
+            select: function (event, ui) {
+                isloadFirstTime = true;
+                var selectTextId = ui.item.id;
+                $("#Div_All_Bank").load('@Url.Action("_AllBankList", "Accounting")?BankId=' + selectTextId);
+            },
+        })
+    .keyup(function () {
+        if ($.trim($("#autocomplete").val()) == "") {
+            showCount = 0; page = 0, totalCount = 0;
+            $("#Div_All_Bank").load('@Url.Action("_AllBankList", "Accounting")');
+        }
+    })
+    .autocomplete("instance")._renderItem = function (ul, item) {
+        var term = $.trim(this.term);
+        var re = new RegExp("(" + term + ")", "gi"),
+                   cls = "bold-text",
+                   template = "<span class='" + cls + "'>$1</span>",
+                   label = item.label.replace(re, template),
+                   $li = $("<li/>").appendTo(ul);
+        $("<span>").html(label).appendTo($li);
+        return $li;
+    };
+    });
+
+    //**********************************Add New Bank **********************************
+
+    $("#btn_bank_Add").click(function (e) {
+        e.preventDefault();
+        $("#div_new_bank_add").empty();
+        $("#div_new_bank_add").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '20%',
+            title: ' Add New Bank'
+        });
+        $("#div_new_bank_add").html('<div class="tiny_loading"></div>');
+        var new_bank = $("#div_new_bank_add").data("kendoWindow");
+        new_bank.refresh({ url: "/Accounting/BankCreatePopUp" });
+        new_bank.center().open();
+    });
+    $("#Div_All_Bank").on("click", ".editBank", function (e) {
+        e.preventDefault();
+        bankId = $(this).data('id');
+        location.href = '@Url.Action("BankBranchDetails", "Accounting")?q='+ getDataEncrypted("BankId="+ bankId +"?forDisplay=0");
+     });
+ //***************************** add branch****************************
+
+     $("#Div_All_Bank").on("click", ".addBranch", function (e) {
+         e.preventDefault();
+         bankId = $(this).data('id');
+         $("#div_new_branch").empty();
+         $("#div_new_branch").kendoWindow({
+             actions: ["Close"],
+             draggable: false,
+             modal: true,
+             visible: false,
+             width: '60%',
+             position: { top: '20%' },
+             height: '50%',
+             title: ' Add New Branch'
+         });
+         $("#div_new_branch").html('<div class="win_loading_half"></div>');
+         var div_new_branch = $("#div_new_branch").data("kendoWindow");
+         div_new_branch.refresh({ url: "/Accounting/CreateBankBranchPopUp?BankId=" + bankId });
+         div_new_branch.center().open();
+     });
+
+
+     // ************************* Delete *************************************
+            $("#Div_All_Bank").on("click", ".deletebank", function (e) {
+                e.preventDefault();
+                bankId = $(this).data('id');
+                $.ajax({
+                    url: '@Url.Action("CheckBankExist", "Accounting")',
+                    type: 'Post',
+                    data: { BankId: bankId },
+                    success: function (data) {
+                        if (data == false) {
+                            confirmation();
+                        } else {
+                            updateData();
+                        }
+
+                    }
+                });
+            });
+     function confirmation() {
+                var kendoWindow = $("<div/>").kendoWindow({
+                    actions: ["Close"],
+                    title: "Alert",
+                    resizable: false,
+                    width: "30%",
+                    modal: true
+                });
+                message = "Are you sure you want to delete this bank?";
+                var template = kendo.template($("#temp_win_site_edit").html());
+                kendoWindow.data("kendoWindow").content(template).center().open();
+
+                kendoWindow.find("#btn_editUnit_cancel").click(function () {
+                    kendoWindow.data("kendoWindow").close();
+                }).end();
+
+                kendoWindow.find("#btn_editUnit_ok").click(function () {
+                    kendoWindow.data("kendoWindow").close();
+                    deleteBankList();
+                }).end();
+            }
+            function updateData() {
+                var kendoWindow = $("<div/>").kendoWindow({
+                    actions: ["Close"],
+                    title: "Alert",
+                    resizable: false,
+                    width: "30%",
+                    modal: true
+                });
+                message = "Sorry, you can't delete this bank";
+                var template = kendo.template($("#temp_win_site_edit").html());
+                kendoWindow.data("kendoWindow").content(template).center().open();
+
+                kendoWindow.find("#btn_editUnit_cancel").click(function () {
+                    kendoWindow.data("kendoWindow").close();
+                }).end();
+                kendoWindow.find("#btn_editUnit_ok").hide();
+            }
+            function deleteBankList() {
+                var url = "/Accounting/DeleteBank";
+                $.post(url, { Id: bankId, CreatedBy: userId }, function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 2000 });
+                    if (data === "Error") {
+                        notification.show({message: "Deletion unsuccessful", showTime: startTime()}, "upload-error")
+                    }
+                    else {
+                        if (data) {
+                            $("#Div_All_Bank").load('@Url.Action("_AllBankList", "Accounting")');
+                            $("#Div_All_Bank").show();
+                        } else {
+                            $("#Div_All_Bank").hide();
+                        }
+                        notification.show({message: "Bank successfully deleted", showTime: startTime() }, "upload-success");
+
+                    }
+                })
+            };
+
+
+     function onChangeOfCountry() {
+         var country = $("#Country").val();
+         if (country == "BD") {
+             $("#DivForDivision").show();
+             $("#DivForState").hide();
+         }
+         else {
+             $("#DivForState").show();
+             $("#DivForDivision").hide();
+         }
+     };
+            @*$("#Div_All_Bank").on("click", ".deletebank", function (e) {
+                e.preventDefault();
+                bankId = $(this).data('id');
+                $.ajax({
+                    url: '@Url.Action("CheckBankExist", "Accounting")',
+                    type: 'Post',
+                    data: { BankId: bankId },
+                    success: function (data) {
+                        if (data) {
+                            updateData();
+                        } else {
+                            confirmation();
+                        }
+                    }
+                });
+            });
+    function confirmation() {
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        message = "Are you sure you want to delete this bank?";
+        var template = kendo.template($("#temp_win_site_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+
+        kendoWindow.find("#btn_editUnit_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+
+        kendoWindow.find("#btn_editUnit_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            deleteBankList();
+        }).end();
+    }
+    function updateData() {
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        message = "Sorry, you can't delete this bank";
+        var template = kendo.template($("#temp_win_site_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+
+        kendoWindow.find("#btn_editUnit_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_editUnit_ok").hide();
+    }
+    function deleteBankList() {
+        var url = "/Accounting/DeleteBank";
+        $.post(url, { Id: bankId, CreatedBy: userId }, function (data) {
+            notification.hide();
+            notification.setOptions({ autoHideAfter: 2000 });
+            if (data === "Error") {
+                notification.show({message: "Deletion unsuccessful", showTime: startTime()}, "upload-error");
+            }
+            else {
+                if (data) {                  
+                    $("#Div_All_Bank").load('@Url.Action("_AllBankList", "Accounting")');
+                    $("#Div_All_Bank").show();
+                }
+                else {
+                    $("#Div_All_Bank").hide();
+                }
+                notification.show({ message: "Bank successfully deleted", showTime: startTime() }, "upload-success");
+            }
+        })
+    };*@
+ 
+</script>
+

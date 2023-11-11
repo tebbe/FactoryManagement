@@ -1,0 +1,154 @@
+﻿
+
+
+@model FactoryManagement.ModelView.HR.UserInformationModelView
+@Html.HiddenFor(m => m.UserId)
+
+<div class="editor-label"><label for="PreAddress">Address</label></div>
+<div class="editor-field">
+    @Html.EditorFor(model => model.PreAddress, new { htmlAttributes = new { @class = "form-control k-textbox", } })
+    @Html.ValidationMessageFor(model => model.PreAddress, "", new { @class = "text-danger" })
+</div>
+<div class="editor-label"><label for="PreAddressLine1">Address Line 1</label></div>
+<div class="editor-field">
+    @Html.EditorFor(model => model.PreAddressLine1, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+    @Html.ValidationMessageFor(model => model.PreAddressLine1, "", new { @class = "text-danger" })
+</div>
+<div class="editor-label"><label for="PreCountry">Country</label></div>
+<div class="editor-field">
+    @(Html.Kendo().DropDownListFor(model => model.PreCountry)
+                                 .Name("PreCountry")
+                                 .OptionLabel("--Select Country--")
+                                 .Events(e => e.Change("onChangeOfPreCountry"))
+                                 .BindTo(ViewBag.CountryId)
+                                 .HtmlAttributes(new { style = "width:100%" })
+    )
+    @Html.ValidationMessageFor(model => model.PreCountry, "", new { @class = "text-danger" })
+</div>
+
+<div id="DivForUserPreDivision">
+    <div class="editor-label"><label for="PreDivisionId">Division</label></div>
+    <div class="editor-field">
+        @(Html.Kendo().DropDownListFor(model => model.PreDivisionId)
+                         .Name("PreDivisionId")
+                         .OptionLabel("--Select Division--")
+                         .Events(e => e.Change("onChangeOfPreDivisionId"))
+                         .BindTo(ViewBag.DivisionList)
+                         .HtmlAttributes(new { style = "width:100%" })
+        )
+        @Html.ValidationMessageFor(model => model.PreDivisionId, "", new { @class = "text-danger" })
+    </div>
+</div>
+<div id="DivForUserPreState">
+    <div class="editor-label"><label for="PreState">State</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.PreState, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        @Html.ValidationMessageFor(model => model.PreState, "", new { @class = "text-danger" })
+    </div>
+</div>
+<div class="editor-label"><label for="PreCity">City</label></div>
+<div class="editor-field">
+    @Html.EditorFor(model => model.PreCity, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+    @Html.ValidationMessageFor(model => model.PreCity, "", new { @class = "text-danger" })
+</div>
+<div class="editor-label"><label for="PreArea">Area</label></div>
+<div class="editor-field">
+    @Html.EditorFor(model => model.PreArea, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+    @Html.ValidationMessageFor(model => model.PreArea, "", new { @class = "text-danger" })
+</div>
+<div class="editor-label"><label for="PrePostalCode">Postal Code</label></div>
+<div class="editor-field">
+    @Html.EditorFor(model => model.PrePostalCode, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+    @Html.ValidationMessageFor(model => model.PrePostalCode, "", new { @class = "text-danger" })
+</div>
+<script>
+        $(document).ready(function () {
+            if ('@Model.PreCountry' != 'BD') {
+                $("#DivForUserPreState").show();
+                $("#DivForUserPreDivision").hide();
+            } else {
+                $("#DivForUserPreDivision").show();
+                $("#DivForUserPreState").hide();
+            }
+        });
+        var validation = $("#edit_user_present_address").kendoValidator({
+            rules: {
+                PresentAddress: function (input) {
+                    if (input.is("[name=PreAddress]") && input.val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
+                PresentDivision: function (input) {
+                    if (input.is("[name=PreDivisionId]") && $("#PreCountry").val() == "BD" && input.val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
+                State: function (input) {
+                    if (input.is("[name=PreState]") && $("#PreCountry").val() != "BD" && input.val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
+                PreCity: function (input) {
+                    if (input.is("[name=PreCity]") && input.val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            },
+            messages: {
+                PresentAddress: "Please enter present address",
+                PresentDivision: "Please select division",
+                PreCity: "Please select present city",
+                State: "Please enter state"
+            }
+        }).data("kendoValidator");
+
+        $("#btnPresentAddressUpdate").click(function () {
+            if (validation.validate()) {
+                notification.show({ message: "Present address saving...", showTime: startTime() }, "upload-progress");
+                var sendData = {
+                    UserId: $("#UserId").val(),
+                    PreAddress: $("#PreAddress").val(),
+                    PreAddressLine1: $("#PreAddressLine1").val(),
+                    PreCountry: $("#PreCountry").val(),
+                    PreDivisionId: $("#PreDivisionId").val(),
+                    PreCity: $("#PreCity").val(),
+                    PreState: $("#PreState").val(),
+                    PreArea: $("#PreArea").val(),
+                    PrePostalCode: $("#PrePostalCode").val(),
+                    CreatedBy:userId
+                };
+                $.ajax({
+                    url: '@Url.Action("PresentAddressUpdate", "HumanResource")',
+                    type: 'Post',
+                    data: sendData,
+                    success: function (data) {
+                        notification.hide();
+                        notification.setOptions({ autoHideAfter: 5000 });
+                        if (data === 'Error') {
+                            notification.show({ message: "Present address of user '"+ data +"' update was unsuccessful.", showTime: startTime() }, "upload-error");
+                        }
+                        else {
+                            notification.show({ message: "Present address of user '" + data + "' has been successfully updated.", showTime: startTime() }, "upload-success");
+
+                        }
+                        $("#div_user_PresentAddress_edit").data("kendoWindow").close();
+                        $("#div_ryt_panel").load('@Url.Action("_ShowEmpInfo", "HumanResource")?UserId=' + '@Model.UserId' + '&isDisplay=false');
+                    },
+                    error: function (err) {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                    }
+                });
+            }
+        });
+</script>
+
+

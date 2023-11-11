@@ -1,0 +1,42 @@
+﻿
+
+
+
+@******************************** Created By (Jerin Jahan) Date (11.01.2016) *******************************@
+<div id="tv_Salary_Pck_List"></div>
+
+<script>
+    $(document).ready(function () {
+        var AccountType = {
+            type: "GET",
+            schema: {
+                model: {
+                    id: "id",
+                    hasChildren: "HasSection"
+                }
+            },
+            transport: {
+                read: {
+                    url: "/SalaryConfig/GetAllAccType",
+                    data: function (e) {
+                        var tree = $("#tv_Salary_Pck_List").getKendoTreeView();
+                        var item = tree.dataSource.get(e.id);
+                        if (item) {
+                            return { packageId: item.PackageId};
+                        }
+                    }
+                }
+            }
+        };
+        
+        var PackageLists = {
+            transport: { read: { url: "@Url.Action("AllPackageList", "SalaryConfig")", type: "GET" } },
+            schema: { model: { hasChildren: true, id: "id", children: AccountType } }
+        };
+      $("#tv_Salary_Pck_List").kendoTreeView({
+          template: kendo.template($("#tem_left_tv").html()),
+          dataSource: PackageLists
+    });
+
+    });
+</script>

@@ -1,0 +1,141 @@
+﻿
+
+
+
+@******************************** Created By Jerin Jahan (Date:30.08.2016) *********************************@
+
+@model IEnumerable<FactoryManagement.Models.View_AllAttendance>
+
+@{
+    ViewBag.Title = "Attendance";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<h2>@ViewBag.Title</h2>
+<div class="row">
+    <div class="col-xs-12" style="display:none;" id="div_spartParts">
+        <table class="table table-bordered" style="margin-bottom:0px!important;margin-top:10px!important;border-bottom:none!important;">
+            <tr>
+                <td width="50%">
+                    <span class="autocomplete-wrapper">
+                        <input class="text-field" id="textForSearch" name="textForSearch" placeholder="Start typing user name" type="text" autocomplete="off">
+                        <span class="k-icon k-i-search" style="margin-top:-25px;margin-right:10px;float:right;">&nbsp;</span>
+                    </span>
+                </td>
+                <td></td>
+            </tr>
+        </table>
+        <div id="Div_All_Usr" style="display:none;"><div class="loading_partial"></div></div>
+        @if (db.View_AllAttendance.Any())
+        {
+            <script>
+                $("#Div_All_Usr").show();
+                $("#Div_All_Usr").load("_ShowAllAttendance", "HumanResource");
+            </script>
+        }
+    </div>
+</div>
+
+<script>
+    var showCount = 0, totalCount = 0, inCallback = false, userId;
+    var page = 0, content = '';
+    var up = true;
+    $(document).ready(function () {
+        $("#div_spartParts").show();
+        $("#liForHR").addClass('active');
+        $("#liForAttendance").addClass('sublistActive');
+    });
+    @******************************** OnScroll Bind Table Data *************************@
+    $(window).scroll(function () {
+        var countBytype, result;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/HumanResource/GetAllAttendance',
+            data: { page: page },
+            success: function (data) {
+                var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        var date = new Date(data[i].CreatedDateName);
+                        var getdate = (monthNames[date.getMonth()]) + " " + date.getDate() + "," + date.getFullYear();
+                        $("#tableForSparePartsList").append(
+                            '<tr><td>' + showCount + '.</td>' +
+                            '<td><img src="/Images/UserPicture/thumb/' + data[i].Picture + '" class="user-photo"> ' + data[i].UserName + '</td>' +
+                            '<td>' + data[i].SiteName + '</td>' +
+                            '<td>' + data[i].EntryDate + '</td><td>' + data[i].CardInsertStatus + '</td></tr>'
+                            );
+                    }
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+
+
+    $(function () {
+        $("#textForSearch").autocomplete({
+            minLength: 0,
+            source: function (request, response) {
+                content = $.trim(request.term);
+                $.ajax({
+                    url: '@Url.Action("PartsNameSearching", "Inventory")',
+                    type: "POST",
+                    dataType: "json",
+                    data: { prefix: content },
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return { label: item.PartsName, value: item.PartsName, id: item.PartsId };
+                        }))
+                    }
+                })
+            },
+            minLength: 1,
+            select: function (event, ui) {
+                isloadFirstTime = true;
+                var selectTextId = ui.item.id;
+                $("table.tableForSparePartsList > tbody").load('@Url.Action("_ShowAllAttendance", "HumanResource")');
+            },
+        })
+    .keyup(function () {
+        if ($.trim($("#textForSearch").val()) == "") {
+            showCount = 20; page = 0;
+            $("table.tableForSparePartsList > tbody").load('@Url.Action("_ShowAllAttendance", "HumanResource")');
+        }
+    })
+    .autocomplete("instance")._renderItem = function (ul, item) {
+        var term = $.trim(this.term);
+
+        var re = new RegExp("(" + term + ")", "gi"),
+                   cls = "bold-text",
+                   template = "<span class='" + cls + "'>$1</span>",
+                   label = item.label.replace(re, template),
+                   $li = $("<li/>").appendTo(ul);
+        $("<a/>").attr("href", "#")
+                 .html(label)
+                 .appendTo($li);
+        return $li;
+    };
+    });
+</script>
+
+

@@ -1,0 +1,114 @@
+﻿@model IEnumerable<FactoryManagement.Models.View_VoucherInfo>
+@using FactoryManagement.Helpers
+@{
+    var count = 0;
+}
+@if (Model.Count() > 0)
+{
+    <table class="table table-bordered" id="tbl_voucher_list">
+        <tr>
+            <th>#</th>
+            <th>Voucher Name</th>
+            <th>Created By</th>
+            <th>Created Date</th>
+            <th>Last Updated By</th>
+            <th>Last Updated Date</th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in ViewBag.VoucherList as IEnumerable<FactoryManagement.Models.View_VoucherInfo>)
+        {
+            count++;
+            <tr id="tr_voucher_@item.VoucherId">
+                <th scope="row">@count.</th>
+                <td>
+                    <span class="Display_Voucher" style="color:#428bca;cursor:pointer;" data-voucherid="@item.VoucherId">@item.VoucherTitle</span>
+                </td>
+                <td>
+                    @if (item.CreatedBy > 0)
+                    {
+                        <img src="~/Images/UserPicture/thumb/@item.CreatedUserPic" class="user-photo" />
+                        <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = item.CreatedBy , isDisplay = true }, null)">@item.CreatedUserName </a>
+                    }
+                    else
+                    {
+                        <img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" />
+                        <span>Super admin</span>
+                    }
+                </td>
+                <td>@item.CreatedDateName</td>
+                <td>
+                    @if (item.UpdatedBy == null)
+                    {
+                        <span>Not yet updated</span>
+                    }
+                    else
+                    {
+                        if (item.UpdatedBy > 0)
+                        {
+                            <img src="~/Images/UserPicture/thumb/@item.UpdatedUserPic" class="user-photo" />
+                            <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = item.UpdatedBy, isDisplay = true }, null)">@item.UpdatedUserName</a>
+
+
+                        }
+                        else
+                        {
+                            <img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" />
+                            <span>Super admin</span>
+                        }
+                    }
+                </td>
+
+                <td>@item.UpdatedDateFormate</td>
+                <td>
+                    @if (item.Status == 0)
+                    {
+                        if (item.IsAccountSelected == true)
+                        {
+                            if (item.VoucherTypeId == 1 || item.VoucherTypeId == 4)
+                            {
+                                <span class="btn green btn_edit_Voucher" data-toggle="tooltip" data-original-title="Edit Voucher" data-voucherid="@item.VoucherId" data-vouchertitle="@item.VoucherTitle"><i class="fa fa-pencil"></i></span>
+                                <span class="btn green btn_acc_select" data-toggle="tooltip" data-original-title="Select Voucher" data-voucherid="@item.VoucherId"><i class="fa fa-arrow-right"></i></span>
+                                <span class="btn btn-danger deleteVoucher" data-toggle="tooltip" data-original-title="Delete Voucher" data-voucherid="@item.VoucherId"><i class="fa fa-trash"></i></span>
+                            }
+                            else
+                            {
+                                <span class="btn green btn_edit_Voucher" data-toggle="tooltip" data-original-title="Edit Voucher" data-voucherid="@item.VoucherId" data-vouchertitle="@item.VoucherTitle"><i class="fa fa-pencil"></i></span>
+                                <span class="btn green btn_amount_receive" data-toggle="tooltip" data-original-title="Receive Voucher" data-voucherid="@item.VoucherId" data-amount="@item.TotalAmount"
+                                      data-accid="@item.InternalAccId" data-bankaccountid="@item.BankAccId"><i class="fa fa-check"></i></span>
+                                <span class="btn btn-danger deleteVoucher" data-toggle="tooltip" data-original-title="Delete Voucher" data-voucherid="@item.VoucherId"><i class="fa fa-trash"></i></span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="btn green btn_edit_Voucher" data-toggle="tooltip" data-original-title="Edit Voucher" data-voucherid="@item.VoucherId" data-vouchertitle="@item.VoucherTitle"><i class="fa fa-pencil"></i></span>
+                            <span class="btn green btn_acc_select" data-toggle="tooltip" data-original-title="Select Voucher" data-voucherid="@item.VoucherId"><i class="fa fa-arrow-right"></i></span>
+                            <span class="btn btn-danger deleteVoucher" data-toggle="tooltip" data-original-title="Delete Voucher" data-voucherid="@item.VoucherId"><i class="fa fa-trash"></i></span>
+                        }
+                    }
+                </td>
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <h4>There is no record to display</h4>
+}
+
+<script>
+    var totalCount = 0, showCount = 0;
+    
+
+    $(document).ready(function () {
+        if (@Model.Count() > 0) {
+            $("#DivForVoucherList").show();
+        }
+        else {
+            $("#DivForVoucherList").hide();
+        }
+    });
+    $('[data-toggle="tooltip"]').tooltip();
+    totalCount = '@(ViewBag.TotalVoucher)';
+    showCount = '@(count)';
+</script>

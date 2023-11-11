@@ -1,0 +1,60 @@
+﻿@************************************** Created By Tasnim Tuli (Date:20.9.2016)  ***************************************@
+
+@model IEnumerable<FactoryManagement.ModelView.CRM.Client_Vehicle_ListsModelView>
+@{
+    var count = 1;
+
+}
+@if ((Enumerable.Count(ViewBag.VehicleList)) > 0)
+{
+
+    <table class="table" style="border:none;">
+        <tr>
+            <th>#</th>
+            <th>Vehicle</th>
+            <th>RegisterNo</th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in ViewBag.VehicleList as IEnumerable<FactoryManagement.ModelView.CRM.Client_Vehicle_ListsModelView>)
+        {
+
+            <tr id="tr_vehicle_@item.VehicleId">
+                <td scope="row">@count</td>
+
+                <td>
+                    @if (item.PictureName != "")
+                    {
+                        <img class="user-photo" src="~/Images/Client/ClientVehicleImage/thumb/@item.PictureName" />
+                    }
+                    else
+                    {
+                       <img class="user-photo" src="~/Images/Icon/blank_Vehicle.png" />
+                    }
+                    <a href="#" id="vehicleNameId" data-vehicleid="@item.VehicleId" data-cid="@item.ClientId">
+                    @Html.DisplayFor(modelItem => item.VehicleName)</a>
+                </td>
+
+                <td>@Html.DisplayFor(modelItem => item.RegisterNo)</td>
+                @if (!ViewBag.isDisplay) { 
+                <td class="DivVehicleList">
+                    <a href="#" id="VehicleDetailsEdit" class="label label-success vehicleDetailsEdit" data-toggle="tooltip" title="Edit vehicel info" data-vehicleid="@item.VehicleId" data-cid="@item.ClientId"><span class="fa fa-pencil"></span></a>
+                    <a class="label label-danger deleteVehicle" data-toggle="tooltip" title="Delete vehicel " data-vehicleid="@item.VehicleId"><span class="fa fa-trash"></span></a>
+
+                </td>
+                }
+            </tr>
+                    count++;
+        }
+    </table>
+}
+else
+{
+    <h4>No record to show</h4>
+ }
+<script>  
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+
+   });
+</script>

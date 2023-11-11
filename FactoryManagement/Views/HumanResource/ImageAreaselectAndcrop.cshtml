@@ -1,0 +1,126 @@
+﻿
+@{
+    ViewBag.Title = "ImageAreaselectAndcrop";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+
+<h2>Image Areaselect Andcrop</h2>
+
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script src="~/Content/imgareaselect/jquery.imgareaselect-0.9.10/scripts/jquery.imgareaselect.min.js"></script>
+<script src="~/Content/imgareaselect/jquery.imgareaselect-0.9.10/scripts/jquery.imgareaselect.pack.js"></script>
+<!--<link href="Content/bootstrap.min.css" rel="stylesheet" />-->
+@*<link href="~/Content/imgareaselect/imageAreaSelect/bootstrap.min.css" rel="stylesheet" />*@
+<link href="~/Content/imgareaselect/jquery.imgareaselect-0.9.10/css/imgareaselect-default.css" rel="stylesheet" />
+<link href="~/Content/imgareaselect/jquery.imgareaselect-0.9.10/css/imgareaselect-animated.css" rel="stylesheet" />
+<script src="~/Scripts/bootstrap.min.js"></script>
+<style>
+    #DivForOrginalImg {
+        background-color: #d9d8d8;
+        margin-bottom: 20px;
+        position: relative;
+        max-width: 100%;
+        height: auto;
+    }
+
+        #DivForOrginalImg img {
+            margin: auto;
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+    #DivForCropImg label {
+        display: block !important;
+    }
+
+    #DivForCropImg img {
+        margin: auto;
+        max-width: 100% !important;
+        height: auto !important;
+        min-height: 50px !important;
+        max-height: 150px !important;
+        display: block;
+        padding-top: 6em;
+        padding-bottom: 6em;
+    }
+
+    .k-edit-buttons {
+        padding: 1.2em !important;
+    }
+</style>
+<button type="button" data-toggle="modal" href="#myModal" class="btn btn-primary btn-lg" id="modalWindow">Launch demo modal</button>
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog" style="width:80%!important;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+            </div>
+            <div class="col-sm-12 col-xs-12 demo">
+                <div class="col-xs-6" style="border-right:2px solid #d9d8d8;padding:30px;">
+                    <div id="DivForOrginalImg">
+                        <img id="imgOrginal" src="~/Images/UserPicture/Original/201607201235043_Gauhar.jpg" />
+                    </div>
+                    <p>Drag frame to adjust picture</p>
+                    <p><a href="#">Upload a different picture</a></p>
+                </div>
+                <div class="col-xs-4" style="padding: 30px;">
+                    <label>Your profile portrait</label>
+                    <div class="frame" style="margin: 0 1em;width: 150px;height: 150px;border:2px solid green;">
+                        <div id="preview" style="width: 100px;height: 100px;overflow: hidden;position: relative;float:left;">
+                            <img src="~/Images/UserPicture/Original/201607201235043_Gauhar.jpg" style="width: 166px; height: 168px; margin-left: -36px; margin-top: -2px;">
+                        </div>
+                    </div>
+                    <p>Must be an actual picture of you!Logos,clip art,group picture and digitally-altered images are not allowed.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnPicUpload"><span class="k-icon k-update"></span>Upload</button>
+                <button type="reset" class="k-button k-button-icontext k-grid-cancel" id="btnPicUploadCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $('#myModal').on('shown.bs.modal', function () {
+        $('#imgOrginal').imgAreaSelect({
+            x1: 63, y1: 4, x2: 228, y2: 167,
+            aspectRatio: '1:1',
+            parent: '.modal-content',
+            onSelectChange: preview,
+            instance: true,
+            aspectRatio: '1:1',
+            onSelectEnd: function (img, selection) {
+                if (!selection.width || !selection.height) {
+                    return;
+                }
+                $('#x1').val(selection.x1);
+                $('#y1').val(selection.y1);
+                $('#x2').val(selection.x2);
+                $('#y2').val(selection.y2);
+                $('#w').val(selection.width);
+                $('#h').val(selection.height);
+            }
+        });
+    });
+    function preview(img, selection) {
+        var scaleX = 100 / (selection.width || 1);
+        var scaleY = 100 / (selection.height || 1);
+        $('#preview > img').css({
+            width: Math.round(scaleX * $("#imgOrginal").width()) + 'px',
+            height: Math.round(scaleY * $("#imgOrginal").height()) + 'px',
+            marginLeft: '-' + Math.round(scaleX * selection.x1) + 'px',
+            marginTop: '-' + Math.round(scaleY * selection.y1) + 'px'
+        });
+    }
+    $("#select_btn").click(function () {
+        var x1 = $('#x1').val();
+        var y1 = $('#y1').val();
+        var x2 = $('#x2').val();
+        var y2 = $('#y2').val();
+        var w = $('#w').val();
+        var h = $('#h').val();
+        alert(x1 + " : " + y1 + " : " + x2 + " :" + y2 + " : " + w + " : " + h);
+    });
+</script>

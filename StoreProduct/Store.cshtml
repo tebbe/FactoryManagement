@@ -1,0 +1,1372 @@
+﻿
+
+
+@************************************** Created By Jerin Jahan (Date:17.11.2016)  ***************************************@
+@model FactoryManagement.ModelView.Inventory.InventoryListModelView
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var storelist = db.StoreLists.ToList();
+    var warelist = db.WarehouseLists.ToList();
+    ViewBag.Title = "Store";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    long loginUserId = Convert.ToInt32(Request.Cookies["CookieAdminInfo"].Values["userid"].ToString());
+    int roleid = Convert.ToInt32(Request.Cookies["CookieAdminInfo"].Values["roleid"].ToString());
+
+    int count = 0;
+}
+<link href="~/Content/multiselectCustom.css" rel="stylesheet" />
+<link href="~/Content/Inventory/InventoryList.css" rel="stylesheet" />
+<script src="~/Scripts/jquery.nailthumb.1.1.js"></script>
+<style>
+    .btn{border-radius:0px!important;}
+    .selectedDiv {margin-bottom: 14px;background-color: #f7f7f9;border-radius: 4px;margin-right: 10px !important;}
+    .tiny_loading {background: url('../../Content/Icon/loading2.gif') no-repeat center center;height: 8em;margin-top: -10px;}
+    .u_1{background-color: #578ebe!important;}
+    .u_2{background-color: #67809F!important;}
+    .u_3{background-color: #217ebd!important;}
+    .u_4{background-color: #428bca!important;}
+    #showItem{color:#217ebd!important;font-weight:700;font-size:16px;}
+    .s_1{background-color: #578ebe!important;}
+    .s_2{background-color: #67809F!important;}
+    .s_3{background-color: #217ebd!important;}
+    .s_4{background-color: #428bca!important;}
+    .padding_30px{
+        padding-right:30px!important;
+    }
+</style>
+
+<div id="Win_place_item"></div>
+<div id="Win_route_item"></div>
+
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/StoreProduct/Store">Store</a>
+        </li>
+    </ul>
+</div>
+<div class="portlet light bordered">
+    <div class="portlet-title">
+        <div class="caption font-green">
+            <i class="fa fa-list-ul font-green"></i>
+            <span class="caption-subject green bold uppercase">Inventory Item Lists</span>
+        </div>
+       
+        <div id="showing_count_div">
+            <span style="float:right;margin-top:5px"><span style="color:#217ebd!important;font-weight:700;font-size:16px;">Showing <label id="showItem"></label> items</span></span>
+        </div>  </div>
+    <div class="portlet-body form">
+        @Html.HiddenFor(m => m.TotalProductCount)
+        @Html.HiddenFor(m => m.ProductTypeId)
+        @Html.HiddenFor(m => m.ViewTypeId)
+        <div id="showCart">Show Cart</div>
+        <div class="row" id="Div_inven">
+            <div id="Div_without_Cart">
+                @if (loginUserId < 1 || roleid == 2)
+                {
+                    <div class="col-sm-12" style="margin-bottom:10px!important;padding:0px!important;">
+                        <div class="btn-group btn-group-solid">
+                            <button type="button" class="btn green" id="btn_WareItem_Add" data-toggle="tooltip" title="Add New Inventory Item" data-container="body"><i class="fa fa-plus"></i> Add New Item</button>
+                            <button type="button" class="btn blue-dark" id="btn_Import" data-toggle="tooltip" title="Import New Inventory Item" data-container="body"><i class="fa fa-reply-all"></i> Import</button>
+                           @* <button type="button" class="btn purple" id="btn_WareConfig"><i class="fa fa-gears" data-toggle="tooltip" title="Inventory Location Configuration" data-container="body"></i> Config</button>*@
+                           @* <button type="button" class="btn red" id="btn_Dis_His"><i class="fa fa-history" data-toggle="tooltip" title="Show All Dispatch History" data-container="body"></i> Dispatched History</button>*@
+                            @*<button type="button" class="btn green" id="btn_Dis_His"><i class="fa fa-history" data-toggle="tooltip" title="Show All Routed Item List" data-container="body"></i> Routed History</button>*@
+                            @*<a href="/StoreProduct/InventoryMinQuanFinished?v=store" data-toggle="tooltip" title="Show All Inventory Item Whoes Minimum Quantity Exced" data-container="body">
+                                <span class="btn purple" id="btn_Dis_Min_quan_below"><i class="fa fa-list-ul"></i> Minimum Quantity </span>
+                            </a>*@
+                            <button type="button" class="btn red btn_storelist" data-storeid="0" id="btn_ware_All">All</button>
+                            @foreach (var w in storelist)
+                            {
+                                count++;
+                                <button class="btn green s_@count btn_storelist" type="button" id="btn_ware_@w.Id"
+                                        data-storeid="@w.Id" data-store="1"  
+                                        data-storename="@w.StoreName">
+                                    @w.StoreName
+                                </button>
+                            }
+                            @{count = 0;}
+                            @foreach (var w in warelist)
+                            {
+                                count++;
+                                <button type="button" class="btn green u_@count btn_storelist" 
+                                        data-storeid="@w.Id" data-store="0" id="btn_ware_@w.Id" 
+                                        data-storename="@w.WarehouseAcroynm">
+                                    @w.WarehouseAcroynm
+                                </button>
+                            }
+                            <button type="button" class="btn  red-flamingo" id="btn_Iven_List"><span data-toggle="tooltip" title="Show All Inventory Item List"><i class="fa fa-list-ul"></i> All Item Lists</span></button>
+                            
+                        </div>
+                    </div>
+                }
+                <div class="col-sm-12" id="search_bar" style="margin-bottom:1em;padding:0px!important;">
+                    <span class="autocomplete-wrapper">
+                      @*  <input class="text-field" id="pro_search" name="country" placeholder="Start typing item name" type="text" autocomplete="off"/>*@
+                        @(Html.Kendo().MultiSelect()
+        .AutoClose(false)
+        
+                  .Name("ProductLists")
+                  .DataTextField("ProNameWithLc")
+                  .DataValueField("LocationId")
+                  .Placeholder("Start typing item name")
+                  .AutoBind(false)
+                .Events(e => e.Change("onProductChange"))
+                  .DataSource(source =>
+                  {
+                      source.Read(read =>
+                      {
+                          read.Action("GetAllProductNames", "StoreProduct");
+                      })
+                      .ServerFiltering(false);
+                  }))
+                        <span class="k-icon k-i-search" style="margin-top:-25px;float:right;margin-right:10px">&nbsp;</span>
+                    </span>
+                </div>
+                <div class="col-sm-12" id="div_header" style="display:none;padding:0px!important;">
+                    <div class="col-md-2 col-sm-3 col-xs-12" style="padding-right:0px!important;">
+                        <span class="lbltitle">Categories</span>
+                    </div>
+                    <div class="col-md-9 col-sm-8 col-xs-12">
+                        <span id="txt_Selected_Item" class="lbltitle">All Product</span>
+                    </div>
+                </div>
+                <div class="col-xs-12" style="padding: 0px !important;">
+                    <div class="navbar-header">
+                        <span class="navbar-toggle collapsed"
+                              type="button" data-toggle="collapse"
+                              data-target="#categories" aria-expanded="false" style="float:left!important;margin-top: 2px!important;">
+                            <i class="k-icon k-i-hbars"></i>
+                            Choose a catagory
+                        </span>
+                    </div>
+                    <div class="col-md-2 col-sm-3 col-xs-12">
+                        <nav id="categories" class="collapse navbar-collapse" style="padding-left:0px!important;padding-right:0px!important;">
+                            <div id="tv_Ware_Pro_List" class="treeView"></div>
+                        </nav>
+                    </div>
+                    <div id="divForPartialView" class="col-md-10 col-sm-9 col-xs-12">
+                        <div id="div_all_pro_list"><div class="loading_partial"></div></div>
+                        <div id="loading" style="display:none;"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="divForAddtoCart">
+                <div class="header" id="CartDivHeader">
+                    <span><img src="~/Content/Icon/cart-icon.png" alt="Add to cart" style="height:25px;width:25px;"></span>
+                    <span><span id="itemCount">0</span> ITEM</span>
+                </div>
+                <div id="DivForCartList">
+                    <table class="table" id="tbl_Cart_Item"></table>
+                </div>
+                <div id="OrderForPurchase" style="text-align:center;display:none;">
+                    <input type="button" value="Route" id="btnRouteOrder" class="btn blue" />
+                    <input type="button" value="Order" id="btnPurchaseOrder" class="btn blue" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script id="temp_tv_Ware_Pro_List" type="text/kendo-ui-template">
+    #if(item.id.split('-')[1] === 'c'){#
+    <label style="cursor:pointer;color:grey;font-weight:normal;width: 100%;"
+           class="lblTreeViewProType child"
+           data-id="#:item.id#"
+           data-text="#: item.text #">#: item.text # (#:item.Count#)</label>
+    #}else {#
+    <label style="cursor:pointer;color:black;font-weight:bold;width: 100%;"
+           class="lblTreeViewProType parent"
+           data-id=" #:item.id#"
+           data-text="#: item.text #">#: item.text #<span class='right-count'></span></label>
+    #}#
+</script>
+<script id="temp_alert" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px"> #=data# </p>
+        <div style="text-align: right">
+            <input type="button" value="OK" class="k-button k-state-default" id="btnOkAlert" />
+        </div>
+    </div>
+</script>
+<script>
+    var alllocId = [], allName = [], allquan = [], allunit = [],alllname=[], assignUserId = 0,
+        page = 0, inCallback = false, typeId, showCount = 0,totalCount=0, viewId = 1, storeId = 0,wareId = 0, data,
+        content = '', isCartShow = false, windowHeight = 0, search = '',isBtnClickFirstTym = true, isStore=true;
+    
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $("#liForAllInventoryList").addClass('sublistActive');
+        url = '/StoreProduct/ProductCategoryAll?userId=' + userId + '&roleId=' + roleId;
+        
+        $.getJSON(url, function (data) {
+            $("#tv_Ware_Pro_List").kendoTreeView({
+                dataSource: data,
+                dataBound: ExpandLeftTreeViewNode,
+                template: kendo.template($("#temp_tv_Ware_Pro_List").html()),
+            }).data("kendoTreeView");
+        });
+        if ('@(ViewBag.storeid)' === '0') {
+            storeId = 0;
+            $("#div_all_pro_list").load('@Url.Action("_StoreList", "StoreProduct")?viewId=1');
+        } else {
+            storeId = '@(ViewBag.storeid)';
+            $("#div_all_pro_list").load('@Url.Action("_StoreList", "StoreProduct")?viewId=1');
+        }
+        var available_height = Metronic.getViewPort().height - $('.page-footer').outerHeight() - $('.page-header').outerHeight();
+        windowHeight = $(window).height() - $(".navbar-fixed-top").height();
+        $("#divForAddtoCart").css('min-height', available_height);
+        
+    });
+
+    //********************************************* Product Change on Dropdown**********************************************
+    function onProductChange() {
+        var current = this.value();
+        sendData = { locationId: current, viewId: viewId };
+        $("#div_all_pro_list").load('@Url.Action("_StoreList", "StoreProduct")', sendData);
+        if (true) {
+            $(".lblTreeViewProType").each(function () {
+                if ($(this).data("id") == 0) {
+                    $(this).parent().addClass("k-state-selected");
+                } else {
+                    $(this).parent().removeClass("k-state-selected");
+                }
+            });
+        }
+        // k-state-selected $("#txt_Selected_Item").text(ui.item.ProductName);
+    }
+
+    //*********************************************  SHOW LIST WISE ********************************************************
+    $("#divForPartialView").on("click", "#list_view_icon", function () {
+        viewId = 1; page = 0;
+        $("#ViewTypeId").val(1);
+        $("#div_all_pro_list").empty();
+        $("#div_all_pro_list").append('<div class="loading_partial"></div>');
+        $("#div_all_pro_list").load('@Url.Action("_StoreList", "StoreProduct")?viewId=' + viewId);
+    });
+
+    //*********************************************  SHOW GROUP WISE ********************************************************
+    $("#divForPartialView").on("click", "#grid_view_icon", function () {
+        viewId = 2; page = 0;
+        $("#ViewTypeId").val(2);
+        $("#div_all_pro_list").empty();
+        $("#div_all_pro_list").append('<div class="loading_partial"></div>');
+        $("#div_all_pro_list").load('@Url.Action("_StoreList", "StoreProduct")?viewId=2');
+    });
+
+    //************************************* SCROLL CODE **************************************************************************
+
+    $(window).scroll(function () {
+        var countBytype, result;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/StoreProduct/GetInvenPro',
+            data: { page: page },
+            success: function (data) {
+                if (viewId === 1) {
+                    var multiLocation = [];
+                    for (var i = 0; i < data.length; i++) {
+                        var invenId = data[i].LocationId;
+                        showCount++;
+                        $("#tbl_pro_list").append('<tr id="tr' + invenId + '" class="tr_pro"></tr>');
+                        $("#tr" + invenId).load('@Url.Action("_LoadMultilocationItem", "StoreProduct")?id=' + data[i].InventoryId + '&impid=' + data[i].ImportId + '&count=' + showCount);
+                    }
+                    $('.imgresize').nailthumb({ width: 150, height: 150 });
+                }
+                if (parseInt(showCount) > parseInt(totalCount)) {
+                    $('#showItem').text(totalCount);
+                }
+                else {
+                    $('#showItem').text(showCount);
+                }
+
+                inCallback = false;
+                $("div#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+            }
+        });
+    }
+
+    //******************************** HIDE CART ******************************************************************
+    $("#showCart").click(function () {
+        isCartShow = true;
+        $("#showing_count_div").removeClass("col-xs-6").addClass("col-xs-4");
+        $("#search_bar").removeClass("col-sm-12").addClass("col-sm-11");
+        $("#Div_without_Cart").removeClass('form-horizontal col-lg-12 col-md-12 col-sm-12 col-xs-12');
+        $("#Div_without_Cart").addClass('col-lg-10 col-md-10 col-sm-9 col-xs-12 padding_30px');
+        $("#divForAddtoCart").addClass('col-md-2 col-sm-3 col-xs-12 noPadding');
+        $('#DivForCartList').css('min-height', windowHeight - $("#CartDivHeader").innerHeight() - 112);
+        $("#divForAddtoCart").show();
+        $("#DivForCartList").show();
+        if (alllocId.length > 0) {
+            $("#OrderForPurchase").show();
+        }
+        $("#showCart").hide();
+    });
+    //******************************** HIDE CART ******************************************************************
+    $("#CartDivHeader").click(function () {
+        $("#search_bar").removeClass("col-sm-11").addClass("col-sm-12");
+        $("#showing_count_div").removeClass("col-xs-4").addClass("col-xs-6");
+        $("#Div_without_Cart").removeClass('col-lg-10 col-md-10 col-sm-9 col-xs-12 padding_30px');
+        $("#Div_without_Cart").addClass('col-lg-12 col-md-12 col-sm-12 col-xs-12 noPadding');
+        $("#divForAddtoCart").hide();
+        $("#DivForCartList").hide();
+        $("#divForAddtoCart").removeClass('col-md-2 col-sm-3 col-xs-12 noPadding');
+        isCartShow = false;
+        $("#showCart").show();
+    });
+    function ExpandLeftTreeViewNode(e) {
+        var treeview = $("#temp_tv_Ware_Pro_List").data("kendoTreeView");
+        var item = this.dataItem(e.node);
+        var children = item && item.children ? item.children.data().length : undefined;
+        var text = children ? ("(" + children + ")") : "";
+        $(e.node).find(">div .right-count").text(text);
+    }
+    //***************************  Left Side Treeview Click Function  *********************************************
+    $("#tv_Ware_Pro_List").on("click", ".lblTreeViewProType", function (e) {
+        e.preventDefault();
+        showCount = 0, totalCount = 0, page = 0;
+        var sendData;
+        var proId = 0;
+        var name = 'All Product';
+        if ($(this).data("id") == 0) {
+            sendData = { search: search, viewId: viewId, userId: userId };
+        }
+        else {
+            name = $(this).data("text");
+            proId = $(this).data("id").split('-')[0];
+            sendData = { productId: proId, viewId: viewId };
+        }
+        $("#div_all_pro_list").empty();
+        $("#div_all_pro_list").append('<div class="loading_partial"></div>')
+        $("#div_all_pro_list").load('@Url.Action("_StoreList", "StoreProduct")', sendData);
+        $("#txt_Selected_Item").text(name);
+    });
+</script>
+<script>
+    //*****************************  ITEM ADD INTO CART **********************************************************
+    $("#div_all_pro_list").on("click", ".cartItemOrder", function () {
+        var name, picture, quantity, showPlus, unitname, imgSrc = "", loid = 0, multiple = 0, locname="";
+      
+        locname = $(this).data("locname");
+        loid = $(this).data("locationid");
+        var available_Quantity = $("#spn_quan_" + loid).text();
+        if (available_Quantity <= 0) {
+            return;
+        }
+        multiple = $(this).data("multiple");
+        name = $("#btnOrder_" + loid).data("name");
+        picture = $("#btnOrder_" + loid).data("picture");
+        unitname = $("#btnOrder_" + loid).data("unitname");
+        quantity = $(this).data("quan");
+        showPlus = $(this).data("showplus");
+
+        if (picture === '' || picture === null) { imgSrc = "/Images/Inventory/Store/no_img.jpg"; }
+        else { imgSrc = "/Images/Inventory/Store/Resize/" + picture; }
+
+        $("#cart_" + loid).text("1");
+        $("#txt_quan_" + loid).val("1");
+
+        $("#btnOrder_" + loid).hide();
+        $("#divForOrder_" + loid).show();
+
+        if (parseInt(quantity) === 1) {
+            $("#addIcon_" + loid).hide();
+        }
+        alllocId.push(loid);
+        allName.push(name);
+        allquan.push(1);
+        allunit.push(unitname);
+        alllname.push(locname);
+
+        if (isBtnClickFirstTym) {
+            isBtnClickFirstTym = false;
+        }
+        $("#itemCount").text(alllocId.length);
+        if (!isCartShow) {
+            //$("#Div_without_Cart").removeClass('form-horizontal col-lg-12 col-md-12 col-sm-12 col-xs-12');
+            //$("#Div_without_Cart").addClass('form-horizontal col-lg-10 col-md-10 col-sm-9 col-xs-12');
+            //$("#divForAddtoCart").addClass('col-md-2 col-sm-3 col-xs-12 noPadding');
+
+            $("#showing_count_div").removeClass("col-xs-6").addClass("col-xs-4");
+            $("#search_bar").removeClass("col-sm-12").addClass("col-sm-11");
+            $("#Div_without_Cart").removeClass('form-horizontal col-lg-12 col-md-12 col-sm-12 col-xs-12');
+            $("#Div_without_Cart").addClass('col-lg-10 col-md-10 col-sm-9 col-xs-12 padding_30px');
+            $("#divForAddtoCart").addClass('col-md-2 col-sm-3 col-xs-12 noPadding');
+            $('#DivForCartList').css('min-height', windowHeight - $("#CartDivHeader").innerHeight() - 112);
+            $("#divForAddtoCart").show();
+            $("#DivForCartList").show();
+
+            isCartShow = true;
+            $("#showCart").hide();
+            $('#DivForCartList').css('min-height', windowHeight - $("#CartDivHeader").innerHeight() - 112);
+        }
+        $("#tbl_Cart_Item").append('<tr id="dynTRforCart_' + loid + '">' +
+                                    '<td width="15%" style="padding: 0px!important;">' +
+                                        '<p class="cartItemUp" ' +
+                                        'data-locationid="' + loid + '" data-multiple="' + multiple + '" data-quantity="' + quantity + '"' +
+                                       ' data-showplus="true" style="cursor:pointer;text-align:center;margin-bottom:0px!important;">' +
+                                         '<i class="fa fa-caret-up "></i>' +
+                                        '</p>' +
+                                     '<p id="quentityInArrow_' + loid + '" style="text-align:center;margin-bottom:0px!important;">1</p>' +
+                                     '<p class="cartItemDown" data-locationid="' + loid + '" data-multiple="' + multiple + '" data-showplus="' + showPlus + '" ' +
+                                     'style="cursor:pointer;text-align:center;margin-bottom:0px!important;">' +
+                                         '<i class="fa fa-caret-down"></i>' +
+                                     '</p>' +
+                                 '</td>' +
+                                 '<td width="20%">' +
+                                     '<img src="' + imgSrc + '" style="max-width: 40px;max-height: 40px;border: 1px solid #CCC;">' +
+                                 '</td>' +
+                                 '<td width="60%" style="padding: 5px 0px 0px 0px;"><span>' + name + '</span>' +
+                                 '<p style="font-size: 11px!important;margin-top: -5px!important;color:#0074b8;">Location :' + locname + '</p></td>' +
+                                 '<td width="5%">' +
+                                     '<span class="k-icon k-i-close cartItemRemove" data-locationid="' + loid + '"></span>' +
+                                 '</td>' +
+                                '</tr>');
+
+        $("#divForAddtoCart").show();
+        $("#DivForCartList").show();
+        $("#OrderForPurchase").show();
+
+        $("#spn_quan_" + loid).text(parseFloat($("#spn_quan_" + loid).text()) - 1);
+        if (alllocId.length > 0) {
+            $("#btnRouteOrder").show();
+            $("#btnPurchaseOrder").show();
+        }
+    });
+    //*************************** REMOVE ITEM FROM CART **********************************************************
+    $("#DivForCartList").on("click", ".cartItemRemove", function () {
+        var loid = $(this).data('locationid');
+        for (var j = 0; j < alllocId.length; j++) {
+            if (loid === alllocId[j]) {
+
+                alllocId.splice(j, 1);
+                allName.splice(j, 1);
+                allquan.splice(j, 1);
+                allunit.splice(j, 1);
+                alllname.splice(j, 1);
+
+
+                $("#divForOrder_" + loid).hide();
+                $("#btnOrder_" + loid).show();
+                $("#dynTRforCart_" + loid).remove();
+                $('#cart_' + loid).text(0);
+                $('#txt_quan_' + loid).val(0);
+                $('#addIcon_' + loid).show();
+                $("#itemCount").text(alllocId.length);
+                $("#spn_quan_" + loid).text(parseFloat($("#spn_quan_" + loid).text()) + 1);
+            }
+        }
+        if (alllocId.length === 0) {
+            $("#btnRouteOrder").hide();
+            $("#btnPurchaseOrder").hide();
+        }
+    });
+</script>
+<script>
+    //********************************* INCREASE ITEM QUANTITY INTO CART ******************************************
+    $("#Div_inven").on("click", ".cartItemPlus, .cartItemUp", function () {
+        var addcart, unitname, quantity, showPlus, name, locid, multiple = 0,locname="";
+
+        loid = $(this).data("locationid");
+        var avalilabel_Quantity = $("#spn_quan_" + loid).text();
+        if (avalilabel_Quantity <= 0) {
+            notification.setOptions({ autoHideAfter: 3000 });
+            notification.show({ message: "No quantity available.", showTime: startTime() }, "upload-error");
+            return;
+        }
+        multiple = $(this).data("multiple");
+        showPlus = $(this).data("showplus");
+        name = $("#btnOrder_" + loid).data("name");
+        unitname = $("#btnOrder_" + loid).data("unitname");
+        quantity = $("#btnOrder_" + loid).data("quan");
+        addcart = $('#quentityInArrow_' + loid).text();
+        addcart = parseInt(addcart) + 1;
+        $("#spn_quan_" + loid).text(parseFloat($("#spn_quan_" + loid).text()) - 1);
+        if (addcart <= parseInt(quantity)) {
+            if (addcart === parseInt(quantity)) {
+                $('#addIcon_' + loid).hide();
+                showPlus = false;
+            }
+            else {
+                showPlus = true;
+            }
+            if ($('#cart_' + loid).length === 1) {
+                $('#cart_' + loid).text(addcart);
+                $('#txt_quan_' + loid).val(addcart);
+                if (!isCartShow) {
+                    $("#Div_without_Cart").removeClass('form-horizontal col-lg-12 col-md-12 col-sm-12 col-xs-12');
+                    $("#Div_without_Cart").addClass('form-horizontal col-lg-10 col-md-10 col-sm-9 col-xs-12');
+                    $("#divForAddtoCart").addClass('col-md-2 col-sm-3 col-xs-12 noPadding');
+                    $("#divForAddtoCart").show();
+                    $("#DivForCartList").show();
+                    $("#OrderForPurchase").show();
+                    $("#showCart").hide();
+                    isCartShow = true;
+                }
+            }
+            $('#quentityInArrow_' + loid).text(addcart);
+            $("#itemCount").text(alllocId.length);
+        }
+        else {
+            $('#addIcon_' + loid).hide();
+            showPlus = false;
+        }
+        for (var i = 0; i < alllocId.length; i++) {
+            if (loid === alllocId[i]) {
+                allquan[i] = (addcart);
+            }
+        }
+    });
+
+    //********************************* DECREASE ITEM QUANTITY INTO CART ******************************************
+    $("#Div_inven").on("click", ".cartItemMinus, .cartItemDown", function () {
+        var removecart, quantity, showPlus, locid, multiple = 0, locname = "";
+
+        loid = $(this).data("locationid");
+       
+        multiple = $(this).data("multiple");
+        name = $("#btnOrder_" + loid).data("name");
+        unitname = $("#btnOrder_" + loid).data("unitname");
+        removecart = $('#quentityInArrow_' + loid).text();
+        showPlus = $(this).data("showplus");
+        removecart = parseInt(removecart) - 1;
+        $("#spn_quan_" + loid).text(parseFloat($("#spn_quan_" + loid).text()) + 1);
+        if (removecart === 0) {
+            for (var j = 0; j < alllocId.length; j++) {
+                if (loid === alllocId[j]) {
+                    alllocId.splice(j, 1);
+                    allName.splice(j, 1);
+                    allquan.splice(j, 1);
+                    allunit.splice(j, 1);
+                    $("#dynTRforCart_" + loid).remove();
+                }
+            }
+            $("#btnOrder_" + loid).show();
+            $("#divForOrder_" + loid).hide();
+            $("#itemCount").text(alllocId.length);
+        }
+        else {
+            $('#addIcon_' + loid).show();
+            if ($('#cart_' + loid).length === 1) {
+                $('#cart_' + loid).text(removecart);
+                $('#txt_quan_' + loid).val(removecart);
+                if (!isCartShow) {
+                    $("#Div_without_Cart").removeClass('form-horizontal col-lg-12 col-md-12 col-sm-12 col-xs-12');
+                    $("#Div_without_Cart").addClass('form-horizontal col-lg-10 col-md-10 col-sm-9 col-xs-12');
+                    $("#divForAddtoCart").addClass('col-md-2 col-sm-3 col-xs-12 noPadding');
+                    $("#divForAddtoCart").show();
+                    $("#DivForCartList").show();
+                    $("#OrderForPurchase").show();
+                    $("#showCart").hide();
+                    isCartShow = true;
+                }
+            }
+            $('#forQuentity_' + loid).text(removecart);
+            $('#quentityInArrow_' + loid).text(removecart);
+            for (var i = 0; i < alllocId.length; i++) {
+                if (loid === alllocId[i]) {
+                    allquan[i] = (removecart);
+                }
+            }
+        }
+        if (alllocId.length === 0) {
+            $("#btnRouteOrder").hide();
+            $("#btnPurchaseOrder").hide();
+        }
+    });
+
+    //******************************** TYPED QUANTITY CHANGE FUNCTION ****************************
+    $("#div_all_pro_list").on("change", ".txt_quantity", function () {
+        var locid = $(this).data("locationid");
+        var max_quan = $(this).data("max");
+        var quan = parseFloat(max_quan) - parseFloat($(this).val());
+        $("#spn_quan_" + locid).text(quan);
+        for (var i = 0; i < alllocId.length; i++) {
+            if (locid === alllocId[i]) {
+                allquan[i] = (parseFloat($(this).val()));
+            }
+        }
+    });
+</script>
+<script>
+    @*$("#pro_search").autocomplete({
+        minLength: 0,
+        source: function (request, response) {
+            content = $.trim(request.term);
+            $.ajax({
+                url: '@Url.Action("SearchProductAll", "StoreProduct")',
+                type: "POST",
+                dataType: "json",
+                data: { prefix: content,userId:userId,roleId:roleId},
+                success: function (data) {
+                    response($.map(data, function (item) {
+                        return { label: item.ProductName + ' (L/C : ' + item.LC + ')', value: item.ProductName, id: item.LocationId };
+                    }))
+                }
+            })
+        },
+        minLength: 1,
+        select: function (event, ui) {
+            var selectTextId = ui.item.id;
+            sendData = { locationId: selectTextId, viewId: viewId};
+            $("#div_all_pro_list").load('@Url.Action("_StoreList", "StoreProduct")', sendData);
+            $("#txt_Selected_Item").text(ui.item.ProductName);
+        },
+    })
+    .keyup(function () {
+        if ($.trim($("#pro_search").val()) == "") {
+            showCount = 0; page = 0;
+            sendData = { viewId: viewId, userId: userId};
+            $("#div_all_pro_list").load('@Url.Action("_StoreList", "StoreProduct")', sendData);
+        }
+    })
+    .autocomplete("instance")._renderItem = function (ul, item) {
+        var term = $.trim(this.term);
+        var re = new RegExp("(" + term + ")", "gi"),
+                   cls = "bold-text",
+                   template = "<span class='" + cls + "'>$1</span>",
+                   label = item.label.replace(re, template),
+                   $li = $("<li/>").appendTo(ul);
+        $("<span>").html(label).appendTo($li);
+        return $li;
+    };*@
+</script>
+<script>
+    $("#btn_Iven_List").click(function () {
+        location.href = '@Url.Action("AllInvntProListForLcDetails", "StoreProduct")';
+    });
+    $("#btn_WareConfig").click(function () {
+        location.href = "@Url.Action("AllStoreLists", "Inventory")";
+    });
+    $("#btn_Import").click(function () {
+        location.href = "@Url.Action("InventoryItemLocationSet", "StoreProduct")";
+    });
+    $("#btn_WareItem_Add").click(function () {
+        location.href = "@Url.Action("StoreProductCreate", "StoreProduct")";
+    });
+    $("#btn_Dis_His").click(function () {
+        location.href = "@Url.Action("InvenDisVoucherList", "StoreProduct")?isStore=true";
+    });
+    $(".btn_ware").click(function () {
+        wareid = $(this).data('wareid');
+        var sendData;
+        $("#div_all_pro_list").empty();
+        $("#div_all_pro_list").append('<div class="loading_partial"></div>');
+        if (wareid == 0) {
+            $(".btn_ware").show();
+            $(".btn_storelist").show();
+            $("#headr_title").text("Warehouse");
+            $("#div_all_pro_list").load('@Url.Action("_WareProList", "Inventory")');
+        } else {
+            sendData = { wareid: wareid };
+            $(".btn_ware").hide();
+            $(".btn_storelist").hide();
+            $("#btn_ware_All").show();
+            $("#btn_ware_" + wareid).show();
+            $("#headr_title").text($(this).data('storename'));
+            $("#div_all_pro_list").load('@Url.Action("_WareProList", "Inventory")', sendData);
+        }
+    });
+
+    $(".btn_storelist").click(function () {
+        storeId = $(this).data('storeid');
+        var sendData;
+        $("#div_all_pro_list").empty();
+        $("#div_all_pro_list").append('<div class="loading_partial"></div>');
+        if (storeId == 0) {
+            $(".btn_ware").show();
+            $(".btn_storelist").show();
+            sendData = { viewId: viewId, userId: userId, currency: CurrencyId };
+            $("#headr_title").text("Store");
+        } else {
+            var store = $(this).data('store');
+            if (store == 1) {
+                sendData = { viewId: viewId, storeId: storeId };
+            }
+            else {
+                sendData = { viewId: viewId, wareid: storeId };
+            }
+            $(".btn_ware").hide();
+            $(".btn_storelist").hide();
+            $("#btn_ware_All").show();
+            $("#btn_ware_" + storeId).show();
+            $("#headr_title").text($(this).data('storename'));
+        }
+        $("#div_all_pro_list").load('@Url.Action("_StoreList", "StoreProduct")', sendData);
+    });
+
+    //*************************** Cart Item Dispatched ********************************************
+    $("#btnPurchaseOrder").click(function (e) {
+        e.preventDefault();
+        if (alllocId.length > 0) {
+            $("#Win_place_item").empty();
+            $("#Win_route_item").empty();
+            $("#Win_place_item").kendoWindow({
+                actions: ["Close"],
+                draggable: false,
+                modal: true,
+                visible: false,
+                title: 'Cart Item Dispatch'
+            });
+            $("#Win_place_item").html('<div class="loading_50"></div>');
+            var Win_place_item = $("#Win_place_item").data("kendoWindow");
+            Win_place_item.refresh({ url: "/Inventory/_PlaceCartItem" });
+            Win_place_item.maximize().open();
+        } else {
+            var kendoWindow = $("<div />").kendoWindow({
+                actions: ["Close"],
+                title: "Alert",
+                resizable: false,
+                width: "20%",
+                modal: true
+            });
+            var data = "You didn't select any item !!!!";
+            var template = kendo.template($("#temp_alert").html());
+            kendoWindow.data("kendoWindow").content(template(data)).center().open();
+            kendoWindow.find("#btnOkAlert").click(function () {
+                kendoWindow.data("kendoWindow").close();
+            }).end()
+        }
+    });
+
+    //*************************** Cart Item Route ********************************************
+
+    $("#btnRouteOrder").click(function (e) {
+        e.preventDefault();
+        if (alllocId.length > 0) {
+            $("#Win_place_item").empty();
+            $("#Win_route_item").empty();
+            $("#Win_route_item").kendoWindow({
+                actions: ["Close"],
+                draggable: false,
+                modal: true,
+                visible: false,
+                title: 'Cart Item Route'
+            });
+            $("#Win_route_item").html('<div class="loading_50"></div>');
+            var Win_route_item = $("#Win_route_item").data("kendoWindow");
+            Win_route_item.refresh({ url: "/StoreProduct/_PlaceCartItem" });
+            Win_route_item.maximize().open();
+        } else {
+            var kendoWindow = $("<div />").kendoWindow({
+                actions: ["Close"],
+                title: "Alert",
+                draggable: false,
+                resizable: false,
+                width: "20%",
+                modal: true
+            });
+            var data = "You didn't select any item !!!!";
+            var template = kendo.template($("#temp_alert").html());
+            kendoWindow.data("kendoWindow").content(template(data)).center().open();
+            kendoWindow.find("#btnOkAlert").click(function () {
+                kendoWindow.data("kendoWindow").close();
+            }).end()
+        }
+    });
+</script>
+<script>
+    var current = "", previous;
+    function onOrderSelect(e) {
+        previous = this._savedOld;
+        current = this.value();
+        var diff = [];
+        if (previous) {
+            diff = $(previous).not(current).get();
+        }
+        this._savedOld = current.slice(0);
+        if (diff.length > 0 && current != '') {
+            $("#div_order_" + diff).remove();
+        } else {
+            var dataItem = this.dataSource.view()[e.item.index()];
+            var OrdId = dataItem.BusinessOrderId;
+            if ($("#div_order_" + OrdId).length == 0) {
+                $("#Div_Selected_Order_List").append('<div class="col-sm-3 selectedDiv" id="div_order_' + dataItem.BusinessOrderId + '" data-id="' + OrdId + '" data-uid="0">' +
+                    '<table class="table" id="tbl_Dis_' + OrdId + '">' +
+                        '<tr>' +
+                            '<th><span>' + dataItem.OrderName + '</span>' +
+                            '<span style="cursor:pointer;margin-left:20px;color:red;display:none;" data-id="' + OrdId + '" class="btn_Delete_Order"><i class="fa fa-close"></i></span></th>' +
+                        '</tr>' +
+                    '</table>' +
+                    '</div>');
+                for (var i = 0; i < alllocId.length; i++) {
+                    $("#tbl_Dis_" + OrdId).append('<tr>' +
+                        '<td>' + (i + 1) + '. ' +
+                            '<input class="k-textbox txt_disQuan ' + alllocId[i] + '"' +
+                            'style="width: 60% !important; display: inline-block;"'+
+                            'data-max="' + allquan[i] + '" data-oid="' + OrdId + '" data-count="' + i + '" ' +
+                            'data-cartid="' + alllocId[i] + '" data-locid="' + alllocId[i] + '" data-val-required="*"' +
+                            'id="txt_quan_' + OrdId + '' + i + '" name="txt_quan_' + OrdId + '' + i + '"' +
+                            'value="" type="text" placeholder="' + allName[i] + '"' +
+                            'onkeypress="return cartQuan(event, this.value)"> <label style="margin-left:10px" id="remainQuan_' + alllocId[i] + '">' + allquan[i] + ' Left</label>' +
+                            '<span class="field-validation-valid text-danger" data-valmsg-for="txt_quan_' + OrdId + '' + i + '" data-valmsg-replace="true"></span>' +
+                            '<label id="remaining_' + alllocId[i] + '">5 left</label></td>' +
+                            '</tr>');
+                }
+                $("#tbl_Dis_" + OrdId).append('<tr class="tr_user_order"><td><span>Select User To Assign </span></td></tr><tr class="tr_user_order"><td>' +
+                '<input id="assignUser_' + OrdId + '" name="assignUser_' + OrdId + '" class="customers" style="width: 90%;" />' +
+                '<span class="field-validation-valid text-danger" data-valmsg-for="assignUser_' + OrdId + '" data-valmsg-replace="true"></span></td></tr>');
+
+                $("#assignUser_" + OrdId).kendoMultiSelect({
+                    placeholder: "Select users...",
+                    dataTextField: "Username",
+                    dataValueField: "UserId",
+                    headerTemplate: '<div class="dropdown-header k-widget k-header"><span>Photo</span><span>User info</span></div>',
+                    itemTemplate: '<span class="k-state-default" style="background-image: url(\'/Images/UserPicture/thumb/#: data.Picture #\')"></span>' +
+                              '<span class="k-state-default"><h3>#: data.Username #</h3><p>#: data.UserEmpId #      #:data.UserType#</p></span>',
+                    tagTemplate: '<span class="selected-value" style="background-image: url(\'/Images/UserPicture/thumb/#: data.Picture #\')"></span><span>#:data.Username#</span>',
+
+                    dataSource: { transport: { read: { url: "@Url.Action("GetUserListToAssigncart", "Inventory")?orderId=0", type: "GET" } } }
+                });
+            }
+            $("#Div_Selected_Order_List").show();
+            if (current.length > 0) {
+                $("#div_Chk_Single").show();
+            }
+            if ($("#ChkSingleUser").is(':checked')) {
+                $('.tr_user_order').hide();
+            }
+        }
+    };
+    function SingleUserAssign(e) {
+        var dataItem = this.dataItem(e.item.index());
+        assignUserId = dataItem.UserId;
+    }
+    function AssignUSerSelect(e) {
+        var dataItem = this.dataItem(e.item.index());
+        var orderId = dataItem.orderId;
+        var selectedUserId = dataItem.UserId;
+        $("#div_order_" + orderId).data("uid", selectedUserId);
+    }
+    function onOrderSelectChange(e) {
+        previous = this._savedOld;
+        current = this.value();
+        var diff = [];
+        if (previous) {
+            diff = $(previous).not(current).get();
+        }
+        this._savedOld = current.slice(0);
+        if (diff.length > 0) {
+            $("#div_order_" + diff).remove();
+            if (current == "") {
+                $("#Div_Selected_Order_List").hide();
+                $("#Div_Selected_Order_List").empty();
+            }
+            var id = diff.toString().split('-')[0];
+        }
+        if (current.length > 1) {
+            $("#div_Chk_Single").show();
+        } else {
+            $("#div_Chk_Single").hide();
+        }
+    }
+
+    //*****************************  DELETE SELECTED ORDER ***************************************
+    $("#Win_place_item").on("click", ".btn_Delete_Order", function () {
+        var id = $(this).data('id');
+        $("#div_order_" + id).remove();
+
+        var multi = $("#Bus_Order").data("kendoMultiSelect");
+        current = $.grep(current, function (value) {
+            return value != typeid;
+        });
+        multi.dataSource.filter({});
+        multi.value(current);
+        if (current == '') {
+            $("#Div_Selected_Order_List").empty();
+            $("#Div_Ryt_User").hide();
+        }
+        if (isPckSelect && current != '') {
+            $("#btnPckAssign").removeAttr('disabled');
+            btnDisable = false;
+        }
+    });
+
+    //************************************* ON KEYPRESSS *****************************************
+    function cartQuan(e, v) {
+        e = (e) ? e : window.event;
+        var charCode = (e.which) ? e.which : e.keyCode;
+        var afterDot = v.substr(v.indexOf(".") + 1);
+        if (charCode > 31 && (charCode < 46 || charCode > 57 || charCode == 47)) {
+            return false;
+        }
+        if (v.indexOf('.') > -1 && charCode == 46) {
+            return false;
+        }
+        if (v.indexOf('.') > -1 && afterDot.length == 2) {
+            return false;
+        }
+       
+        return true;
+    }
+    function onMachineChange(e) {
+        var dataItem = this.dataItem(e.item);
+        var loadUrl = "";
+        $("#div_Chk_Single").hide(); $("#div_Single_User").hide();
+        $("#ChkSingleUser").prop('checked', false);
+        $("#Div_For_machine_Equipment").empty();
+        $("#Div_Selected_Order_List").empty();
+        $("#Div_Selected_Order_List").hide();
+        $("#Div_For_machine_Equipment").append('<input id="txt_equipment" name="txt_equipment" style="width: 100%;">' +
+            '<span class="field-validation-valid text-danger" data-valmsg-for="txt_equipment" data-valmsg-replace="true"></span>');
+        if (this.value() === '') {
+            loadUrl = "@Url.Action("MachineEupi", "Inventory")";
+        } else {
+            loadUrl = "@Url.Action("MachineEupi", "Inventory")?type=" + dataItem.Id;
+        }
+        $("#txt_equipment").kendoMultiSelect({
+            placeholder: "Select order...",
+            dataTextField: "MachineAcronym",
+            dataValueField: "MachineId",
+            select: onMachineSelect,
+            change: onMachineSelectChange,
+            dataSource: { transport: { read: { url: loadUrl, type: "GET" } } }
+        });
+    }
+    function onOrderChange(e) {
+        var orderid = 0;
+        var dataItem = this.dataItem(e.item);
+        if (this.value() === '') {
+        } else {
+            orderid = dataItem.BusinessOrderId;
+            $("#Div_Selected_Order_List").empty();
+            $("#Div_Selected_Order_List").append('<table class="table" id="tbl_added_cart_item">' +
+                    '<tr>' +
+                        '<td width="60%">Order Name  : ' + dataItem.OrderName + '</td></td>' +
+                    '</tr>' +
+                '</table>');
+
+            for (var i = 0; i < alllocId.length; i++) {
+                $("#tbl_added_cart_item").append('<tr ><td>' + (i + 1) + '.' + allName[i] + '</td>' +
+                    '<td><input class="k-textbox txt_quan" ' +
+                           'style="width: 30% !important;" ' +
+                           'data-max="' + allquan[i] + '" data-id="' + alllocId[i] + '" ' +
+                           'data-val-required="*" ' +
+                           'id="txt_quan_' + alllocId[i] + '" name="txt_quan_' + alllocId[i] + '"' +
+                           'value="' + allquan[i] + '" type="text" ' +
+                           'onkeypress="return cartQuan(event, this.value)">  ' + allunit[i] + '' +
+                    '<span class="field-validation-valid text-danger" data-valmsg-for="txt_quan_' + alllocId[i] + '" data-valmsg-replace="true"></span></td></tr>');
+            }
+        }
+    }
+    $("#Win_place_item").on("change", ".txt_disQuan", function () {
+        var total = 0;
+        var id = $(this).data('oid'); var count = $(this).data('count');
+        var locid = $(this).data('locid');
+        var max_quan = $("#partail_cart_" + locid).text();
+        $("." + locid).each(function () {
+            if ($(this).val() > 0) {
+                total = parseInt(total) + parseInt($(this).val());
+            }
+        });
+        if (parseInt(total) > parseInt(max_quan)) {
+            // alert('Total quantity exceed ' + max_quan);
+            var kendoWindow = $("<div />").kendoWindow({
+                actions: ["Close"],
+                title: "Maximum Quantity Exceeded",
+                resizable: false,
+                width: "20%",
+                modal: true
+            });
+            var data = "Total quantity exceeded "+max_quan;
+            var template = kendo.template($("#temp_alert").html());
+            kendoWindow.data("kendoWindow").content(template(data)).center().open();
+            kendoWindow.find("#btnOkAlert").click(function () {
+                kendoWindow.data("kendoWindow").close();
+            }).end();
+            $("#txt_quan_" + id + count).val('');
+            $("#remainQuan_"+locid).text(max_quan+" Left")
+        } else {
+            $("#remainQuan_" + locid).text(max_quan-total + " Left")
+        }
+    });
+</script>
+<script>
+    function appendSelectedMachine(machineId, alllocId, name) {
+        $("#div_order_" + machineId).load('@Url.Action("_LoadMachineIntoCart", "Inventory")?machineId=' + machineId + '&alllocId=' + alllocId + '&name=' + encodeURIComponent(name));
+    }
+    function onMachineSelect(e) {
+        previous = this._savedOld;
+        current = this.value();
+        var diff = [];
+        if (previous) {
+            diff = $(previous).not(current).get();
+        }
+        this._savedOld = current.slice(0);
+        if (diff.length > 0 && current != '') {
+            $("#div_order_" + diff).remove();
+        } else {
+            var dataItem = this.dataSource.view()[e.item.index()];
+            var OrdId = dataItem.MachineId;
+            if ($("#div_order_" + OrdId).length == 0) {
+                $("#Div_Selected_Order_List").append('<div class="col-sm-3 selectedDiv" id="div_order_' + OrdId + '" ' +
+                                                     'data-id="' + OrdId + '" data-uid="0">' +
+                                                     '<div class="tiny_loading"></div></div>');
+                appendSelectedMachine(OrdId, alllocId, dataItem.MachineAcronym);
+            }
+            $("#Div_Selected_Order_List").show();
+            if (current.length > 0) {
+                $("#div_Chk_Single").show();
+            }
+            if ($("#ChkSingleUser").is(':checked')) {
+                $('.tr_user_machine').hide();
+            }
+        }
+    }
+    function onMachineSelectChange(e) {
+        previous = this._savedOld;
+        current = this.value();
+        var diff = [];
+        if (previous) {
+            diff = $(previous).not(current).get();
+        }
+        this._savedOld = current.slice(0);
+        if (diff.length > 0) {
+            $("#div_order_" + diff).remove();
+            if (current == "") {
+                $("#Div_Selected_Order_List").hide();
+                $("#Div_Selected_Order_List").empty();
+            }
+            var id = diff.toString().split('-')[0];
+        }
+        if (current.length > 1) {
+            $("#div_Chk_Single").show();
+        } else {
+            $("#div_Chk_Single").hide();
+        }
+    }
+</script>
+<script>
+    var iSComSite = false;
+    function onSiteChange(e) {
+        if (this.value() === "") {
+            $("#Div_Site_Unit").remove();
+            $("#Div_Site_Dept").remove();
+            $("#Div_Selected_Order_List").hide();
+            $("#Div_Selected_Order_List").empty();
+            $("#div_Chk_Single").hide();
+        } else {
+            var dataItem = this.dataItem(e.item)
+            var siteId = this.value();
+            var SiteName = this.text();
+            if (dataItem.IsComposite) {
+                iSComSite = true;
+                $("#Div_Site_Dept").remove();
+                $("#Div_Selected_Order_List").hide();
+                $("#Div_Selected_Order_List").empty();
+                $("#div_Chk_Single").hide();
+
+                $("#Div_for_Order").append('<div id="Div_Site_Unit"><div class="editor-label" style="width:15%!important;float:left;"><label>Select Unit</label></div>' +
+                '<div class="editor-field" style="float:left;width:38%!important;"><input id="SiteUnitId" name="SiteUnitId"/>' +
+                '<span class="field-validation-valid text-danger" data-valmsg-for="SiteUnitId" data-valmsg-replace="true"></span></div></div>');
+
+                $("#SiteUnitId").kendoMultiSelect({
+                    placeholder: "Select One Unit",
+                    dataTextField: "UnitName",
+                    dataValueField: "UnitId",
+                    //select: onSiteUnitSelect,
+                    change: onSiteUnitChange,
+                    dataSource: { transport: { read: { url: "@Url.Action("AllSite_UnitName", "Inventory")?siteId=" + dataItem.Id + "&UserId=" + userId + "&roleId=" + roleId } } }
+                });
+            }
+            else {
+                iSComSite = false;
+                $("#Div_Site_Unit").remove();
+                $("#Div_Selected_Order_List").hide();
+                $("#Div_Selected_Order_List").empty();
+                $("#div_Chk_Single").hide();
+                $("#Div_Site_Dept").remove();
+                $("#Div_for_Order").append('<div id="Div_Site_Dept"><div class="editor-label" style="width:15%!important;float:left;"><label>Select Dept</label></div>' +
+                '<div class="editor-field" style="float:left;width:50%!important;"><input id="SiteDeptId" name="SiteDeptId" style="width: 75%;" />' +
+                '<span class="field-validation-valid text-danger" data-valmsg-for="SiteDeptId" data-valmsg-replace="true"></span></div></div>');
+                var Id = [];
+                Id.push(siteId);
+                $("#UnitDeptId").kendoMultiSelect({
+                    placeholder: "Select dept...",
+                    dataTextField: "DeptName",
+                    dataValueField: "DeptId",
+                    select: onSiteDeptSelect,
+                    change: onSiteDeptSelectChange,
+                    dataSource: { transport: { read: { url: "@Url.Action("AllSite_DeptName", "Inventory")?id=" + dataItem.Id + "&isCom=false" } } }
+                });
+        }
+        }
+    };
+
+    //***************************** Unit Change Function *************************
+    function onSiteUnitChange(e) {
+        var Id = eval("[" + this.value() + "]");
+        if (Id.length > 0) {
+            var sendData = { id: Id, isCom: true };
+            $("#Div_Unit_Dept").remove();
+            $("#Div_Site_Unit").append('<div id="Div_Unit_Dept"><div class="editor-label" style="width:15%!important;float:left;"><label>Select Dept</label></div>' +
+            '<div class="editor-field" style="float:left;width:50%!important;" id="Div_Unit_dep_load"></div></div>');
+            $("#Div_Unit_dep_load").append('<div class="loading-xs"></div>');
+            $("#Div_Unit_dep_load").load('@Url.Action("AllSite_DeptName", "Inventory")', sendData);
+        } else {
+            $("#Div_Unit_Dept").remove();
+            $("#Div_Site_Dept").remove();
+            $("#Div_Selected_Order_List").hide();
+            $("#Div_Selected_Order_List").empty();
+            $("#div_Chk_Single").hide();
+        }
+    }
+
+    //***************************** Site Dept Unit Select and Change Function *************************
+    function onSiteDeptSelect(e) {
+        previous = this._savedOld;
+        current = this.value();
+        var diff = [];
+        if (previous) {
+            diff = $(previous).not(current).get();
+        }
+        this._savedOld = current.slice(0);
+        if (diff.length > 0 && current != '') {
+            $("#div_order_" + diff).remove();
+        } else {
+            var dataItem = this.dataSource.view()[e.item.index()];
+            var OrdId = dataItem.Value;
+            if ($("#div_order_" + OrdId).length == 0) {
+                $("#Div_Selected_Order_List").append('<div class="col-sm-3 selectedDiv" id="div_order_' + OrdId + '" data-id="' + OrdId + '" data-uid="0">' +
+                    '<table class="table" id="tbl_Dis_' + OrdId + '">' +
+                        '<tr>' +
+                            '<th><span>' + dataItem.Text + '</span>' +
+                            '<span style="cursor:pointer;margin-left:20px;color:red;display:none;" data-id="' + OrdId + '" class="btn_Delete_Order"><i class="fa fa-close"></i></span></th>' +
+                        '</tr>' +
+                    '</table>' +
+                    '</div>');
+                for (var i = 0; i < alllocId.length; i++) {
+                    $("#tbl_Dis_" + OrdId).append('<tr>' +
+                        '<td>' + (i + 1) + '. ' +
+                            '<input class="k-textbox txt_disQuan ' + alllocId[i] + '"' +
+                            'style="width: 60% !important; display: inline-block;"'+
+                            'data-max="' + allquan[i] + '" data-oid="' + OrdId + '" data-count="' + i + '" ' +
+                            'data-cartid="' + alllocId[i] + '" data-locid="' + alllocId[i] + '" data-val-required="*"' +
+                            'id="txt_quan_' + OrdId + '' + i + '" name="txt_quan_' + OrdId + '' + i + '"' +
+                            'value="" type="text" placeholder="' + allName[i] + '"' +
+                            'onkeypress="return cartQuan(event, this.value)"><label style="margin-left:10px" id="remainQuan_'+alllocId[i]+'">'+allquan[i]+' Left</label>' +
+                            '<span class="field-validation-valid text-danger" data-valmsg-for="txt_quan_' + OrdId + '' + i + '" data-valmsg-replace="true"></span>' +
+                            '</td>' +
+                            '</tr>');
+                }
+                $("#tbl_Dis_" + OrdId).append('<tr class="tr_user_dept"><td><span>Select User To Assign </span></td></tr><tr class="tr_user_dept"><td id="assign_by_input_1">' +
+                '<input type="text" id="assignUser_1" class="assignUser_" name="assignUser_' + OrdId + '" class="customers" style="width:90%"/>' +
+                '<span class="field-validation-valid text-danger" data-valmsg-for="assignUser_1" data-valmsg-replace="false"></span></td>' +
+                '<td id="assign_input_action_1"><i class="fa fa-plus assign_more_user_fa_btn" data-count="1" data-orderid="' + OrdId + '" id="fa_add_btn_1"></i>' +
+                //'<span class="field-validation-valid text-danger" data-valmsg-for="fa_add_btn_1" data-valmsg-replace="false"></span>' +
+                '</td>' +
+                '</tr>');
+
+                @*$("#assignUser_" + OrdId).kendoMultiSelect({
+                    placeholder: "Select users...",
+                    dataTextField: "Username",
+                    dataValueField: "UserId",
+                    headerTemplate: '<div class="dropdown-header k-widget k-header"><span>Photo</span><span>User info</span></div>',
+                    itemTemplate: '<span class="k-state-default" style="background-image: url(\'/Images/UserPicture/thumb/#: data.Picture #\')"></span>' +
+                                  '<span class="k-state-default"><h3>#: data.Username #</h3><p>#: data.UserEmpId #      #:data.UserType#</p></span>',
+                    tagTemplate: '<span class="selected-value" style="background-image: url(\'/Images/UserPicture/thumb/#: data.Picture #\')"></span><span>#:data.Username#</span>',
+
+                    dataSource: { transport: { read: { url: "@Url.Action("GetUserListToAssigncart", "Inventory")?orderId=0", type: "GET" } } }
+                });*@
+            }
+            $("#Div_Selected_Order_List").show();
+            if (current.length > 0) {
+                $("#div_Chk_Single").show();
+            }
+            if ($("#ChkSingleUser").is(':checked')) {
+                $('.tr_user_dept').hide();
+            }
+        }
+    }
+    $(document).on("click",".assign_more_user_fa_btn",function () {
+        var OrdId=$(this).data("orderid");
+        var dataCount = parseInt($(this).data("count")) + 1;
+        var validation = $("#assign_by_input_"+(dataCount-1)).kendoValidator(
+            {
+            rules: {
+                assignUser_: function (input) {
+                    if (input.attr('name') === "assignUser_" + OrdId && $("#assignUser_" + (dataCount - 1)).val() === "") {
+                        return false;
+                    }
+                    return true;
+                },
+            },
+            messages: {
+                assignUser_:"Please type a name of a user"
+            }
+            }
+        ).data("kendoValidator");
+        if (validation.validate()) {
+            $("#assign_input_action_"+(dataCount-1)).hide();
+            $("#tbl_Dis_" + OrdId).append('<tr class="tr_user_dept"><td id="assign_by_input_' + dataCount + '">' +
+                   ' <input id="assignUser_'+dataCount+'" class="assignUser_" name="assignUser_' + OrdId + '" class="customers" style="width:90%"/>' +
+                    '<span class="field-validation-valid text-danger" data-valmsg-for="assignUser_' + OrdId + '" data-valmsg-replace="true"></span></td>' +
+                    '<td id="assign_input_action_' + dataCount + '"><i class="fa fa-plus assign_more_user_fa_btn" id="fa_add_btn_' + dataCount + '" data-count="' + dataCount + '" data-orderid="' + OrdId + '"></i>' +
+                    '<i class="fa fa-remove remove_user_fa_btn" data-count="'+dataCount+'" style="color:red;margin-left:5px"></i>'+
+                    '</td>' +
+                    '</tr>');
+        }
+       
+    });
+    $(document).on("click", ".remove_user_fa_btn", function () {
+        var dataCount=parseInt($(this).data("count"));
+        $("#assign_by_input_" + dataCount).remove();
+        $("#assign_input_action_" + dataCount).remove();
+        $("#assign_input_action_" + (dataCount-1)).show()
+    });
+    function onSiteDeptSelectChange(e)
+    {
+        previous = this._savedOld;
+        current = this.value();
+        var diff = [];
+        if (previous) {
+            diff = $(previous).not(current).get();
+        }
+        this._savedOld = current.slice(0);
+        if (diff.length > 0) {
+            $("#div_order_" + diff).remove();
+            if (current == "") {
+                $("#Div_Selected_Order_List").hide();
+                $("#Div_Selected_Order_List").empty();
+            }
+            var id = diff.toString().split('-')[0];
+        }
+        if (current.length > 1) {
+            $("#div_Chk_Single").show();
+        } else {
+            $("#div_Chk_Single").hide();
+        }
+    }
+
+    //***************************** Unit Dept Unit Select and Change Function *************************
+
+    function onSiteUnitSelectChange(e) {
+        previous = this._savedOld;
+        current = this.value();
+        var diff = [];
+        if (previous) {
+            diff = $(previous).not(current).get();
+        }
+        this._savedOld = current.slice(0);
+        if (diff.length > 0) {
+            $("#div_site_" + diff).remove();
+            if (current == "") {
+                $("#Div_Selected_Order_List").hide();
+                $("#Div_Selected_Order_List").empty();
+            }
+            var id = diff.toString().split('-')[0];
+        }
+        if (current.length > 1) {
+            $("#div_Chk_Single").show();
+        } else {
+            $("#div_Chk_Single").hide();
+        }
+    }
+</script>
+@*************************** ROUTE LOCATION EVENT CLICK ************************@
+<script>
+    function onRouteLocSelect(e) {
+        previous = this._savedOld;
+        current = this.value();
+        var diff = [];
+        if (previous) {
+            diff = $(previous).not(current).get();
+        }
+        this._savedOld = current.slice(0);
+        if (diff.length > 0 && current != '') {
+            $("#div_order_" + diff).remove();
+        } else {
+            var dataItem = this.dataSource.view()[e.item.index()];
+            var OrdId = dataItem.IdWithChar;
+            if ($("#div_order_" + OrdId).length == 0) {
+
+                $("#Div_Selected_Order_List").append('<div class="col-sm-3 selectedDiv" id="div_order_' + OrdId + '" data-id="' + OrdId + '" data-uid="0">' +
+                    '<table class="table" id="tbl_Dis_' + OrdId + '">' +
+                        '<tr>' +
+                            '<th><span>' + dataItem.Name + '</span>' +
+                            '<span style="cursor:pointer;margin-left:20px;color:red;display:none;" data-id="' + OrdId + '" class="btn_Delete_Order"><i class="fa fa-close"></i></span></th>' +
+                        '</tr>' +
+                    '</table>' +
+                    '</div>');
+                for (var i = 0; i < alllocId.length; i++) {
+                    $("#tbl_Dis_" + OrdId).append('<tr>' +
+                        '<td>' + (i + 1) + '. ' +
+                            '<input class="k-textbox txt_disQuan ' + alllocId[i] + '"' +
+                            'style="width: 60% !important; display: inline-block;"' +
+                            'data-max="' + allquan[i] + '" data-oid="' + OrdId + '" data-count="' + i + '" ' +
+                            'data-cartid="' + alllocId[i] + '" data-locid="' + alllocId[i] + '" data-val-required="*"' +
+                            'id="txt_quan_' + OrdId + '' + i + '" name="txt_quan_' + OrdId + '' + i + '"' +
+                            'value="" type="text" placeholder="' + allName[i] + '"' +
+                            'onkeypress="return cartQuan(event, this.value)"><label style="margin-left:10px" id="remainQuan_' + alllocId[i] + '">' + allquan[i] + ' Left</label>' +
+                            '<span class="field-validation-valid text-danger" data-valmsg-for="txt_quan_' + OrdId + '' + i + '" data-valmsg-replace="true"></span>' +
+                            '</td>' +
+                            '</tr>');
+                }
+                $("#tbl_Dis_" + OrdId).append('<tr class="tr_user_dept"><td><span>Select User To Assign </span></td></tr><tr class="tr_user_dept"><td>' +
+                '<input id="assignUser_' + OrdId + '" name="assignUser_' + OrdId + '" class="customers" style="width: 90%;" />' +
+                '<span class="field-validation-valid text-danger" data-valmsg-for="assignUser_' + OrdId + '" data-valmsg-replace="true"></span></td></tr>');
+
+                $("#assignUser_" + OrdId).kendoMultiSelect({
+                    placeholder: "Select users...",
+                    dataTextField: "Username",
+                    dataValueField: "UserId",
+                    headerTemplate: '<div class="dropdown-header k-widget k-header"><span>Photo</span><span>User info</span></div>',
+                    itemTemplate: '<span class="k-state-default" style="background-image: url(\'/Images/UserPicture/thumb/#: data.Picture #\')"></span>' +
+                                  '<span class="k-state-default"><h3>#: data.Username #</h3><p>#: data.UserEmpId #      #:data.UserType#</p></span>',
+                    tagTemplate: '<span class="selected-value" style="background-image: url(\'/Images/UserPicture/thumb/#: data.Picture #\')"></span><span>#:data.Username#</span>',
+
+                    dataSource: { transport: { read: { url: "@Url.Action("GetUserListToAssigncart", "Inventory")?orderId=0", type: "GET" } } }
+                });
+
+            }
+            $("#Div_Selected_Order_List").show();
+            if (current.length > 0) {
+                $("#div_Chk_Single").show();
+            }
+            if ($("#ChkSingleUser").is(':checked')) {
+                $('.tr_user_machine').hide();
+            }
+        }
+    }
+    function onRouteLocChange(e) {
+        previous = this._savedOld;
+        current = this.value();
+        var diff = [];
+        if (previous) {
+            diff = $(previous).not(current).get();
+        }
+        this._savedOld = current.slice(0);
+        if (diff.length > 0) {
+            $("#div_order_" + diff).remove();
+            if (current == "") {
+                $("#Div_Selected_Order_List").hide();
+                $("#Div_Selected_Order_List").empty();
+            }
+            var id = diff.toString().split('-')[0];
+        }
+        if (current.length > 1) {
+            $("#div_Chk_Single").show();
+        } else {
+            $("#div_Chk_Single").hide();
+        }
+    }
+</script>

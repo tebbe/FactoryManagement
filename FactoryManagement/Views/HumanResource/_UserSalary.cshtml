@@ -1,0 +1,145 @@
+﻿
+
+
+
+
+
+@************************************** Created By Jerin Jahan (Date:3.12.2016)  ***************************************@
+
+@model IEnumerable<FactoryManagement.Models.EmpSalaryPaymentDetail>
+@{
+    var count = 1;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    decimal total_due = 0;
+}
+<style>
+    .table td{border:1px solid #ddd!important;}
+    .table th{
+        border:1px solid #ddd !important;
+        border-bottom: 1px solid #ddd!important;
+    }
+</style>
+@if (Model.Count() > 0)
+{
+    if (ViewBag.Status == 1)
+    {
+        <style>
+            .paidSalaryPackdertails {
+                color: #5b9bd1;
+                cursor: pointer;
+            }
+        </style>
+        <h3 style="margin-top:0px!important;">All Salary History</h3><hr />
+        <table class="table table-condensed">
+            <tr>
+                <th width="4%">#</th>
+                <th width="12%">Transaction Id</th>
+                <th width="12%">Month</th>
+                <th width="20%">Paid By</th>
+                <th width="17%">Paid Date & Time</th>
+                <th width="5%">Status</th>
+                <th width="10%">Total Amount</th>
+                <th width="10%">Paid Amount</th>
+                <th width="10%">Due Amount</th>
+            </tr>
+            @foreach (var list in Model)
+            {
+                decimal amount = Convert.ToDecimal(list.PaidAmount);
+                decimal due = Convert.ToDecimal(list.TotalAmount) - Convert.ToDecimal(list.PaidAmount);
+                total_due = total_due + Convert.ToDecimal(amount);
+                if (amount > 0)
+                {
+                    <tr>
+                        <td>@count .</td>
+                        <td>
+                            <span class="paidSalaryPackdertails" data-id="@list.Id">@list.Id (Monthly Salary)</span>
+                        </td>
+                        <td>@list.Month, @list.Year</td>
+                        <td>
+                            @if (list.PaidBy == 1)
+                            {
+                                <img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" />
+                                @Request.Cookies["CookieAdminInfo"].Values["username"].ToString()
+                            }
+                            else
+                            {
+                                var user = db.View_UserLists.Where(m => m.UserId == list.PaidBy).FirstOrDefault();
+                                <a href="/HumanResource/DisplayEmployeeDetails?UserId=@user.UserId&isDisplay=true">
+                                    <img src="~/Images/UserPicture/thumb/@user.Picture" class="user-photo" /><span> @user.UserName</span>
+                                </a>
+                            }
+                        </td>
+                        <td>@Convert.ToDateTime(list.PaidDate).ToString("MMMM dd,yyyy  hh:mm tt")</td>
+                        <td>
+                            @if (list.Status == 1)
+                            {<span>Paid</span>}
+                            else
+                            {<span>Due</span>}
+                        </td>
+                        <td>@currency @list.TotalAmount</td>
+                        <td>@currency @amount</td>
+                        <td>@currency @due</td>
+                    </tr>
+                    count++;
+                } 
+            }
+        </table>
+        <div style="float:right;width:100%;text-align:right;">
+            <div id="div_total_selectedAmnt" style="margin-right:5%;color:#5a7391!important;"><span>Total Due Amount = @currency @total_due </span></div>
+        </div>
+    }
+    else
+    {
+        <style>
+            .paidSalaryPackdertails {
+                color: #5b9bd1;
+                cursor: pointer;
+            }
+            
+                
+        </style>
+        <h3 style="margin-top:0px!important;">All Due Salary History</h3><hr />
+        <table class="table table-bordered table-responsive table-striped table-hover">
+            <tr>
+                <th width="3%">#</th>
+                <th width="10%">Transaction Id</th>
+                <th width="10%">Month</th>
+                <th width="5%">Status</th>
+                <th width="8%">Total Amount</th>
+                <th width="8%">Paid Amount</th>
+                <th width="8%">Due Amount</th>
+            </tr>
+            @foreach (var list in Model)
+            {
+                decimal amount = Convert.ToDecimal(list.PaidAmount);
+                decimal due = Convert.ToDecimal(list.TotalAmount) - Convert.ToDecimal(list.PaidAmount);
+                total_due = total_due + due;
+                <tr>
+                    <td>@count .</td>
+                    <td>
+                        <span class="paidSalaryPackdertails" data-id="@list.Id">@list.Id (Monthly Salary)</span>
+                    </td>
+                    <td>@list.Month, @list.Year</td>
+                    <td>
+                        @if (list.Status == 1)
+                        {<span>Paid</span>}
+                        else
+                        {<span>Due</span>}
+                    </td>
+                    <td>@currency @list.TotalAmount</td>
+                    <td>@currency @amount</td>
+                    <td>@currency @due</td>
+                </tr>
+                count++;
+            }
+        </table>
+        <div style="float:right;width:100%;text-align:right;">
+            <div id="div_total_selectedAmnt" style="margin-right:5%;color:#5a7391!important;"><span><span>Total Paid Amount = @currency @total_due </span></span></div>
+        </div>
+    }
+}
+else
+{
+    <h4 style="color:#5a7391">There is no record to display.</h4>
+}

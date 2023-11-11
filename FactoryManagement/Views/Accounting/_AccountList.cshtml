@@ -1,0 +1,41 @@
+﻿@************************************** Created By Tasnim Tuli (Date:6.11.2016)  ***************************************@
+@model IEnumerable<FactoryManagement.ModelView.Accounting.BankAccountListModelView>
+@{
+    var count = 1;
+}
+
+<tr>
+    <th>#</th>
+    <th>Account Name</th>
+    <th>Account Number</th>
+    <th></th>
+</tr>
+
+@foreach (var item in ViewBag.AccountList as IEnumerable<FactoryManagement.ModelView.Accounting.BankAccountListModelView>)
+{
+    <tr id="tr_account_@item.BankAccountId">
+        <th scope="row">@count</th>
+        <td>
+            <a href="#" class="accountDetailsDisplay" data-accountid="@item.BankAccountId">@Html.DisplayFor(modelItem => item.AccountName)</a>
+        </td>
+        <td>@Html.DisplayFor(modelItem => item.AccountNumber)</td>
+       @if (item.ForAccountDisplay > 0)
+       { 
+       <td><a href="#" class="btn blue accountDetailsDisplay" data-toggle="tooltip" data-original-title="Account Details" data-accountid="@item.BankAccountId"><i class="fa fa-info-circle"></i></a>
+       </td>
+       }
+       else
+       {
+        <td>
+            <a href="#" class="btn green accountDetailsEdit" data-toggle="tooltip" data-original-title="Edit Account" data-accountid="@item.BankAccountId"><i class="fa fa-pencil"></i></a>
+            <a class="btn btn-danger deleteAccount" data-toggle="tooltip" data-original-title="Delete Account" data-id="@item.BankAccountId"><i class="fa fa-trash"></i></a>
+            @*<a href="#" id="accountDetailsDisplay" class="btn btn-info accountDetailsDisplay" data-accountid="@item.BankAccountId"><i class="fa fa-info-circle"></i></a>*@
+        </td>
+       }
+        
+    </tr>
+    count++;
+}
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+</script>

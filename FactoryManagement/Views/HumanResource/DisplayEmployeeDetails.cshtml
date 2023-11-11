@@ -1,0 +1,1523 @@
+﻿
+
+
+@********************************************************* Created By Jerin Jahan Date(30.11.2016) ****************************************************************************@
+@using FactoryManagement.Helpers
+@model FactoryManagement.ModelView.HR.UserInformationModelView
+@{
+    ViewBag.Title = "DisplayEmployeeDetails";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    long loginUserId = Convert.ToInt64(Request.Cookies["CookieAdminInfo"].Values["userid"].ToString());
+    string username = Request.Cookies["CookieAdminInfo"].Values["fulname"].ToString();
+    var loginUserPicture = db.UserInformations.Where(x => x.UserId == loginUserId).Select(x => x.Picture).FirstOrDefault();
+}
+<link href="~/Scripts/intl-tel-input-master/build/css/intlTelInput.css" rel="stylesheet" />
+<script src="~/Scripts/intl-tel-input-master/build/js/intlTelInput.min.js"></script>
+<link href="~/Content/Employee/profile.css" rel="stylesheet" />
+
+<style>
+    .status_icon i {
+        margin-right: 2px !important;
+        font-size: 10px !important;
+        margin-left: 1px !important;
+    }
+
+    .status_icon span {
+        border-radius: 50% !important;
+    }
+
+    #circle {
+        width: 100px;
+        margin: 6px 6px 20px;
+        display: inline-block;
+        position: relative;
+        text-align: center;
+        line-height: 1.2;
+    }
+
+        #circle strong {
+            position: absolute;
+            top: 30px !important;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            line-height: 40px;
+            font-size: 20px;
+        }
+</style>
+
+
+<div id="Win_paid_Salary_Pck"></div>
+<div id="div_user_Pic_edit"></div>
+<div id="div_user_basic_info_edit"></div>
+<div id="div_user_permanentAddress_edit"></div>
+<div id="div_user_PresentAddress_edit"></div>
+<div id="div_national_id_image"></div>
+<div id="Win_div_card"></div>
+<div id="win_salary_pack_chang"></div>
+<div id="win_Work_Schedule_change"></div>
+<div id="win_user_company_info"></div>
+<div id="win_user_cardInfo_edit"></div>
+<div id="win_user_contactInfo_edit"></div>
+
+<script id="temp_confirmation" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">#= message #</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script id="temp_pass" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">#= pass #</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_pass_show"><span class="k-icon k-update"></span>OK</button>
+        </div>
+    </div>
+</script>
+
+
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-users fa-fwt"></i>
+            <span>Human Resource</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/HumanResource/AllUserLists">Employee</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-info" aria-hidden="true"></i>
+            <a href="@Html.EncodedParam("DisplayEmployeeDetails","HumanResource",new {UserId= Model.UserId,isDisplay= Model.isDisplay },null)">Display Employee Details</a>
+        </li>
+    </ul>
+</div>
+
+<div class="note note-success"><p id="h4title">Showing Details of <label style="font-weight:bold">@Model.UserName</label></p></div>
+<div class="portlet light bordered">
+    <div class="portlet-title">
+        <div class="caption font-green">
+            <i class="fa fa-info-circle font-green"></i>
+            <span class="caption-subject bold uppercase">Employee Details</span>
+        </div>
+    </div>
+    <div class="portlet-body">
+        <div class="row profile">
+            <div class="col-md-2 col-sm-3">
+                <div class="profile-sidebar" style="border:1px solid #ddd;">
+                    <div class="profile-userpic">
+                        <span class="btn_Dis" id="btn_EditPicture" style="margin-top:-20px;"><span><i class="fa fa-pencil"></i></span></span>
+                        @if (Model.Picture != null)
+                        {
+                            <span id="Edit_Picture"><img src="~/Images/UserPicture/Original/@Model.Picture" class="img-responsive" alt=""></span>
+                        }
+                        else
+                        {
+                            <span id="Edit_Picture"><img src="~/Images/Icon/blank-person.jpg" class="img-responsive" alt=""></span>
+                        }
+                    </div>
+                    <div class="profile-usertitle">
+                        <div class="profile-usertitle-name">@Model.UserName</div>
+                        <div class="profile-usertitle-job">@Model.Designation</div>
+                        <div class="profile-usertitle-job">
+                            Status :
+                            @if (Model.Status == 1)
+                            {
+                                <span class="text-center text-success">Active</span>
+                            }
+                            else
+                            {
+                                <span class="text-center text-warning">Incomplete</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="profile-usermenu">
+                        <ul class="nav">
+                            <li class="active" id="li_Over">
+                                <a href="javascript:;">
+                                    <i class="fa fa-home"></i>
+                                    Personal Info
+                                </a>
+                            </li>
+                            @*<li id="li_personnel">
+                                    <a href="javascript:;">
+                                        <i class="fa fa-info"></i>
+                                        Personnel
+                                    </a>
+                                </li>*@
+                            <li id="li_card">
+                                <a href="javascript:;">
+                                    <i class="fa fa-money"></i>
+                                    Employee Card
+                                </a>
+                            </li>
+                           @* <li id="li_salary">
+         <a href="javascript:;">
+             <i class="fa fa-money"></i>
+             Salary
+             @if (Model.SalaryPackageId > 0)
+             {
+                 <span class="status_icon">
+                     <span class="label label-sm label-icon label-success">
+                         <i class="fa fa-check"></i>
+                     </span>
+                 </span>
+             }
+             else
+             {
+                 <span class="status_icon">
+                     <span class="label label-sm label-icon label-warning">
+                         <i class="fa fa-warning"></i>
+                     </span>
+                 </span>
+             }
+         </a>
+     </li>
+    <li id="li_Working">
+         <a href="javascript:;">
+             <i class="fa fa-calendar"></i>
+             Working Schedule
+             @if (Model.WorkingScheduleId > 0)
+             {
+                 <span class="status_icon">
+                     <span class="label label-sm label-icon label-success">
+                         <i class="fa fa-check"></i>
+                     </span>
+                 </span>
+             }
+             else
+             {
+                 <span class="status_icon">
+                     <span class="label label-sm label-icon label-warning">
+                         <i class="fa fa-warning"></i>
+                     </span>
+                 </span>
+             }
+         </a>
+     </li>
+     <li id="li_holiday">
+         <a href="javascript:;">
+             <i class="fa fa-tree"></i>
+             Holiday
+             @if (Model.HolidayPackId > 0)
+             {
+                 <span class="status_icon">
+                     <span class="label label-sm label-icon label-success">
+                         <i class="fa fa-check"></i>
+                     </span>
+                 </span>
+             }
+             else
+             {
+                 <span class="status_icon">
+                     <span class="label label-sm label-icon label-warning">
+                         <i class="fa fa-warning"></i>
+                     </span>
+                 </span>
+             }
+
+         </a>
+     </li>
+     <li id="li_Attendance">
+         <a href="javascript:;">
+             <i class="fa fa-calendar"></i>
+             Attendance
+         </a>
+     </li>
+     <li id="li_documents">
+         <a href="javascript:;">
+             <i class="fa fa-file"></i>
+             Documents
+         </a>
+     </li>
+     <li id="li_performance">
+             <a href="javascript:;">
+                 <i class="fa fa-file"></i>
+                 Performance
+             </a>
+         </li>
+     <li id="li_reset_pass">
+         <a href="javascript:;">
+             <i class="fa fa-key"></i>
+             Reset Password
+         </a>
+     </li>*@
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-10 col-sm-9">
+                <div class="profile-content">
+                    <div class="row" id="div_ryt_panel"></div>
+                    @*<div class="loading_half"></div>*@
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var EmpId = 0, loginUserId, isDisplay, usrtype = 0, pckId = 0, SiteId = 0, holidayPack = 0, work_schedule = 0, allMainFile = [], selectedholiId = 0;;
+    $(document).ready(function () {
+        loginUserId = '@loginUserId';
+        EmpId = '@(Model.UserId)', isDisplay = '@(Model.isDisplay)';
+        usrtype = '@(Model.UserType)', pckId = '@(Model.SalaryPackageId)', holidayPack = '@(Model.HolidayPackId)';
+        work_schedule = '@(Model.WorkingScheduleId)';
+
+        $("#liForHR").addClass('active');
+        $("#liForUserLists").addClass('sublistActive');
+
+        $("#div_ryt_panel").append('<div class="loading_partial"></div>');
+        $("#div_ryt_panel").load('@Url.Action("_ShowEmpInfo", "HumanResource")?UserId=' + EmpId + '&isDisplay=' + isDisplay);
+        $("#div_ryt_panel").css("padding", "20px");
+        if ('@(Model.isDisplay)' === 'True') {
+            $('.btn_Dis').hide();
+        }
+    });
+
+
+    function onUploadUserFile(e) {
+        allMainFile.push(e.files[0]);
+        $('[data-toggle="tooltip"]').tooltip();
+    }
+    $('#btnBack').click(function () {
+        location.href = '@Url.Action("AllUserLists", "HumanResource")';
+    });
+    //******************************** Left Side Overview Click ************************************
+    $("#li_Over").click(function () {
+        $("#li_Over").addClass("active");
+        $("#li_personnel").removeClass("active");
+        $("#li_AssignSalary").removeClass('active');
+        $("#li_salary").removeClass("active");
+        $("#li_Attendance").removeClass("active");
+        $("#li_holiday").removeClass("active");
+        $("#li_Working").removeClass("active");
+        $("#li_Rating").removeClass("active");
+        $("#li_documents").removeClass("active");
+        $("#li_performance").removeClass("active");
+
+
+        $("#h4title").empty();
+        $("#h4title").append('Showing Details of <label style="font-weight:bold">@Model.UserName</label>');
+        $("#div_ryt_panel").empty();
+        $("#div_ryt_panel").append('<div class="loading_half"></div>');
+        $("#div_ryt_panel").css("padding", "20px");
+        $("#div_ryt_panel").load('@Url.Action("_ShowEmpInfo", "HumanResource")?UserId=' + EmpId + '&isDisplay=' + isDisplay);
+    });
+
+    //******************************** Left Side Personnel Click ************************************
+    $("#li_personnel").click(function () {
+        $("#li_personnel").addClass("active");
+        $("#li_Over").removeClass("active");
+        $("#li_AssignSalary").removeClass('active');
+        $("#li_salary").removeClass("active");
+        $("#li_Attendance").removeClass("active");
+        $("#li_holiday").removeClass("active");
+        $("#li_Working").removeClass("active");
+        $("#li_Rating").removeClass("active");
+        $("#li_documents").removeClass("active");
+        $("#li_performance").removeClass("active");
+
+
+
+        $("#div_ryt_panel").empty();
+        $("#div_ryt_panel").append('<div class="loading_half"></div>');
+        $("#div_ryt_panel").css("padding", "20px");
+        $("#div_ryt_panel").load('@Url.Action("_ShowEmpInfo", "HumanResource")?UserId=' + EmpId + '&isDisplay=' + isDisplay);
+    });
+
+    //******************************** Left Side Assign Salary Package Click ************************************
+    $("#li_AssignSalary").click(function () {
+        $("#li_AssignSalary").addClass('active');
+        $("#li_Over").removeClass("active");
+        $("#li_personnel").removeClass("active");
+        $("#li_salary").removeClass("active");
+        $("#li_Attendance").removeClass("active");
+        $("#li_holiday").removeClass("active");
+        $("#li_Working").removeClass("active");
+        $("#li_Rating").removeClass("active");
+        $("#li_documents").removeClass("active");
+        location.href = '@Url.Action("AssignSalaryPackage", "SalaryConfig")?userId=' + EmpId;
+    });
+
+    //******************************** Left Side Holiday Click ************************************
+
+    $("#li_holiday").click(function () {
+        $("#li_Over").removeClass("active");
+        $("#li_personnel").removeClass("active");
+        $("#li_AssignSalary").removeClass('active');
+        $("#li_salary").removeClass("active");
+        $("#li_Attendance").removeClass("active");
+        $("#li_holiday").addClass("active");
+        $("#li_Working").removeClass("active");
+        $("#li_Rating").removeClass("active");
+        $("#li_documents").removeClass("active");
+
+        $("#h4title").empty();
+        $("#h4title").append('Showing Holiday Package Details of <label style="font-weight:bold">@Model.UserName</label>');
+
+        $("#div_ryt_panel").empty();
+        $("#div_ryt_panel").append('<div class="loading_half"></div>');
+        $("#div_ryt_panel").css("padding", "0px");
+        $("#div_ryt_panel").load('@Url.Action("_UserHolidayTab", "HumanResource")?UserId=' + EmpId + '&UserType=' + usrtype + '&holidayPack=' + holidayPack + '&isDisplay=' + '@Model.isDisplay');
+
+    });
+    $("#li_Working").click(function () {
+        $("#li_Over").removeClass("active");
+        $("#li_personnel").removeClass("active");
+        $("#li_AssignSalary").removeClass('active');
+        $("#li_salary").removeClass("active");
+        $("#li_Attendance").removeClass("active");
+        $("#li_holiday").removeClass("active");
+        $("#li_Working").addClass("active");
+        $("#li_Rating").removeClass("active");
+        $("#li_documents").removeClass("active");
+
+        $("#h4title").empty();
+        $("#h4title").append('Showing Working Schedule Details of <label style="font-weight:bold">@Model.UserName</label>');
+
+        $("#div_ryt_panel").empty();
+        $("#div_ryt_panel").append('<div class="loading_half"></div>');
+        $("#div_ryt_panel").css("padding", "0px");
+        $("#div_ryt_panel").load('@Url.Action("_WorkingScheduleTab", "HumanResource")?id=' + work_schedule + '&isDisplay=' + '@Model.isDisplay');
+    })
+    $("#li_performance").click(function () {
+        $("#li_Over").removeClass("active");
+        $("#li_personnel").removeClass("active");
+        $("#li_AssignSalary").removeClass('active');
+        $("#li_salary").removeClass("active");
+        $("#li_Attendance").removeClass("active");
+        $("#li_holiday").removeClass("active");
+        $("#li_Working").removeClass("active");
+        $("#li_Rating").removeClass("active");
+        $("#li_documents").removeClass("active");
+        $("#li_performance").addClass("active");
+        $("#div_ryt_panel").empty();
+        $("#div_ryt_panel").append('<div class="loading_half"></div>');
+        $("#div_ryt_panel").css("padding", "0px");
+        $("#div_ryt_panel").load('@Url.Action("_performancePartial", "Performance")');
+    });
+
+
+    function onAssignChangeHolyPack() {
+        if ($("#HolidayPackId").val() == "") {
+            $("#btn_holy_pck_save").prop('disabled', true);
+            $("#div_chk_custom").hide();
+            $("#div_selected_holy_pck").empty();
+        } else if (selectedholiId == $("#HolidayPackId").val()) {
+            $("#btn_holy_pck_save").prop('disabled', true);
+            $("#div_selected_holy_pck").show();
+            $("#div_selected_holy_pck").load('@Url.Action("selectHolyPack","Holiday")?id=' + $("#HolidayPackId").val() + "&v=win");
+        }
+        else {
+            $("#btn_holy_pck_save").prop('disabled', false);
+            $("#div_selected_holy_pck").show();
+            $("#div_selected_holy_pck").load('@Url.Action("selectHolyPack","Holiday")?id=' + $("#HolidayPackId").val());
+        }
+    }
+    function onChangeHolyPack(e) {
+        e.preventDefault();
+        if ($("#HolidayPackId").val() == "") {
+            $("#btn_holy_pck_change").prop('disabled', true);
+            $("#div_chk_custom").hide();
+            $("#div_selected_holy_pck").empty();
+        } else if (selectedholiId == $("#HolidayPackId").val()) {
+            $("#btn_holy_pck_change").prop('disabled', true);
+            $("#div_selected_holy_pck").show();
+            $("#div_selected_holy_pck").load('@Url.Action("selectHolyPack","Holiday")?id=' + $("#HolidayPackId").val() + "&v=win");
+        }
+        else {
+            $("#btn_holy_pck_change").prop('disabled', false);
+            $("#div_selected_holy_pck").show();
+            $("#div_selected_holy_pck").load('@Url.Action("selectHolyPack","Holiday")?id=' + $("#HolidayPackId").val() + "&v=win");
+        }
+    }
+    function onChangeWorkScdl(e) {
+        e.preventDefault();
+        $("#btn_Work_scdl_save").prop('disabled', false);
+        if ($("#WorkingScheduleId").val() == "") {
+            $("#btn_Work_scdl_save").prop('disabled', true);
+            $("#div_selected_work_scdl").hide();
+            $("#div_selected_work_scdl").empty();
+        }
+        else {
+            $("#btn_Work_scdl_save").prop('disabled', false);
+            $("#div_selected_work_scdl").show();
+            $("#div_selected_work_scdl").append('<div class="partial_loading_half"></div>');
+            $("#div_selected_work_scdl").load('@Url.Action("SelectedSchedule","HumanResource")?id=' + $("#WorkingScheduleId").val() + '&reason=new&view=partial');
+        }
+    }
+
+    function workingScheduleChange(e) {
+        e.preventDefault();
+        $("#div_selected_work_scdl").hide();
+        $("#div_selected_work_scdl").empty();
+
+        if ($("#Working_ScheduleId").val() == "") {
+            $("#btn_Work_scdl_Change").prop('disabled', true);
+        }
+        else {
+            if (work_schedule == $("#Working_ScheduleId").val()) {
+                $("#btn_Work_scdl_Change").prop('disabled', true);
+            }
+            else {
+                $("#btn_Work_scdl_Change").prop('disabled', false);
+            }
+            $("#div_selected_work_scdl").append('<div class="partial_loading_half"></div>');
+            $("#div_selected_work_scdl").show();
+            $("#div_selected_work_scdl").load('@Url.Action("SelectedSchedule","HumanResource")?id=' + $("#Working_ScheduleId").val() + '&reason=new&view=win');
+        }
+    }
+
+    //******************************** Left Side Employee Card Click ************************************
+    $("#li_card").click(function () {
+        $("#WinForSalaryPack").empty();
+        $("#Win_div_card").empty();
+        $("#Win_div_card").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '45%',
+            height: '25%',
+            title: 'Employee Card',
+            close: onWindowClose
+        });
+        $("#Win_div_card").html('<div class="partial_loading_half"></div>');
+        var Win_div_card = $("#Win_div_card").data("kendoWindow");
+        Win_div_card.refresh({ url: "/HumanResource/ShowCardDetails?UserId=" + EmpId });
+        Win_div_card.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no";
+    });
+
+    //******************************** Left Side Salary Click ************************************
+
+    $("#li_salary").click(function () {
+        $("#li_salary").addClass("active");
+        $("#li_AssignSalary").removeClass('active');
+        $("#li_Over").removeClass("active");
+        $("#li_personnel").removeClass("active");
+        $("#li_Attendance").removeClass("active");
+        $("#li_holiday").removeClass("active");
+        $("#li_Working").removeClass("active");
+        $("#li_Rating").removeClass("active");
+        $("#li_documents").removeClass("active");
+
+
+        $("#h4title").empty();
+        $("#h4title").append('Showing Salary Details of <label style="font-weight:bold">@Model.UserName</label>');
+        $("#div_ryt_panel").empty();
+        $("#div_ryt_panel").append('<div class="loading_half"></div>');
+        $("#div_ryt_panel").css("padding", "0px");
+        $("#div_ryt_panel").load('@Url.Action("_UserSalaryTab", "HumanResource")?UserId=' + EmpId + '&UserType=' + usrtype + '&PackageId=' + pckId);
+    });
+
+
+    //******************************** Left Side Attendance Click ************************************
+    $("#li_Attendance").click(function () {
+        $("#li_Over").removeClass("active");
+        $("#li_personnel").removeClass("active");
+        $("#li_AssignSalary").removeClass('active');
+        $("#li_salary").removeClass("active");
+        $("#li_Attendance").addClass("active");
+        $("#li_holiday").removeClass("active");
+        $("#li_Working").removeClass("active");
+        $("#li_Rating").removeClass("active");
+        $("#li_documents").removeClass("active");
+
+        $("#h4title").empty();
+        $("#h4title").append('Showing Attendence of <label style="font-weight:bold">@Model.UserName</label>');
+
+        $("#div_ryt_panel").empty();
+        $("#div_ryt_panel").append('<div class="loading_half"></div>');
+        $("#div_ryt_panel").css("padding", "0px");
+        $("#div_ryt_panel").load('@Url.Action("_UserAttendanceTab", "HumanResource")?UserId=' + EmpId);
+    });
+
+    //******************************** Left Side Document Click ************************************
+
+    $("#li_documents").click(function () {
+        $("#li_Over").removeClass("active");
+        $("#li_personnel").removeClass("active");
+        $("#li_AssignSalary").removeClass('active');
+        $("#li_salary").removeClass("active");
+        $("#li_Attendance").removeClass("active");
+        $("#li_holiday").removeClass("active");
+        $("#li_Working").removeClass("active");
+        $("#li_Rating").removeClass("active");
+        $("#li_documents").addClass("active");
+
+        $("#h4title").empty();
+        $("#h4title").append('Showing Document Details of <label style="font-weight:bold">@Model.UserName</label>');
+
+        $("#div_ryt_panel").empty();
+        $("#div_ryt_panel").append('<div class="loading_half"></div>');
+        $("#div_ryt_panel").css("padding", "0px");
+        $("#div_ryt_panel").load('@Url.Action("_UserDocumentTab", "HumanResource")?UserId=' + EmpId + '&isDisplay=' + '@Model.isDisplay');
+    });
+
+
+    //*************************************** Monthly paid Salary Package Details *************************
+    $("#div_ryt_panel").on("click", ".paidSalaryPackdertails", function (e) {
+        e.preventDefault();
+        var id = $(this).data('id');
+        $("#Win_paid_Salary_Pck").empty();
+        $("#Win_paid_Salary_Pck").kendoWindow({
+            actions: ["Close"],
+            visible: false,
+            modal: true,
+            position: { top: '50%', left: '50%' },
+            title: 'Paid Salary Package Details',
+            width: "50%",
+            minHeight: 100,
+            content: "/HumanResource/_PaidSalaryPackdetails?id=" + id,
+            close: onWindowClose
+        });
+        $("#Win_paid_Salary_Pck").data("kendoWindow").center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no";
+    });
+</script>
+<script>
+    //********************************Edit User Basic Information **********************************************
+    $("#div_ryt_panel").on("click", "#btn_EditPersonalInfo", function (e) {
+        e.preventDefault();
+        $("#div_user_basic_info_edit").empty();
+        $("#div_user_basic_info_edit").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '60%',
+            title: 'Edit User Basic Info',
+            close: onWindowClose
+        });
+        $("#div_user_basic_info_edit").html('<div class="win_loading_30"></div>');
+        var div_user_basic_info_edit = $("#div_user_basic_info_edit").data("kendoWindow");
+        div_user_basic_info_edit.refresh({ url: "/HumanResource/EditBasicInformationPopUp?UserId=" + EmpId });
+        div_user_basic_info_edit.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no";
+    });
+    $("#div_ryt_panel").on("click", "#btn_EditPermanentAddress", function (e) {
+        e.preventDefault();
+        $("#div_user_permanentAddress_edit").empty();
+        $("#div_user_permanentAddress_edit").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '50%',
+            title: ' Edit User Permanent Address',
+            close: onWindowClose
+        });
+        $("#div_user_permanentAddress_edit").html('<div class="win_loading_half"></div>');
+        var user_permanentAddress_edit = $("#div_user_permanentAddress_edit").data("kendoWindow");
+        user_permanentAddress_edit.refresh({ url: "/HumanResource/EditPermanentAddressPopUp?UserId=" + EmpId });
+        user_permanentAddress_edit.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no";
+    });
+
+
+    function onkeyupforUserbasicInfo() {
+        $('button[id="btn_EditUserBasicInfo"]').prop('disabled', false);
+        $('button[id="btnPermanentAddressUpdate"]').prop('disabled', false);
+        $('button[id="btnPresentAddressUpdate"]').prop('disabled', false);
+
+    }
+    function onChangeOfDropdown() {
+        $('button[id="btn_EditUserBasicInfo"]').prop('disabled', false);
+    }
+    function onChangeUserType(e) {
+        e.preventDefault();
+        var userType = $("#UserType").val();
+        if (userType === "1") {
+            $("#divForLine").hide();
+            $("#LineId").val('0');
+            $("#divformachine").hide();
+            $("#MachineId").val('0');
+            $("#UserTypeChange").val("1");
+        } else {
+            $("#divForLine").show();
+            $("#divformachine").show();
+            $("#UserTypeChange").val("2");
+        }
+        $('button[id="btn_EditUserBasicInfo"]').prop('disabled', false);
+    };
+
+
+    function onSiteSelect(e) {
+        var dataItem = this.dataSource.view()[e.item.index()];
+        IsComposite = dataItem.IsComposite;
+        $("#divForDepartment").empty();
+        $("#divForDepartment").hide();
+        $("#divForUnit").empty();
+        $("#divForUnit").hide();
+        $("#DeptId").val('');
+        $("#divForLine").empty();
+        $("#divForLine").hide();
+        $("#divformachine").empty();
+        $("#divformachine").hide();
+        if (dataItem.Id > 0) {
+            SiteId = dataItem.Id;
+            if (dataItem.IsComposite) {
+                var passData = { SiteId: SiteId, UserType: $("#UserType").val(), pageType: 'win' };
+                $("#divForUnit").load('@Url.Action("_GetUnitList", "HumanResource")', passData);
+                $("#divForUnit").show();
+            } else {
+                $("#divForUnit").empty();
+                $("#divForUnit").hide();
+                if ($("#UserType").val() !== "") {
+                    var UserType = $("#UserType").val();
+                    $("#divForDepartment").load('@Url.Action("_GetDept", "HumanResource")?SiteId=' + SiteId + '&UserType=' + UserType + '&pageType=win');
+                    $("#divForDepartment").show();
+                }
+            }
+        }
+    }
+    function onChangeUnit(e) {
+        e.preventDefault();
+        $("#divForDepartment").empty();
+        $("#divForDepartment").hide();
+        $("#divForLine").empty();
+        $("#divForLine").hide();
+        $("#divformachine").empty();
+        $("#divformachine").hide();
+        $("#divForLine").empty();
+        $("#divForLine").hide();
+        $("#divformachine").empty();
+        $("#divformachine").hide();
+        if ($("#Partial_UnitId").val() > 0) {
+            UnitId = $("#Partial_UnitId").val();
+            UserType = $("#UserType").val();
+            $("#divForDepartment").load('@Url.Action("_GetDept", "HumanResource")?UnitId=' + UnitId + '&UserType=' + UserType + '&pageType=win');
+            $("#divForDepartment").show();
+        }
+    }
+    function onDepartmentchange(e) {
+        e.preventDefault();
+        if ($("#UserType").val() === '2') {
+            $("#divForLine").empty();
+            $("#divForLine").hide();
+            $("#divformachine").empty();
+            $("#divformachine").hide();
+            $("#divformachine").empty();
+            $("#divformachine").hide();
+            if ($("#Partial_DeptId").val() > 0) {
+                var DeptId = $("#Partial_DeptId").val();
+                $("#divForLine").load('@Url.Action("_GetLineList", "HumanResource")?DeptId=' + DeptId + '&pageType=win');
+                $("#divForLine").show();
+            }
+
+        }
+    };
+
+    function onLinechange(e) {
+        e.preventDefault();
+        $("#divformachine").empty();
+        $("#divformachine").hide();
+        if ($("#Partial_LineId").val() > 0) {
+            var LineId = $("#Partial_LineId").val();
+            $("#divformachine").load('@Url.Action("_GetMachineList", "HumanResource")?LineId=' + LineId + '&pageType=win');
+            $("#divformachine").show();
+        }
+    };
+
+    $("#div_user_basic_info_edit").on("click", "#btn_CancelUserBasicInfo", function (e) {
+        e.preventDefault();
+        $("#div_user_basic_info_edit").data("kendoWindow").close();
+
+    });
+
+    //**************************** edit user permanent address *********************************
+
+
+
+    function onChangeOfParCountry(e) {
+        e.preventDefault();
+        var coun = $("#ParCountry").val();
+        var div = $("#ParDivisionId").val();
+        var sta = $("#ParState").val();
+        if (coun == "BD") {
+            $("#DivForUserPerDivision").show();
+            $("#DivForUserPerState").hide();
+            $("#ParState").val('');
+            $("#ParDivisionId").val(div);
+        }
+        else {
+            $("#DivForUserPerDivision").hide();
+            $("#DivForUserPerState").show();
+            $("#ParDivisionId").val('');
+            $("#ParState").val(sta);
+        }
+        $('button[id="btnPermanentAddressUpdate"]').prop('disabled', false);
+    };
+    $("#div_user_permanentAddress_edit").on("click", "#btn_CancelPermanentAddress", function (e) {
+        e.preventDefault();
+        $("#div_user_permanentAddress_edit").data("kendoWindow").close();
+    });
+    function onChangeOfParDivisionId(e) {
+        e.preventDefault();
+        $('button[id="btnPermanentAddressUpdate"]').prop('disabled', false);
+    }
+
+
+    //**************************** edit present address *************************************
+    $("#div_ryt_panel").on("click", "#btn_EditPresentAddress", function (e) {
+        e.preventDefault();
+        $("#div_user_PresentAddress_edit").empty();
+        $("#div_user_PresentAddress_edit").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '50%',
+            title: ' Edit User Present Address',
+            close: onWindowClose
+        });
+        $("#div_user_PresentAddress_edit").html('<div class="win_loading_half"></div>');
+        var user_presentAddress_edit = $("#div_user_PresentAddress_edit").data("kendoWindow");
+        user_presentAddress_edit.refresh({ url: "/HumanResource/EditPresentAddressPopUp?UserId=" + EmpId });
+        user_presentAddress_edit.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no";
+    });
+    $("#div_user_PresentAddress_edit").on("click", "#btn_CancelPresentAddress", function (e) {
+        e.preventDefault();
+        $("#div_user_PresentAddress_edit").data("kendoWindow").close();
+    });
+    function onChangeOfPreCountry(e) {
+        e.preventDefault();
+        var coun = $("#PreCountry").val();
+        var div = $("#PreDivisionId").val();
+        var sta = $("#PreState").val();
+        if (coun == "BD") {
+            $("#DivForUserPreDivision").show();
+            $("#DivForUserPreState").hide();
+            $("#PreState").val('');
+            $("#PreDivisionId").val(div);
+        }
+        else {
+            $("#DivForUserPreDivision").hide();
+            $("#DivForUserPreState").show();
+            $("#PreDivisionId").val('');
+            $("#PreState").val(sta);
+        }
+        $('button[id="btnPresentAddressUpdate"]').prop('disabled', false);
+    }
+    function onChangeOfPreDivisionId(e) {
+        e.preventDefault();
+        $('button[id="btnPresentAddressUpdate"]').prop('disabled', false);
+    }
+
+
+    //***************************** Edit Picture *********************
+    $("#btn_EditPicture").click(function () {
+        var userId = '@Model.UserId';
+        $("#div_user_Pic_edit").empty();
+        $("#div_user_Pic_edit").kendoWindow({
+            actions: ["Close"],
+            visible: false,
+            modal: true,
+            title: 'Edit User Image',
+            width: "50%",
+            height: "50%",
+            content: "/HumanResource/_EditUserImage?UserId=" + userId,
+            close: onWindowClose
+        });
+        $("#div_user_Pic_edit").data("kendoWindow").center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no";
+    });
+    $("#div_ryt_panel").on("click", "#ShowNationalId", function (e) {
+        var userId = '@Model.UserId';
+
+        $("#div_national_id_image").empty();
+        $("#div_national_id_image").html('<div class="win_loading_half"></div>');
+        $("#div_national_id_image").kendoWindow({
+            actions: ["Close"],
+            visible: false,
+            modal: true,
+            width: "50%",
+            position: { top: '50%', left: '50%' },
+            title: 'National Id Images',
+            content: "/HumanResource/DisplayNationalIdImages?UserId=" + userId,
+            close: onWindowClose
+        });
+        $("#div_national_id_image").data("kendoWindow").center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no";
+    });
+
+
+    $("#btn_page_back").click(function () {
+        window.history.back();
+    });
+</script>
+<script>
+    $("#div_ryt_panel").on("click", "#change_emp_Salary_Pack", function (e) {
+        e.preventDefault();
+        $("#win_salary_pack_chang").empty();
+        $("#win_salary_pack_chang").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '50%',
+            title: 'Change Salary Package',
+            close: onWindowClose
+        });
+        var win_salary_pack_chang = $("#win_salary_pack_chang").data("kendoWindow");
+        win_salary_pack_chang.refresh({ url: "/HumanResource/SalaryPackRefresh?reason=win" });
+        win_salary_pack_chang.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no";
+    });
+</script>
+@*********************************************** REST PASSWORD CLICK FUNCTION  *******************************************************************@
+<script>
+    $("#li_reset_pass").click(function () {
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close:onWindowClose
+        });
+        message = "Are you sure want to reset this user password? ";
+        var template = kendo.template($("#temp_confirmation").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+
+
+        kendoWindow.find("#btn_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_ok").click(function () {
+            $.ajax({
+                url: '@Url.Action("UserPassReset", "HumanResource")',
+                type: 'Post',
+                data: { id: EmpId, userId: userId },
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === "Error") {
+                        kendoWindow.data("kendoWindow").close();
+                        notification.show({ message: "User password reset was unsuccessful.", showTime: startTime() }, "upload-error");
+                    } else {
+                        notification.show({ message: "User password has been successfully reset.", showTime: startTime() }, "upload-success");
+                        var kendoWindow2 = $("<div />").kendoWindow({
+                            actions: ["Close"],
+                            title: "Alert",
+                            resizable: false,
+                            width: "30%",
+                            modal: true,
+                            close:onWindowClose
+                        });
+                        pass = "New password is : " + data;
+                        var template2 = kendo.template($("#temp_pass").html());
+                        kendoWindow2.data("kendoWindow").content(template2).center().open();
+                        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+                        document.body.scroll = "no"; // ie only
+
+                        kendoWindow2.find("#btn_pass_show").click(function () {
+                            kendoWindow.data("kendoWindow").close();
+                            kendoWindow2.data("kendoWindow").close();
+                        }).end();
+                    }
+                },
+                error: function (error) {
+                    kendoWindow.data("kendoWindow").close();
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred!", showTime: startTime() }, "upload-warning");
+                }
+            });
+
+        }).end();
+    });
+    //New Added By kaikubad
+    $("#div_ryt_panel").on("click", "#btn_EditCompanyInfo", function (e) {
+        e.preventDefault();
+        $("#win_user_company_info").empty();
+        $("#win_user_company_info").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '45%',
+            title: 'Edit Company Info',
+            close: onWindowClose
+        });
+        $("#win_user_company_info").html('<div class="win_loading_half"></div>');
+        var div_user_company_info = $("#win_user_company_info").data("kendoWindow");
+        div_user_company_info.refresh({ url: "/HumanResource/EditCompanyInformationPopUp?UserId=" + EmpId });
+        div_user_company_info.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no";
+    });
+    $("#div_ryt_panel").on("click", "#btn_EditCardInfo", function (e) {
+        e.preventDefault();
+        $("#win_user_cardInfo_edit").empty();
+        $("#win_user_cardInfo_edit").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '25%',
+            title: ' Edit Card Info',
+            close: onWindowClose
+        });
+        $("#win_user_cardInfo_edit").html('<div class="tiny_loading"></div>');
+        var div_user_cardInfo_edit = $("#win_user_cardInfo_edit").data("kendoWindow");
+        div_user_cardInfo_edit.refresh({ url: "/HumanResource/EditCardInfoPopUp?UserId=" + EmpId });
+        div_user_cardInfo_edit.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no";
+    });
+    $("#div_ryt_panel").on("click", "#btn_EditContactInfo", function (e) {
+        e.preventDefault();
+        $("#win_user_contactInfo_edit").empty();
+        $("#win_user_contactInfo_edit").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '55%',
+            height: '30%',
+            title: ' Edit Card Info',
+            close: onWindowClose
+        });
+        $("#win_user_contactInfo_edit").html('<div class="partial_loading_half"></div>');
+        var div_user_contactInfo_edit = $("#win_user_contactInfo_edit").data("kendoWindow");
+        div_user_contactInfo_edit.refresh({ url: "/HumanResource/EditContactInfoPopUp?UserId=" + EmpId });
+        div_user_contactInfo_edit.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no";
+    });
+</script>
+@*<script>
+        var previousId;groupName="group"+EmpId;
+        $(function () {
+            commentHub= $.connection.commentHub;
+            commentHub.client.showComment = function (model) {
+                $("#btnForComment").attr("disabled",true);
+                $("#CommentForResource").val('');
+                var loginuser='@username';
+
+                if(model.user.userName==null || model.user.userName==''){
+                    model.user.userName="Super Admin";
+                }
+                if(loginUserId==EmpId){
+                    prependComment(model.value,model.comment,model.user);
+                }
+                else{
+                    prependSelfComment(model.value,model.comment,model.user)
+                }
+            };
+            commentHub.client.showReplyComment=function(model){
+                if(loginUserId==EmpId){
+                    prependReplyCommentforUser(model.performanceReviewId,model.comment,model.user,model.parentId,model.reviewBy);
+                }else{
+                    prependReplyComment(model.performanceReviewId,model.comment,model.user,model.parentId,model.reviewBy);
+                }
+
+            };
+            commentHub.client.updateComment=function(model){
+                if(model.Status=="Success"){
+                    replyCommentUpdate(model);
+                }
+            };
+            commentHub.client.mainUpdateComment=function(model){
+                if(model.Status=="Success"){
+                    mainCommentUpdate(model);
+                }
+            };
+            commentHub.client.commentDelete=function(model){
+                if(model.Status=="Success"){
+                    var replyText=parseInt($("#replyCounter-"+model.parentId).text().trim().replace(/[()]/g, ''));
+                    replyText-=1;
+                    if(replyText<=0){
+                        $("#replyCount-"+model.parentId).text("0")
+                        $("#replyCounter-"+model.parentId).text("0");
+                        $("#replyCount-"+model.parentId).hide();
+                        $("#Viewmore-"+model.parentId).hide();
+                    }else{
+                        $("#replyCount-"+model.parentId).text('('+replyText+')');
+                        $("#replyCounter-"+model.parentId).text(replyText);
+                    }
+
+                    $("#replyComment-"+model.id).remove();
+                    $("#likeunlikeDiv-"+model.id).remove();
+                    if(!model.hasParent){
+                        $("#trForLibraryResourceComment"+model.id).remove();
+                    }
+                }
+            }
+
+            $.connection.hub.start().done(function () {
+                function joinGroup(){
+                    commentHub.server.joinGroup(groupName);
+                }
+                joinGroup();
+                $(document).on('click','#btnForComment',function (e) {
+                    var validatorForCharge = $("#divForCommentForResource").kendoValidator().data("kendoValidator");
+                    if(validatorForCharge.validate())
+                    {
+                        var comnt = $('#CommentForResource').val();
+                        commentHub.server.saveandSendComment(EmpId,usrtype, comnt,userId,groupName);
+                    }
+                });
+                /////////////// Save Edited Comment ///////////////////////////////////
+                $(document).on("click",".btnCmntEditSave",function(e){
+                    e.preventDefault();
+                    var itemId=$(this).data("id");
+                    var updatedComment=$("#txtareaCmntEdit-"+itemId).val();
+                    if(updatedComment!='' && updatedComment!=null){
+                        var sendData={
+                            Id:itemId,
+                            Review:updatedComment,
+                            ReviewBy:'@loginUserId',
+                            UserId:EmpId
+                        };
+                        commentHub.server.mainCommentUpdate(sendData,groupName);
+                    }
+                });
+                $(document).on("click",".deleteComment",function(){
+                    // e.preventDefault();
+                    var itemId=$(this).data("id");
+                    if(itemId!='' && itemId!=0 && itemId!=null){
+                        commentHub.server.deleteComment(itemId,groupName);
+                    }
+                });
+                ///////////////////////// Save Edited Comment of reply//////////////////////
+                $(document).on("click",".btnreplyCmntEditSave",function(e){
+                    e.preventDefault();
+                    var itemId=$(this).data("id");
+                    var updatedComment=$("#txtareaCmntEdit-"+itemId).val();
+                    if(updatedComment!='' && updatedComment!=null){
+                        var sendData={
+                            Id:itemId,
+                            Review:updatedComment,
+                            ReviewBy:'@loginUserId',
+                            UserId:EmpId
+                        };
+                        commentHub.server.commentUpdate(sendData,groupName);
+                    }
+                });
+                ///////////// Reply of a comment //////////////////
+                $(document).on("click",".btnForReply",function(){
+                    //e.preventDefault();
+                    var itemId=$(this).attr("id").split("-")[1];
+                    previousId=itemId;
+                    var validatorForCharge = $("#DivForReply-"+itemId).kendoValidator().data("kendoValidator");
+                    if(validatorForCharge.validate())
+                    {
+                        var performanceReview={
+                            parentId:itemId,
+                            reviewBy:@loginUserId,
+                            review:$("#Comment-"+itemId).val(),
+                            userId:EmpId,
+                        };
+                        commentHub.server.saveandSendReplyComment(performanceReview,groupName);
+                        $("#btnForReply-"+itemId).attr("disabled",true);
+                        $("#Comment-"+itemId).val('');
+                    }
+                    $("#showActionDiv-"+itemId).hide();
+                });
+            });
+        });
+        function removeComment(id){
+            $("#divForCommntDetails"+id).hide();
+        }
+        function mainCommentUpdate(data){
+            var itemId=data.updatedData.Id;
+            var updatedComment=data.updatedData.Review;
+            if(data.Status=="Success"){
+                $("#DisplayComment-"+itemId).text(updatedComment);
+                $("#divForCommntDetails"+itemId).show();
+                $("#divForCommntEdit"+itemId).hide();
+                $("#commenttime-"+itemId).text('Just Now');
+                $("#isEdited-"+itemId).show();
+                $("#isEdited-"+itemId).text("(Edited)");
+            }
+        }
+        function replyCommentUpdate(data){
+            var itemId=data.updatedData.Id;
+            var updatedComment=data.updatedData.Review;
+            if(data.Status=="Success"){
+                $("#rc-"+itemId).text(updatedComment);
+                $("#replyofComment-"+itemId).show();
+                $("#edit_reply_of_Comment-"+itemId).hide();
+                $("#commenttime-"+itemId).text('Just Now');
+                $("#isEdited-"+itemId).show();
+                $("#isEdited-"+itemId).text("(Edited)");
+            }
+        }
+        function prependSelfComment(data,comment,user)
+        {
+            if(loginUserId==user.reviewBy){
+                var userName=user.userName;
+                var userPic=user.pic;
+                var reviewBy=user.reviewBy;
+                $("#tbl_All_review").prepend('<tr id="trForLibraryResourceComment'+data+'">'+
+                '<td width="6%" style="">' +
+                '<img src="@Url.Content("~/Images/UserPicture/thumb/")'+userPic+'" width="50" height="50" /></td>' +
+                        '<td>'+
+                        '<div id="divForCommntDetails'+data+'">'+
+                        '<div style="float:left; width:100%;">' +
+                        '<div class="col-sm-11 col-xs-11" style="float:left;padding-left:0px!important;">' +
+                        '<a href="/HumanResource/DisplayEmployeeDetails?UserId='+reviewBy+'&isDisplay=true" style="margin-right:20px;float:left;font-weight:bold;">'+userName+ ' </a>'+
+                        '<label style="font-weight:bold;color:#428bca;font-size:13px;margin-left:20px">1 second ago</label></div>' +
+                        '<div class="col-sm-1 col-xs-1" style="float:right">'+
+                                        '<div class="btn-group" style="float:right">'+
+                                            '<span>'+
+                                                 '<i class="fa fa-caret-down showActionDiv" data-id="'+data+'"></i>'+
+                                            '</span>'+
+                                            '<ul id="showActionDiv-'+data+'" class="dropdown-menu" role="menu" aria-labelledby="dLabel" style="margin-left:-100px;width:100px!important;display:none;min-width:100px!important">'+
+                                                '<li class="editComment" data-id="'+data+'" style="width:100px"><a tabindex="-1"><i class="fa fa-pencil"></i> Edit</a></li>'+
+                                                '<li class="deleteComment" data-id="'+data+'" style="width:100px"><a tabindex="-1" ><i class="fa fa-remove"></i> Delete</a></li>'+
+                                            '</ul>'+
+                                        '</div>'+
+                                    '</div></div>' +
+                        '<div class="more comment" style="margin-bottom:4px!important;" id="DisplayComment-'+data+'">' + comment + '</div>' +
+                        '<div class="likeUnlikeDiv">'+
+                        '<span><i class="fa fa-thumbs-o-up icon like_btn margin-left-5px" id="Like-'+data+'" data-id="'+data+'" style="margin-left:2px" data-isunlike="False"></i> <label class="margin-left-5px" id="cmmntLike-'+data+'"> 0</label></span>' +
+                        '<span><i class="fa fa-thumbs-o-down icon unlike_btn margin-left-5px" id="UnLike-'+data+'" data-id="'+data+'" style="margin-left:2px" data-islike="False"></i> <label class="margin-left-5px" id="cmmntUnLike-'+data+'"> 0</label></span>'+
+                         '<span id="Reply-' + data + '" class="reply" style="margin-left:20px"> Reply <label id="replyCount-'+data+'" style="color:#0094ff;margin-left:5px;margin-right:10px"></label></span>'+
+                         '<br/><span id="Viewmore-'+data+'" class="viewmore" style="display:none">'+
+                         '<a> <span id="view_hide_all-'+data+'"> View all</span> <label id="replyCounter-'+data+'"></label> replies <i class="fa fa-angle-down" id="replyangle-'+data+'" style="font-size: 1.3em;font-weight:bold;"></i></a>'+
+                         '</span>'+
+                         '</div>'+
+                         '<div class="DivForReply row" id="DivForReply-'+data+'" style="display:none">'+
+                        '<div style="width:6%;float:left">'+
+                            '<img src="@Url.Content("~/Images/UserPicture/thumb/")'+userPic+'" width="40" height="40" style="margin-left:20%"/>'+
+                '</div>'+
+                '<div style="width:80%;float:left">'+
+                                        '<textarea id="Comment-'+data+'" style="width: 100%;margin-left:15px" rows="3" name="Comment" data-val-length="Maximum lentgh is 8000" data-val-length-max="8000"'+
+                                                  'class="k-textbox form-control Comment" placeholder="Reply"></textarea>'+
+                                        '<div style="float:right;margin-top:10px;display:none" id="replycommentDiv-'+data+'">'+
+                                            '<input type="button" value="Cancel" data-id="'+data+'" class="k-button k-state-default btnForReplyCancel btn-sm" />'+
+                                            '<input type="button" value="Reply" id="btnForReply-'+data+'" class="k-button k-state-active btnForReply btn-sm" disabled />'+
+                                        '</div>'+
+                                    '</div>'+
+            '</div>'+
+            '</div>'+
+        '<div style="display:none" id="replyComment-'+data+'"></div>'+
+        '<div id="divForCommntEdit'+data+'" style="display:none">'+
+                            '<div class="col-xs-9 col-md-9 divForCommntEdit" style="margin-left:-20px">'+
+                                '<textarea class="k-textbox txtareaCmntEdit" id="txtareaCmntEdit-'+data+'" name="CommentForIssue" data-val-length="Maximum lentgh is 500" data-val-length-max="500" rows="3" style="width: 100%;float:left;">'+comment+'</textarea>'+
+                            '</div>'+
+                            '<div class="col-xs-3 col-md-3" style="float:right;padding-right:15px;padding-top:10px;text-align:right">'+
+                                '<input type="button" data-id="'+data+'" value="Cancel" class="k-button k-state-default btnCmntEditCancel" id="btnCmntEditCancel-'+data+'" />'+
+                                '<input type="button" data-id="'+data+'" value="Update" class="k-button k-state-default btnCmntEditSave" id="btnCmntEditSave-'+data+'" disabled />'+
+                            '</div>'+
+                        '</div>'+
+                '</div>'+
+                 '</td>'+
+                     +'</tr>');
+            }else{
+                prependSelfCommentwithreport(data,comment,user);
+            }
+        }
+
+
+        function prependSelfCommentwithreport(data,comment,user){
+            var userName=user.userName;
+            var userPic=user.pic;
+            var reviewBy=user.reviewBy;
+            $("#tbl_All_review").prepend('<tr id="trForLibraryResourceComment'+data+'">'+
+            '<td width="6%" style="">' +
+            '<img src="@Url.Content("~/Images/UserPicture/thumb/")'+userPic+'" width="50" height="50" /></td>' +
+                    '<td>'+
+                    '<div id="divForCommntDetails'+data+'">'+
+                    '<div style="float:left; width:100%;">' +
+                    '<div class="col-sm-11 col-xs-11" style="float:left;padding-left:0px!important;">' +
+                    '<a href="/HumanResource/DisplayEmployeeDetails?UserId='+reviewBy+'&isDisplay=true" style="margin-right:20px;float:left;font-weight:bold;">'+userName+ ' </a>'+
+                    '<label style="font-weight:bold;color:#428bca;font-size:13px;margin-left:20px">1 second ago</label></div>' +
+                    ' <div class="col-sm-1 col-xs-1" style="float:right">'+
+                                    '<div class="btn-group" style="float:right">'+
+                                        '<span>'+
+                                            '<i class="fa fa-caret-down showActionDiv" data-id="'+data+'"></i>'+
+                                        '</span>'+
+                                        '<ul id="showActionDiv-'+data+'" class="dropdown-menu" role="menu" aria-labelledby="dLabel" style="margin-left:-100px;width:100px!important;display:none;min-width:100px!important">'+
+                                            '<li class="report_btn" data-id="'+data+'" id="report-'+data+'" style="width:100px"><a tabindex="-1"><i class="fa fa-pencil"></i> Report</a></li>'+
+                                        '</ul>'+
+                                    '</div>'+
+                                '</div></div>' +
+                    '<div class="more comment" style="margin-bottom:4px!important;" id="DisplayComment-'+data+'">' + comment + '</div>' +
+                    '<div class="likeUnlikeDiv">'+
+                    '<span><i class="fa fa-thumbs-o-up icon like_btn margin-left-5px" id="Like-'+data+'" data-id="'+data+'" style="margin-left:2px" data-isunlike="False"></i> <label class="margin-left-5px" id="cmmntLike-'+data+'"> 0</label></span>' +
+                    '<span><i class="fa fa-thumbs-o-down icon unlike_btn margin-left-5px" id="UnLike-'+data+'" data-id="'+data+'" style="margin-left:2px" data-islike="False"></i> <label class="margin-left-5px" id="cmmntUnLike-'+data+'"> 0</label></span>'+
+                      '<span id="Reply-' + data + '" class="reply" style="margin-left:20px"> Reply  <label id="replyCount-'+data+'" style="color:#0094ff;margin-left:5px;margin-right:10px"></label></span>'+
+                     '<br/><span id="Viewmore-'+data+'" class="viewmore" style="display:none">'+
+                     '<a> <span id="view_hide_all-'+data+'"> View all</span> <label id="replyCounter-'+data+'"></label> replies <i class="fa fa-angle-down" id="replyangle-'+data+'" style="font-size: 1.3em;font-weight:bold;"></i></a>'+
+                     '</span>'+
+                     '</div>'+
+                     '<div class="DivForReply row" id="DivForReply-'+data+'" style="display:none">'+
+                    '<div style="width:7%;float:left">'+
+                        '<img src="@Url.Content("~/Images/UserPicture/thumb/")'+'@loginUserPicture'+'" width="40" height="40" style="margin-left:20%" />'+
+            '</div>'+
+            '<div style="width:80%;float:left">'+
+                                    '<textarea id="Comment-'+data+'" style="width: 100%;margin-left:15px" rows="3" name="Comment" data-val-length="Maximum lentgh is 8000" data-val-length-max="8000"'+
+                                              'class="k-textbox form-control Comment" placeholder="Reply"></textarea>'+
+                                    '<div style="float:right;margin-top:10px;display:none" id="replycommentDiv-'+data+'">'+
+                                        '<input type="button" value="Cancel" data-id="'+data+'" class="k-button k-state-default btnForReplyCancel btn-sm" />'+
+                                        '<input type="button" value="Reply" id="btnForReply-'+data+'" class="k-button k-state-active btnForReply btn-sm" disabled />'+
+                                    '</div>'+
+                                '</div>'+
+        '</div>'+
+        '</div>'+
+    '<div style="display:none" id="replyComment-'+data+'"></div>'+
+    '<div id="divForCommntEdit'+data+'" style="display:none">'+
+                        '<div class="col-xs-9 col-md-9 divForCommntEdit" style="margin-left:-20px">'+
+                            '<textarea class="k-textbox txtareaCmntEdit" id="txtareaCmntEdit-'+data+'" name="CommentForIssue" data-val-length="Maximum lentgh is 500" data-val-length-max="500" rows="3" style="width: 100%;float:left;">'+comment+'</textarea>'+
+                        '</div>'+
+                        '<div class="col-xs-3 col-md-3" style="float:right;padding-right:15px;padding-top:10px;text-align:right">'+
+                            '<input type="button" data-id="'+data+'" value="Cancel" class="k-button k-state-default btnCmntEditCancel" id="btnCmntEditCancel-'+data+'" />'+
+                            '<input type="button" data-id="'+data+'" value="Update" class="k-button k-state-default btnCmntEditSave" id="btnCmntEditSave-'+data+'" disabled />'+
+                        '</div>'+
+                    '</div>'+
+            '</div>'+
+             '</td>'+
+                 +'</tr>');
+        }
+
+
+
+        function prependReplyCommentforUser(data,comment,user,parentId,reviewBy){
+            var userName='';
+            var commentpic='';
+            if(user==null || user==''){
+                userName="Super Admin";
+                commentpic="admin.jpg";
+            }else{
+                var userName=user.userName;
+                var commentpic=user.pic;
+            }
+            var replyText=parseInt($("#replyCount-"+parentId).text().trim().replace(/[()]/g, ''));
+            if(isNaN(replyText)){
+                replyText=0;
+            }
+            $("#replyCount-"+parentId).show();
+            $("#replyCount-"+parentId).text('('+parseInt(replyText+1)+')');
+            $("#replyCounter-"+parentId).show();
+            $("#Viewmore-"+parentId).show();
+            $("#replyCounter-"+parentId).text(parseInt(replyText+1));
+            $("#replyangle-"+parentId).removeClass("fa fa-angle-down").addClass("fa fa-angle-up");
+            $("#replyComment-"+parentId).show();
+
+            $("#replyComment-"+parentId).prepend('<div id="replyComment-'+data+'" class="row" style="margin-top:5px">'+
+                                          '<div style="width:6%;float:left;margin-right:15px">'+
+              '<img src="@Url.Content("~/Images/UserPicture/thumb/")'+commentpic+'" width="40" height="40" style="margin-left:20%"/></div>' +
+              '<div id=replyofComment-'+data+'>'+
+              '<div style="float:left;width:80%">'+
+                  '<span><a href="/HumanResource/DisplayEmployeeDetails?UserId='+reviewBy+'&isDisplay=true" style="font-weight:bold;color:#428bca">'+userName+'</a></span>'+
+                  '<span><label style="margin-left:20px;font-weight:bold;color:#428bca;font-size:13px">1 second ago</label></span><br />'+
+                  '<span class="comment" id="rc-'+data+'">'+comment+'</span>'+
+              '</div>'+
+
+              '<div style="float:left;" id="likeunlikeDiv-'+data+'">'+
+                  '<span class="col-xs-1 col-md-1"></span>'+
+                  '<span class="col-xs-11 col-md-11" style="margin-left:45px">'+
+                      '<span>'+
+                          '<i class="fa fa-thumbs-o-up icon margin-left-5px" id="Like-'+data+'" data-id="'+data+'" data-isunlike="False"></i>'+
+                          '<label class="margin-left-5px" id="cmmntLike-'+data+'"> 0</label>'+
+                      '</span>'+
+                      '<span>'+
+                          '<i class="fa fa-thumbs-o-down icon margin-left-5px" id="UnLike-'+data+'" data-islike="False" data-id="'+data+'"></i>'+
+                          '<label class="margin-left-5px" id="cmmntUnLike-'+data+'"> 0</label>'+
+                      '</span>'+
+                  '</span>'+
+              '</div></div>'+'</td>'+
+         '</div>');
+        }
+
+        function  prependReplyComment(data,comment,user,parentId,reviewBy){
+            if(loginUserId==reviewBy){
+                var userName='';
+                var commentpic='';
+                if(user==null || user==''){
+                    userName="Super Admin";
+                    commentpic="admin.jpg";
+                }else{
+                    var userName=user.userName;
+                    var commentpic=user.pic;
+                }
+                var replyText=parseInt($("#replyCount-"+parentId).text().trim().replace(/[()]/g, ''));
+                if(isNaN(replyText)){
+                    replyText=0;
+                }
+                $("#replyCount-"+parentId).show();
+                $("#replyCount-"+parentId).text('('+parseInt(replyText+1)+')');
+                $("#replyCounter-"+parentId).show();
+                $("#Viewmore-"+parentId).show();
+                $("#replyCounter-"+parentId).text(parseInt(replyText+1));
+                $("#replyangle-"+parentId).removeClass("fa fa-angle-down").addClass("fa fa-angle-up");
+                $("#replyComment-"+parentId).show();
+                $("#replyComment-"+parentId).prepend('<div id="replyComment-'+data+'" class="row" style="margin-top:5px">'+
+                                              '<div style="width:6%;float:left;margin-right:15px">'+
+                  '<img src="@Url.Content("~/Images/UserPicture/thumb/")'+commentpic+'" width="40" height="40" style="margin-left:20%"/></div>' +
+                  '<div id=replyofComment-'+data+'>'+
+                  '<div style="float:left;width:80%">'+
+                      '<span><a href="/HumanResource/DisplayEmployeeDetails?UserId='+reviewBy+'&isDisplay=true" style="font-weight:bold;color:#428bca">'+userName+'</a></span>'+
+                      '<span><label style="margin-left:20px;font-weight:bold;color:#428bca;font-size:13px">1 second ago</label></span><br />'+
+                      '<span class="comment" id="rc-'+data+'">'+comment+'</span>'+
+                  '</div>'+
+                  '<div class="col-sm-1 col-xs-1" style="float:right">'+
+                                        '<div class="btn-group" style="float:right;margin-right:25px">'+
+                                            '<span>'+
+                                                '<i class="fa fa-caret-down showActionDiv" data-id="'+data+'"></i>'+
+                                            '</span>'+
+                                            '<ul id="showActionDiv-'+data+'" class="dropdown-menu" role="menu" aria-labelledby="dLabel" style="margin-left:-100px;width:100px!important;display:none;min-width:100px!important">'+
+                                                '<li class="editreplyComment" data-id="'+data+'" style="width:100px"><a tabindex="-1"><i class="fa fa-pencil"></i> Edit</a></li>'+
+                                                '<li class="deleteComment" data-id="'+data+'" style="width:100px"><a tabindex="-1" ><i class="fa fa-remove"></i> Delete</a></li>'+
+                                            '</ul>'+
+                                        '</div>'+
+                                    '</div>'+
+                  '<div class="" style="width:100%" id="likeunlikeDiv-'+data+'">'+
+
+                      '<span class="col-xs-10 col-md-10" style="margin-left:6%">'+
+                          '<span>'+
+                              '<i class="fa fa-thumbs-o-up icon like_btn margin-left-5px" id="Like-'+data+'" data-id="'+data+'" data-isunlike="False"></i>'+
+                              '<label class="margin-left-5px" id="cmmntLike-'+data+'"> 0</label>'+
+                          '</span>'+
+                          '<span>'+
+                              '<i class="fa fa-thumbs-o-down icon unlike_btn margin-left-5px" id="UnLike-'+data+'" data-islike="False" data-id="'+data+'"></i>'+
+                              '<label class="margin-left-5px" id="cmmntUnLike-'+data+'"> 0</label>'+
+                          '</span>'+
+                      '</span>'+
+                  '</div></div>'+
+                  '<div style="display:none;" id="edit_reply_of_Comment-'+data+'">'+
+                                                '<div class="divForCommntEdit" style="float:left;width:80%;">'+
+                                                    '<textarea class="k-textbox txtareaCmntEdit" id="txtareaCmntEdit-'+data+'" name="CommentForIssue" data-val-length="Maximum lentgh is 8000" data-val-length-max="8000" rows="3" style="width: 100%;float:left;margin-bottom:10px">'+comment+'</textarea>'+
+                                                '<div style="margin-top:10px;text-align:right;float">'+
+                                                    '<input type="button" data-id="'+data+'" value="Cancel" class="k-button k-state-default btnreplyCmntEditCancel" id="btnCmntEditCancel-'+data+'" />'+
+                                                    '<input type="button" data-id="'+data+'" value="Update" class="k-button k-state-default btnreplyCmntEditSave" id="btnCmntEditSave-'+data+'" disabled />'+
+                                                '</div>'+
+                                                '</div>'+
+                                            '</div></td>'+
+             '</div>');
+            }else{
+                prependreplyCommentWithReport(data,comment,user,parentId,reviewBy);
+            }
+        }
+
+        function prependreplyCommentWithReport(data,comment,user,parentId,reviewBy){
+            var userName='';
+            var commentpic='';
+            if(user==null || user==''){
+                userName="Super Admin";
+                commentpic="admin.jpg";
+            }else{
+                var userName=user.userName;
+                var commentpic=user.pic;
+            }
+            var replyText=parseInt($("#replyCount-"+parentId).text().trim().replace(/[()]/g, ''));
+            if(isNaN(replyText)){
+                replyText=0;
+            }
+            $("#replyCount-"+parentId).show();
+            $("#replyCount-"+parentId).text('('+parseInt(replyText+1)+')');
+            $("#replyCounter-"+parentId).show();
+            $("#Viewmore-"+parentId).show();
+            $("#replyCounter-"+parentId).text(+parseInt(replyText+1));
+            $("#replyangle-"+parentId).removeClass("fa fa-angle-down").addClass("fa fa-angle-up");
+            $("#replyComment-"+parentId).show();
+
+            $("#replyComment-"+parentId).prepend('<div id="replyComment-'+data+'" class="row" style="margin-top:5px">'+
+                                          '<div style="width:6%;float:left;margin-right:15px">'+
+              '<img src="@Url.Content("~/Images/UserPicture/thumb/")'+commentpic+'" width="40" height="40" style="margin-left:20%" /></div>' +
+              '<div id=replyofComment-'+data+'>'+
+              '<div style="float:left;width:80%">'+
+                  '<span><a href="/HumanResource/DisplayEmployeeDetails?UserId='+reviewBy+'&isDisplay=true" style="font-weight:bold;color:#428bca">'+userName+'</a></span>'+
+                  '<span><label style="margin-left:20px;font-weight:bold;color:#428bca;font-size:13px">1 second ago</label></span><br />'+
+                  '<span class="comment" id="rc-'+data+'">'+comment+'</span>'+
+              '</div>'+
+              '<div class="col-sm-1 col-xs-1" style="float:right">'+
+                                    '<div class="btn-group" style="float:right;margin-right:25px">'+
+                                        '<span>'+
+                                            '<i class="fa fa-caret-down showActionDiv" data-id="'+data+'"></i>'+
+                                        '</span>'+
+                                        '<ul id="showActionDiv-'+data+'" class="dropdown-menu" role="menu" aria-labelledby="dLabel" style="margin-left:-100px;width:100px!important;display:none;min-width:100px!important">'+
+                                            '<li class="report_btn" id="report-'+data+'" data-id="'+data+'" style="width:100px"><a tabindex="-1"><i class="fa fa-pencil"></i> Report</a></li>'+
+                                        '</ul>'+
+                                    '</div>'+
+                                '</div>'+
+              '<div class="" style="width:100%" id="likeunlikeDiv-'+data+'">'+
+
+                  '<span class="col-xs-10 col-md-10" style="margin-left:6%">'+
+                      '<span>'+
+                          '<i class="fa fa-thumbs-o-up icon like_btn margin-left-5px" id="Like-'+data+'" data-id="'+data+'" data-isunlike="False"></i>'+
+                          '<label class="margin-left-5px" id="cmmntLike-'+data+'"> 0</label>'+
+                      '</span>'+
+                      '<span>'+
+                          '<i class="fa fa-thumbs-o-down icon unlike_btn margin-left-5px" id="UnLike-'+data+'" data-islike="False" data-id="'+data+'"></i>'+
+                          '<label class="margin-left-5px" id="cmmntUnLike-'+data+'"> 0</label>'+
+                      '</span>'+
+                  '</span>'+
+              '</div></div>'+
+              '<div style="display:none;" id="edit_reply_of_Comment-'+data+'">'+
+                                            '<div class="col-xs-9 col-md-9 divForCommntEdit" style="margin-left: -35px">'+
+                                                '<textarea class="k-textbox txtareaCmntEdit" id="txtareaCmntEdit-'+data+'" name="CommentForIssue" data-val-length="Maximum lentgh is 8000" data-val-length-max="8000" rows="3" style="width: 100%;float:left;">'+comment+'</textarea>'+
+                                            '<div style="margin:0 auto;margin-top:10px;text-align:right;float">'+
+                                                '<input type="button" data-id="'+data+'" value="Cancel" class="k-button k-state-default btnreplyCmntEditCancel" id="btnCmntEditCancel-'+data+'" />'+
+                                                '<input type="button" data-id="'+data+'" value="Update" class="k-button k-state-default btnreplyCmntEditSave" id="btnCmntEditSave-'+data+'" disabled />'+
+                                            '</div>'+
+                                            '</div>'+
+                                        '</div></td>'+
+         '</div>');
+        }
+
+
+
+        function prependComment(data,comment,user){
+            var userName='';
+            var commentpic='';
+            if(user==null || user==''){
+                userName=="Super Admin";
+                commentpic="admin.jpg";
+            }else{
+                userName=user.userName;
+                commentpic=user.pic;
+            }
+            $("#tbl_All_review").prepend('<tr id="trForLibraryResourceComment'+data+'">'+
+            '<td width="7%">' +
+            '<img src="@Url.Content("~/Images/UserPicture/thumb/")'+commentpic+'" width="50" height="50" /></td>' +
+            '<td>'+
+            '<div id="divForCommntDetails'+data+'">'+
+            '<div style="float:left; width:100%;">' +
+            '<div class="col-sm-11 col-xs-11" style="float:left;padding-left:0px!important;">' +
+            '<a href="/HumanResource/DisplayEmployeeDetails?UserId='+user.reviewBy+'&isDisplay=true" style="font-weight:bold;color:#428bca">'+userName+'</a>'+
+            '<label style="font-weight:bold;color:#428bca;font-size:13px;margin-left:20px">1 second ago</label></div>' +
+            '</div>' +
+            '<div class="more comment" style="margin-bottom:4px!important;" id="DisplayComment-'+data+'">' + comment + '</div>' +
+             '<div class="likeUnlikeDiv">'+
+                    '<span id="Reply-' + data + '" class="" style="margin-right:10px"> Reply</span>'+
+                    '<span><i class="fa fa-thumbs-o-up icon margin-left-5px" id="Like-'+data+'" data-id="'+data+'" style="margin-left:2px" data-isunlike="False"></i> <label class="margin-left-5px" id="cmmntLike-'+data+'"> 0</label></span>' +
+                    '<span><i class="fa fa-thumbs-o-down icon margin-left-5px" id="UnLike-'+data+'" data-id="'+data+'" style="margin-left:2px" data-islike="False"></i> <label class="margin-left-5px" id="cmmntUnLike-'+data+'"> 0</label></span>'+
+                     '<br/><span id="Viewmore-'+data+'" class="viewmore" style="display:none">'+
+                     '<a> <span id="view_hide_all-'+data+'"> View all</span> <label id="replyCounter-'+data+'"></label> replies <i class="fa fa-angle-down" id="replyangle-'+data+'" style="font-size: 1.3em;font-weight:bold;"></i></a>'+
+                     '</span>'+
+                     '</div>'+
+            '</div>'+
+        '<div style="display:none" id="replyComment-'+data+'"></div>'+
+            '</div>'+
+             '</td>'+
+           +'</tr>');
+        }
+    </script>*@

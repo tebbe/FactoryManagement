@@ -1,0 +1,30 @@
+﻿
+
+
+
+
+@************************* Created By Jerin Jahan (Date: 03.12.2016) ***********************************@
+@model IEnumerable<FactoryManagement.Models.SalaryPaymentPckDetail>
+@{
+    var count = 0;
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+<style>
+    #tbl_Salary_Pck th #tbl_Salary_Pck td{border:none!important;}
+</style>
+<table class="table" id="tbl_Salary_Pck">
+    <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Amount</th>
+    </tr>
+    @foreach (var item in Model)
+    {
+        count++;
+        <tr>
+            <td>@count.</td>
+            <td>@item.Acc_Name</td>
+            <td>@item.Amount @currency</td>
+        </tr>
+    }
+</table>

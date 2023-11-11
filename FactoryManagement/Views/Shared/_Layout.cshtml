@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    <link href="~/Content/Twitter/bootstrap.css" rel="stylesheet" />
+    <link href="~/Content/fontawesome/css/font-awesome.css" rel="stylesheet" />
+    <link href="~/Content/fontawesome/css/font-awesome.min.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-3.1.1.js"></script>
+    <link href="~/Content/loading_partail.css" rel="stylesheet" />
+    <link href="~/Content/print.css" rel="stylesheet" />
+    <style>
+         @@import url(http://fonts.googleapis.com/css?family=Bree+Serif);
+        body, h1, h2, h3, h4, h5, h6 {font-family: 'Bree Serif', serif;}
+        table tr th{border-bottom-width:2px!important;font-size:17px;font-weight:500!important;}
+        table tr td{font-size:15px;font-weight:300!important;}
+        table .child_tr td{font-size:13px;}   
+        .content-header{text-align:center;}     
+        .content-header p{margin:0px!important;} 
+        p{margin:0px!important;}
+    </style>
+</head>
+<body>
+    <div class="container body-content" id="examples">
+        @RenderBody()
+    </div>
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,82 @@
+﻿
+
+
+@******************************** Created By Jerin Jahan (Date: 02.01.2017) ******************************************************@
+@model FactoryManagement.Models.View_Manual_Indent
+@{
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+@using (Html.BeginForm())
+{
+    @Html.HiddenFor(m => m.IndentId)
+
+    <div class="k-edit-form-container col-md-10 col-sm-10 col-xs-10" id="Div_Indent_Info" style="margin-bottom:4%;">
+        <dl class="dl-horizontal col-sm-offset-2 col-sm-8">
+            <dt>Product Name</dt><dd>
+            <span>@Model.ProName</span></dd>
+
+            <dt>Quantity</dt>
+            <dd><span>@Model.Quantity @Model.UnitName</span></dd>
+
+            <dt>Per Unit Price</dt>
+            <dd><span>@currency @Model.ProUnitPrice</span></dd>
+
+            <dt>Comments</dt>
+            <dd><span>@Model.Comments</span></dd>
+
+            <dt>Created By</dt>
+            <dd><span>@Model.CreatedUserName</span></dd>
+
+            <dt>Created Date</dt>
+            <dd><span>@Model.CreatedDateName</span></dd>
+
+            @if (Model.UpdatedBy > 0)
+            {
+                <dt>Last Updated By</dt>
+                <dd><span>@Model.UpdateUsername</span></dd>
+
+                <dt>Last Updated Date</dt>
+                <dd><span>@Model.UpdatedDateFormate</span></dd>
+            }
+            
+            @if (Model.ApprovedBy > 0)
+            {
+                <dt>Approved By</dt>
+                <dd><span>@Model.ApprovedUsername</span></dd>
+
+                <dt>Approved Date</dt>
+                <dd><span>@Model.ApprovedDateFormate</span></dd>
+            }
+            
+            <dt>Status</dt>
+            <dd>
+                @if (Model.IndentStatus == 0)
+                {
+                    <span>Not yet approved</span>
+                }
+                else if (Model.IndentStatus == 1)
+                {
+                    <span>Approved from store</span>
+                }
+                else if (Model.IndentStatus == 2)
+                {
+                    <span>Approved from head office</span>
+                }
+                else if (Model.IndentStatus == 3)
+                {
+                    <span>Complete</span>
+                }
+                else if (Model.IndentStatus == -1)
+                {
+                    <span>Rejected</span>
+                }
+                else
+                {
+                    <span>@Model.IndentStatus</span>
+                }
+            
+            </dd>
+            
+        </dl>  
+    </div>
+}

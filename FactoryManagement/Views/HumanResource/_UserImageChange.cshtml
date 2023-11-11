@@ -1,0 +1,40 @@
+﻿
+
+
+@************************* Created By Jerin Jahan (Date:14.11.2016) ***************************************@
+
+<div class="form-horizontal form-widgets col-sm-12">
+    <div class="form-group">
+        <div id="divPic-0" class="col-sm-12" style="padding-left:0px">
+            <span id="UserImgClose">
+                <img src="/Content/Icon/modal_close.png" class="previewImgClose" id="UserImgClose">
+            </span>
+            <div id="DivForEvtCvrHold" class="imgPreview">
+                <img src="~/Images/UserPicture/Original/@Model.Picture" />
+            </div>
+            <div id="DivForEvtCvrUp" class="image-uploader">
+                <input type="file" name="files" id="file1" class="inputfile inputfile-4 k-valid">
+                <label for="file1" id="lblfile1" class="lblForPics">
+                    <span style="font-size: 26px;padding-top:1.5em;display:block;" id="pic">+</span>
+                    <span style="font-size: 15px;font-weight:bold;">Add Photos</span>
+                </label>
+            </div>
+            <span class="field-validation-valid text-danger" data-valmsg-for="Picture" data-valmsg-replace="true"></span>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-sm-12">
+            <input type="button" value="Upload" id="btn_img_upload" class="k-button k-state-default" style="display:none;"/>
+            <input type="button" value="Cancel" id="btn_img_up_cancle" class="k-button k-state-default" />
+        </div>
+    </div>
+</div>
+
+<script>
+    $("#UserImgClose").click(function () {
+        $("#DivForEvtCvrHold").hide();
+        $("#DivForEvtCvrUp").show();
+        $("#btn_img_upload").show();
+    });
+</script>
+

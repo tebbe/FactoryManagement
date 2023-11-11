@@ -1,0 +1,163 @@
+﻿
+.themechooser
+{
+    /*background-color: #f5f7f8;*/
+    background-color: white;
+    border-bottom: 0px solid #e2e4e7;
+    text-align: right;
+}
+
+.themechooser .tc-activator
+{
+    outline: none;
+    cursor: pointer;
+    /*color: #2d3e50;*/
+    display: inline-block;
+    padding: 0 20px;
+    line-height: 3em;
+    font-size: 1em;
+    color:rgba(45, 62, 80, 0.69);
+    font-weight:bold;
+ 
+}
+
+.themechooser .tc-activator:hover
+{
+    background-color: #e2e4e7;
+}
+
+.themechooser .tc-active,
+.tc-theme-list
+{
+    background-color: #ebeef0;
+     /*background-color: transparent;*/
+}
+
+.themechooser .tc-activator:after
+{
+
+    display: inline-block;
+    margin-left: .5em;
+    font-size: .8em;
+    -webkit-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    transform: rotate(-90deg);
+    transition-property: transform;
+    transition-duration: 0.2s;
+    transition-timing-function: ease;
+}
+
+.themechooser .tc-active:after
+{
+    -webkit-transform: rotate(90deg);
+    -ms-transform: rotate(90deg);
+    transform: rotate(90deg);
+}
+
+.themechooser h4
+{
+    text-transform: uppercase;
+    font-size: 1em;
+    line-height: 25px;
+}
+
+.tc-column
+{
+    display: inline-block;
+    width:40%;
+}
+
+.tc-column:first-child
+{
+    margin-right: 30px;
+    padding-right: 5px;
+}
+
+.tc-theme-list
+{
+    text-align: left;
+    overflow: hidden;
+    /*padding: 25px 87px 40px;*/
+    padding-left:0px;
+}
+
+.tc-theme-list ul
+{
+    float: left;
+    overflow: hidden;
+    margin-right: 15px;
+    background: none;
+    border:0;
+    width: 100%;
+}
+
+.tc-theme-list .themes-grid
+{
+    -webkit-columns: 1;
+    -moz-columns: 1;
+    width: 150px;
+}
+
+.tc-column h4+ul
+{
+    margin-left: -10px;
+}
+
+.tc-item
+{
+    display: block;
+    width: 100%;
+    cursor: pointer;
+    line-height: 26px;
+    color: #2d3e50;
+    padding: 0 10px;
+    transition-property: background-color;
+    transition-duration: 0.1s;
+    transition-timing-function: ease;
+
+}
+
+.k-ie7 .tc-item,
+.k-ie8 .tc-item,
+.k-ie9 .tc-item
+{
+    display: block;
+    width: 100%;
+}
+.k-ie7 .tc-column {
+    display: block;
+    zoom: 1;
+    vertical-align: top;
+}
+
+.tc-item:hover
+{
+    text-decoration: none;
+    background-color: #e2e4e7;
+}
+
+.themes-grid .tc-name
+{
+    padding-left: 5px;
+}
+
+.tc-relativity
+{
+    color: #555;
+}
+
+.tc-item.k-state-selected
+{
+    color: #000;
+    background-color: #cad0d6;
+    background-image: none;
+    box-shadow: none;
+}
+
+.tc-color
+{
+    border-radius: 50%;
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+}

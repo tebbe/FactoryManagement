@@ -1,0 +1,97 @@
+﻿
+@************************************** Created By Jerin Jahan (Date:18.08.2016)  ***************************************@
+@model FactoryManagement.ModelView.SalaryConfig.SalaryPackageModelView
+@Html.HiddenFor(m => m.PackageId)
+@Html.HiddenFor(m => m.CreatedBy)
+
+<div class="editor-label"><label for="PackageName">Package Name</label></div>
+<div class="editor-field">
+    @Html.EditorFor(model => model.PackageName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+    @Html.ValidationMessageFor(model => model.PackageName, "", new { @class = "text-danger" })
+</div>
+
+
+<script>
+    var validation = $("#div_SalaryPackage").kendoValidator({
+        rules: {
+            remote: function (input) {
+                var errormessage;
+                var remoteAttr = input.attr("data-val-remote-url");
+                if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                    return true;
+                }
+                var isInvalid;
+                var data = {};
+                var PackageId = $("#PackageId").val();
+                var PackageName = $("#PackageName").val();
+                if (input.attr('name') === "PackageName") {
+                    data = { PackageId: PackageId, PackageName: PackageName };
+                }
+                $.ajax({
+                    url: remoteAttr,
+                    mode: "abort",
+                    port: "validate" + input.attr('name'),
+                    dataType: "json",
+                    type: input.attr("data-val-remote-type"),
+                    data: data,
+                    async: false,
+                    success: function (response) {
+                        isInvalid = response;
+                        if (isInvalid === true) {
+                            isInvalid = true;
+                        }
+                        else {
+                            isInvalid = false;
+                        }
+                    }
+                });
+                return isInvalid;
+            }
+        },
+        messages: {
+            remote: function (input) {
+                return input.data('val-remote');
+            }
+        }
+    }).data("kendoValidator");
+
+    $("#btnPackageCreate").click(function () {
+        if (validation.validate()) {
+            notification.show({ message: "Salary Package information saving...", showTime: startTime() }, "upload-progress");
+            var sendData = { PackageId: $("#PackageId").val(), PackageName: $("#PackageName").val(), CreatedBy: userId };
+            $.ajax({
+                url: '@Url.Action("SalaryPackageSave", "SalaryConfig")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === 'Success') {
+                        if (sendData.PackageId > 0) {
+                            notification.show({ message: "Salary package '" + sendData.PackageName + "' information has been successfully updated.", showTime: startTime() }, "upload-success");
+                        } else {
+                            notification.show({ message: "Salary package '" + sendData.PackageName + "' has been successfully created.", showTime: startTime() }, "upload-success");
+                        }
+                        $("#DivForSalaryPackageList").show();
+                        $("#Div_All_Salary_Package").empty();
+                        $("#Div_All_Salary_Package").append('<div class="loading_partail"></div>');
+                        $("#Div_All_Salary_Package").show();
+                        $("#Div_All_Salary_Package").load('@Url.Action("_SalaryPackageList", "SalaryConfig")');
+                    }
+                    else {
+                        if (sendData.PackageId > 0) {
+                            notification.show({ message: "Salary package '" + sendData.PackageName + "' information update was unsuccessful.", showTime: startTime() }, "upload-error");
+                        } else {
+                            notification.show({ message: "Salary package '" + sendData.PackageName + "' create was unsuccessful.", showTime: startTime() }, "upload-error");
+                        }
+                    }
+                    $("#btnPackageCreate").closest(".k-window-content").data("kendoWindow").close();
+                },
+                error: function (err) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+</script>

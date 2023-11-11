@@ -1,0 +1,40 @@
+﻿@model IEnumerable<FactoryManagement.Models.View_DisItemReturnDetails>
+@{
+    ViewBag.Title = "AcceptLogPrint";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@foreach (var data in Model)
+{
+    int count = 0;
+    count++;
+    <center>
+        <h2>@data.VoucherName</h2>
+        <h3>@data.ReturnTransactionName</h3>
+        <h4>@data.ReturnDateName</h4>
+    </center>
+    <center>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>SL</th>
+                    <th>Voucher Name</th>
+                    <th>Transaction Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>@count</td>
+                    <td>@data.VoucherName</td>
+                    <td>@data.ReturnTransactionName</td>
+                </tr>
+            </tbody>
+        </table>
+    </center>
+}
+
+<script>
+    $(document).ready(function () {
+        window.print();
+    });
+</script>

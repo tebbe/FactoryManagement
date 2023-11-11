@@ -1,0 +1,80 @@
+﻿
+
+
+@{
+    var count = 0;
+}
+<table class="table table-bordered" id="tbl_Audit_List">
+    <tbody>
+        <tr >
+            <th width="5%">#</th>
+            <th width="15%">Operation</th>
+            <th width="10%">Module Name</th>
+            <th width="10%">Status <span class="" id="btn_icon"></span> </th>
+            <th width="15%">Time</th>
+            <th width="20%">Event Intiated By</th>
+        </tr>
+
+        @foreach (var item in ViewBag.list as IEnumerable<FactoryManagement.Models.View_Audit_Information>)
+        {
+            count++;
+            <tr>
+                <th scope="row">@count</th>
+                <td>
+                    @if (item.OperationStatus == 1)
+                    {<i class="fa fa-info-circle"></i> }
+                    else
+                    {<i class="fa fa-exclamation-circle" style="color:#ff6a00;"></i>}
+                    <a href="/SuperAdmin/AuditLogDetails/@item.Id">@item.OperationName</a>
+                </td>
+                <td>@item.ModuleName</td>
+                <td>@item.OpStatusValue</td>
+                <td>@item.OperationTime</td>
+                <td>
+                    <img src="~/Images/UserPicture/thumb/@item.PictureName" class="img-circle" />
+                    <span>@item.UserName</span>
+                </td>
+            </tr>         
+        }
+    </tbody>
+</table>
+<script>
+    $(document).ready(function () {
+        totalCount = '@(ViewBag.Count)';
+        showCount = '@count';
+        $("#spn_total").text('@(ViewBag.Count)');
+        if (up) {
+            $("#btn_icon").addClass('k-icon k-i-arrow-n');
+        }
+        else {
+            $("#btn_icon").addClass('k-icon k-i-arrow-s');
+        }
+    });
+
+    $("#btn_icon").click(function () {
+        page = 0, showCount = 0, totalCount = 0;
+        if (up) {
+            $("#Div_Partial_load").empty();
+            $("#Div_Partial_load").append('<div class="loading_partial"></div>');
+            var sendData = '';
+            if (eventDoneBy > -1) {
+                sendData = { status: -1,eventDoneBy:eventDoneBy,moduleName:moduleName, isOwn: false, userId: userId };
+            } else {
+                sendData = { status: -1,moduleName:moduleName,isOwn: isOwn, userId: userId };
+            }
+            $("#Div_Partial_load").load('@Url.Action("_AuditLogStatus", "SuperAdmin")',sendData);
+            up = false;
+        } else {
+            $("#Div_Partial_load").empty();
+            $("#Div_Partial_load").append('<div class="loading_half"></div>');
+            var sendData = '';
+            if (eventDoneBy > -1) {
+                sendData = { status: 1, eventDoneBy: eventDoneBy, moduleName: moduleName, isOwn: false, userId: userId };
+            } else {
+                sendData = { status: 1, moduleName: moduleName, isOwn: isOwn, userId: userId };
+            }
+            $("#Div_Partial_load").load('@Url.Action("_AuditLogStatus", "SuperAdmin")',sendData);
+            up = true;
+        }
+    });
+</script>

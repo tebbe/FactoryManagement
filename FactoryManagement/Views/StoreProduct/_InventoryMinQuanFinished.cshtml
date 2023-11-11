@@ -1,0 +1,41 @@
+﻿
+@model IEnumerable<FactoryManagement.ModelView.Inventory.Store.DispatchedItemListModelView>
+
+@{
+    int count = 0;
+    int roleid = Convert.ToInt32(Request.Cookies["CookieAdminInfo"].Values["roleid"].ToString());
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    long loginusrid = Convert.ToInt64(Request.Cookies["CookieAdminInfo"].Values["userid"].ToString());
+}
+
+<table class="table table-bordered table-striped table-hover" id="tbl_Replenish_Dispatched_indent_list">
+    <tr>
+        <th>#</th>
+        <th>Product Name</th>
+        <th>Total Quantity</th>
+        <th></th>
+    </tr>
+        @foreach (var item in Model)
+        {
+            count++;
+         <tr>
+            <th scope="row">@count.</th>
+            <td><span class="txtManuProName" data-id="@item.InventoryId" style="color:#357ebd;cursor:pointer;">@item.Productname</span></td>
+            <td>
+                <span class="totalInventoryDetails" data-id="@item.InventoryId" data-loc="@item.LocationId" style="color:#357ebd;cursor:pointer;">@item.Quantity</span>
+            </td>
+            <td><span class="totalInventoryDetails" data-id="@item.InventoryId" data-loc="@item.LocationId" data-toggle="tooltip" data-placement="bottom" data-original-title="View Details"><i class="fa fa-eye"></i></span></td>     
+          </tr>
+        }
+</table>
+
+
+
+<script>
+    var showCount = 0, totalCount = 0;
+    $('[data-toggle="tooltip"]').tooltip();
+    totalCount = '@(ViewBag.Total)';
+    showCount = '@(count)';
+    
+</script>

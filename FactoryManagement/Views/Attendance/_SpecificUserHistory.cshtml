@@ -1,0 +1,109 @@
+﻿@************************************** Created By Jerin Jahan (Date:22.12.2016)  ***************************************@
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="div_Spec_Attend">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="portlet light portlet-fit bordered">
+                <div class="portlet-title">
+                    <div class="caption">
+                        <i class="fa fa-history font-green" aria-hidden="true"></i>
+                        <span class="caption-subject font-green bold uppercase">All Attendence History of @ViewBag.UserName </span>
+                    </div>
+                    <div class="actions">
+                        <div class="btn-group btn-group-devided" data-toggle="buttons">
+                            <label class="btn btn-transparent green btn-outline btn-circle btn-sm active" id="btn_All" data-toggle="tooltip" title="All History" data-container="body">
+                                <input type="radio" name="options" class="toggle">All
+                            </label>
+                            <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_today" data-toggle="tooltip" title="Today History" data-container="body">
+                                <span><input type="radio" name="options" class="toggle">Today</span>
+                            </label>
+                            <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_seven" data-toggle="tooltip" title="Last 7 days History" data-container="body">
+                                <input type="radio" name="options" class="toggle">Last 7 Days
+                            </label>
+                            <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_thirty" data-toggle="tooltip" title="Last 30 day History" data-container="body">
+                                <input type="radio" name="options" class="toggle">Last 30 Days
+                            </label>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="portlet-body">
+                    <div id="div_Spec_Attend_his"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script>
+    var selectedUser = '@ViewBag.UserId',fromDate,toDate;
+    $("#div_Spec_Attend_his").load('@Url.Action("_SpecificUserHistoryPartail", "Attendance")?UserId=' + '@(ViewBag.UserId)' + '&option=win');
+
+    $("#btn_All").click(function () {
+        $("#filter_by_Date_ICON_tt_active").remove();
+        $(".k-tooltip-closable").remove();
+        $("#btn_today").removeClass("active");
+        $("#btn_last_seven").removeClass("active");
+        $("#btn_last_thirty").removeClass("active");
+        $(this).addClass("active");
+        fromDate = null; toDate = null;
+        var param = {
+            UserId: '@ViewBag.UserId',
+            option: 'win',
+        }
+        $("#div_Spec_Attend_his").empty();
+        $("#div_Spec_Attend_his").append('<div class="loading_half"></div>')
+        $("#div_Spec_Attend_his").load('@Url.Action("_SpecificUserHistoryPartail", "Attendance")', param);
+    });
+    $("#btn_today").click(function () {
+        $("#filter_by_Date_ICON_tt_active").remove();
+        $(".k-tooltip-closable").remove();
+        $("#btn_All").removeClass("active");
+        $("#btn_last_seven").removeClass("active");
+        $("#btn_last_thirty").removeClass("active");
+        $(this).addClass("active");
+fromDate = null; toDate = null;
+        var param = {
+            UserId: '@ViewBag.UserId',
+            option: 'win',
+            days:1
+        }
+        $("#div_Spec_Attend_his").empty();
+        $("#div_Spec_Attend_his").append('<div class="loading_half"></div>')
+        $("#div_Spec_Attend_his").load('@Url.Action("_SpecificUserHistoryPartail", "Attendance")', param);
+    });
+    $("#btn_last_seven").click(function () {
+        $("#filter_by_Date_ICON_tt_active").remove();
+        $(".k-tooltip-closable").remove();
+        $("#btn_All").removeClass("active");
+        $("#btn_today").removeClass("active");
+        $("#btn_last_thirty").removeClass("active");
+        $(this).addClass("active");
+        fromDate = null; toDate = null;
+        var param = {
+            UserId: '@ViewBag.UserId',
+            option: 'win',
+            days:7
+        }
+        $("#div_Spec_Attend_his").empty();
+        $("#div_Spec_Attend_his").append('<div class="loading_half"></div>')
+        $("#div_Spec_Attend_his").load('@Url.Action("_SpecificUserHistoryPartail", "Attendance")', param);
+    });
+    $("#btn_last_thirty").click(function () {
+        $("#filter_by_Date_ICON_tt_active").remove();
+        $(".k-tooltip-closable").remove();
+        $("#btn_All").removeClass("active");
+        $("#btn_today").removeClass("active");
+        $("#btn_last_seven").removeClass("active");
+        $(this).addClass("active");
+        fromDate = null; toDate = null;
+        var param = {
+            UserId: '@ViewBag.UserId',
+            option: 'win',
+            days:30
+        }
+        $("#div_Spec_Attend_his").empty();
+        $("#div_Spec_Attend_his").append('<div class="loading_half"></div>')
+        $("#div_Spec_Attend_his").load('@Url.Action("_SpecificUserHistoryPartail", "Attendance")', param);
+    });
+</script>

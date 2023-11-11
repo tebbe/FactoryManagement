@@ -1,0 +1,196 @@
+﻿@*********************************************** Created By Jerin Jahan Date(13.05.2017) ************************@
+@{
+    ViewBag.Title = "WasteList";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+<script src="~/Scripts/jquery.nailthumb.1.1.js"></script>
+<div id="Win_MCS"></div>
+<div id="Win_MRR"></div>
+<div id="Win_Waste"></div>
+<div id="win_update_entry"></div>
+
+<h3 class="page-title">Waste List <small>Manual Entry</small></h3>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <a href="javascript:;">Inventory</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/StoreProduct/FinishedProList">All Waste List</a>
+        </li>
+    </ul>
+</div>
+<div class="profile-content" id="div_ryt_panel">
+    <div style="padding-left:0px!important;padding-right:0px!important;">
+        <div class="panel with-nav-tabs panel-default" id="wastePanel">
+            <div class="panel-heading">
+                <ul class="nav nav-tabs">
+                    <li class="active" id="liProList"><a href="#tab1ProList" data-toggle="tab">All Items</a></li>
+                    <li id="liMcsList"><a href="#tab2McsList" data-toggle="tab">Rejected pcs during thie time of running in Mcs</a></li>
+                    <li id="liMRRList"><a href="#tab3MRRList" data-toggle="tab">Rejected pcs shown in MRR</a></li>
+                    <li id="liWasteList"><a href="#tab4WasteList" data-toggle="tab">Waste Lists</a></li>
+                </ul>
+            </div>
+            <div class="panel-body" style="border:none!important;" id="div_for_panel_body">
+                <div class="tab-content">
+                    <div class="tab-pane fade in active" id="tab1ProList"><div class="loading_half"></div></div>
+                    <div class="tab-pane fade" id="tab2McsList" data-type="1"></div>
+                    <div class="tab-pane fade" id="tab3MRRList" data-type="2"></div>
+                    <div class="tab-pane fade" id="tab4WasteList" data-type="3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script id="temp_win_delete_entry" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px"> #=msg# </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_delete_Entry_noty_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_delete_Entry_noty_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    var type = 0; var order = 1;
+    var searchInvenId;
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $('#liForInvenReport').addClass('open');
+        $('#liForInvenReport .sub-menu').show();
+        $("#liForWasteList").addClass('sublistActive');
+
+        var wastePanel = $("#div_for_panel_body");
+        var screenHeight = $(window).height();
+        screenHeight = screenHeight - $(".page-header").height() - $(".page-footer").height() - $(".panel-heading").height()-150;
+        wastePanel.height(screenHeight);
+        wastePanel.css("overflow-y", "auto");
+
+        $("#tab1ProList").empty();
+        $("#tab1ProList").append('<div class="loading_half"></div>');
+        $("#tab1ProList").load('@Url.Action("_InvenProListForWaste", "StoreProduct")');
+    });
+
+    $("#liProList").click(function () {
+        $("#tab1ProList").empty();
+        $("#tab1ProList").append('<div class="loading_half"></div>');
+        $("#tab1ProList").load('@Url.Action("_InvenProListForWaste", "StoreProduct")');
+        searchInvenId = '';
+    });
+
+    $("#liMcsList").click(function () {
+        type = 1;
+        searchInvenId = '';
+        $("#tab2McsList").empty();
+        $("#tab2McsList").append('<div class="loading_half"></div>');
+        $("#tab2McsList").load('@Url.Action("_LoadWasteByType", "StoreProduct")?type=1&order=' + order);
+    });
+    $("#liMRRList").click(function () {
+        type = 2;
+        searchInvenId = '';
+
+        $("#tab3MRRList").empty();
+        $("#tab3MRRList").append('<div class="loading_half"></div>');
+        $("#tab3MRRList").load('@Url.Action("_LoadWasteByType", "StoreProduct")?type=2&order=' + order);
+    });
+    $("#liWasteList").click(function () {
+        type = 3;
+        searchInvenId = '';
+        $("#tab4WasteList").empty();
+        $("#tab4WasteList").append('<div class="loading_half"></div>');
+        $("#tab4WasteList").load('@Url.Action("_LoadWasteByType", "StoreProduct")?type=3&order=' + order);
+    });
+
+
+    //********************* Waste Entry Edit Function ***************************
+    $("#div_for_panel_body").on("click", ".btn_edit_waste", function () {
+        var invenid = $(this).data("invenid");
+        var date = $(this).data("date");
+        var type = $(this).data("type");
+        var productName = $(this).data("productname");
+
+        $("#Win_MCS").empty();
+        $("#Win_MRR").empty();
+        $("#Win_Waste").empty();
+        $("#win_update_entry").empty();
+
+        $("#win_update_entry").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '30%',
+            title: 'Update Entry'
+        });
+        $("#win_update_entry").html('<div class="partial_loading_half"></div>');
+        var win_update_entry = $("#win_update_entry").data("kendoWindow");
+        win_update_entry.refresh({ url: "/StoreProduct/_middlePageOfEntryUpdate?invenid=" + invenid + "&date=" + date + "&type=" + type + "&productName=" + productName});
+        win_update_entry.center().open();
+    });
+    //********************* Waste Entry Delete Function ***************************
+    $("#div_for_panel_body").on("click", ".btn_delete", function () {
+        var invrntoryId = $(this).data("id");
+        var insertedDate = $(this).data("inserteddate");
+        var type = $(this).data("type");
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        msg = "Are you sure want to delete this entry?";
+        var template = kendo.template($("#temp_win_delete_entry").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+
+        kendoWindow.find("#btn_delete_Entry_noty_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_delete_Entry_noty_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            DeleteEntry(invrntoryId, insertedDate, type);
+        }).end();
+    });
+    function DeleteEntry(invrntoryId, insertedDate, type) {
+        notification.show({ message: "Waste entry is deleting...", showTime: startTime() }, "upload-progress");
+        var sendData = {
+            inventoryId: invrntoryId,
+            insertedDate: insertedDate,
+            type: type,
+            actionby:userId
+        }
+        $.ajax({
+            url: '@Url.Action("DeleteWaste","StoreProduct")',
+            data: sendData,
+            type: 'POST',
+            success: function (data) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                if (data == "Success") {
+                    notification.show({ message: "Waste entry  has been successfully deleted.", showTime: startTime() }, "upload-success");
+                    reloadActiveTab();
+                }
+                  else {
+                    notification.show({ message: "Waste entry deletion was unsuccessful.", showTime: startTime() }, "upload-error");
+            }
+
+            },
+            error: function (err) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+            }
+        });
+    }
+    function reloadActiveTab() {
+        var active = $("#div_ryt_panel").find('.active').attr("id");
+        if (active == "liProList") {
+            $("#liProList").click();
+        }
+        else {
+            $("#" + active).click();
+        }
+    }
+</script>

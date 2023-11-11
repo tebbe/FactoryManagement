@@ -1,0 +1,36 @@
+﻿<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-top:1%;">  
+    <div class="col-sm-11 col-xs-11">
+        <div class="row">
+            <div class="col-xs-10 col-xs-offset-1">
+                <table class="table">
+                    @for (int i = 0; i < ViewBag.quantity; i++)
+                    {
+                    <tr>
+                        <td><b>Replacable Date : @(i + 1)</b></td>
+                        <td style="width:40%"><input type="text" class="k-textbox replace_Date" id="replace_Date_@i" data-id="@i" /></td>
+                        <td width="25%">
+                            <b id="date_label_@i"></b>
+                        </td>
+                    </tr>
+                    }
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-11 col-xs-11">
+        <div class="k-edit-buttons k-state-default" style="margin-top:15px">
+            <span>
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="save_parts_date"><span class="k-icon k-update"></span>Save</button>
+                <button type="button" class="k-button k-button-icontext k-grid-cancel" id="refresh_parts_date"><span class="k-icon k-i-refresh"></span>Refresh</button>
+                <button type="button" class="k-button k-button-icontext k-grid-cancel" id="cancel_parts_date"><span class="k-icon k-cancel"></span>Cancel</button>
+            </span>
+        </div>
+    </div>
+</div>
+<script>
+    $(".replace_Date").change(function () {
+        var id = $(this).data("id");
+        var days = $(this).val();
+        $("#date_label_" + id).text("Date : "+moment().add('days', days).format('MMM DD,YYYY'));
+    });
+</script>

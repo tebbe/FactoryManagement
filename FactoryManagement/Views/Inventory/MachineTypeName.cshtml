@@ -1,0 +1,252 @@
+﻿@**************************** Created By Jerin Jahan Date(22.11.2016) *****************************@
+@{
+    ViewBag.Title = "MachineTypeName";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-building"></i>
+            <a href="/Home/EquipDash">Equipments</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Inventory/MachineTypeName">All Machine Type Name</a>
+        </li>
+    </ul>
+</div>
+<p><span data-toggle="tooltip" title="Add New Machine" class="btn green" id="btnMachineAdd"><i class="fa fa-plus"> </i> Add New Machine Type</span></p>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">All Machine Type Name List</span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div id="multiselectSearch" style="margin-bottom:15px;">
+                    @(Html.Kendo().MultiSelect()
+                              .Name("multiselectSearch")
+                              .DataTextField("MachineTypeName1")
+                              .DataValueField("MachineId")
+                              .Placeholder("Start typing name")
+                              .Events(e => e.Change("onSearchChange"))
+                              .AutoClose(false)
+                              .DataSource(source =>
+                              {
+                                  source.Read(read =>
+                                  {
+                                      read.Action("SearchingMachineTypeName", "Inventory");
+
+                                  });
+                                  source.ServerFiltering(false);
+                              })
+                    )
+                    <span class="k-icon k-i-search" style="margin-top:-27px;margin-right:10px;float:right;">&nbsp;</span>
+                </div>
+                <div id="Div_All_Machine" style="display:none;">
+                    <div class="loading_partial"></div>
+                </div>
+                @if (db.MachineTypeNames.Any())
+                {
+                    <script>
+                        $("#Div_All_Machine").show();
+                        $("#Div_All_Machine").load('@Url.Action("_AllMachineTypeName", "Inventory")');
+                    </script>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="Win_Add_Machine"></div>
+<div id="Win_Edit_Machine"></div>
+<div id="Win_ViewConnected_Machine"></div>
+
+<script id="temp_for_confirmation" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px"> #=message# </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_confirm_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_confirm_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $("#liForEquipments").addClass('sublistActive');
+    });
+    console.log("MachineTypeName");
+    function onSearchChange() {
+        var id = this.value();
+        $("#Div_All_Machine").load('@Url.Action("_AllMachineTypeName", "Inventory")?MachineId=' + id);
+    };
+    $("#btnMachineAdd").click(function (e) {
+        e.preventDefault();
+        $("#Win_Add_Machine").empty();
+        $("#Win_Add_Machine").kendoWindow({
+            actions: ["Close"],
+            visible: false,
+            draggable: false,
+            modal: true,
+            position: { top: '50%', left: '50%' },
+            title: 'Add New Machine Type Name',
+            width: "50%",
+            minHeight: 100,
+            close: onWindowClose
+        });
+        $("#Win_Add_Machine").html('<div class="loading_30"></div>');
+        var Win_Add_Machine = $("#Win_Add_Machine").data("kendoWindow");
+        Win_Add_Machine.refresh({ url: "/Inventory/MachineTypeNameCreate"});
+        Win_Add_Machine.center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+    });
+
+
+    //******************************************************Designation Edit Functions *********************************************************************************
+
+    $("#Div_All_Machine").on("click", ".btnMachineEdit", function () {
+        var dId = $(this).data("id");
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        message = "Are you sure want to edit this machine type name?";
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+        var template = kendo.template($("#temp_for_confirmation").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        kendoWindow.find("#btn_confirm_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_confirm_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            updateMachine(dId);
+        }).end();
+    });
+    function updateMachine(dId) {
+        $("#Win_Edit_Machine").empty();
+        $("#Win_Edit_Machine").kendoWindow({
+            actions: ["Close"],
+            visible: false,
+            modal: true,
+            position: { top: '50%', left: '50%' },
+            title: 'Edit Machine Type Name',
+            width: "50%",
+            minHeight: 100,
+            close: onWindowClose
+        });
+        $("#Win_Edit_Machine").html('<div class="loading_30"></div>');
+        var Win_Edit_Machine = $("#Win_Edit_Machine").data("kendoWindow");
+        Win_Edit_Machine.refresh({ url: "/Inventory/MachineTypeNameCreate?id=" + dId });
+        Win_Edit_Machine.center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+    }
+    //****************************************************** Designation Delete Function ********************************************************************************
+    $("#Div_All_Machine").on("click", ".btnMachineDelete", function (e) {
+        e.preventDefault();
+        var id = $(this).data("id");
+        var MachineName = $(this).data("name");
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        message = "Are you sure want to delete this machine type name?";
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+        var template = kendo.template($("#temp_for_confirmation").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        kendoWindow.find("#btn_confirm_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_confirm_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            DeleteMachine(id, MachineName);
+        }).end();
+    });
+
+    function DeleteMachine(id, MachineName) {
+        $.ajax({
+            url: '@Url.Action("CheckIsMachineTypeInUse", "Inventory")',
+            type: 'Post',
+            data: { id: id },
+            success: function (data) {
+                if (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Cannot be deleted due to dependent.First delete equipment connected to it", showTime: startTime() }, "upload-error");
+                    viewConnectedMachin(data);
+                } else {
+                    notification.show({ message: "Machine type name deleting...", showTime: startTime() }, "upload-progress");
+                    $.ajax({
+                        //url: '@Url.Action("DeleteMachineTypeName", "Inventory")',
+                        type: 'Post',
+                        data: { id: id, MachineName: MachineName, UserId: userId },
+                        success: function (data) {
+                            notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                            if (data === "Success") {
+                                notification.show({ message: "Machine type name " + MachineName + " successfully deleted.", showTime: startTime() }, "upload-success");
+                                $("#Div_All_Machine").empty();
+                                $("#Div_All_Machine").append('<div class="loading_partial"></div>');
+                                $("#Div_All_Machine").load('@Url.Action("_AllMachineTypeName", "Inventory")');
+                            } else {
+                                notification.show({ message: "Machine type name " + MachineName + " deletion unsuccessful.", showTime: startTime() }, "upload-error");
+                            }
+                        },
+                        error: function (e) {
+                            notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                            notification.show({ message: "Machine type name " + MachineName + " deletion unsuccessful.", showTime: startTime() }, "upload-error");
+                        }
+                    });
+                }
+            }
+        });
+    };
+    function viewConnectedMachin(data) {
+        $("#Win_ViewConnected_Machine").empty();
+        $("#Win_ViewConnected_Machine").kendoWindow({
+            actions: ["Close"],
+            visible: false,
+            modal: true,
+            position: { top: '50%', left: '50%' },
+            title: 'Connected Machin Lists',
+            width: "50%",
+            minHeight: 100,
+            close: onWindowClose
+        });
+        $("#Win_ViewConnected_Machine").html('<div class="loading_30"></div>');
+        var Win_ViewConnected_Machine = $("#Win_ViewConnected_Machine").data("kendoWindow");
+        //Win_ViewConnected_Machine.refresh({ url: "/Inventory/_ShowPreMachineName?Id=" + data });
+        Win_ViewConnected_Machine.center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+    };
+
+</script>
+<style>
+    #get {
+        float: right;
+        margin: 0px auto 0;
+    }
+
+    .k-floatwrap {
+        padding: 5px !important;
+    }
+</style>

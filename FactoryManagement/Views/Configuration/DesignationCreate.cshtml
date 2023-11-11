@@ -1,0 +1,136 @@
+﻿
+@************************************** Created By Jerin Jahan (Date:12.07.2016)  ***************************************@
+@model FactoryManagement.ModelView.Configuration.DesignationModelView
+@Html.HiddenFor(m => m.DesignationId)
+@Html.HiddenFor(m => m.Status)
+       
+   <div class="editor-label"><label for="DesignationName">Designation Name</label></div>
+   <div class="editor-field">
+    @Html.EditorFor(model => model.DesignationName, new { htmlattributes = new { @class = "k-textbox"} })
+    @Html.ValidationMessageFor(model => model.DesignationName, "", new { @class = "text-Danger" })
+   </div>
+   @if (Model.DesignationId > 0)
+    {   
+   <div class="editor-label"><label for="Status">Status</label></div>
+   <div class="editor-field">
+       @(Html.Kendo().DropDownList()
+                     .Name("StatusValue")
+                     .DataTextField("Text")
+                     .DataValueField("Value")
+                     .OptionLabel("--Select One Type--")
+                     .Events(e => e.Change("onStatusChange"))
+                     .BindTo(new List<SelectListItem>() {
+                          new SelectListItem() {
+                              Text = "Active",
+                              Value = "1"
+                          },
+                          new SelectListItem() {
+                              Text = "Inactive",
+                              Value = "0"
+                          },
+                      })
+                    .Value(Model.Status.ToString())
+                        )
+              @Html.ValidationMessageFor(model => model.Status, "", new { @class = "text-danger" })
+   </div>  
+        }
+<script>
+    var msg = "";
+    function DesigUpdate(sendData) {
+        $.ajax({
+            url: '@Url.Action("DesignationCreateSave", "Configuration")',
+            type: 'Post',
+            data: sendData,
+            success: function (response) {
+                $("#Desigwindow").data("kendoWindow").close();
+                if (response === "Success") {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    msg = ($("#DesignationId").val() > 0) ? "Designation '" + sendData.DesignationName + "' information has been successfully updated" : "Designation '" + sendData.DesignationName + "' has been successfully created";
+                    notification.show({ message: msg, showTime: startTime() }, "upload-success");
+                    $("#divFor_desig_List").empty();
+                    $("#divFor_desig_List").append('<div class="loading_partial"></div>');
+                    $("#divFor_desig_List").load('@Url.Action("_ShowAllDesignationList", "Configuration")');
+                }
+                else {
+                    msg = ($("#DesignationId").val() > 0) ? "Designation update attempt unsuccessful" : "Designation create attempt unsuccessful";
+                    notification.show({ message: msg, showTime: startTime() }, "upload-error");
+                }
+            }
+        });
+    }
+    var validation = $("#divForDesigCreate").kendoValidator({
+        rules: {
+            remote: function (input) {
+                var errormessage;
+                var remoteAttr = input.attr("data-val-remote-url");
+                if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                    return true;
+                }
+                var isInvalid;
+                var data = {};
+                var DesignationId = $("#DesignationId").val();
+                var DesignationName = $.trim($("#DesignationName").val());
+                $("#DesignationName").val();
+                data = { DesignationId: DesignationId, DesignationName: DesignationName };
+                $.ajax({
+                    url: remoteAttr,
+                    mode: "abort",
+                    port: "validate" + input.attr('name'),
+                    dataType: "json",
+                    type: input.attr("data-val-remote-type"),
+                    data: data,
+                    async: false,
+                    success: function (response) {
+                        isInvalid = response;
+                        if (isInvalid === true) {
+                            isInvalid = true;
+                        }
+                        else {
+                            isInvalid = false;
+                        }
+                    }
+                });
+                return isInvalid;
+            }
+        },
+        messages: {
+            remote: function (input) {
+                return input.data('val-remote');
+            }
+        }
+    }).data("kendoValidator");
+    $("#btnDesigCreate").click(function () {
+        if (validation.validate()) {
+            var sendData = {
+                DesignationId: $("#DesignationId").val(), DesignationName: $("#DesignationName").val(),
+                Status: $("#Status").val(), CreatedBy: userId
+            };
+            msg = ($("#DesignationId").val() > 0) ? "Updating designation information" : "Creating new designation";
+            notification.show({ message: msg, showTime: startTime(), }, "upload-progress");
+            if ($("#DesignationId").val() > 0 && $("#Status").val() == 0) {
+                $.ajax({
+                    url: '@Url.Action("CanDesigStatusUpdate", "Configuration")',
+                    type: 'Post',
+                    data: { DesignationId: $("#DesignationId").val(), DesignationName: '@Model.DesignationName', CreatedBy: userId },
+                    success: function (data) {
+                        if (data == "Success") {
+                            DesigUpdate(sendData);
+                        }
+                        else {
+                            $("#Desigwindow").data("kendoWindow").close();
+                            notification.hide();notification.setOptions({ autoHideAfter: 3000 });
+                            notification.show({ message: data, showTime: startTime() }, "upload-error");
+                        }
+                    }
+                })
+            }
+            else {
+                DesigUpdate(sendData);
+            }
+        }
+    });
+    $("#btnDesig_Cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

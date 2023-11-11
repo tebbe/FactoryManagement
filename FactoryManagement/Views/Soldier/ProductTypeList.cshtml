@@ -1,0 +1,162 @@
+﻿@************************************** Created By Mabia Mishu (Date:01.09.2016)  ***************************************@
+
+@model IEnumerable<FactoryManagement.ModelView.Inventory.Product.ProductTypeViewModel>
+
+@{
+    ViewBag.Title = "All Product Type List";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+
+<div class="row">
+    <p><span class="btn btn-success" id="btn_protype_create"><i class="fa fa-plus"></i> Add New Product Type</span></p>
+    <div id="divForAll_Pro_type">
+        <div class="loading_partial"></div>
+    </div>
+</div>
+
+@(Html.Kendo().Window()
+           .Name("window")
+           .Visible(false)
+           .Modal(true)
+           .Draggable(true)
+)
+<script>
+    $(document).ready(function () {
+        $("#divForAll_Pro_type").load('@Url.Action("_ShowAllProductTypeList", "Soldier")');
+    });
+    $("#divForAll_Pro_type").on("click", ".btn_expandProductType", function (e) {
+        e.preventDefault();
+        var typeId = $(this).data("id");
+        $(this).find('i').toggleClass('fa-plus-square-o fa-2 fa-minus-square-o fa-2');
+        if ($(this).data("isclick") == "0") {
+            $(this).data("isclick", "1");
+            $(this).attr("dataisclick", "1");
+            $.ajax({
+                url: '@Url.Action("GetAllProductTypeForList", "Soldier")',
+                type: 'Post',
+                data: { ParentId: typeId },
+                success: function (data) {
+                    if (data) {
+                        $(".trforchild_" + typeId).empty();
+                        $(".trforchild_" + typeId).show();
+                        var crntSpan = $("#spanForName_" + typeId);
+                        var getPadValue = parseInt(crntSpan.css('padding-left'));
+                        for (var i in data) {
+                            $('<tr id="tr_' + data[i].ProductTypeId + '" class="trforchild_' + typeId + '" data-proid="' + data[i].ProductTypeId + '" data-prochild="' + data[i].HasChild + '">' +
+                                '<td><span id="spanForName_' + data[i].ProductTypeId + '">' +
+                                ((data[i].HasChild == 'True') ? '<span class="btn_expandProductType" id="newtrForAp_' + data[i].ProductTypeId + '" data-id="' + data[i].ProductTypeId +
+                                '" data-isclick="0" style="margin-right:.5em;"><i class="fa fa-plus-square-o fa-2"></i></span>' : '') + data[i].ProductTypeName + ' </span></td>' +
+                               
+                                '<td>' + data[i].CreatedDateName + '</td>' +
+                                '<td>' + data[i].UpdatedDateFormate + '</td>' +
+
+                              '<td>' +
+                                    '<span class="btn btn-success btn_pro_type_Edit" data-id="' + data[i].ProductTypeId + '"><i class="fa fa-pencil"></i></span> ' + ' ' +
+                                    ((data[i].HasChild == 'False') ? '<span class="btn btn-danger btn_pro_type_Delete" data-id="' + data[i].ProductTypeId + '" data-name="' + data[i].ParentName + '"><i class="fa fa-trash"></i></span>' : '') + ' ' +
+                                    '<span class="btn btn-info fa-2 btn_protype_child_add" data-id="' + data[i].ProductTypeId + '" data-name="' + data[i].ProductTypeName + '"><i class="fa fa-plus-circle"></i></span>' +
+                                '</td>' +
+                              '</tr>').insertAfter("#tr_" + typeId);
+
+                            $("#spanForName_" + data[i].ProductTypeId).css("padding-left", (getPadValue + 15) + "%");
+
+                        }
+                    }
+                }
+            });
+        }
+        else {
+            $(this).data("isclick", "0");
+            $(this).attr("dataisclick", "0");
+            $(".trforchild_" + typeId).each(function () {
+                var id = $(this).data("proid");
+                var haschild = $(this).data("prochild");
+                if (haschild == "True") {
+                    childremove(id);
+                }
+            });
+            $(".trforchild_" + typeId).remove();
+        }
+    });
+    function childremove(id) {
+        $(".trforchild_" + id).each(function () {
+            var nextChild = $(this).data("proid");
+            var haschild = $(this).data("prochild");
+            if (haschild == "True") { childremove(nextChild); }
+        });
+        $(".trforchild_" + id).remove();
+    }
+
+    $("#btn_protype_create").click(function () {
+        var window = $("#window").data("kendoWindow");
+        window.setOptions({
+            width: '35%',
+            title: 'Create New Product Type'
+        });
+        window.refresh({
+            url: "/Soldier/ProductTypeCreate"
+        });
+        window.center();
+        window.open();
+    });
+    $("#divForAll_Pro_type").on("click", ".btn_protype_child_add", function (e) {
+        e.preventDefault();
+        var window = $("#window").data("kendoWindow");
+        var parent = $(this).data("id");
+        var typeName = $(this).data("name");
+        window.setOptions({
+            width: '60%',
+            height: '25%',
+            title: 'Add New Sub Product Type'
+        });
+        window.refresh({
+            url: "/Soldier/ProductTypeCreate?ParentId=" + parent + '&ParentName=' + typeName
+        });
+        window.center();
+        window.open();
+    });
+    $("#divForAll_Pro_type").on("click", ".btn_pro_type_Edit", function (e) {
+        e.preventDefault();
+        var window = $("#window").data("kendoWindow");
+        var typeId = $(this).data("id");
+        window.setOptions({
+            width: '35%',
+            title: 'Update Product Type Information'
+        });
+        window.refresh({
+            url: "/Soldier/ProductTypeCreate?ProductTypeId=" + typeId
+        });
+        window.center();
+        window.open();
+    });
+    $("#divForAll_Pro_type").on("click", ".btn_pro_type_Delete", function (e) {
+        if (confirm('Are you sure want to delete this product type?')) {
+            e.preventDefault();
+            var typeId = $(this).data("id");
+            var parentName = $(this).data("name");
+
+            notification.show({ message: "Deleting Product Type", showTime: startTime() }, "upload-progress");
+
+            $.ajax({
+                url: '@Url.Action("ProductTypeDestroy", "Soldier")',
+                type: 'Post',
+                data: { ProductTypeId: typeId, UserId: userId, ParentName: parentName },
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === "Success") {
+
+                        notification.show({ message: "Product type successfully deleted", showTime: startTime() }, "upload-success");
+
+                        $("#divForAll_Pro_type").empty();
+                        $("#divForAll_Pro_type").append('<div class="loading_partial"></div>');
+                        $("#divForAll_Pro_type").load('@Url.Action("_ShowAllProductTypeList", "Soldier")');
+                    }
+                    else {
+                        var msg = (data === "Error") ? "Product type delete attempt unsuccessful." : "Product type delete attempt unsuccessful, " + data;
+                        notification.show({ message: msg, showTime: startTime() }, "upload-error");
+                    }
+                }
+            });
+        }
+    });
+</script>

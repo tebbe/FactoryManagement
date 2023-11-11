@@ -1,0 +1,63 @@
+﻿@model FactoryManagement.ModelView.Accounting.BankAccountListModelView
+@{
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString(); 
+}
+
+<dl class="dl-horizontal">
+    @if (Model.Acc_Type != null)
+    {
+        <dt>Account Type</dt>
+        <dd>@Html.DisplayFor(model => model.AccountTypeName)</dd>
+    }
+    @if (Model.AccountName != null)
+    {
+        <dt>Account Name</dt>
+        <dd>@Html.DisplayFor(model => model.AccountName)</dd>
+    }
+    @if (Model.AccountNumber != null)
+    {
+        <dt>Account Number</dt>
+        <dd>
+            @Html.DisplayFor(model => model.AccountNumber)
+        </dd>
+    }
+    @if (Model.Balance != null)
+    {
+        <dt>Balance</dt>
+        <dd>
+            @currency
+            @Html.DisplayFor(model => model.Balance)
+        </dd>
+    }
+    @if (Model.TotalCreditLimit > 0)
+    {
+        <dt>Total credit limit</dt>
+        <dd>
+            @currency
+            @Html.DisplayFor(model => model.TotalCreditLimit)
+        </dd>
+    }
+    @if (Model.NoOfTransaction != null)
+    {
+        <dt>No of transaction</dt>
+        <dd>
+            @Html.DisplayFor(model => model.NoOfTransaction)
+
+        </dd>
+    }
+    @if (Model.HighestAmntPerTansaction != null)
+    {
+        <dt>Highest amount per transaction</dt>
+        <dd>
+            @currency
+            @Html.DisplayFor(model => model.HighestAmntPerTansaction)
+        </dd>
+    }
+    @if (Model.Description != null)
+    {
+        <dt>Description</dt>
+        <dd>
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+    }
+</dl>

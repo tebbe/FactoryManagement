@@ -1,0 +1,82 @@
+﻿
+
+@************************************** Created By Jerin Jahan (Date:20.02.2017)  ***************************************@
+
+
+@model FactoryManagement.Models.UserInformation
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:3%">
+    <div class="editor-label" style="float:left;padding-left:0px;width:25%!important">
+    <label for="PackageName">Assign Card Number</label>
+    </div>
+    <div class="editor-field" style="float:left;" id="div_Show_card">
+        <div class="col-sm-6 col-xs-6" style="padding-right:0px;margin-top:5px">
+            <span id="lbl_card">@Model.CardNumber</span>
+           @* <span class="btn btn-success" id="btn_Change_Card"><i class="fa fa-pencil"></i></span>*@
+            <span class="label label-success hover-pointer" id="btn_Change_Card" data-toggle="tooltip" title="Edit" style="margin-left:2%;"><i class="fa fa-pencil"></i></span>
+
+        </div>
+    </div>
+    <div class="editor-field" style="float:left;display:none;" id="Div_Edit_Card">
+        <div class="row">
+            <div class="col-sm-12 col-xs-12">
+                @Html.EditorFor(model => model.CardNumber, new { htmlAttributes = new { @class = "form-control k-textbox" } })               
+            </div>
+        </div>
+        <div class="row" style="margin-top:15px">
+            <div class="col-lg-offset-5 col-lg-7 col-xs-12">
+                <span style="float:right">
+                    <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_tick_Card" data-toggle="tooltip" title="Update Card No"><span class="k-icon k-i-refresh"></span>Update</button>
+                    <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_cancel_edit"><span class="k-icon k-cancel"></span>Cancel</button>
+
+                </span>
+                </div>
+        </div>
+    </div>
+    @if (Model.CardNumber == "" || Model.CardNumber == null)
+    {
+        <script>
+            $("#div_Show_card").hide();
+            $("#Div_Edit_Card").show();
+        </script>
+    }
+</div>
+
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+    $("#btn_Change_Card").click(function () {
+        $("#div_Show_card").hide();
+        $("#Div_Edit_Card").show();
+    });
+    $("#btn_cancel_edit").click(function () {
+        $("#div_Show_card").show();
+        $("#Div_Edit_Card").hide();
+    });
+    $("#btn_tick_Card").click(function () {
+        if ($("#CardNumber").val() !== "") {
+            notification.show({ message: "Card number is changing...", showTime: startTime() }, "upload-progress");
+            $.ajax({
+                url: '@Url.Action("ChangeEmpCard", "HumanResource")',
+                type: 'Post',
+                data: { userId: '@(Model.UserId)', cardNumber: $("#CardNumber").val() },
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === "Error") {
+                        notification.show({ message: "Card assign  was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                    else {
+                        notification.show({ message: "Card assign has been successfully updated.", showTime: startTime() }, "upload-success");
+                        $("#lbl_card").text($("#CardNumber").val());
+                        $("#Div_Edit_Card").hide();
+                        $("#div_Show_card").show();
+                    }
+                },
+                error: function (err) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+</script>

@@ -1,0 +1,62 @@
+﻿
+@************************************** Created By Jerin Jahan (Date:27.12.2016)  ***************************************@
+
+@model FactoryManagement.Models.MachineList
+
+<div class="k-edit-form-container col-md-10 col-sm-10 col-xs-10" id="Div_Machine_Edit" style="margin-top:2%;">
+    <div class="editor-label"><label>Machine Acronym</label></div>
+    <div class="editor-field">
+        <input type="text" class="k-textbox" placeholder="@Model.MachineAcronym" id="MachineAcronym" />
+        @*@Html.EditorFor(model => model.MachineAcronym,"", new { htmlAttributes = new { @class = "k-textbox" ,@placeholder=Model.MachineAcronym} })*@
+        @Html.ValidationMessageFor(model => model.MachineAcronym, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="col-sm-11 col-xs-11">
+        <div class="k-edit-buttons k-state-default">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_machine_edit"><span class="k-icon k-update"></span>Update</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_machine_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</div>
+<script>
+    $("#btn_machine_cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#btn_machine_edit").click(function () {
+        var validation = $("#Div_Machine_Edit").kendoValidator({
+            rules: {
+                location: function (input) {
+                    if (input.is("[name=MachineAcronym]") && $("#MachineAcronym").val() === "") {
+                        return false;
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                location: "Please type machine acronynm..."
+            }
+        }).data("kendoValidator");
+        if (validation.validate()) {
+            notification.show({ message: "Updating machine information....", showTime: startTime() }, "upload-progress");
+            var sendData = {
+                MachineId: '@(Model.MachineId)',
+                MachineAcronym: $("#MachineAcronym").val(),
+                CreatedBy: userId
+            };
+            $.ajax({
+                url: '@Url.Action("UpdateMachineAcrynm", "Inventory")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === "Error") {
+                        notification.show({ message: "Machine acronynm change was unsuccessful.", showTime: startTime() }, "upload-error");
+                    } else {
+                        notification.show({ message: "Machine acronynm has been successfully changed. ", showTime: startTime() }, "upload-success");
+                        location.reload();
+                    }
+                }
+            });
+        }
+    });
+</script>

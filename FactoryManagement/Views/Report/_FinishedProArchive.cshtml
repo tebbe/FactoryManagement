@@ -1,0 +1,38 @@
+﻿@using FactoryManagement.Helpers;
+
+@{
+    var count = 0;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<table class="table table-striped table-bordered table-hover" id="tbl_All_Pro_Arch">
+    <tbody>
+        <tr>
+            <th>#</th>
+            <th>File Name</th>
+            <th>Title</th>
+            <th>Generated Date</th>
+            <th></th>
+        </tr>
+        @foreach (var item in ViewBag.ProTitleList as IEnumerable<FactoryManagement.ModelView.Inventory.Store.Finished_Pro_Report_ListModelView>)
+        {
+            count++;
+            string s = item.ReportName;
+            int idx = s.LastIndexOf('.');
+            string fileName = s.Substring(0, idx);
+            string extension = s.Substring(idx);
+            <tr>
+                <th>@count .</th>
+                <td>
+                    @Html.EncodedActionLink(fileName, "ShowproArchiveDetails", "Report", new { id = item.Id }, null)
+                </td>
+                <td>@item.Title (@item.SubTitle)</td>
+                <td>@item.CreatedDateFormate</td>
+                <td><span class="btn green btn_show_rep" data-id="@item.Id"><i class="fa fa-info-circle"></i></span></td>
+            </tr>
+        }
+    </tbody>
+</table>
+<script>
+    totalCount = '@(ViewBag.TotalPro)';
+    showCount = '@count';
+</script>

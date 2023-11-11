@@ -1,0 +1,618 @@
+﻿
+
+
+@*----------------------Created By (Mabia Mishu)(17/08/2016)-----------------*@
+
+@model FactoryManagement.ModelView.Acquisition.AcquisitionViewModel
+@{
+    ViewBag.Title = "Acquisition";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var country = new SelectList(db.CountryLists, "Id", "CountryName", Model);
+}
+
+<link href="~/Content/MultipleImgUpload/css/component.css" rel="stylesheet" />
+<script src="~/Content/MultipleImgUpload/js/custom-file-input.js"></script>
+<link href="~/Content/Acquisition.css" rel="stylesheet" />
+
+<h2> Indent </h2>
+@Html.HiddenFor(m => m.AcquisitionOrderId)
+@Html.HiddenFor(m => m.CreatedBy)
+@Html.HiddenFor(m => m.AcquisitionType)
+@Html.HiddenFor(m => m.BusinessOrderId)
+
+<div class="row">
+    <div class="form-horizontal col-md-12 col-sm-12 col-xs-12" id="divForAcquisition" style="display:none;">
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-horizontal col-md-7 col-sm-7 col-xs-12">
+            <div class="form-group" id="divForTitle">
+                @Html.LabelFor(model => model.Name, "Title", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4 col-xs-12" })
+                <div class="col-md-5 col-sm-6 col-xs-12" id="divForName">
+                    @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control k-textbox", @type = "text" } })
+                </div>
+                <div class="col-md-5 col-sm-6 col-xs-12" style="display:none;padding-top:7px;font-weight:700" id="divForOrderLbl">
+                    @Html.DisplayFor(model => model.Name, new { htmlAttributes = new { } })
+                </div>
+            </div>
+            <div id="divForNewAcquisition"><div class="loading_half" ></div></div>
+        </div>
+        <div class="form-horizontal col-md-5 col-sm-5 col-xs-12" id="divForAcqOrder" style="display:none;"><div class="loading_half"></div></div>
+    </div>
+</div>
+<script id="temp_for_alert" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px"> #=message# </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_confirm_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_confirm_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+
+<script>
+    var start;var a = 0;
+    var count = 1,unitCount=1,brandCount=1;
+    var AcquisitionType = '@(Model.AcquisitionType)';
+    var AcquisitionOrderId ='@Model.AcquisitionOrderId';
+    var BusinessOrderId ='@Model.BusinessOrderId';
+    var PartsId ='@Model.PartsId';
+    var MachineId ='@Model.MachineId';
+    var PartsName ='@Model.PartsName';
+    var sendData,breakable=false,subUnitId=false;
+
+    $(document).ready(function () {
+        $("#CreatedBy").val(userId);
+        $("#liForInventory").addClass('active');
+        $("#liForAcquisitionAdd").addClass('sublistActive');
+        if(AcquisitionType === '2' || AcquisitionType === '3'){
+            $("#divForTitle").hide();
+        }
+        sendData={AcquisitionOrderId:AcquisitionOrderId,AcquisitionType:AcquisitionType,BusinessOrderId:BusinessOrderId,PartsName:PartsName,PartsId:PartsId,MachineId:MachineId};
+        $("#divForNewAcquisition").load('@Url.Action("_NewProductForAcquisition", "Acquisition")',sendData);
+        $("#divForAcquisition").show();
+        $("#divForLoading").hide();
+
+        if(@Model.AcquisitionOrderId > 0){
+            $("#divForOrderLbl").show();
+            $("#divForName").hide();
+
+            $("#divForAcqOrder").show();
+            $("#divForAcqOrder").load('@Url.Action("_AlreadyAddedAcqProductList", "Acquisition")?AcquisitionOrderId='+@Model.AcquisitionOrderId);
+        }
+        else{
+            $("#divForName").show();
+        }
+    });
+
+    function isNumber(e) {
+        e = (e) ? e : window.event;
+        var charCode = (e.which) ? e.which : e.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+        return true;
+    }
+    //****************************  FOR SEARCH ALREADY STORE PRODUCT *************************
+    function onAdditionalData() {
+        return {
+            prefix: $("#products").val(),
+            orderId:AcquisitionOrderId
+        };
+    }
+    function InventoryItemSelect(e){
+        var dataItem = this.dataItem(e.item.index());
+
+        $("#loading_Selected_In_Pro").show();
+        $("#divFor_Display_Acquisition").load('@Url.Action("_AcquisitionBySearch", "Acquisition")?InventoryId='+dataItem.InventoryId);
+
+        $("#loading_Selected_In_Pro").hide();
+        $("#divFor_New_Acquisition").hide();
+        $("#divForproName").hide();
+
+        $("#divFor_Display_Acquisition").show();
+        $("#divForProductLbl").show();
+
+
+        $("#lblForProductName").text(dataItem.ProductName);
+        $("#ProductId").val(dataItem.InventoryId);
+    }
+
+
+
+    //*******************************************************************************************************************************************
+    //***************************************************** PRODUCT TYPE CHANGE FUNCTION ********************************************************
+    //*******************************************************************************************************************************************
+
+    function onProductChange(){
+        if(this.value() === ""){
+            $("#ProductTypeId").val(0);
+        }
+        else{
+            var ProductTypeId= this.value();
+            var ProductTypeName= this.text();
+            $.ajax({
+                url: '@Url.Action("ProductTypeHasChildern", "Acquisition")',
+                type: 'Post',
+                data: {ProductTypeId:ProductTypeId},
+                success: function (data) {
+                    if(data)
+                    {
+                        $("#ProductTypeId").val(0);
+                        $("#lblForCatagoryName-"+count).text(ProductTypeName);
+                        $("#divForCatLbl-"+count).show();
+                        $("#divForcat-"+count).hide();
+
+                        count++;
+                        $("#divForProductCatagory").append('<div class="form-group dynDivForProCat" id="dynDivForProCat-'+count+'">'+
+                            '<label class="control-label col-md-4 col-sm-4 col-xs-12"" for="ProductType-'+count+'">Sub Catagory</label>'+
+                            '<div class="col-md-5 col-sm-6 col-xs-10" id="divForcat-'+count+'">'+
+                            '<label id="productCatType-'+count+'" style="width:100%;"></label>'+
+                            '<span class="field-validation-valid text-danger" data-valmsg-for="ProductTypeId" data-valmsg-replace="true"></span></div>'+
+                            '<div class="col-md-5 col-sm-6 col-xs-10" style="display: none; padding-top: 7px;" id="divForCatLbl-'+count+'">'+
+                            '<label id="lblForCatagoryName-'+count+'"></label> '+
+                            '<span class="k-icon k-i-close" id="btnCloseForCat-'+count+'" data-id="'+count+'"></span></div></div>');
+
+                        $("#productCatType-"+count).kendoDropDownList({
+                            dataTextField: "ProductTypeName",
+                            dataValueField: "ProductTypeId",
+                            change: onProductChange,
+                            optionLabel: "--Select One--",
+                            dataSource: {
+                                transport: {
+                                    read: {
+                                        url: "@Url.Action("GetAllProductType", "Acquisition")?ParentId=" + ProductTypeId,type: "GET"
+                                    }
+                                }
+                            }
+                        });
+                    }else{$("#ProductTypeId").val(ProductTypeId);}
+                }
+            });
+        }
+    };
+
+    //*******************************************************************************************************************************************
+    //***************************************************** BRAND NAME CHANGE FUNCTION **********************************************************
+    //*******************************************************************************************************************************************
+
+    function onBrandChange(){
+        if(this.value() === ''){
+            $("#BrandId").val(0);
+        }else{
+            var BrandId= this.value();
+            BrandName= this.text();
+            $.ajax({
+                url: '@Url.Action("BrandHasChildern", "Acquisition")',
+                type: 'Post',
+                data: {BrandId:BrandId},
+                success: function (data) {
+                    if(data)
+                    {
+                        $("#BrandId").val(0);
+                        $("#lblForBrandName-"+brandCount).text(BrandName);
+                        $("#divForBrandLbl-"+brandCount).show();
+                        $("#divForbrand-"+brandCount).hide();
+
+                        brandCount++;
+                        $("#divForBrand").append('<div class="form-group dynDivForProBrand" id="dynDivForProBrand-'+brandCount+'">'+
+                            '<label class="control-label col-md-4 col-sm-4 col-xs-12"" for="Brand-'+brandCount+'">Sub Brand</label>'+
+                            '<div class="col-md-5 col-sm-6 col-xs-10" id="divForbrand-'+brandCount+'">'+
+                            '<label id="productBrand-'+brandCount+'" style="width:100%;"></label></div>'+
+                            '<div class="col-md-5 col-sm-6 col-xs-10" style="display: none; padding-top: 7px;" id="divForBrandLbl-'+brandCount+'">'+
+                            '<label id="lblForBrandName-'+brandCount+'"></label> '+
+                            '<span class="k-icon k-i-close" id="btnCloseForbrand-'+brandCount+'" data-id="'+brandCount+'"></span></div></div>');
+                        $("#productBrand-"+brandCount).kendoDropDownList({
+                            dataTextField: "BrandName",
+                            dataValueField: "BrandId",
+                            change: onBrandChange,
+                            optionLabel: "--Select One--",
+                            dataSource: {
+                                transport: {
+                                    read: {url: "@Url.Action("GetAllBrand", "Acquisition")?ParentId=" + BrandId,type: "GET"
+                                    }
+                                }
+                            }
+                        });
+                    }else{$("#BrandId").val(BrandId);}}
+            });
+        }
+    };
+
+
+    //*******************************************************************************************************************************************
+    //***************************************************** UNIT NAME CHANGE FUNCTION **********************************************************
+    //*******************************************************************************************************************************************
+
+    function on_Breakable(e) {
+        var dataItem = this.dataItem(e.item);
+        if(dataItem.HasParentId){
+            $("#IsSubQuantity").val(true);
+            subUnitId = true;
+        }else{
+            $("#IsSubQuantity").val(false);
+            subUnitId=false;
+        }
+    };
+
+    function onUnitChange(){
+        if(this.value() === ""){
+            $("#divForSubUnitChk").hide();
+        }else{
+            if($("#CanbeBreakable").is(":checked")){
+                $("#lblForSubQuantity").text("Per "+$("#unitType-"+unitCount).data("kendoDropDownList").text());
+            }
+            $("#divForSubUnitChk").show();
+            var UnitId= this.value();
+            var UnitName= this.text();
+            $.ajax({
+                url: '@Url.Action("UnitHasChildern", "Acquisition")',
+                type: 'Post',
+                data: {UnitId:UnitId},
+                success: function (data) {
+                    if(data)
+                    {
+                        $("#UnitId").val(0);
+                        $("#lblForUnitName-"+unitCount).text(UnitName);
+                        $("#divForUnitLbl-"+unitCount).show();
+                        $("#divForunit-"+unitCount).hide();
+
+                        unitCount++;
+                        $("#divForUnitList").append('<div class="form-group dynDivForProUnit" id="dynDivForProUnit-'+unitCount+'">'+
+                            '<label class="control-label col-md-4 col-sm-4 col-xs-12"" for="Unit-'+unitCount+'">Sub Unit</label>'+
+                            '<div class="col-md-5 col-sm-6 col-xs-10" id="divForunit-'+unitCount+'">'+
+                            '<label id="unitType-'+unitCount+'" style="width:100%;"></label>'+
+                            '<span class="field-validation-valid text-danger" data-valmsg-for="UnitId" data-valmsg-replace="true"></span></div>'+
+                            '<div class="col-md-5 col-sm-6 col-xs-10" style="display: none; padding-top:7px;" id="divForUnitLbl-'+count+'">'+
+                            '<label id="lblForUnitName-'+unitCount+'"></label> '+
+                            '<span class="k-icon k-i-close" id="btnCloseForUnit-'+unitCount+'" data-id="'+unitCount+'"></span></div></div>');
+                        $("#unitType-"+unitCount).kendoDropDownList({
+                            dataTextField: "UnitName",
+                            dataValueField: "UnitId",
+                            change: onUnitChange,
+                            optionLabel: "--Select One--",
+                            dataSource: {
+                                transport: {
+                                    read: {
+                                        url: "@Url.Action("GetAllUnit", "Acquisition")?ParentId=" + UnitId,
+                                        type: "GET"
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    else{$("#UnitId").val(UnitId);}
+                }
+            });
+        }
+    };
+
+    function onChangeRequiredDate() {
+        var date = new Date(),
+        dateString = date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear().toString().substr(2,2);
+        var date1 = new Date(dateString);
+        var date2 = new Date($("#RequiredDate").val());
+        $("#RequiredTime").data("kendoTimePicker").value('');
+        if(date2 > date1){
+            $("#RequiredTime").data("kendoTimePicker").min("12:00 AM");
+        }
+        else{
+            var minimun=startTime();
+            $("#RequiredTime").data("kendoTimePicker").min(minimun);
+        }
+    };
+
+    /////////// Edit Acquisition functions //////////////////
+
+
+    //*******************************************************************************************************************************************
+    //*********************************************** PRODUCT TYPE CHANGE FUNCTION (EDIT)********************************************************
+    //*******************************************************************************************************************************************
+    function onProductChangeEdit(){
+        if(this.value() === ""){
+            $("#ProductTypeIdEdit").val(0);
+        }else{
+            var ProductTypeId= this.value();
+            var ProductTypeName= this.text();
+            $.ajax({
+                url: '@Url.Action("ProductTypeHasChildern", "Acquisition")',
+                type: 'Post',
+                data: {ProductTypeId:ProductTypeId},
+                success: function (data) {
+                    if(data)
+                    {
+                        $("#ProductTypeIdEdit").val(0);
+                        $("#lblForCatagoryNameEdit-"+countEdit).text(ProductTypeName);
+                        $("#divForCatLblEdit-"+countEdit).show();
+                        $("#divForcatEdit-" + countEdit).hide();
+
+                        countEdit++;
+                        $("#divForProductCatagoryEdit").append('<div class="form-group dynDivForProCatEdit" id="dynDivForProCatEdit-'+countEdit+'">'+
+                            '<label class="control-label col-md-4 col-sm-4 col-xs-12"" for="ProductType-'+countEdit+'">Sub Catagory</label>'+
+                            '<div class="col-md-5 col-sm-6 col-xs-10" id="divForcatEdit-'+countEdit+'">'+
+                            '<label id="productCatTypeEdit-'+countEdit+'" style="width:100%;"></label></div>'+
+                            '<div class="col-md-5 col-sm-6 col-xs-10" style="display: none; padding-top: 7px;" id="divForCatLblEdit-'+countEdit+'">'+
+                            '<label id="lblForCatagoryNameEdit-'+countEdit+'"></label> '+
+                            '<span class="k-icon k-i-close" id="btnCloseForCatEdit-'+countEdit+'" data-id="'+countEdit+'"></span></div></div>');
+                        $("#productCatTypeEdit-"+countEdit).kendoDropDownList({
+                            dataTextField: "ProductTypeName",
+                            dataValueField: "ProductTypeIdEdit",
+                            change: onProductChangeEdit,
+                            optionLabel: "--Select One--",
+                            dataSource: {
+                                transport: {
+                                    read: {
+                                        url: "@Url.Action("GetAllProductType", "Acquisition")?ParentId=" + ProductTypeId,type: "GET"
+                                    }
+                                }
+                            }
+                        });
+                    }else{$("#ProductTypeIdEdit").val(ProductTypeId);}
+                }
+            });
+        }
+
+    };
+    function onProductBrandEdit(){
+        if(this.value() === ""){$("#BrandIdEdit").val(0);}
+        else{
+            var BrandId= this.value();
+            var BrandName= this.text();
+
+            $.ajax({
+                url: '@Url.Action("BrandHasChildern", "Acquisition")',
+                type: 'Post',
+                data: {BrandId:BrandId},
+                success: function (data) {
+                    if(data)
+                    {
+                        $("#BrandIdEdit").val(0);
+                        $("#lblForBrandNameEdit-"+brandCountEdit).text(BrandName);
+                        $("#divForBrandLblEdit-"+brandCountEdit).show();
+                        $("#divForbrandEdit-"+brandCountEdit).hide();
+                        brandCountEdit++;
+                        $("#divForBrandEdit").append('<div class="form-group dynDivForProBrandEdit" id="dynDivForProBrandEdit-'+brandCountEdit+'">'+
+                            '<label class="control-label col-md-4 col-sm-4 col-xs-12"" for="Brand-'+brandCountEdit+'">Sub Brand</label>'+
+                            '<div class="col-md-5 col-sm-6 col-xs-10" id="divForbrandEdit-'+brandCountEdit+'">'+
+                            '<label id="productBrandEdit-'+brandCountEdit+'" style="width:100%;"></label></div>'+
+                            '<div class="col-md-5 col-sm-6 col-xs-10" style="display: none; padding-top: 7px;" id="divForBrandLblEdit-'+brandCountEdit+'">'+
+                            '<label id="lblForBrandNameEdit-'+brandCountEdit+'"></label> '+
+                            '<span class="k-icon k-i-close" id="btnCloseForbrandEdit-'+brandCountEdit+'" data-id="'+brandCountEdit+'"></span></div></div>');
+                        $("#productBrandEdit-"+brandCountEdit).kendoDropDownList({
+                            dataTextField: "BrandName",
+                            dataValueField: "BrandIdEdit",
+                            change: onProductBrandEdit,
+                            optionLabel: "--Select One--",
+                            dataSource: {
+                                transport: {
+                                    read: {
+                                        url: "@Url.Action("GetAllBrand", "Acquisition")?ParentId=" + BrandId,
+                                        type: "GET"
+                                    }
+                                }
+                            }
+                        });
+                    }else{
+                        $("#BrandIdEdit").val(BrandId);
+                    }
+                }
+            });
+        }
+
+    };
+
+    function onUnitChangeEdit(){
+        if(this.value() === ""){
+            $("#UnitIdEdit").val(0);
+        }else{
+            var UnitId= this.value();
+            var UnitName= this.text();
+
+
+            $.ajax({
+                url: '@Url.Action("UnitHasChildern", "Acquisition")',
+                type: 'Post',
+                data: {UnitId:UnitId},
+                success: function (data) {
+                    if(data)
+                    {
+                        $("#UnitIdEdit").val(0);
+                        $("#lblForUnitNameEdit-"+unitCountEdit).text(UnitName);
+                        $("#divForUnitLblEdit-"+unitCountEdit).show();
+                        $("#divForunitEdit-"+unitCountEdit).hide();
+
+                        unitCountEdit++;
+                        $("#divForUnitListEdit").append('<div class="form-group dynDivForProUnitEdit" id="dynDivForProUnitEdit-'+unitCountEdit+'">'+
+                            '<label class="control-label col-md-4 col-sm-4 col-xs-12"" for="Unit-'+unitCountEdit+'">Sub Unit</label>'+
+                            '<div class="col-md-5 col-sm-6 col-xs-10"  id="divForunitEdit-'+unitCountEdit+'">'+
+                            '<label id="unitTypeEdit-'+unitCountEdit+'" style="width:100%;"></label></div>'+
+                            '<div class="col-md-5 col-sm-6 col-xs-10" style="display: none; padding-top: 7px;" id="divForUnitLblEdit-'+unitCountEdit+'">'+
+                            '<label id="lblForUnitNameEdit-'+unitCountEdit+'"></label> '+
+                            '<span class="k-icon k-i-close" id="btnCloseForUnitEdit-'+unitCountEdit+'" data-id="'+unitCountEdit+'"></span></div></div>');
+                        $("#unitTypeEdit-"+unitCountEdit).kendoDropDownList({
+                            dataTextField: "UnitName",
+                            dataValueField: "UnitId",
+                            change: onUnitChangeEdit,
+                            optionLabel: "--Select One--",
+                            dataSource: {
+                                transport: {
+                                    read: {
+                                        url: "@Url.Action("GetAllUnit", "Acquisition")?ParentId=" + UnitId,
+                                        type: "GET"
+                                    }
+                                }
+                            }
+                        });
+                    }else{ $("#UnitIdEdit").val(UnitId);}
+                }
+            });
+        }
+
+    };
+
+    function onChangeRequiredDateEdit() {
+        var date = new Date(),
+        dateString = date.getMonth() + 1 + "/" + date.getDate() + "/" + date.getFullYear().toString().substr(2,2);
+        var date1 = new Date(dateString);
+        var date2 = new Date($("#RequiredDate").val());
+        $("#RequiredTimeEdit").data("kendoTimePicker").value('');
+        if(date2 > date1){
+            $("#RequiredTimeEdit").data("kendoTimePicker").min("12:00 AM");
+        }
+        else{
+            var minimun=startTime();
+            $("#RequiredTimeEdit").data("kendoTimePicker").min(minimun);
+        }
+    };
+
+    ///////////////////// Click Functions ///////////////////////////
+
+    $("#divForNewAcquisition").on("click","#btnCloseForProduct",function(){
+        var passData ={AcquisitionOrderId:AcquisitionOrderId,AcquisitionType:AcquisitionType,BusinessOrderId:BusinessOrderId};
+        $("#divForNewAcquisition").hide();
+        $("#divForNewAcquisition").load('@Url.Action("_NewProductForAcquisition", "Acquisition")',passData);
+        $("#divForNewAcquisition").show();
+        $("#ProductId").val(0);
+        $("#Span_Available_Quantity").hide();
+
+        $("#divForUnitList").show();
+        $("#div_quantity").removeClass('col-md-2 col-sm-3 col-xs-4');
+        $("#div_quantity").addClass('col-md-5 col-sm-6 col-xs-10');
+    });
+    $("#divForNewAcquisition").on("click",".typeOfRequirement",function(){
+        $("#IsAsap").val($(this).val());
+    });
+    $("#divForNewAcquisition").on("click",".typeOfRequirementEdit",function(){
+        $("#IsAsapEdit").val($(this).val());
+    });
+
+
+    //****************************  EDIT ADDED PRODUCT DETAILS ************************************
+    $("#divForAcqOrder").on("click",".btnForEditProduct",function(e){
+        var acqId=$(this).data("acquisitionid");
+        $("#divForNewAcquisition").empty();
+        $("#divForNewAcquisition").append('<div class="loading_half"></div>');
+        $("#divForNewAcquisition").load('@Url.Action("_EditProductForAcquisition", "Acquisition")?AcquisitionId='+acqId);
+    });
+
+    //***************************** ACQUISITION ORDER DELETE FUNCTION ************************************
+    $("#divForAcqOrder").on("click","#btnForRemoveAcquisition",function(e){
+        if (confirm('Are you sure want to delete this Acquisition order?')) {
+            e.preventDefault();
+            var orderId=$(this).data("id");
+            notification.show({
+                message: "Deleting Acquisition order",
+                showTime: startTime(),
+            }, "upload-progress");
+            $.ajax({
+                url: '@Url.Action("DeleteAcqByOrder", "Acquisition")',
+                type: 'Post',
+                data: { AcquisitionOrderId: orderId,UserId: userId,PageName:"Acquisition"},
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({autoHideAfter: 2000});
+                    if(data === "Success"){
+                        notification.show({message: "Acquisition order successfully deleted", showTime: startTime(),}, "upload-success");
+
+                        if(AcquisitionType === '1'){
+                            window.location.href = "@Url.Action("Acquisition", "Acquisition")?AcquisitionType=1";
+                        }else if(AcquisitionType === '2'){
+                            window.location.href = "@Url.Action("Acquisition", "Acquisition")?AcquisitionType=2&BusinessOrderId="+BusinessOrderId;
+                        }else{
+                            window.location.href = "@Url.Action("Acquisition", "Acquisition")?AcquisitionType=3&PartsId="+PartsId+'&MachineId='+MachineId;
+                        }
+                    }else{
+                        notification.show({message: "Acquisition order deletion unsuccessful", showTime: startTime()}, "upload-error");
+                    }
+                }
+            });
+        }
+    });
+
+    //***************************** PRODUCT FROM DELETE FROM ACQUISITION ORDER  ************************************
+    $("#divForAcqOrder").on("click", ".btnForRemoveProduct", function (e) {
+        var acquisitionid = $(this).data("acquisitionid");
+        var acquisitionorderid = $(this).data("acquisitionorderid");
+        var msg="",hasChild=true;
+
+        $.ajax({
+            url: '@Url.Action("CheckAcqProductCount", "Acquisition")',
+            type: 'Post',
+            data: { AcquisitionOrderId: acquisitionorderid},
+            success: function (count) {
+                if(count == 1){
+                    msg='Are you sure want to delete this product from Acquisition order?If you delete this product from order then order will be deleted.';
+                    hasChild=false;
+                }
+                else{
+                    msg='Are you sure want to delete this product from Acquisition order?';
+                    hasChild=true;
+                }
+                if (confirm(msg)) {
+                    e.preventDefault();
+                    notification.show({message: "Deleting Product...",showTime: startTime()}, "upload-progress");
+
+                    $.ajax({
+                        url: '@Url.Action("DeleteAcq", "Acquisition")',
+                        type: 'Post',
+                        data: { Id: acquisitionid,UserId: userId,OrderName:'@Model.Name',BusiId:BusinessOrderId},
+                        success: function (data) {
+                            notification.hide();
+                            notification.setOptions({autoHideAfter: 2000});
+                            if(data === "Success"){
+
+                                notification.show({message: "Product successfully deleted", showTime: startTime()}, "upload-success");
+
+                                if(hasChild){
+                                    var passData = { AcquisitionOrderId: AcquisitionOrderId, AcquisitionType: AcquisitionType, BusinessOrderId: BusinessOrderId };
+                                    $("#divForNewAcquisition").hide();
+                                    $("#divForNewAcquisition").empty();
+                                    $("#divForNewAcquisition").append('<div class="loading_half" ></div>');
+                                    $("#divForNewAcquisition").show();
+                                    $("#divForNewAcquisition").load('@Url.Action("_NewProductForAcquisition", "Acquisition")', passData);
+
+
+                                    $("#divForAcqOrder").hide();
+                                    $("#divForAcqOrder").empty();
+                                    $("#divForAcqOrder").append('<div class="loading_half" ></div>');
+                                    $("#divForAcqOrder").show();
+                                    $("#divForAcqOrder").load('@Url.Action("_AlreadyAddedAcqProductList", "Acquisition")?AcquisitionOrderId=' +AcquisitionOrderId);
+                                }
+                                else{
+                                    window.location.href = "@Url.Action("Acquisition", "Acquisition")?AcquisitionType="+AcquisitionType+"&BusinessOrderId="+BusinessOrderId;
+                                }
+
+                            }else{
+                                notification.show({message: "Product deletion unsuccessful", showTime: startTime()}, "upload-error");
+                            }
+                        }
+                    });
+                }
+            }
+        });
+
+    });
+
+    $("#divForNewAcquisition").on("click","#btnRefresh",function(){
+        $("#Quantity").val('');
+        $("#DivForRequiredDate").hide();
+        $('#RequiredDate').val('');
+        location.reload();
+    });
+
+    $("#divForNewAcquisition").on("click","#btnCancel",function(){
+        if(AcquisitionType === "1"){
+            $("#divForNewAcquisition").empty();
+            $("#divForNewAcquisition").append('<div class="loading_half" ></div>');
+            sendData={AcquisitionOrderId:AcquisitionOrderId,AcquisitionType:AcquisitionType};
+            $("#divForNewAcquisition").load('@Url.Action("_NewProductForAcquisition", "Acquisition")',sendData);
+        }else if(AcquisitionType === "2"){
+            $("#divForNewAcquisition").empty();
+            $("#divForNewAcquisition").append('<div class="loading_half" ></div>');
+            sendData={AcquisitionOrderId:AcquisitionOrderId,AcquisitionType:AcquisitionType,BusinessOrderId:BusinessOrderId};
+            $("#divForNewAcquisition").load('@Url.Action("_NewProductForAcquisition", "Acquisition")',sendData);
+        }else{
+            window.location.href = "@Url.Action("AcquisitionOrderList", "Acquisition")";
+        }
+    });
+</script>

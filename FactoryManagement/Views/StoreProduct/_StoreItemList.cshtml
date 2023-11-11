@@ -1,0 +1,291 @@
+﻿@************************************************** Created By Jerin Jahan Date(17.11.2016) *****************************************@
+
+
+@model IEnumerable<FactoryManagement.ModelView.Inventory.InventoryListModelView>
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int count = 0;
+}
+<style>
+    .imgresize {
+        border: 2px solid #ddd;
+    }
+
+    #tbl_pro_list .btn {
+        font-size: 12px !important;
+    }
+    #tbl_pro_list p{
+        font-size:13px!important;
+        margin-bottom:0px!important;color: #999;
+    }
+    .tr_pro:hover{
+        border: 1px solid #eaeaea;
+        -webkit-box-shadow: 0 0 10px rgba(0,0,0, .65);
+        -moz-box-shadow: 0 0 10px rgba(0,0,0, .65);
+        box-shadow: 0 0 10px rgba(0,0,0, .65);
+    }
+    .tr_pro .col-sm-8 .col-sm-7{
+        width:55%;border-right:1px dotted #ddd;padding:0px!important;margin-right:15px;
+    }
+    .lblProDesc {
+        /*background-color:pink;
+        display:block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;*/
+    }
+
+</style>
+
+@if (Model.Count() == 0)
+{
+    <div id="unavailable"><label>There is no product to display.</label></div>
+}
+else
+{
+    <table class="table allProductTable" id="tbl_pro_list">
+        @foreach (var item in Model)
+        {
+            count++;
+            int multiCount = 1;
+            int added_qun = 0;
+            int max_quan = Convert.ToInt32(item.Quantity);
+            <tr class="tr_pro">
+                <td class="col-md-1 col-sm-2" style="display:table-cell; vertical-align:middle; text-align:center;">
+                    @if (item.ProductImageName != null)
+                    {<img class="imgresize" src="~/Images/Inventory/Store/Resize/@item.ProductImageName" />}
+                    else
+                    {<img class="imgresize" src="~/Images/Inventory/Store/no_img.jpg" />}
+                </td>
+                <td class="col-sm-8">
+                    <div class="col-sm-7 col-xs-12">
+                        <a href="/StoreProduct/StoreProductDetails?id=@item.InventoryId">
+                            <label class="name" id="lbl_Proname_@item.InventoryId"
+                                   data-price="@item.Price"
+                                   data-id="@item.InventoryId"
+                                   data-name="@item.ProductName"
+                                   data-picture="@item.ProductImageName"
+                                   data-quantity="@item.Quantity"
+                                   data-unitname="@item.UnitName">
+                                @item.ProductName
+                            </label>
+                        </a>
+                        <p class="lblProDesc">Staple @Html.DisplayFor(modelItem => item.Description)</p>
+                        @if (item.Model != null)
+                        {
+                            <p>Model : @item.Model</p>
+                        }
+                        @if (item.Brand != null)
+                        {
+                            <p>Brand : @item.Brand</p>
+                        }
+                        @if (item.CountryName != null)
+                        {
+                            <p>From @item.CountryName</p>
+                        }
+                        <p>
+                            <span>Total Quantity : @item.Quantity @item.UnitName</span>
+                            @if (item.ReservedQuantity != null)
+                            {
+                                <span style="color:#ff0000;"> Reserved : @item.ReservedQuantity @item.UnitName</span>
+                            }
+                        </p>
+                    </div>
+                    <div class="col-sm-5" style="padding:0px!important;">
+                        @if (item.InMultipleLocation == 1)
+                        {
+                            var multipleList = (from m in db.Inventory_Item_Location
+                                                join s in db.StoreLists on m.StoreId equals s.Id
+                                                where m.InventoryId == item.InventoryId
+                                                select new
+                                                {
+                                                    LocationId = m.LocationId,
+                                                    StoreName = s.StoreName,
+                                                    Quantity = m.Quantity
+                                                }).ToList();
+                            foreach (var multi in multipleList)
+                            {
+                                <div>
+                                    <div class="col-xs-7" style="padding:0px!important;">
+                                        <p><strong>@multiCount.</strong> @multi.StoreName</p>
+                                        <p>Quantity : @multi.Quantity @item.UnitName</p>
+                                    </div>
+                                    @if (Convert.ToDouble(multi.Quantity) > 0)
+                                    {
+                                        int locid = multi.LocationId;
+                                        <div class="col-xs-5" style="padding:0px!important;">
+                                            <input type="button" value="Add To Cart"
+                                                   class="btn btn-default cartItemOrder"
+                                                   id="btnOrder_@locid" data-quan="@multi.Quantity"
+                                                   data-locationid="@locid" data-multiple="1"
+                                                   data-id="@item.InventoryId" data-showplus="true" />
+                                            <div id="divForOrder_@locid" style="display:none;font-size:16px;">
+                                                <span class="fa fa-minus cartItemMinus" id="minusIcon_@locid"
+                                                      data-id="@item.InventoryId" data-locationid="@locid" data-multiple="1" style="cursor:pointer;"></span>
+                                                <span class="ProductInCart" id="cart_@locid">@added_qun</span>
+                                                <input class="k-textbox txt_quantity" style="width:40%!important;display:none;"
+                                                       data-max="@multi.Quantity" data-id="@item.InventoryId"
+                                                       data-locationid="@locid" data-multiple="1"
+                                                       data-val-required="Please enter amount"
+                                                       id="txt_quan_@locid" name="txt_quan_@locid"
+                                                       value="@added_qun"
+                                                       type="text" onkeypress="return cartQuan(event, this.value)">
+                                                <span class="fa fa-plus cartItemPlus"
+                                                      id="addIcon_@locid"
+                                                      data-locationid="@locid" data-multiple="1"
+                                                      data-id="@item.InventoryId"
+                                                      style="cursor:pointer;"></span>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            multiCount++;
+                            }
+                        }
+                        else
+                        {
+                            if (item.Quantity > 0)
+                            {
+                                <div class="col-sm-offset-7 col-sm-5" style="padding:0px!important;">
+                                    <input type="button" value="Add To Cart"
+                                           class="btn btn-default cartItemOrder" data-locationid="@item.LocationId" data-multiple="0" data-quan="@item.Quantity"
+                                           id="btnOrder_@item.LocationId" data-id="@item.InventoryId" data-showplus="true" />
+
+                                    <div id="divForOrder_@item.LocationId" style="display:none;font-size:16px;">
+                                        <span class="fa fa-minus cartItemMinus" id="minusIcon_@item.LocationId"
+                                              data-id="@item.InventoryId" data-locationid="@item.LocationId" data-multiple="0" style="cursor:pointer;"></span>
+                                        <span class="ProductInCart" id="cart_@item.LocationId">@added_qun</span>
+                                        <input class="k-textbox txt_quantity" style="width:40%!important;display:none;"
+                                               data-max="@item.Quantity" data-id="@item.InventoryId"
+                                               data-val-required="Please enter amount" data-locationid="@item.LocationId" data-multiple="0"
+                                               id="txt_quan_@item.LocationId" name="txt_quan_@item.LocationId"
+                                               value="@added_qun"
+                                               type="text" onkeypress="return cartQuan(event, this.value)">
+                                        <span class="fa fa-plus cartItemPlus"
+                                              id="addIcon_@item.LocationId"
+                                              data-id="@item.InventoryId"
+                                              data-locationid="@item.LocationId" data-multiple="0"
+                                              style="cursor:pointer;"></span>
+                                    </div>
+                                </div>
+                            }
+                        }
+
+                    </div>
+                </td>
+            </tr>
+        }
+    </table>
+}
+<script>
+    $(document).ready(function () {
+        $('.imgresize').nailthumb({ width: 150, height: 150 });
+        showCount = '@(count)';
+        totalCount = '@(ViewBag.Count)';
+        $("#showItem").text(showCount);
+        if (alllocId.length > 0) {
+            for (var i = 0; i < alllocId.length; i++) {
+                var max = $("#btnOrder_" + alllocId[i]).data('quan');
+                $("#btnOrder_" + alllocId[i]).hide();
+                $("#divForOrder_" + alllocId[i]).show();
+                $("#cart_" + alllocId[i]).text(allquan[i]);
+                if (parseInt(allquan[i]) > parseInt(max) || parseInt(allquan[i]) == parseInt(max)) {
+                    $("#addIcon_" + alllocId[i]).hide();
+                }
+            }
+        }
+    });
+    function updateData(id, quan, invenid, locid) {
+        if ($('#cart_' + id).length === 1) {
+            $('#cart_' + id).text(quan);
+            if (!isCartShow) {
+                $("#Div_without_Cart").removeClass('form-horizontal col-lg-12 col-md-12 col-sm-12 col-xs-12');
+                $("#Div_without_Cart").addClass('form-horizontal col-lg-10 col-md-10 col-sm-9 col-xs-12');
+                $("#divForAddtoCart").addClass('col-md-2 col-sm-3 col-xs-12 noPadding');
+                $("#divForAddtoCart").show();
+                $("#DivForCartList").show();
+                $("#OrderForPurchase").show();
+                $("#showCart").hide();
+                isCartShow = true;
+            }
+        }
+        $('#quentityInArrow_' + id).text(quan);
+        $("#itemCount").text(alllocId.length);
+    }
+    $("#tbl_pro_list").on("change", ".txt_quantity", function () {
+        var addcart, showPlus, id = 0;
+        var invenid = $(this).data('id');
+        var locid = $(this).data('locationid');
+        var multiple = $(this).data("multiple");
+        id = locid;
+        var typeValue = $(this).val();
+        var maxQuan = $(this).data('max');
+        if (typeValue === '') {
+            typeValue = 0;
+        }
+        if (typeValue == '0') {
+            $("#btnOrder_" + id).show();
+            $("#divForOrder_" + id).hide();
+            $("#dynTRforCart_" + id).remove();
+            $('#addIcon_' + id).show(); showPlus = true;
+            for (var j = 0; j < alllocId.length; j++) {
+                if (locid === alllocId[j]) {
+                    alllocId.splice(j, 1);
+                    allId.splice(j, 1);
+                    allName.splice(j, 1);
+                    allquan.splice(j, 1);
+                    allunit.splice(j, 1);
+                    allIdCount.splice(j, 1);
+                }
+            }
+            $("#itemCount").text(parseInt($("#itemCount").text()) - 1);
+        } else {
+            if (parseInt(typeValue) > parseInt(maxQuan)) {
+                var kendoWindow = $("<div />").kendoWindow({
+                    actions: ["Close"],
+                    title: "Alert",
+                    resizable: false,
+                    width: "30%",
+                    modal: true
+                });
+                var data = 'Quantity can not be greater than ' + maxQuan;
+                var template = kendo.template($("#temp_alert").html());
+                kendoWindow.data("kendoWindow").content(template(data)).center().open();
+                kendoWindow.find("#btnOkAlert").click(function () {
+                    kendoWindow.data("kendoWindow").close();
+                }).end()
+
+                $(this).val(maxQuan);
+                updateData(id, maxQuan, invenid, locid);
+                $('#addIcon_' + id).hide();
+                showPlus = false;
+                addcart = maxQuan;
+            } else {
+                updateData(id, typeValue, invenid, locid);
+                addcart = typeValue;
+                showPlus = true;
+                if (parseInt(typeValue) == parseInt(maxQuan)) {
+                    $('#addIcon_' + id).hide(); showPlus = false;
+                } else {
+                    $('#addIcon_' + id).show(); showPlus = true;
+                }
+            }
+            $("#cart_" + id).show();
+            $("#txt_quan_" + id).hide();
+            for (var i = 0; i < alllocId.length; i++) {
+                if (locid === alllocId[i]) {
+                    allquan[i] = (addcart);
+                }
+            }
+        }
+        if (alllocId.length === 0) {
+            $("#btnPurchaseOrder").show();
+        }
+
+    });
+    $("#tbl_pro_list").on("click", ".ProductInCart", function () {
+        var id = $(this).attr('id').split('_')[1];
+        $("#cart_" + id).hide();
+        $("#txt_quan_" + id).show();
+    });
+</script>

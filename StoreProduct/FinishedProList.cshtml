@@ -1,0 +1,91 @@
+﻿@*********************************************** Created By Jerin Jahan Date(14.05.2017) ************************@
+
+@{
+    ViewBag.Title = "FinishedProList";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+
+<h3 class="page-title">
+    Finished Product List <small>Manual Entry</small>
+</h3>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <a href="javascript:;">Inventory</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/StoreProduct/FinishedProList">All Finished Product List</a>
+        </li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="note note-success">
+            <p>
+                All Unit Finished Product List (Manual Entry)
+            </p>
+        </div>
+        <p>
+            <a data-toggle="tooltip" title="Add New" data-placement="bottom" href="/StoreProduct/AddFinishedProduct">
+                <span class="btn btn-success"><i class="fa fa-plus"></i> Add New</span>
+            </a>
+            <span style="float:right">
+                <a data-toggle="tooltip" title="Show All Archive" data-placement="bottom" href="/Report/FinishedProArchive">
+                    <span class="btn btn-primary"><i class="fa fa-archive"></i> Archive</span>
+                </a>
+            </span>
+        </p>
+        <div class="portlet box green">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul"></i>Finished Product List
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="table-responsive">
+                    <div id="Div_All_Finish_Pro" style="display:none;"><div class="loading_partial"></div></div>
+                    @if (db.View_Inventory_Finish_Item_List.Any())
+                    {
+                        <script>
+                            $("#Div_All_Finish_Pro").show();
+                            $("#Div_All_Finish_Pro").load("_FinishedProList", "StoreProduct");
+                        </script>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@(Html.Kendo().Window()
+       .Name("WinForSalaryPack")
+       .Visible(false)
+       .Modal(true)
+       .Draggable(true)
+)
+<script id="temp_finished_pro_delete" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">#=message#</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_deleteFinished_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_delete_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    var showCount = 0, totalCount = 0, inCallback = false;
+    var page = 0;
+    var content = '';
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+    });
+
+    //*******************************  EDIT FINISHED PRODUCT *****************************************
+    $("#Div_All_Finish_Pro").on("click", ".btn_edit_pro", function () {
+        var id = $(this).data("id");
+        location.href = '@Url.Action("EditFinishedProduct", "StoreProduct")?id=' + id;
+    });
+</script>

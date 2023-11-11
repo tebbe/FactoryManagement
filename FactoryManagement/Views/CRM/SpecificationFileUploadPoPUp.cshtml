@@ -1,0 +1,16 @@
+﻿
+
+
+
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" id="" style="margin-bottom:4%;margin-top:2%;">
+    <div id="divForSpeFileUpload"></div>
+</div>
+<script>
+    $(document).ready(function () {
+        $("#divForSpeFileUpload").append('<div class="win_loading_half"></div>');
+        $("#divForSpeFileUpload").show();
+        $("#divForSpeFileUpload").load('@Url.Action("SpecificationFileUpload", "CRM")?FileType=' + '@ViewBag.FileType' + "&orderId=" + orderId);
+    });
+</script>
+

@@ -1,0 +1,460 @@
+﻿@using FactoryManagement.Helpers
+@{
+    ViewBag.Title = "Voucher List";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+   FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+
+<h3 class="page-title">
+    Voucher <small>List</small>
+</h3>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-calculator"></i>
+            <span> Finance</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list" aria-hidden="true"></i>
+            <a href="/Voucher/VoucherList"> All Voucher List </a>
+        </li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div style="margin-bottom:10px !important;"> 
+            <span class="btn green" data-toggle="tooltip" data-placement="bottom" data-original-title="Create New Voucher" id="btn_CreateVoucher"><i class="fa fa-plus"></i> Create Voucher</span>     
+            <span data-toggle="tooltip" title="All History"><span class="btn blueTop active" id="btn_All"><i class="fa fa-list-ul"></i> All</span></span>  
+            <span data-toggle="tooltip" title="Today's History"><span class="btn blueTop" id="btn_today"><i class="fa fa-list-ul"></i> Today</span></span>
+            <span data-toggle="tooltip" title="Last 7 Days History"><span class="btn blueTop" id="btn_last_seven"><i class="fa fa-list-ul"></i> Last 7 Days</span></span>
+            <span data-toggle="tooltip" title="Last 30 Days History"><span class="btn blueTop" id="btn_last_thirty"><i class="fa fa-list-ul"></i> Last 30 Days</span></span>
+        </div>
+        <div class="portlet box green">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list"></i><span id="headr_title" style="margin-top: 0px!important">Showing List of All Vouchers </span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div id="DivForVoucherList">
+                    <table class="table table-bordered" style="margin-bottom:0px!important;margin-top:10px!important;border-bottom:none!important;">
+                        <tr>
+                            <td>
+                                <span class="autocomplete-wrapper">
+                                    <input class="text-field" id="autocomplete" name="country" placeholder="Start typing voucher name" type="text" autocomplete="off">
+                                    <span class="k-icon k-i-search" style="margin-top:-25px;margin-right:10px;float:right;">&nbsp;</span>
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div id="Div_All_Voucher"></div>
+                @if (db.Vouchers.Any())
+                {
+                    <script>
+                        $("#DivForVoucherList").show();
+                        $("#Div_All_Voucher").append('<div class="loading_partial"></div>');
+                        $("#Div_All_Voucher").load('@Url.Action("_VoucherList", "Voucher")');
+                    </script>
+                }
+                else
+                {
+                    <script>
+                        $("#DivForVoucherList").hide();
+                        $("#div_for_list_btn").hide();
+                    </script>
+                    <p>There is no record to show</p>
+                }
+                <div id="div_edit_voucher"></div>
+                <div id="div_display_voucher"></div>
+                <div id="loading" style="display:none"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script id="temp_win_site_edit" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">#=message#</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_editUnit_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_editUnit_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    console.log("Creating voucher");
+    var inCallback = false,page = 0,content = '';
+    var voucherid, IsVatAlreadySelectedEdit = 0;
+    $(document).ready(function () {
+        $("#liForAccounting").addClass('active');
+        $("#liForVoucherList").addClass('sublistActive');
+        $("#top_header_link").append('<span>Finance</span><span><i class="fa fa-angle-right fa-2x"></i></span>' +
+           '<span class="current"><a href="/Voucher/VoucherList"> All Voucher List </a></span>');
+
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+    $("#btn_CreateVoucher").click(function () {
+        location.href = '@Url.Action("CreateVoucher","Voucher")?q=' + getDataEncrypted("IsAccSelect=false");
+    });
+
+    $(window).scroll(function () {
+        var countBytype, result;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/Voucher/GetVoucherList',
+            data: { page: page },
+            success: function (data) {
+                var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        $("#tbl_voucher_list").append('<tr id="tr_voucher_' + data[i].VoucherId + '">' +
+                    '<th scope="row">' + showCount + '.</th><td>' +
+                      '<span href="#" class="Display_Voucher" style="color:#428bca;cursor:pointer;" data-voucherid="' + data[i].VoucherId + '" >' + ' ' + data[i].VoucherTitle + '</span>' + '</td>' +
+                      '<td><img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].CreatedByPicture + '">' +
+                    '<a href="/HumanResource/DisplayEmployeeDetails?q='+getDataEncrypted("UserId=" + data[i].CreatedBy + "?isDisplay=True")+'">' + data[i].CreatedByName + '</a>' +
+                    '</td>' +
+                     '<td>' + data[i].CreatedDateName + '</td>' +
+                       '<td>' + ((data[i].UpdatedBy == null) ? ' ' + "Not yet Updated " + ' ' : ((data[i].UpdatedBy == 0) ? '' + '<img src="/Images/UserPicture/thumb/admin.jpg" class="user-photo" />' +
+                           ' <span>Super admin</span>' : '<img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].UpdatedByPicture + '">' +
+                        '<a href="/HumanResource/DisplayEmployeeDetails?q='+getDataEncrypted("UserId=" + data[i].UpdatedBy + "?isDisplay=True")+'">' + data[i].UpdatedByName + '</a>')) + '</td>' +
+                        '<td>' + data[i].UpdatedDateName + '</td>' +
+                    '<td>' +
+                         '<span style="cursor:pointer;margin-right: .5rem;" data-voucherid="' + data[i].VoucherId + '" class="btn green btn_edit_Voucher" data-toggle="tooltip"  data-original-title="Edit Voucher"><i class="fa fa-pencil"></i></span>' +
+                '<span style="cursor:pointer;" data-voucherid="' + data[i].VoucherId + '" class="btn btn-danger deleteVoucher" data-toggle="tooltip"  data-original-title="Delete Voucher"><i class="fa fa-trash"></i></span>' +
+                        '</td></tr>');
+                    $('[data-toggle="tooltip"]').tooltip();
+                    }
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+    $(function () {
+        $("#autocomplete").autocomplete({
+            minLength: 0,
+            source: function (request, response) {
+                content = $.trim(request.term);
+                $.ajax({
+                    url: '@Url.Action("SearchVoucherList", "Voucher")',
+                    type: "POST",
+                    dataType: "json",
+                    data: { prefix: content },
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return { label: item.VoucherTitle, value: item.VoucherTitle, id: item.VoucherId };
+                        }))
+                    }
+                })
+            },
+            minLength: 1,
+            select: function (event, ui) {
+                isloadFirstTime = true;
+                var selectTextId = ui.item.id;
+                $("#Div_All_Voucher").load('@Url.Action("_VoucherList", "Voucher")?VoucherId=' + selectTextId);
+            },
+        })
+    .keyup(function () {
+        if ($.trim($("#autocomplete").val()) == "") {
+            showCount = 0; page = 0, totalCount = 0;
+            $("#Div_All_Voucher").load('@Url.Action("_VoucherList", "Voucher")');
+        }
+    })
+    .autocomplete("instance")._renderItem = function (ul, item) {
+        var term = $.trim(this.term);
+        var re = new RegExp("(" + term + ")", "gi"),
+                   cls = "bold-text",
+                   template = "<span class='" + cls + "'>$1</span>",
+                   label = item.label.replace(re, template),
+                   $li = $("<li/>").appendTo(ul);
+        $("<span>").html(label).appendTo($li);
+        return $li;
+    };
+    });
+    $("#Div_All_Voucher").on("click", ".btn_edit_Voucher", function (e) {
+        e.preventDefault();
+        voucherid = $(this).data('voucherid');
+        var vouchertitle = $(this).data('vouchertitle');
+        $("#div_edit_voucher").empty();
+        $("#div_edit_voucher").kendoWindow({
+            actions: ["Close"],
+            draggable: true,
+            modal: true,
+            visible: false,
+            pinned: false,
+            width: '60%',
+            title:"Voucher '"+ vouchertitle + "' Edit",
+        });
+        $("#div_edit_voucher").html('<div class="loading_partial"></div>');
+        var win_edit_voucher = $("#div_edit_voucher").data("kendoWindow");
+        win_edit_voucher.refresh({ url: "/Voucher/VoucherEditInfo?VoucherId=" + voucherid });
+        win_edit_voucher.center().open().maximize();
+    });
+
+    //************************** display *****************************
+
+    $("#Div_All_Voucher").on("click", ".Display_Voucher", function (e) {
+        e.preventDefault();
+        voucherid = $(this).data('voucherid');
+        $("#div_display_voucher").empty();
+        $("#div_display_voucher").kendoWindow({
+            actions: ["Close"],
+            draggable: true,
+            modal: true,
+            visible: false,
+            pinned: false,
+            position: { top: 100, left: 100 },
+            width: '60%',
+            title: 'Voucher Details',
+            content: "/Voucher/DisplayVoucher?VoucherId=" + voucherid
+        });
+        $("#div_display_voucher").data("kendoWindow").maximize().open();
+    });
+
+    //************************delete**********************************
+    $("#Div_All_Voucher").on("click", ".deleteVoucher", function (e) {
+        e.preventDefault();
+        voucherid = $(this).data('voucherid');
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        message = "Are you sure you want to delete this voucher? All records of this voucher will be deleted";
+        var template = kendo.template($("#temp_win_site_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+
+        kendoWindow.find("#btn_editUnit_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+
+        kendoWindow.find("#btn_editUnit_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            deleteVoucherList();
+        }).end();
+    });
+    function deleteVoucherList() {
+        var url = "/Voucher/DeleteVoucher";
+        $.post(url, { Id: voucherid, CreatedBy: userId }, function (data) {
+            notification.hide();
+            notification.setOptions({ autoHideAfter: 2000 });
+            if (data === "Error") {
+                notification.show({
+                    message: "Deletion unsuccessful", showTime: startTime()
+                }, "upload-error");
+            }
+            else {
+                if (data == true) {
+                    $("#Div_All_Voucher").load('@Url.Action("_VoucherList", "Voucher")');
+                } else {
+                    $("#Div_All_Voucher").hide();
+                    $("#DivForVoucherList").hide();
+                    $("#div_for_list_btn").hide();
+                }
+                notification.show({ message: "Voucher successfully deleted", showTime: startTime() }, "upload-success");
+            }
+        })
+    };
+    $("#btn_today").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = { days: 1 };
+        $("#btn_All").removeClass('active');
+        $("#btn_last_seven").removeClass('active');
+        $("#btn_last_thirty").removeClass('active');
+        $("#btn_today").addClass('active');
+        $("#Div_All_Voucher").empty();
+        $("#Div_All_Voucher").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Today's Dispatched History");
+        $("#Div_All_Voucher").load('@Url.Action("_VoucherListDayWise", "Voucher")', passdata);
+    });
+
+    $("#btn_last_seven").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = { days: 7 };
+        $("#btn_All").removeClass('active');
+        $("#btn_today").removeClass('active');
+        $("#btn_last_thirty").removeClass('active');
+        $("#btn_last_seven").addClass('active');
+        $("#Div_All_Voucher").empty();
+        $("#Div_All_Voucher").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Last 7 Days Dispatched History");
+        $("#Div_All_Voucher").load('@Url.Action("_VoucherListDayWise", "Voucher")', passdata);
+    });
+    $("#btn_last_thirty").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = { days: 30 };
+        $("#btn_All").removeClass('active');
+        $("#btn_last_seven").removeClass('active');
+        $("#btn_today").removeClass('active');
+        $("#btn_last_thirty").addClass('active');
+        $("#Div_All_Voucher").empty();
+        $("#Div_All_Voucher").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Last 30 Days Dispatched History");
+        $("#Div_All_Voucher").load('@Url.Action("_VoucherListDayWise", "Voucher")', passdata);
+    });
+    $("#btn_All").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        $("#btn_today").removeClass('active');
+        $("#btn_last_seven").removeClass('active');
+        $("#btn_last_thirty").removeClass('active');
+        $("#btn_All").addClass('active');
+        $("#Div_All_Voucher").empty();
+        $("#Div_All_Voucher").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing All History");
+        $("#Div_All_Voucher").load('@Url.Action("_VoucherList", "Voucher")');
+    });
+
+</script>
+<script>
+    $("#Div_All_Voucher").on("click", ".btn_acc_select", function () {
+        var id = $(this).data('voucherid');
+        location.href = '@Url.Action("ConnectAccWithInvoice", "Voucher")?id=' + id;
+    });
+
+    $("#Div_All_Voucher").on("click", ".btn_amount_receive", function () {
+        var id = $(this).data('voucherid');
+        var InaccId = $(this).data('accid');
+        var bankAccountId = $(this).data('bankaccountid');
+        if (InaccId > 0) {
+            accId = InaccId;
+        } else {
+            accId = bankAccountId;
+        }
+        var amount = $(this).data('amount');
+        var forDebit = 1;
+        var sendData = {
+            voucherId: id,
+            accId: accId,
+            userId: userId,
+            amnt: amount,
+            forDebit: forDebit,
+        };
+        $.ajax({
+            url: '@Url.Action("SaveConnectedAmount", "Voucher")',
+            type: 'Post',
+            data: sendData,
+            success: function (data) {
+                notification.hide();
+                notification.setOptions({ autoHideAfter: 5000 });
+                if (data === "Success") {
+                    notification.show({ message: "Transaction has been approved.", showTime: startTime() }, "upload-success");
+                } else {
+                    notification.show({ message: "Transaction approval was unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+                if (InaccId > 0) {
+                    location.href = '@Url.Action("AccountDetails", "Accounting")?AccId=' + InaccId;
+                } else {
+                    location.href = '@Url.Action("BankAccountHistory", "Accounting")?BankAccountId=' + bankAccountId;
+                }
+
+            },
+            error: function (err) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+            }
+        });
+    });
+</script>
+<script>
+    function sumEdit() {
+        var amountSum = 0;
+        var totalSub = 0;
+        for (var i = 1; i <= newAddcount; i++) {
+            if (parseFloat($("#txt_service_amount-" + i).val()) > 0) {
+                amountSum = amountSum + parseFloat($("#txt_service_amount-" + i).val());
+            }
+        }
+        if (parseFloat(amountSum) > 0) {
+            $("#lblServiceTotal").text(amountSum.toFixed(2));
+            $("input.txt_Other_service_amount").each(function () {
+                if ($(this).data("isvat") === 1) {
+                    var percentage = parseFloat($(this).data("percentage"));
+                    var amnt = ((parseFloat(amountSum) * percentage) / 100).toFixed(2);
+                    $(this).val(amnt);
+                    totalSub = totalSub + parseFloat($(this).val());
+                }
+            }); 
+        }
+        else {
+            $("#lblServiceTotal").text('');
+            $(".txt_Other_service_amount").each(function () {
+                if ($(this).data("isvat") === 1) {
+                    $(this).val('');
+                    totalSub = totalSub + parseFloat($(this).val());
+                }
+            });
+        }
+        var subtotal = parseFloat(amountSum) + parseFloat(totalSub);
+        $("#lblSubTotal").text(subtotal.toFixed(2));
+    }
+    function sumEditTwo() {
+        var amountSub = 0;
+        $(".txt_Other_service_amount").each(function () {
+            if ($(this).data("isvat") === 1) {
+                $(this).val(''); 
+            }
+            if ($(this).val() !== "") {
+                amountSub = amountSub + parseFloat($(this).val());
+            }
+        });
+        var subAmount = parseFloat(amountSub) + parseFloat($("#lblServiceTotal").text());
+        $("#lblSubTotal").text(subAmount.toFixed(2));
+    }
+    function onChangeForEdit(e) {
+        isVatSelected = false;
+        IsVatAlreadySelected = 0;
+        vatColumnId = 0;
+        var id = e.sender.element[0].id;
+
+        var count = $("#" + id).data("count");
+        var totalAmount = parseFloat($("#lblServiceTotal").text());
+        var dataItem = this.dataItem(e.item);
+        if (dataItem.HasPercentile) {
+            var percentage = parseFloat(dataItem.Percentage);
+            var amnount = ((totalAmount * percentage) / 100).toFixed(2);
+            $("input#txt_Other_service_amount-" + count).data("isvat", 1);
+            $("input#txt_Other_service_amount-" + count).data("percentage", percentage);
+
+            $("input#txt_Other_service_amount-" + count).attr("data-isvat", 1);
+            $("input#txt_Other_service_amount-" + count).attr("data-percentage", percentage);
+
+            $("input#txt_Other_service_amount-" + count).val(amnount);
+            isVatSelected = true;
+            IsVatAlreadySelected = count;
+            vatColumnId = dataItem.Id;
+        } else {
+            $("input#txt_Other_service_amount-" + count).val('');
+            $("input#txt_Other_service_amount-" + count).data("isvat", 0);
+            $("input#txt_Other_service_amount-" + count).data("percentage", 0);
+
+            $("input#txt_Other_service_amount-" + count).attr("data-isvat", 0);
+            $("input#txt_Other_service_amount-" + count).attr("data-percentage", 0);
+        }
+    }
+</script>

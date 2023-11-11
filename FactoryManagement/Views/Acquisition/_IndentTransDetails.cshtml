@@ -1,0 +1,38 @@
+﻿
+@using FactoryManagement.Helpers;
+@model FactoryManagement.Models.View_Indent_Transaction
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-top:2%;">
+    <dl class="dl-horizontal col-md-11 col-sm-12">
+        <dt>Name :</dt>
+        <dd>
+            @Model.TransactionName
+            <a href="@Html.EncodedParam("IndentTransactionPrint", "Acquisition", new { id = Model.Id }, null)" target="_blank" id="imp_his_print" data-id="@Model.Id" style="float:right;margin-right:5%;font-size:14px" data-toggle="tooltip" title="Print Indent Transaction" data-placement="bottom">
+                <i class="fa fa-print"></i>Print
+            </a>
+        </dd>
+
+        <dt>Voucher Name:</dt>
+        <dd>@Model.Name</dd>
+
+        <dt>Item Name:</dt>
+        <dd>@Model.ProName</dd>
+
+        <dt>Request Qty:</dt>
+        <dd>@Model.Required_Qty @Model.UnitName</dd>
+
+        <dt>Received Qty:</dt>
+        <dd>@Model.Quantity @Model.UnitName</dd>
+
+        <dt>Inserted Date</dt>
+        <dd>@Model.InsertedDateName</dd>
+
+        <dt>Inserted By :</dt>
+        <dd><img class="img-circle" src="/Images/UserPicture/thumb/@Model.InsertedUserPic">@Model.InsertedUserName</dd>
+    </dl>
+</div>
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+</script>

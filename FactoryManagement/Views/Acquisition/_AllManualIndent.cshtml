@@ -1,0 +1,121 @@
+﻿@using FactoryManagement.Helpers;
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int count = 0;
+    int roleid = Convert.ToInt32(Request.Cookies["CookieAdminInfo"].Values["roleid"].ToString());
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    long loginusrid =Convert.ToInt64(Request.Cookies["CookieAdminInfo"].Values["userid"].ToString());
+}
+
+<table class="table table-bordered table-condensed" id="tbl_manu_indent_list">
+    <tr>
+        <th width="3%">#</th>
+        <th width="17%">Product Name</th>
+        <th width="10%">Request Qty</th>
+        <th width="10%">Received Qty</th>
+        <th width="10%">Remaining Qty</th>
+        <th width="10%">Per Unit Price</th>
+        <th width="20%">Updated By</th>
+        <th width="10%">Updated Date</th>
+        @if (ViewBag.v == "edit")
+        {
+            <th width="10%"></th>
+        }
+    </tr>
+    @foreach (var item in ViewBag.list as IEnumerable<FactoryManagement.Models.View_Manual_Indent>)
+    {
+        count++;
+        double total_rcv_qty = 0;
+        if (db.ManualIndentReceiveTransactions.Where(m => m.VoucherId == item.VoucherId && m.IndentId == item.IndentId).Any())
+        {
+            total_rcv_qty = db.ManualIndentReceiveTransactions.Where(m => m.VoucherId == item.VoucherId && m.IndentId == item.IndentId).Sum(m => m.Quantity);
+        }
+        double remaing_qty = item.Quantity - total_rcv_qty;
+        <tr>
+            <th scope="row">@count.</th>
+            <td><span class="txtManuProName" data-id="@item.IndentId" style="color:#357ebd;cursor:pointer;">@item.ProName</span></td>
+            <td>@item.Quantity @item.UnitName</td>
+            <td>@total_rcv_qty @item.UnitName</td>
+            @if (remaing_qty > 0)
+            {
+                <td>@remaing_qty @item.UnitName</td>
+            }
+            else
+            {
+                <td>N/A</td>
+            }
+            
+            @if (item.ProUnitPrice > 0)
+            {
+                <td>@currency @item.ProUnitPrice</td>
+            }
+            else
+            {
+                <td>N/A</td>
+            }
+            <td>
+                @if (item.UpdatedBy > 0)
+                {
+                    if (roleid == 1 || roleid == 4)
+                    {
+                       
+                        <a href="#" id="IdForIndentUserDetails" data-uid="@item.UpdatedBy">
+                            <img src="~/Images/UserPicture/thumb/@item.UpdateUserPic" class="img-circle" /> @item.UpdateUsername
+                        </a>
+                    }
+                    else
+                    {
+                        <img src="~/Images/UserPicture/thumb/@item.UpdateUserPic" class="img-circle" /> @item.UpdateUsername
+                    }
+                }
+                @if(item.UpdatedBy==0)
+                {
+                    <img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" /><span>Super Admin</span>
+                }
+                else
+                {
+                    <span>Not Updated Yet</span>
+                }
+
+            </td>
+            <td>
+                @if (item.UpdatedBy != null)
+                {
+                    <span>@item.UpdatedDateFormate</span>
+                }
+                else
+                {
+                    <span>Not Updated Yet</span>
+                }
+           
+            </td>
+            @if (ViewBag.v == "edit")
+            {
+                <td>
+                    @if (item.IndentStatus < 2)
+                    {
+                        if (((roleid == 1 || roleid == 2) || loginusrid == item.CreatedBy) && ViewBag.status == 0)
+                        {
+                            <span class="btn green btn_edit_indent" data-id="@item.IndentId" data-toggle="tooltip" title="" data-container="body" data-original-title="Edit Voucher's Item"><i class="fa fa-pencil"></i></span>
+                        }
+                        if (ViewBag.status > 0)
+                        {
+                            <span class="btn green btn_tran_item" data-id="@item.IndentId" data-vouid="@item.VoucherId" data-toggle="tooltip" title="" data-container="body" data-original-title="Enter Receive Quantity"><i class="fa fa-pencil"></i></span>
+                            <span class="btn green btn_rcv_full_qty" data-id="@item.IndentId" data-qty="@remaing_qty" data-uname="@item.UnitName"
+                                   data-vouid="@item.VoucherId" data-toggle="tooltip" title="" data-container="body" data-original-title="Receive Total Quantity"><i class="fa fa-check"></i></span>
+                        }
+                        if (ViewBag.status == 0)
+                        {
+                            <span class="btn red btn_cancel_indent" data-id="@item.IndentId" data-toggle="tooltip" title="" data-container="body" data-original-title="Delete Item from Voucher"><i class="fa fa-close"></i></span>
+                        }
+                    }
+                                  
+                </td>
+            }
+        </tr>
+    }
+</table>
+
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+</script>

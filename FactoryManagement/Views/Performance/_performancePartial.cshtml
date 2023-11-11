@@ -1,0 +1,66 @@
+﻿@************************************** Created By Jerin Jahan (Date:12.11.2016)  ***************************************@
+@model IEnumerable<FactoryManagement.Models.GetUserPerformanceReview_Result>
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    long loginUserId = Convert.ToInt64(Request.Cookies["CookieAdminInfo"].Values["userid"].ToString());
+    string username = Request.Cookies["CookieAdminInfo"].Values["fulname"].ToString();
+
+   
+    var loginUserPicture = db.UserInformations.Where(x => x.UserId == loginUserId).Select(x => x.Picture).FirstOrDefault();
+    if (loginUserId == 0)
+    {
+        username = "Super Admin";
+        loginUserPicture = "admin.jpg";
+    }
+}
+<script src="~/Scripts/jRate.js"></script>
+<script src="~/Scripts/jquery.signalR-2.2.1.min.js"></script>
+<script src="/signalr/hubs"></script>
+<script src="~/Scripts/jquery.shorten.js"></script>
+
+<div class="" style="margin-top:10px;margin-bottom:10px;overflow-x:hidden" id="performacePage">
+    <div class="col-md-12 col-sm-12" style="cursor:pointer;overflow-x:hidden">
+        <div id="divForUserRatingLoad"></div>
+    </div>
+    <div class="col-md-12 col-sm-12" style="overflow-x:hidden" id="Div_User_Review"><div class="loading_half"></div></div>
+</div>
+<script>
+    var selectedUserId, userType, currentlyOpenedMenu;
+    $(document).ready(function(){       
+        selectedUserId = '@(ViewBag.userId)';
+        userType = '@(ViewBag.userType)';
+        $("#Div_Selected_user_Info").load('@Url.Action("_SelectedUseInfo", "Performance")?userId=' +EmpId +'&userType='+usrtype);
+        $("#divForUserRatingLoad").load('@Url.Action("_PartialUserRatingLoad", "Performance")?&selectedUserId=' +EmpId +'&userId='+loginUserId);
+        $("#Div_User_Review").load('@Url.Action("_SelectedUserReview", "Performance")?userId=' +EmpId +'&loginUserId='+loginUserId);
+    });
+</script>
+<script>
+    function ReviewPatternChange(){
+        var filterBy=parseInt($("#ReviewFilter").val());
+        if(filterBy==1){
+            $("#Div_User_Review").empty();
+            $("#Div_User_Review").append('<div class="loading_half"></div>');
+            $("#Div_User_Review").load('@Url.Action("_SelectedUserReview", "Performance")?userId=' +EmpId +'&loginUserId='+loginUserId);
+        }else{
+
+            $("#Div_User_Review").empty();
+            $("#Div_User_Review").append('<div class="loading_half"></div>');
+            $("#Div_User_Review").load('@Url.Action("_SelectedUserReview", "Performance")?userId=' +EmpId +'&loginUserId='+loginUserId+'&filtered=1');
+        }
+    };
+    $("#CommentForResource").keyup(function () {
+        var commentForResource = $("#CommentForResource").val();
+        if (commentForResource.length > 0) {
+            $('#btnForComment').attr("disabled", false);
+            if(commentForResource.length>8000){
+                alert("maximum length is 8000");
+            }
+        }
+        else {
+            $('#btnForComment').attr("disabled", true);
+        }
+    });
+    $("#CommentForResource").click(function () {
+        $('#divForPostButton').show();
+    });
+</script>

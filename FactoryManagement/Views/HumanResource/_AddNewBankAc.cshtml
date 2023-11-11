@@ -1,0 +1,204 @@
+﻿@model FactoryManagement.ModelView.HR.User_Bank_Account_ModelView
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="div_for_bankAc_Validation">
+    @Html.HiddenFor(model => model.BankId)
+    <div class="editor-label"><label for="BankName">Bank Name</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.BankName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        @Html.ValidationMessageFor(model => model.BankName, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="BranchName">Branch Name</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.BranchName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        @Html.ValidationMessageFor(model => model.BranchName, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="AccountNumber">A/C No.</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.AccountNumber, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        @Html.ValidationMessageFor(model => model.AccountNumber, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label">@Html.HiddenFor(model => model.IsPrimary) </label></div>
+    <div class="editor-field">
+        <input type="checkbox" id="IsPrimaryAc" value="Primary">
+        <span> Is Primary A/C</span>
+    </div>
+    <div class="col-sm-11 col-xs-11" style="margin-top:5px;float:right">
+        <div class="k-edit-buttons k-state-default">
+            @if (Model.BankId == 0)
+            {  <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="bankac_add_edit_create"><span class="k-icon k-update"> </span>Create</button>}
+            else
+            {<button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="bankac_add_edit_update"><span class="k-icon k-update"> </span>Update</button>}
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="bankac_add_edit_refresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="bankac_add_edit_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        var addorEdit = $("#BankId").val();
+        $("#IsPrimaryAc").prop('checked', false);
+        if (addorEdit > 0) {
+            var checkbox = $("#IsPrimary").val();
+            if (checkbox=='True') {
+                $("#IsPrimaryAc").prop('checked', true);
+            }
+        }
+    });
+    $("#bankac_add_edit_refresh").click(function () {
+        $("#Div_For_bankac_add").empty();
+        $("Div_For_bankac_add").append('<div class="partial_loading_half"></div>');
+        var data={
+            UserId:EmpId,
+            BankId:bankId
+        }
+        $("#Div_For_bankac_add").load('@Url.Action("AddNewBankAc", "HumanResource")', data);
+    });
+    $("#bankac_add_edit_cancel").click(function (e) {
+        
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+
+    });
+    $("#bankac_add_edit_update").click(function () {
+     
+        var valid = checkValidation(EmpId);
+        if (valid) {
+            if (hasPreviousPrimary == 'True' && $("#IsPrimaryAc").is(":checked")) {
+                var kendoWindow = $("<div />").kendoWindow({
+                    actions: ["Close"],
+                    title: "Alert",
+                    resizable: false,
+                    width: "30%",
+                    modal: true
+                });
+                msg = "You have already a bank account as primary.Do you still want to set this account as primary ?";
+                var template = kendo.template($("#temp_confirmation_dialog").html());
+                kendoWindow.data("kendoWindow").content(template).center().open();
+
+                kendoWindow.find("#btn_confirm_cancel").click(function () {
+                    kendoWindow.data("kendoWindow").close();
+                    return;
+                }).end();
+                kendoWindow.find("#btn_confirm_ok").click(function () {
+                    var sendData = {
+                        BankId: $("#BankId").val(),
+                        BankName: $("#BankName").val(),
+                        BranchName: $("#BranchName").val(),
+                        AccountNumber: $("#AccountNumber").val(),
+                        CreatedBy: userId,
+                        UserId:EmpId,
+                        IsPrimary: $("#IsPrimaryAc").is(":checked")
+                    };
+                    updateBank(sendData);
+                    kendoWindow.data("kendoWindow").close();
+                }).end();
+            } else {
+                primaryBankId = 0;
+                var sendData = {
+                    BankId: $("#BankId").val(),
+                    BankName: $("#BankName").val(),
+                    BranchName: $("#BranchName").val(),
+                    AccountNumber: $("#AccountNumber").val(),
+                    CreatedBy: userId,
+                    UserId: EmpId,
+                    IsPrimary: $("#IsPrimaryAc").is(":checked")
+                };
+                updateBank(sendData);
+            }
+        }
+    });
+    function updateBank(sendData){
+        $.ajax({
+            url: '@Url.Action("UpdateBankAcofUser", "HumanResource")',
+            type: 'Post',
+            data: { bankInfo: sendData, primary: primaryBankId },
+            success: function (data) {
+                if (data == "Success") {
+                    $("#bankac_add_edit_update").closest(".k-window-content").data("kendoWindow").close();
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Bank information '" + sendData .BankName+ "' has been successfully updated", showTime: startTime() }, "upload-success");
+                    var data = { userId: EmpId };
+                    $("#tab4BankAcList").load('@Url.Action("_UserBankAcDetails", "HumanResource")', data);
+                }
+                if (data == "Error") {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Bank information '" + sendData.BankName + "' update was unsuccessful ", showTime: startTime() }, "upload-error");
+                }
+            },
+            error: function (err) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occurred", showTime: startTime() }, "upload-warning");
+            }
+        });
+
+    }
+    $("#bankac_add_edit_create").click(function () {
+        var valid = checkValidation(null);
+        if (valid) {
+            if (hasPreviousPrimary == 'True' && $("#IsPrimaryAc").is(":checked")) {
+                var kendoWindow = $("<div />").kendoWindow({
+                    actions: ["Close"],
+                    title: "Alert",
+                    resizable: false,
+                    width: "30%",
+                    modal: true
+                });
+                msg = "You have already a bank account as primary.Do you still want to set this account as primary ?";
+                var template = kendo.template($("#temp_confirmation_dialog").html());
+                kendoWindow.data("kendoWindow").content(template).center().open();
+
+                kendoWindow.find("#btn_confirm_cancel").click(function () {
+                    kendoWindow.data("kendoWindow").close();
+                    return;
+                }).end();
+                kendoWindow.find("#btn_confirm_ok").click(function () {
+                    var sendData = {
+                        BankId: $("#BankId").val(),
+                        BankName: $("#BankName").val(),
+                        BranchName: $("#BranchName").val(),
+                        AccountNumber: $("#AccountNumber").val(),
+                        CreatedBy: userId,
+                        UserId: EmpId,
+                        IsPrimary: $("#IsPrimaryAc").is(":checked")
+                    };
+                    createBank(sendData);
+                    kendoWindow.data("kendoWindow").close();
+                }).end();
+            } else {
+                primaryBankId = 0;
+                var sendData = {
+                    BankId: $("#BankId").val(),
+                    BankName: $("#BankName").val(),
+                    BranchName: $("#BranchName").val(),
+                    AccountNumber: $("#AccountNumber").val(),
+                    CreatedBy: userId,
+                    UserId: EmpId,
+                    IsPrimary: $("#IsPrimaryAc").is(":checked")
+                };
+                createBank(sendData);
+            }
+        }
+    });
+    function createBank(sendData) {
+        $.ajax({
+            url: '@Url.Action("AddBankActoUser", "HumanResource")',
+            type: 'Post',
+            data: { bankInfo: sendData, primary: primaryBankId },
+            success: function (data) {
+                if (data == "Success") {
+                    $("#bankac_add_edit_create").closest(".k-window-content").data("kendoWindow").close();
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Bank information '" + sendData.BankName + "' has been successfully saved.", showTime: startTime() }, "upload-success");
+                    var data = { userId: EmpId };
+                    $("#tab4BankAcList").load('@Url.Action("_UserBankAcDetails", "HumanResource")', data);
+                }
+                if (data == "Error") {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Bank information '" + sendData.BankName+ "' saving was unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+            },
+            error: function (err) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occurred", showTime: startTime() }, "upload-warning");
+            }
+        });
+    }
+</script>

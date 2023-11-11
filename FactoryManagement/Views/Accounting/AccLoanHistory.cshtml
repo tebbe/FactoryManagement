@@ -1,0 +1,110 @@
+﻿@************************************** Created By Tasnim Tuli (Date: 26.02.2017)  ***************************************@
+
+@model FactoryManagement.Models.View_All_Loan_History
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;">
+    <dl class="dl-horizontal col-sm-offset-2 col-sm-8">
+        <dt>Pay Type</dt>
+        <dd>
+            @if (Model.PayType == 1)
+            {
+                <span>Cash</span>
+            }
+            else if (Model.PayType == 2)
+            {
+                <span>Cheque</span>
+            }
+            else
+            {
+                <span>Account</span>
+            }
+        </dd>
+        <dt>Paid to</dt>
+        <dd>
+            <span><img src="~/Images/UserPicture/thumb/@Model.Picture" class="user-photo" /></span>
+            <span>@Model.UserName</span>
+        </dd>
+        <dt>Designation</dt>
+        <dd>
+            <span>@Model.DesignationName</span>
+        </dd>
+        <dt>Site</dt>
+        <dd>
+            <span>@Model.SiteName</span>
+        </dd>
+        <dt>Amount</dt>
+        <dd>
+            <span>@Model.Amount</span>
+        </dd>
+        <dt>Return Amount</dt>
+        <dd>
+            @if (Model.PaidAmount != null)
+            {
+                <span>@currency @Model.PaidAmount</span>
+            }
+            else { 
+            <span> Not paid yet</span>
+            }
+        </dd>
+        <dt>Status</dt>
+        <dd>
+            @if (Model.PaidStatus == 0)
+                    {
+                <span>Due</span>
+                    }
+                    else
+                    {
+                <span>Paid</span>
+                    }
+        </dd>
+        <dt>Paid By</dt>
+        <dd>
+            <span><img src="~/Images/UserPicture/thumb/@Model.LoanPaidUserPic" class="user-photo" /></span>
+            <span>@Model.LoanPaidUser</span>
+        </dd>
+        <dt>Paid Date</dt>
+        <dd>
+            <span>@Model.LoanPaidDateFormate</span>
+        </dd>
+        <dt>Loan Received By</dt>
+        <dd>
+            @if (Model.LoanReceivedBy != null)
+            {
+                if (Model.LoanReceivedBy > 0)
+                {
+                    <img class="user-photo" src="/Images/UserPicture/thumb/@Model.LoanReceivedPaidUserPic">
+                    <a href="/HumanResource/DisplayEmployeeDetails?UserId=@Model.LoanReceivedBy&isDisplay=true">@Model.LoanReceivedPaidUser</a>
+                }
+                else
+                {
+                    <img class="user-photo" src="/Images/UserPicture/thumb/@Model.LoanReceivedPaidUserPic">
+                    <span>@Model.LoanReceivedPaidUser</span>
+                }
+            }
+            else
+            {
+                <span>Not Received Yet</span>
+            }
+        </dd>
+        <dt>Loan Received Date</dt>
+        <dd>
+            @if (Model.LoanReceivedDate != null)
+            {
+                <span>@Model.LoanReceivedDateFormate</span>
+
+            }
+            else
+            {
+                <span>Not Received yet</span>
+            }
+        </dd>
+        <dt>Loan Amount Return Deadline</dt>
+        <dd>
+             <span>@Model.LoanAmntReturnDeadLine</span>
+        </dd>
+</dl>
+</div>
+

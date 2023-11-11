@@ -1,0 +1,65 @@
+﻿
+
+
+@************************* Created By Jerin Jahan (Date : 24.01.2017) ***************************************@
+@using FactoryManagement.Helpers
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var count = 0;
+}
+@if ((Enumerable.Count(ViewBag.list)) > 0)
+{
+    <table class="table table-hover table-bordered table-striped table-condensed" id="tbl_All_his_dept">
+        <tbody>
+            <tr>
+                <th width="3%">#</th>
+                <th width="25%">Name</th>
+                @if (ViewBag.v == "all")
+                {
+                    <th>Dept.</th>
+                }
+                <th>Quantity</th>
+                <th>Dispatched Date</th>
+                <th>Dispatched By</th>
+            </tr>
+            @foreach (var item in ViewBag.list as IEnumerable<FactoryManagement.Models.View_Dispacth_Item_Details>)
+            {
+                count++;
+                <tr>
+                    <th>@count.</th>
+                    @if (ViewBag.v == "all")
+                    {
+                        <td><span style="color:#428bca;cursor:pointer;" class="deptDetails" data-id="@item.DeptId">@item.ProductName</span></td>
+                        <td>@item.DeptName_Unit</td>
+                    }
+                    else
+                    {
+                        <td><span style="color:#428bca;cursor:pointer;" class="deptDetails" data-id="@item.DeptId">@item.ProductName</span></td>
+                    }
+                    <td>@item.Quantity @item.UnitName</td>
+                    <td>@item.DispatchedDateName</td>
+                    <td>
+                        @if (item.DispatchedBy > 0)
+                        {
+                            <img class="img-circle" src="/Images/UserPicture/thumb/@item.DispatchedUserPic">
+                            @Html.EncodedActionLink(item.DispatchedUserName, "DisplayEmployeeDetails", "HumanResource", new { UserId = item.DispatchedBy, isDisplay = true }, null)
+                        }
+                        else
+                        {
+                            <img class="img-circle" src="/Images/UserPicture/thumb/@item.DispatchedUserPic">
+                            <span>@item.DispatchedUserName</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <h4>There is no record to display</h4>
+}
+<script>
+    totalCount = '@(ViewBag.TotalUser)';
+    showCount = '@count';
+</script>

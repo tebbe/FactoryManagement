@@ -1,0 +1,162 @@
+﻿
+
+
+
+
+@model FactoryManagement.ModelView.CRM.BusinessOrderListModelView
+@Html.HiddenFor(m => m.OrderStatus)
+
+
+<div class="editor-label"><label for="OrderName">Order Name</label></div>
+<div class="editor-field">
+    @Html.EditorFor(model => model.OrderName, new { htmlattributes = new { @class = "k-textbox", required = "required" } })
+    @Html.ValidationMessageFor(model => model.OrderName, "", new { @class = "text-Danger" })
+</div>
+<div class="editor-label"><label for="ClientId">Client</label></div>
+<div class="editor-field">
+    @if (Model.OrderType == 1)
+    {
+        @(Html.Kendo().DropDownList()
+                    .Name("ClientId")
+                    .HtmlAttributes(new { required = "required" })
+                    .OptionLabel("--Select Client--")
+                    .BindTo(ViewBag.ClientId)
+        )
+        @Html.ValidationMessageFor(model => model.ClientId, "", new { @class = "text-Danger" })
+    }
+    else
+    {
+        @(Html.Kendo().MultiSelect()
+                    .Name("ClientId")
+                    .DataTextField("Name")
+                    .DataValueField("ClientId")
+                    .DataSource(source =>
+                    {
+                        source.Read(read =>
+                        {
+                            read.Action("GetClientList", "CRM", new { OrderType = Model.OrderType });
+                        });
+                    })
+                    .Height(400)
+        )
+        @Html.ValidationMessageFor(model => model.ClientId, "", new { @class = "text-danger" })
+    }
+</div>
+
+<div class="k-edit-buttons k-state-default">
+    @if(Model.BusinessOrderId > 0)
+    {
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_BusOrder_Create"><span class="k-icon k-update"></span>Update</button>
+    }
+    else
+    {
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_BusOrder_Create"><span class="k-icon k-update"></span>Create</button>
+    }
+    <button type="button" class="k-button k-button-icontext k-grid-update" id="btn_BusOrder_Refresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+    <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_BusOrder_Cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+</div>
+
+<script>
+    $("#btn_BusOrder_Refresh").click(function () {
+        $("#Div_For_Busi_Create").empty();
+        $("#Div_For_Busi_Create").append('<div class="loading_15"></div>');
+        $("#Div_For_Busi_Create").load('@Url.Action("BusinessOrderCreate", "CRM")?BusinessOrderId=' + '@Model.BusinessOrderId' + "&OrderType=" + '@Model.OrderType');
+    });
+    $("#btn_BusOrder_Cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#btn_BusOrder_Create").click(function () {
+        if (validation.validate()) {
+            if ('@Model.BusinessOrderId' > 0) {
+                var prog_msg = "Business order updating...";
+                var sucess_msg = "Business order update successful...";
+                var err_msg = "Business order update unsuccessful...";
+            }
+            else {
+                var prog_msg = "New business order creating...";
+                var sucess_msg = "New business order creation successful...";
+                var err_msg = "New business order creation unsuccessful...";
+            }
+            notification.show({ message: prog_msg, showTime: startTime() }, "upload-progress");
+            var sendData;
+            var url = "";
+            if (@Model.OrderType == 1) {
+                url = '@Url.Action("NewBusinessOrderSave", "CRM")';
+                sendData = {
+                    BusinessOrderId: '@Model.BusinessOrderId',
+                    OrderName: $("#OrderName").val(),
+                    OrderType: '@Model.OrderType',
+                    ClientId: $("#ClientId").val(),
+                    CreatedBy: userId
+                };
+            } else {
+                url = '@Url.Action("BusinessOrderSave", "CRM")';
+                sendData = {
+                    BusinessOrderId: '@Model.BusinessOrderId',
+                    OrderName: $("#OrderName").val(),
+                    OrderType: '@Model.OrderType',
+                    AllSupplierId: $("#ClientId").data("kendoMultiSelect").value().join(","),
+                    AllAcquisitionOrderId: selectedId,
+                    allQuantity: quantity,
+                    CreatedBy: userId
+                };
+            }
+            $.ajax({
+                url: url,
+                type: 'Post',
+                data: sendData,
+                success: function (response) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    if (response === 'Success') {
+                        notification.show({ message: sucess_msg, showTime: startTime() }, "upload-success");
+                        if (@Model.OrderType == 1) {
+                            $("#btn_BusOrder_Create").closest(".k-window-content").data("kendoWindow").close();
+                            if($("#div_order_Name_Status").css("display") == "block")
+                            {
+                                $("#div_order_Name_Status").append('<div class="loading_half"></div>');
+                                $("#div_order_Name_Status").show();
+                                $("#div_order_Name_Status").load('@Url.Action("_OrderNameSatatusDetails", "CRM")?BusinessOrderId='+'@(Model.BusinessOrderId)');
+                            }
+                            else
+                            {
+                                reloadTab(@Model.OrderType);
+                            }
+                        }
+                        else {
+                            reloadTab(@Model.OrderType);
+                        }
+                    }
+                    else {
+                        notification.show({ message: err_msg, showTime: startTime() }, "upload-error");
+                    }
+                },
+                error:function(){
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred....!!!", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+    var validation = $("#Div_For_Busi_Create").kendoValidator({
+        rules: {
+            clientId: function (input) {
+                if (input.attr('name') === "ClientId") {
+                    if (@Model.OrderType == "1" && $("#ClientId").val() === '') {
+                        alert("clientId");
+                        return false;
+                    }
+                    if (@Model.OrderType == "2" && $("#ClientId").val() === null) {
+                        return false;
+                    }
+                    return true;
+                }
+                return true;
+            }
+        },
+        messages: {
+            clientId: "Please select one client"
+        }
+    }).data("kendoValidator");
+</script>

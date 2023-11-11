@@ -1,0 +1,135 @@
+﻿@************************************** Created By Tasnim Tuli (Date:6.11.2016)  ***************************************@
+
+@model IEnumerable<FactoryManagement.ModelView.Accounting.BankAccountListModelView>
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet box green">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list"></i><span id="headr_title" style="margin-top: 0px!important">Showing List of All Bank Accounts </span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="loading" id="divForLoading"></div>
+                <table class="table table-bordered" style="margin-bottom:0px!important;margin-top:10px!important;border-bottom:none!important;">
+                    <tr>
+                        <td>
+                            <span style="padding-left:0px!important;">
+                                <span class="autocomplete-wrapper">
+                                    <input class="text-field" id="autocomplete" name="country" placeholder="Start typing account name" type="text" autocomplete="off">
+                                    <span class="k-icon k-i-search" style="margin-top:-25px;margin-right:10px;float:right;">&nbsp;</span>
+                                </span>
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+                <table class="table table-bordered tableForAccountList">
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="loading" style="display:none"></div>
+<script>
+    var showCount = 20, inCallback = false;
+    var page = 0;
+    var content = '';
+    var bankAccountId;
+    var display = '@ViewBag.Display';
+    $(document).ready(function () {
+        $("table.tableForAccountList > tbody").load('@Url.Action("_AccountList", "Accounting")?forDisplay=' + display);
+        $("#divForLoading").hide();
+        $("#DivForAccountList").show();
+
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+    $(window).scroll(function () {
+        var totalCount = '@ViewBag.TotalAccount';
+        if ($(window).scrollTop() >= $(document).height() - $(window).height() - 300) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    $("#loading").show();
+                    inCallback = true;
+                    page++;
+                    $.ajax({
+                        type: 'GET',
+                        url: '/Accounting/GetAccountList',
+                        data: { page: page },
+                        success: function (data) {
+                            var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                            if (data != '') {
+                                for (var i = 0; i < data.length; i++) {
+                                    var date = new Date(data[i].CreatedDate);
+                                    var getdate = (monthNames[date.getMonth()]) + " " + date.getDate() + "," + date.getFullYear();
+                                    $("table.tableForAccountList > tbody").append('<tr id="tr_account_' + data[i].BankAccountId + '"><th scope="row">' + parseInt(showCount + 1) + '</th><td>' +
+                                        data[i].AccountName + '</td>' +
+                                        '<td>' + data[i].AccountNumber + '</td><td>' +
+                                        '<a href="#" id="accountDetailsEdit" data-toggle="tooltip" data-original-title="Edit Account" class="accountDetailsEdit" data-accountid="' + data[i].BankAccountId + '">' +
+                                        '<span class="fa fa-pencil"></span>' + '</a>' + ' ' +
+                                        '<a class="fa fa-trash deleteAccount" data-toggle="tooltip" data-original-title="Delete Account" data-id="' + data[i].BankAccountId + '" id="deleteAccount"></a>' + '</a></td></tr>');
+                                    showCount++;
+                                }
+                                showCount = (page + 1) * 20;
+                            }
+                            else {
+                                page = -1;
+                            }
+                            inCallback = false;
+                            $("#loading").hide();
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            alert(error);
+                        }
+                    });
+
+                }
+            }
+        }
+    });
+    $(function () {
+        $("#autocomplete").autocomplete({
+            minLength: 0,
+            source: function (request, response) {
+                content = $.trim(request.term);
+                $.ajax({
+                    url: '@Url.Action("SearchAccountList", "Accounting")',
+                    type: "POST",
+                    dataType: "json",
+                    data: { prefix: content },
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return { label: item.AccountName, value: item.AccountName, id: item.BankAccountId };
+                        }))
+                    }
+                })
+            },
+            minLength: 1,
+            select: function (event, ui) {
+                isloadFirstTime = true;
+                var selectTextId = ui.item.id;
+                $("table.tableForAccountList > tbody").load('@Url.Action("_AccountList", "Accounting")?BankAccountId=' + selectTextId + '&forDisplay=' + display);
+            },
+        })
+    .keyup(function () {
+        if ($.trim($("#autocomplete").val()) == "") {
+            showCount = 20; page = 0;
+            $("table.tableForAccountList > tbody").load('@Url.Action("_AccountList", "Accounting")');
+        }
+    })
+    .autocomplete("instance")._renderItem = function (ul, item) {
+        var term = $.trim(this.term);
+        var re = new RegExp("(" + term + ")", "gi"),
+                   cls = "bold-text",
+                   template = "<span class='" + cls + "'>$1</span>",
+                   label = item.label.replace(re, template),
+                   $li = $("<li/>").appendTo(ul);
+        $("<span>").html(label).appendTo($li);
+        return $li;
+    };
+    });
+
+</script>

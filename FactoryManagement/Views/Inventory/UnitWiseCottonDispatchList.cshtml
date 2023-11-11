@@ -1,0 +1,327 @@
+﻿
+
+
+@************************************* Created by Jerin Jahan (Date: 22.06.2017) ******************************************@
+@{
+    ViewBag.Title = "All Dispatch List";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var allUnitList = db.Site_Unit_Lists.Where(m => m.UnitStatus == 1).ToList();
+    int tabcount = 1;
+    int divcount = 1;
+    int uid = Convert.ToInt16(ViewBag.uId);
+}
+<link href="~/Content/Date Range Picker/daterangepicker.css" rel="stylesheet" />
+<script src="~/Scripts/bootstrap.min.js"></script>
+<script src="~/Content/Date Range Picker/moment.js"></script>
+<script src="~/Content/Date Range Picker/daterangepicker.js"></script>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span> Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Inventory/UnitWiseCottonDispatchList"> All Dispatch History</a>
+        </li>
+    </ul>
+</div>
+<p>
+    <a href="/Inventory/UnitWiseCottonDispatchList" data-toggle="tooltip" title="Show Unit Wise Dispatch History" data-container="body"><span class="btn green"><i class="fa fa-list-ul"></i> Unit Wise</span></a>
+    <a href="/StoreProduct/InventoryItemDispatchDeptWise" data-toggle="tooltip" title="Show Dept Wise Dispatch History" data-container="body"><span class="btn yellow"><i class="fa fa-list-ul"></i> Dept Wise</span></a>
+    <a href="/StoreProduct/InventoryItemDispatchHis" data-toggle="tooltip" title="Show Product Wise Dispatch History" data-container="body"><span class="btn purple"><i class="fa fa-list-ul"></i> Product Wise</span></a>
+    <a href="/StoreProduct/InventoryItemDispatchMachineWise" data-toggle="tooltip" title="Show Machine Wise Dispatch History" data-container="body"><span class="btn grey-cascade"><i class="fa fa-list-ul"></i> Machine Wise</span></a>
+</p>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">All Dispatch History <small>Unit Wise</small></span>
+                </div>
+                @if (db.View_Dispacth_Item_Details.Where(m => m.Site_Unit_Id > 0).Any())
+                {
+                    <div class="actions">
+                        <div class="actions" id="day_buttons">
+                            <div class="btn-group btn-group-devided" data-toggle="buttons">
+                                <div id="reportrange" class="pull-right" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
+                                    <span></span> <b class="caret"></b>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <div class="pull-right" style="padding-top:7px!important;padding-right:5px!important;" id="show_Days_Title"></div>
+                    </div>
+                }
+            </div>
+            <div class="portlet-body">
+                <div class="panel with-nav-tabs panel-default">
+                    <div class="panel-heading">
+                        <ul class="nav nav-tabs">
+                            <li class="active" id="liForAll"><a href="#tabAll" data-toggle="tab">All</a></li>
+                            @foreach (var u in allUnitList)
+                            {
+                                tabcount++;
+                                <li class="liForUname" data-count="@tabcount" data-uid="@u.UnitId" data-uname="@u.UnitAcryonm" id="li_@u.UnitId"><a href="#tab_@tabcount" data-toggle="tab">@u.UnitAcryonm</a></li>
+                            }
+
+                        </ul>
+                    </div>
+                    <div class="panel-body" style="border:none!important;" id="div_for_panel_body">
+                        <div class="tab-content">
+                            <div class="tab-pane fade in active" id="tabAll"></div>
+                            @foreach (var u in allUnitList)
+                            {
+                                divcount++;
+                                <div class="tab-pane fade tab_@u.UnitId" id="tab_@divcount" data-count="@divcount"></div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var start = moment();
+    var end = moment().subtract(1, 'days');
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $("#liForDisVouHis").addClass('sublistActive');
+
+        $('#reportrange').daterangepicker({
+            startDate: start,
+            endDate: end,
+            ranges: {
+                'All': [moment(), moment().subtract(1, 'days')],
+                'Today': [moment(), moment()],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            }
+        }, cb);
+        cb(start, end);
+        start = moment(); end = moment();
+        $(".applyBtn").click(function () {
+            var from = $("input[name*='daterangepicker_start']").val();
+            var to = $("input[name*='daterangepicker_end']").val();
+            btn_CusromDate(from, to);
+        });
+
+        $('.ranges').on("click", "li", function () {
+            var day = $(this).data("range-key");
+            if (day == "All") {
+                btn_All();
+            } else {
+                if (day == "Today") {
+                    btn_today();
+                } else if (day == "Last 7 Days") {
+                    btn_last_seven();
+                } else if (day == "Last 30 Days") {
+                    btn_last_thirty();
+                }
+            }
+        });
+    });
+    function cb(start, end) {
+        if (start == null && end == null) {
+            $('#reportrange span').html("All");
+            return;
+        }
+        else if ((!start._isValid && !end._isValid)) {
+            $('#reportrange span').html("All");
+            return;
+        } else if (start._d > end._d) {
+            $('#reportrange span').html("All");
+            return;
+        }
+        $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+    }
+
+</script>
+<script>
+    var showCount = 0, totalCount = 0, page = 0, inCallback = false, days = 0, tab = 0, uid = 0, uname = "";
+    $(document).ready(function () {
+        if ('@(uid)' > 0) {
+            uid= @uid;
+            $("#liForAll").removeClass('active');
+            $("#li_"+@uid).addClass('active');
+            var tabcount = $("#li_"+@uid).data('count');
+            uname = $("#li_"+@uid).data('uname');
+            days=7;
+            passdata = { days:7, uId: uid };
+            $("#tab_" + tabcount).addClass('active in');
+            $("#tab_" + tabcount).empty();
+            $("#tab_" + tabcount).append('<div class="loading_partial"></div>');
+            $("#tab_" + tabcount).load('@Url.Action("_UnitWiseCottonDispatchListDayWise", "Inventory")', passdata);
+        }
+        else {
+            tab = 0;
+            $("#tabAll").append('<div class="loading_partial"></div>');
+            $("#tabAll").load('@Url.Action("_UnitWiseCottonDispatchList", "Inventory")');
+        }
+    });
+    $("#liForAll").click(function () {
+        tab = 0, uid = 0,days = 0;
+        var passdata = '';
+        passdata = { days:days };
+        $("#tabAll").empty();
+        $("#tabAll").append('<div class="loading_partial"></div>');
+        $("#tabAll").load('@Url.Action("_UnitWiseCottonDispatchList", "Inventory")',passdata);
+        $('#reportrange span').html("All");
+        $('#show_Days_Title').html("");
+    });
+    $(".liForUname").click(function () {
+        var count = $(this).data("count");
+        uid = $(this).data("uid");
+        uname = $(this).data("uname");
+        tab = count, days = 0;
+        $("#tab_" + count).empty();
+        $("#tab_" + count).append('<div class="partial_loading_half"></div>');
+        if (days == 0) {
+            $("#tab_" + count).load('@Url.Action("_UnitWiseCottonDispatchList", "Inventory")?uid=' + uid);
+        }
+        else {
+            passdata = { days: days, uId: uid };
+            $("#tab_" + count).load('@Url.Action("_UnitWiseCottonDispatchListDayWise", "Inventory")', passdata);
+        }
+        $('#reportrange span').html("All");
+        $('#show_Days_Title').html("");
+    });
+
+    @******************************** OnScroll Bind Table Data *************************@
+    $(window).scroll(function () {
+        var countBytype, result;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/Inventory/GetAllUnitWiseCottonDispatchList',
+            data: { page: page },
+            success: function (data) {
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        $("table#tbl_inven_vou_lit" + uid).append('<tr><th>' + showCount + '.</th>' +
+                            '<td>' + data[i].ProductName + '</td>' +
+                            '<td>' + data[i].Quantity + ' ' + data[i].UnitName + '</td>' +
+                            '<td>' + data[i].Site_Unit_Name + '</td>' +
+                            '<td><img class="img-circle" src="/Images/UserPicture/thumb/' + data[i].DispatchedUserPic + '">' +
+                            ((data[i].DispatchedBy > 0) ? '<a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].DispatchedBy + "?isDisplay=true") + '">' + ' ' + data[i].DispatchedUserName + '</a>' : ' <span>Super admin</span>'
+                                ) +
+                             '</td>' +
+                            '<td>' + data[i].DispatchedDateName + '</td>' +
+                            '</tr>');
+                    }
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+</script>
+<script>
+    function btn_today() {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0, days = 1;
+        if (tab == 0) {
+            passdata = { days: 1 };
+            $("#tabAll").empty();
+            $("#tabAll").append('<div class="loading_partial"></div>');
+            $("#tabAll").load('@Url.Action("_UnitWiseCottonDispatchListDayWise", "Inventory")', passdata);
+        }
+        else {
+            passdata = { days: 1, uId: uid };
+            $("#tab_" + tab).empty();
+            $("#tab_" + tab).append('<div class="loading_partial"></div>');
+            $("#tab_" + tab).load('@Url.Action("_UnitWiseCottonDispatchListDayWise", "Inventory")', passdata);
+        }
+        $('#show_Days_Title').html("Today");
+    }
+    function btn_last_seven() {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0, days = 7;
+        if (tab == 0) {
+            passdata = { days: 7 };
+            $("#tabAll").empty();
+            $("#tabAll").append('<div class="loading_partial"></div>');
+            $("#tabAll").load('@Url.Action("_UnitWiseCottonDispatchListDayWise", "Inventory")', passdata);
+        }
+        else {
+            passdata = { days:7, uId: uid };
+            $("#tab_" + tab).empty();
+            $("#tab_" + tab).append('<div class="loading_partial"></div>');
+            $("#tab_" + tab).load('@Url.Action("_UnitWiseCottonDispatchListDayWise", "Inventory")', passdata);
+        }
+        $('#show_Days_Title').html("Last 7 Days");
+    }
+    function btn_last_thirty() {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0, days = 30;
+        if (tab == 0) {
+            passdata = { days: 30 };
+            $("#tabAll").empty();
+            $("#tabAll").append('<div class="loading_partial"></div>');
+            $("#tabAll").load('@Url.Action("_UnitWiseCottonDispatchListDayWise", "Inventory")', passdata);
+        }
+        else {
+            passdata = { days:30, uId: uid };
+            $("#tab_" + tab).empty();
+            $("#tab_" + tab).append('<div class="loading_partial"></div>');
+            $("#tab_" + tab).load('@Url.Action("_UnitWiseCottonDispatchListDayWise", "Inventory")', passdata);
+        }
+        $('#show_Days_Title').html("Last 30 Days");
+    }
+    function btn_All() {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0, days = 0;
+        if (tab == 0) {
+            $("#tabAll").empty();
+            $("#tabAll").append('<div class="loading_partial"></div>');
+            $("#tabAll").load('@Url.Action("_UnitWiseCottonDispatchList", "Inventory")');
+        }
+        else {
+            $("#tab_" + tab).empty();
+            $("#tab_" + tab).append('<div class="loading_partial"></div>');
+            $("#tab_" + tab).load('@Url.Action("_UnitWiseCottonDispatchList", "Inventory")?uId='+uid, passdata);
+        }
+        $('#show_Days_Title').html("");
+    }
+
+    function btn_CusromDate(from, to) {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0, days = 0;
+        if (tab == 0) {
+            passdata = { from: new Date(from).toISOString(), to: new Date(to).toISOString() };
+            $("#tabAll").empty();
+            $("#tabAll").append('<div class="loading_partial"></div>');
+            $("#tabAll").load('@Url.Action("_UnitWiseCottonDispatchListDayWise", "Inventory")', passdata);
+        }
+        else {
+            passdata = { from: new Date(from).toISOString(), to: new Date(to).toISOString(), uId: uid };
+            $("#tab_" + tab).empty();
+            $("#tab_" + tab).append('<div class="loading_partial"></div>');
+            $("#tab_" + tab).load('@Url.Action("_UnitWiseCottonDispatchListDayWise", "Inventory")', passdata);
+        }
+        $('#show_Days_Title').html("Custom Range");
+    }
+</script>

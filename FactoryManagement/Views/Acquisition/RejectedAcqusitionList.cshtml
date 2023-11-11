@@ -1,0 +1,103 @@
+﻿
+
+
+
+@*********************************** CREATED BY JERIN JAHAN DATE(18.09.2016) ***************************************@
+
+@model IEnumerable<FactoryManagement.ModelView.Acquisition.AcquisitionViewModel>
+
+@{
+    ViewBag.Title = "All Rejected Order List";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+
+<h2>@ViewBag.Title</h2>
+
+<div class="row">
+    <span>
+        <a href="/Acquisition/AcquisitionOrderList?AcquisitionType=1" style="text-decoration: none !important;" class="k-button">
+            <span class="k-icon k-i-hbars" style="margin-right: .3rem;"></span>Acquisition Order List
+        </a>
+    </span>
+</div><hr />
+<div class="row" id="div_All_Acq_List">
+    @if (db.Acquisition_List.Where(m => m.AcquisitionType == 1 && m.AcquisitionStatus < 0 ).Any())
+    {
+        <div class="col-md-12 col-sm-12 col-xs-12 row">
+            <h4>Acquisition Order List(For Inventory)</h4><hr />
+            <div class="col-xs-12" id="div_inven_acq_lists">
+                <div class="loading_partial"></div>
+            </div>
+        </div>
+        <script>
+            $("#div_inven_acq_lists").load('@Url.Action("_RejectedAcqusitionList", "Acquisition")?acqType=1');
+        </script>
+    }
+    @if (db.Acquisition_List.Where(m => m.AcquisitionType == 2 && m.AcquisitionStatus < 0).Any())
+    {
+        <div class="col-md-12 col-sm-12 col-xs-12 row">
+            <h4>Acquisition Order List(For Business Order)</h4><hr />
+            <div class="col-xs-12" id="div_business_acq_lists">
+                <div class="loading_partial"></div>
+            </div>
+        </div>
+        <script>
+            $("#div_business_acq_lists").load('@Url.Action("_RejectedAcqusitionList", "Acquisition")?acqType=2');
+        </script>
+    }
+    @if (db.Acquisition_List.Where(m => m.AcquisitionType == 3 && m.AcquisitionStatus < 0).Any())
+    {
+        <div class="col-md-12 col-sm-12 col-xs-12 row">
+            <h4>Acquisition Order List(For Spare Parts)</h4><hr />
+            <div class="col-xs-12" id="div_spare_acq_lists">
+                <div class="loading_partial"></div>
+            </div>
+        </div>
+        <script>
+            $("#div_spare_acq_lists").load('@Url.Action("_RejectedAcqusitionList", "Acquisition")?acqType=3');
+        </script>
+    }
+</div>
+
+<script>
+    $("#div_All_Acq_List").on("click", ".btnapproveAcqOrder", function (e) {
+        if (confirm('Are you sure want to approve this order?')) {
+            e.preventDefault();
+            var type = $(this).data("type");
+            var acqOrderId = $(this).data("id");
+            var status = $(this).data("status");
+            notification.show({ message: "Approving Acquisition order", showTime: startTime() }, "upload-progress");
+
+            $.ajax({
+                url: '@Url.Action("AcquisitionStatus", "Acquisition")',
+                type: 'Post',
+                data: { Id: acqOrderId, UserId: userId, Status: status },
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 2000 });
+
+                    if (data === "Success") {
+                        notification.show({ message: "Acquisition order approved  successfully", showTime: startTime() }, "upload-success");
+                        if (type === 1) {
+                            $("#div_inven_acq_lists").empty();
+                            $("#div_inven_acq_lists").append('<div class="loading_partial"></div>');
+                            $("#div_inven_acq_lists").load('@Url.Action("_RejectedAcqusitionList", "Acquisition")?acqType=1');
+                        } else if (type === 2) {
+                            $("#div_business_acq_lists").empty();
+                            $("#div_business_acq_lists").append('<div class="loading_partial"></div>');
+                            $("#div_business_acq_lists").load('@Url.Action("_RejectedAcqusitionList", "Acquisition")?acqType=2');
+                        } else {
+                            $("#div_spare_acq_lists").empty();
+                            $("#div_spare_acq_lists").append('<div class="loading_partial"></div>');
+                            $("#div_spare_acq_lists").load('@Url.Action("_RejectedAcqusitionList", "Acquisition")?acqType=3');
+                        }
+                    }
+                    else {
+                        notification.show({ message: "Acquisition order approve attempt unsuccessful", showTime: startTime() }, "upload-error");
+                    }
+                }
+            });
+        }
+    });
+</script>

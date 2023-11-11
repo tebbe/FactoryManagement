@@ -1,0 +1,84 @@
+﻿
+@************************************** Created By Tasnim Tuli (Date:22.08.2016)  ***************************************@
+@using FactoryManagement.Helpers
+@{
+    var count = 0;
+}
+
+<table class="table table-bordered" id="tbl_pck_list">
+    <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Created By</th>
+        <th>Created Date</th>
+        <th>Last Updated By</th>
+        <th>Last Updated Date</th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in ViewBag.SalaryPackage as IEnumerable<FactoryManagement.ModelView.SalaryConfig.SalaryPackageModelView>)
+    {
+        count++;
+        <tr id="tr_bank_@item.PackageId">
+            <th scope="row">@count.</th>
+            <td>
+                <a href="@Html.EncodedParam("SalaryPackageConfig","SalaryConfig",new {id=item.PackageId },null)">@item.PackageName</a>
+            </td>
+          <td>
+              @if (item.CreatedBy > 0)
+              {
+                  FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+                  var user = db.View_UserLists.Where(m => m.UserType == 1 && m.UserId == item.CreatedBy).FirstOrDefault();
+                <img src="~/Images/UserPicture/thumb/@user.Picture" class="img-circle" />
+                <span><a href="@Html.EncodedParam("DisplayEmployeeDetails","HumanResource",new { UserId=item.CreatedBy,isDisplay=true},null)">@user.UserName</a></span>
+              }
+              else
+              {
+                <img src="~/Images/UserPicture/thumb/admin.jpg" class="img-circle" />
+                <span>Super Admin</span>
+              }
+          </td>
+            <td>@Convert.ToDateTime(item.CreatedDate).ToString("MMM dd,yyyy hh:mm:tt")</td>
+            <td>
+                @if (item.UpdatedBy != null)
+                {
+                    if (item.UpdatedBy == 0)
+                    {
+                        FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+                        var user = db.View_UserLists.Where(m => m.UserType == 1 && m.UserId == item.UpdatedBy).FirstOrDefault();
+                        <img src="~/Images/UserPicture/thumb/@user.Picture" class="img-circle" />
+                        <span><a href="@Html.EncodedParam("DisplayEmployeeDetails","HumanResource",new {UserId=item.UpdatedBy,isDisplay=true },null)">@user.UserName</a></span>
+
+                    }
+                    else
+                    {
+                        <img src="~/Images/UserPicture/thumb/admin.jpg" class="img-circle" />
+                        <span>Super Admin</span>
+                    }
+                }
+                else
+                {
+                    <span>Not yet updated</span>
+                }
+            </td>
+            <td>
+                @if (item.UpdatedBy != null)
+                {
+                    @Convert.ToDateTime(item.UpdatedDate).ToString("MMM dd,yyyy. hh:mm:tt")
+                }
+                else
+                {
+                    <span>Not yet updated</span>
+                }
+            </td>
+            <td>
+                <span data-toggle="tooltip" title="Edit Salary Package" style="cursor:pointer;" data-packageid="@item.PackageId" class="btn green btn_edit_Salary_Package"><i class="fa fa-pencil"></i></span>
+                <span data-toggle="tooltip" title="Delete Salary Package" style="cursor:pointer;" data-packageid="@item.PackageId" class="btn btn-danger btn_pck_delete"><i class="fa fa-trash"></i></span>
+                <a data-toggle="tooltip" title="Salary Package Information" href="@Html.EncodedParam("SalaryPackageConfig","SalaryConfig",new {id=item.PackageId },null)"><span class="btn blue"><i class="fa fa-info-circle"></i></span></a>
+            </td>
+        </tr>
+    }
+</table>
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+</script>

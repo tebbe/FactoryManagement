@@ -1,0 +1,339 @@
+﻿@******************************** Created By Mabia Mishu (Date:02.10.2016) *********************************@
+
+@using FactoryManagement.Helpers
+@model FactoryManagement.ModelView.Configuration.DepartmentListModelView
+@{
+    ViewBag.Title = "Site Unit Details";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var backtolist = (Model.Displaytype == true) ? "true" : "false";
+}
+<h3 class="page-title">
+    Site Unit Details
+</h3>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-gears fa-fwt"></i>
+            <span>Configuration</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Configuration/AllSiteInfo">All Site Info</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="@Html.EncodedParam("ShowSiteInfoWithDeptList", "Configuration", new { siteId = Model.SiteId, IsDisplay = Model.Displaytype }, null)">Site Details</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="@Html.EncodedParam("ShowUnitWithDeptList", "Configuration", new { unitId = Model.UnitId, IsDisplay = Model.Displaytype, display = Model.IsInfo }, null)">Site Unit Details</a>    
+        </li>
+    </ul>
+</div>
+<div class="portlet light bordered">
+    <div class="portlet-title">
+        <div class="caption font-green">
+            <i class="fa fa-info-circle font-green"></i>
+            <span class="caption-subject bold uppercase">Site Unit Information</span>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-horizontal">
+            <div class="form-body">
+                @if (Model.UnitId > 0)
+                {
+                    <div id="divForloader"></div>
+                    <div id="divFor_siteUnit_Edit"></div>
+                    <div id="divFor_siteUnit_Info"></div>
+                    <script>
+                        $("#divFor_siteUnit_Info").append('<div class="partial_loading_half"></div>');
+                        $("#divFor_siteUnit_Info").load('@Url.Action("_ShowUnitDetails", "Configuration")?unitId='+@(Model.UnitId));
+                    </script>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<div id="div_for_btn_dept_add">
+    @if (ViewBag.isResi == true)
+    {
+    <p><span class="btn green" id="linkForDeptCreate" data-toggle="tooltip" title="Add New Building" data-placement="top" style="margin-top:15px"><i class="fa fa-plus"></i> Add New Building</span></p>
+    }
+    else
+    {
+    <p><span class="btn green" data-toggle="tooltip" title="Add New Department" id="btn_dept_add_into_site"><i class="fa fa-plus"></i> Add New Dept.</span></p>
+    }
+</div>
+<div id="divFor_Dept_List_byUnit">
+    @if (db.DepartmentLists.Where(m => m.UnitId == Model.UnitId).Any())
+    {
+        <script>
+            hasDepts= true;
+            var data={unitId:@Model.UnitId,SiteName:'@(Model.SiteName)'};
+            $("#divFor_Dept_List_byUnit").append('<div class="partial_loading_half"></div>');
+            $("#divFor_Dept_List_byUnit").load('@Url.Action("_ShowAllDeptListBySite", "Configuration")',data);
+        </script>
+    }
+    @*else
+    {
+        <script>
+            hasDepts= false;
+            $("#divFor_Dept_List_byUnit").append('<span class="btn btn-success hover-pointer" id="btn_dept_add_into_site"><i class="fa fa-plus"></i> Create New Dept.</span>');
+        </script>
+    }*@
+     
+</div>
+@*<div class="portlet box green">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-list-ul"></i>Department List
+        </div>
+    </div>
+    <div class="portlet-body">
+        <div class="table-responsive">
+            
+        </div>
+    </div>
+</div>*@
+
+<div id="win_add_dept"></div>
+@(Html.Kendo().Window()
+           .Name("window")
+           .Visible(false)
+           .Modal(true)
+           .Draggable(true)
+)
+<script id="temp_for_confirmation" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">#=message#</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_confirm_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_confirm_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    var Unitstatus,canDisplay='',displayInfo='',message='',uName='',uId=0,firstpress=true;
+    $(document).ready(function () {
+        $("#liForConfig").addClass('active');
+        $("#liForSiteList").addClass('sublistActive');
+        $("#divForloader").hide();
+        $("#divFor_siteUnit_Info").show();
+        uName='@Model.UnitName';Unitstatus=@Model.Status;
+        if ('@Model.Displaytype' == 'True' || '@Model.IsInfo'=='True') {
+            $("#btnForSiteUnitEdit").hide();
+        }
+        canDisplay='@Model.Displaytype';
+        displayInfo='@Model.IsInfo';
+        uId=@Model.UnitId;
+        $("#top_header_link").append('<span>Configuration</span>'+
+                       '<span><i class="fa fa-angle-right fa-2x"></i></span>'+
+                       '<span><a href="/Configuration/AllSiteInfo"> All Site Info</a></span>'+
+                       '<span><i class="fa fa-angle-right fa-2x"></i></span>' +
+                       '<span> Site Information </span>'+
+                       '<span><i class="fa fa-angle-right fa-2x"></i></span><span class="current"> Site Unit Details </span>' +
+                       '<span><a href="/Configuration/ShowSiteInfoWithDeptList?siteId=@Model.SiteId&IsDisplay=@backtolist"><i class="fa fa-reply"> Back</i></a></span>');
+    });
+    function ShowLineNumber(cb) {
+        if (cb.checked === true) {
+            $("#DivForLineNumber").show();
+            $("#HasLine").val(1);
+        } else {
+            $("#DivForLineNumber").hide();
+            $("#HasLine").val(0);
+        }
+        $("#NumberOfLine").val('');
+    }
+    function isNumber(e) {
+        e = (e) ? e : window.event;
+        var charCode = (e.which) ? e.which : e.keyCode;
+        if(firstpress && charCode==48){
+            firstpress=false;
+            return false;
+        }
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+        return true;
+    }
+    function isvalueNull(value){
+        firstpress=(value=='')?true:false;
+    }
+    //********************************* Unit Update *********************************************
+    function onUnitStatusChange(e) {
+        var dataItem = this.dataItem(e.item);
+        Unitstatus=dataItem.Value;
+    }
+    function siteUnitUpdate(senddata){
+        $.ajax({
+            url: '@Url.Action("UpdateSiteUnitInfo", "Configuration")',
+            type: 'Post',
+            data: senddata,
+            success: function (data) {
+                notification.hide();
+                notification.setOptions({autoHideAfter: 2000});
+                if(data !== "Error"){
+                    notification.show({message: "Unit info successfully updated .", showTime: startTime()}, "upload-success");
+                    uName=data.UnitName;
+                   // $("#divFor_siteUnit_Edit").hide();
+                    $("#divFor_siteUnit_Edit").empty();
+                    // $("#divFor_siteUnit_Info").show();
+                     $("#divFor_siteUnit_Info").append('<div class="partial_loading_half"></div>');
+                $("#divFor_siteUnit_Info").load('@Url.Action("_ShowUnitDetails", "Configuration")?unitId='+@(Model.UnitId));
+                    @*$("#divFor_siteUnit_Info").append('<dl class="dl-horizontal col-md-12 col-sm-12">'+
+                    '<dt>Unit Name</dt><dd><span>'+data.UnitName+'</span>'+
+                        '<span id="btnForSiteUnitEdit" style="padding-left:2%"><i class="k-icon k-i-pencil"></i></span></dd>'+
+                    '<dt>Unit Status</dt>'+
+                    ((data.UnitStatus==1)?'<dd><span>Active</span></dd>':'<dd><span>Inactive</span></dd>')+
+                        '<dt>Created Date</dt>'+
+                        '<dd>@Convert.ToDateTime(Model.CreatedDate).ToString("MMMM dd,yyyy")</dd>'+
+                    '</dl>');*@
+                }else{
+                    notification.show({message: "Unit info update unsuccessful .", showTime: startTime()}, "upload-error");
+                }
+            }
+        });
+    }
+    @*function showPartialViewforUnitEdit(){
+        $("#divFor_siteUnit_Edit").empty().show();
+        $("#divFor_siteUnit_Edit").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height:"35%",
+            title: 'Edit Unit Details'
+        });
+        $("#divFor_siteUnit_Edit").html('<div class="partial_loading_half"></div>');
+        var divFor_siteUnit_Edit = $("#divFor_siteUnit_Edit").data("kendoWindow");
+        divFor_siteUnit_Edit.refresh({ url: "/Configuration/LandingPageForUnitEdit?unitId="+@Model.UnitId });
+        divFor_siteUnit_Edit.center().open();
+    }*@
+    function showPartialViewforUnitEdit(){
+        $("#divFor_siteUnit_Edit").empty().show();
+        $("#divFor_siteUnit_Edit").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height:"35%",
+            title: 'Edit Unit Details'
+        });
+        $("#divFor_siteUnit_Edit").html('<div class="partial_loading_half"></div>');
+        var divFor_siteUnit_Edit = $("#divFor_siteUnit_Edit").data("kendoWindow");
+        divFor_siteUnit_Edit.refresh({ url: "/Configuration/UnitEditPopUp?unitId="+@Model.UnitId });
+        divFor_siteUnit_Edit.center().open();
+    }
+    $("#divFor_siteUnit_Info").on("click","#btnForSiteUnitEdit",function(){
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width:"30%",
+            modal: true
+        });
+        message="Are you sure want to update this unit information ? ";
+        var template = kendo.template($("#temp_for_confirmation").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+
+        kendoWindow.find("#btn_confirm_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_confirm_ok").click(function () {
+           // kendoWindow.data("kendoWindow").close();
+            showPartialViewforUnitEdit();
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+    });
+ 
+
+    $("#div_for_btn_dept_add").on("click", "#btn_dept_add_into_site", function (e) {
+        $("#win_add_dept").empty();
+        $("#win_add_dept").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '30%',
+            title: 'Add New Department'
+        });
+        $("#win_add_dept").html('<div class="win_loading_half"></div>');
+        var win_add_dept = $("#win_add_dept").data("kendoWindow");
+        win_add_dept.refresh({ url:"/Configuration/DepartmentCreatePopUp?UnitId=" + @Model.UnitId + '&siteName=' + '@Model.UnitName' });
+        win_add_dept.center().open();
+    });
+
+    function DeptDeleteFunction(deptid,deptStatus,name){
+        if (deptStatus === 1) {
+            notification.hide(); notification.setOptions({ autoHideAfter: 2000 });
+            notification.show({ message: "Active department cannot be deleted.", showTime: startTime() }, "upload-error");
+        }else{
+            notification.show({ message: "Department deleting...", showTime: startTime() }, "upload-progress");
+            $.ajax({
+                url: '@Url.Action("ChkDeptCount", "Configuration")',
+                type: 'Post',
+                data: { unitId: @Model.UnitId, UserId: userId},
+                success: function (count) {
+                    $.ajax({
+                        url: '@Url.Action("DeptDelete", "Configuration")',
+                        type: 'Post',
+                        data: { id: deptid,unitName:uName, UserId: userId },
+                        success: function (data) {
+                            notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                            if(data === "Success"){
+                                notification.show({ message: "Department '"+name+"' deletion was successful.", showTime: startTime() }, "upload-success");
+                                $("#divFor_Dept_List_byUnit").empty();
+                                $("#divFor_siteUnit_Info").empty();
+                                $("#divFor_siteUnit_Info").append('<div class="loading_half"></div>');
+                                $("#divFor_siteUnit_Info").load('@Url.Action("_ShowUnitDetails", "Configuration")?unitId='+@(Model.UnitId));
+
+                                $("#divFor_Dept_List_byUnit").empty();
+                                $("#divFor_Dept_List_byUnit").append('<div class="loading_partial"></div>');
+                                var sendData = {unitId:@Model.UnitId,UnitName:'@(Model.UnitName)'};
+                                $("#divFor_Dept_List_byUnit").load('@Url.Action("_ShowAllDeptListBySite", "Configuration")',sendData);
+                            }
+                            else{
+                                var msg=(data =="Error")?"Department '"+name+"' deletion was unsuccessful.":data;
+                                notification.show({ message: msg, showTime: startTime() }, "upload-error");
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    }
+    $("#divFor_Dept_List_byUnit").on("click",".btn_dept_delete",function (e){
+        var deptid = $(this).data("deptid");
+        var deptStatus=$(this).data("status");
+        var name= $(this).data("name");
+
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width:"30%",
+            modal: true
+        });
+        message="Are you sure want to delete this department from unit?";
+        var template = kendo.template($("#temp_for_confirmation").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+
+        kendoWindow.find("#btn_confirm_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_confirm_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            DeptDeleteFunction(deptid,deptStatus,name);
+        }).end();
+    });
+    function reloadUnit() {
+         $("#divFor_siteUnit_Info").load('@Url.Action("_ShowUnitDetails", "Configuration")?unitId='+@(Model.UnitId));
+    }
+</script>

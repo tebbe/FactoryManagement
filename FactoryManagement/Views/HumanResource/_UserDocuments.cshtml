@@ -1,0 +1,259 @@
+﻿
+
+@model FactoryManagement.ModelView.HR.UserInformationModelView
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int count = 0;
+}
+
+<style>
+    .file_size {
+        white-space: nowrap;
+        width: 230px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
+        
+    }
+    #tbl_all_up_file td, #tbl_all_up_file th {
+        border: 1px solid #ddd !important;
+    }
+</style>
+
+<div style="margin-bottom:15px"><span class="btn green" data-toggle="tooltip" title="Upload New File" id="Uploader_popup"><i class="fa fa-upload"></i> Upload New File</span></div>
+@if (db.User_Uploaded_Document.Where(m => m.UserId == Model.UserId).Any())
+{
+    var fileList = db.View_User_Uploaded_File_List.Where(m => m.UserId == Model.UserId).ToList();
+    <p style="color:#5a7391;font-weight: 600;">All Uploaded Files</p>
+    <table class="table table-hover table-bordered table-striped" id="tbl_all_up_file">
+        <tr>
+            <th width="5%">#</th>
+            <th width="25%">Name</th>
+            <th width="17%">Date</th>
+            <th width="30%">Type</th>
+            <th width="10%">Size</th>
+            <th width="8%"></th>
+        </tr>
+        @foreach (var file in fileList)
+        {
+            count++;
+            string s = file.DocumentOrginalName;
+            int idx = s.LastIndexOf('.');
+            string fileName = s.Substring(0, idx);
+            string extension = s.Substring(idx);
+            <tr>
+                <td>@count</td>
+                <td class="spanforFileImg" data-extension="@extension">
+                    <img style="float:left;width:25px;height:25px;margin-right:10px;" src="" />@fileName
+                </td>
+                <td>@Convert.ToDateTime(file.UploadedDate).ToString("dd/MM/yyyy hh:mm tt")</td>
+                <td><span class="file_size">@file.ContentType</span></td>
+                <td>@file.FileSize</td>
+                <td>
+                    <span data-toggle="tooltip" title="Download Document" class="btn green"><a href="/HumanResource/DownloadUserDoc?fileId=@file.DocumentId" style="color:white;text-decoration:none"><i class="fa fa-download"></i></a></span>
+                    <button data-toggle="tooltip" title="Delete Document" class="btn btn-danger btnDeleteUploadedFile" data-fileid="@file.DocumentId" data-photofilename="@file.DocumentOrginalName">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                    @*<span class="k-icon k-i-close btnDeleteUploadedFile" data-fileid="@file.DocumentId" data-photofilename="@file.DocumentOrginalName" style="cursor:pointer"></span>*@
+                   
+                </td>
+
+
+                @*<td>@count</td>
+                <td style="float:left;" src="" />
+                <td><span class="uploadedfilechange" style="padding:10px;">@fileName</span></td>
+                <td class="col-sm-6 col-xs-6" style="display:none;float:left;padding-top:4px;">
+                    <input type="text" class="k-textbox"
+                           data-val-required=""
+                           style="width:70%;float:left;"
+                           id="txtFileName" name="txtFileName"
+                           value="@file.DocumentOrginalName" />
+                    <span class="k-icon k-i-tick btnUploadedFileRename" style="cursor:pointer;float:left;" data-extension="@extension" data-fileid="@file.DocumentId" data-photofilename="@file.DocumentOrginalName"></span>
+                    <span class="k-icon k-i-close btncloseEditDiv" data-fileid="@file.DocumentId" data-photofilename="@file.DocumentOrginalName" style="cursor:pointer;float:left;"></span>
+                </td>
+                <td>@file.ContentType</td>
+                <td>@file.ContentSize</td>
+                <td><span class="k-icon k-i-close btnDeleteUploadedFile" data-fileid="@file.DocumentId" data-photofilename="@file.DocumentOrginalName" style="cursor:pointer"></span></td>*@
+            </tr>          
+        }
+    </table>
+}
+else
+{
+    <h4 style="color:#5a7391">No documents to show...</h4>
+}
+<div id="win_for_uploader"></div>
+<script id="temp_file_delete_alert" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">#=message#</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_alert_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_alert_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+    $(document).ready(function () {
+        $('.spanforFileImg').each(function () {
+            var extension = $(this).data("extension");
+            var t = addExtensionFormaterial(extension);
+            $(this).children('img').attr('src', t);
+        });
+    });
+    function addExtensionFormaterial(extension) {
+        switch (extension) {
+            case '.jpg':
+            case '.jpeg':
+            case '.img':
+            case '.gif':
+                return "/Content/web/upload/jpg.png";
+            case '.png':
+                return "/Content/web/upload/png_converted.png";
+            case '.doc':
+            case '.docx':
+                return "/Content/web/upload/doc.png";
+            case '.ppt':
+            case '.pptx':
+                return "/Content/web/upload/ppt.png";
+            case '.xls':
+            case '.xlsx':
+                return "/Content/web/upload/xls.png";
+            case '.pdf':
+                return "/Content/web/upload/pdf.png";
+            case '.zip':
+            case '.rar':
+                return "/Content/web/upload/zip.png";
+            default:
+                return "/Content/web/upload/default.png";
+        }
+    };
+    $("#tbl_all_up_file").on("click", ".uploadedfilechange", function (e) {
+        e.preventDefault();
+        var str = $(this).text();
+        //var rest = str.substring(0, str.lastIndexOf("."));
+        $(this).parent('label').next('label').css("display", "inline");
+        $(this).parent('label').next('label').children('input').val(str);
+        $(this).parent('label').css("display", "none");
+        $(this).parent('label').next('label').children('.field-validation-error').hide();
+        $(this).parent('label').next('label').next('label').css("display", "none");
+    });
+    $("#tbl_all_up_file").on("click", ".btnUploadedFileRename", function (e) {
+        e.preventDefault();
+        var inputval = $(this).siblings('input').kendoValidator().data("kendoValidator");
+        if (inputval.validate()) {
+            var ext = $(this).data("extension");
+            var reNameForSave = $(this).siblings('input').val() + ext;
+            var reNameForShow = $(this).siblings('input').val();
+            $(this).parent('label').prev('label').children('span').text(reNameForShow);
+            $(this).parent('label').css("display", "none");
+            $(this).parent('label').prev('label').css("display", "inline");
+            var FileId = $(this).data("fileid");
+            var FileName = reNameForSave;
+            notification.show({ message: "Document renaming...", showTime: startTime() }, "upload-progress");
+            $.ajax({
+                url: '@Url.Action("DocumentFileRename", "HumanResource")',
+                type: 'Post',
+                data: { FileId: FileId, FileName: FileName, CreatedBy: userId },
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === "Error") {
+                        notification.show({ message: "Document rename unsuccessful", showTime: startTime() }, "upload-error");
+                    } else {
+                        notification.show({ message: "Document has been successfully renamed from '" + FileName + "' to '" + data + "'.", showTime: startTime() }, "upload-success");
+                        $("#tab1doc").empty();
+                        $("#tab1doc").append('<div class="loading_half"></div>');
+                        $("#tab1doc").load('@Url.Action("_UserDocuments", "HumanResource")?UserId=' + EmpId);
+                    } 
+                },
+                error: function (error) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred", showTime: startTime() }, "upload-warning");
+                }
+            })
+            $(this).parent('label').next('label').next('label').css("display", "inline");
+        }
+    });
+    $("#tbl_all_up_file").on("click", ".btncloseEditDiv", function (e) {
+        e.preventDefault();
+        $(this).parent('label').css("display", "none");
+        $(this).parent('label').prev('label').css("display", "inline");
+        $(this).parent('label').next('label').css("display", "inline");
+    });
+
+
+    //*************************** Delete Button Function *************************************************
+    $("#tbl_all_up_file").on("click", ".btnDeleteUploadedFile", function (e) {
+        e.preventDefault();
+        var FileId = $(this).data("fileid");
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose
+        });
+        message = "Are you sure you want to delete this document?";
+        var template = kendo.template($("#temp_file_delete_alert").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+
+        kendoWindow.find("#btn_alert_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+
+        kendoWindow.find("#btn_alert_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            deleteDocument(FileId);
+        }).end();
+    });
+    function deleteDocument(FileId) {
+        notification.show({ message: "Document deleting...", showTime: startTime() }, "upload-progress");
+        $.ajax({
+            url: '@Url.Action("DeleteUploadedFiles", "HumanResource")',
+            type: 'Post',
+            data: { FileId: FileId, CreatedBy: userId },
+            success: function (data) {
+                notification.hide();
+                notification.setOptions({ autoHideAfter: 5000 });
+                if (data === "Error") {
+                    notification.show({ message: "Document delete was unsuccessful.", showTime: startTime() }, "upload-error");
+                } else {
+                    notification.show({ message: "Document has been successfully deleted.", showTime: startTime() }, "upload-success");
+                    $("#tab1doc").empty();
+                    $("#tab1doc").append('<div class="loading_half"></div>');
+                    $("#tab1doc").load('@Url.Action("_UserDocuments", "HumanResource")?UserId=' + EmpId);
+                }
+            },
+            error: function (error) {
+                notification.hide();
+                notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occurred", showTime: startTime() }, "upload-warning");
+            }
+        });
+    };
+    $("#Uploader_popup").click(function(){
+        $("#win_for_uploader").empty();
+        $("#win_for_uploader").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '35%',
+            position: { top: '20%' },
+            title: 'Upload Documents',
+            close: onWindowClose
+        });
+        $("#win_for_uploader").html('<div class="partial_loading_half"></div>');
+        var win_for_uploader = $("#win_for_uploader").data("kendoWindow");
+        win_for_uploader.refresh({ url: "/HumanResource/_UploadUserDocuments"});
+        win_for_uploader.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+</script>

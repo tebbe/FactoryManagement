@@ -1,0 +1,34 @@
+﻿@model IEnumerable<FactoryManagement.ModelView.CRM.Client_Vehicle_ListsModelView>
+
+@{var count = 1;}
+<tr>
+    <th>#</th>
+    <th>Vehicle</th>
+    <th>RegisterNo</th>
+    <th></th>
+</tr>
+@foreach (var item in ViewBag.VehicleList as IEnumerable<FactoryManagement.ModelView.CRM.Client_Vehicle_ListsModelView>)
+{
+    <tr id="tr_vehicle_@item.VehicleId">
+        <th scope="row">@count</th>
+        <td>
+            @if (item.PictureName != "")
+            {
+                <img class="user-photo" src="~/Images/Client/ClientVehicleImage/thumb/@item.PictureName" />
+            }
+            else
+            { 
+                <img class="user-photo" src="~/Images/Icon/blank_Vehicle.png" />
+            }
+            @Html.DisplayFor(modelItem => item.VehicleName)
+        </td>
+
+        <td>@Html.DisplayFor(modelItem => item.RegisterNo)</td>
+        <td>
+            <a href="#" id="vehicleDetailsDisplay" class="vehicleDetailsDisplay" data-vehicleid="@item.VehicleId" data-clientid="@item.ClientId"><span class="fa fa-info-circle"></span></a>
+        </td>
+    </tr>
+  count++;
+}
+
+

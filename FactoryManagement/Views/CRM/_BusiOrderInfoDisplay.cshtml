@@ -1,0 +1,15 @@
+﻿
+
+@********************************************* Created By (JERIN JAHAN)(27.09.2016) *******************************@
+
+@model FactoryManagement.ModelView.CRM.BusinessOrderListModelView
+
+<p>Order Name : @Model.OrderName</p>
+@if (Model.OrderType == 1)
+{<p>Buyer Name : @Model.ClientName</p>}
+<p>
+    Order Status : @if (Model.OrderStatus == 0)
+    {<span>Not yet approved by head office.</span>}
+    else
+    {<span>Approved by head office</span>}
+</p>

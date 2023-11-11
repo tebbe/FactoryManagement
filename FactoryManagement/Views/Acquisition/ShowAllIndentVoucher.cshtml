@@ -1,0 +1,702 @@
+﻿@*********************************************** Created By Jerin Jahan Date(07.06.2017) ************************@
+@using FactoryManagement.Helpers;
+@{
+    ViewBag.Title = "Show All Manual ";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int roleid = Convert.ToInt32(Request.Cookies["CookieAdminInfo"].Values["roleid"].ToString());
+}
+
+
+@if (roleid == 11 || roleid == 12)
+{
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <i class="fa fa-th-list"></i>
+                <a href="/Acquisition/ShowAllIndentVoucher">Indent History</a>
+            </li>
+        </ul>
+    </div>
+    <div class="note note-success">
+        <p id="ShowingTitle">Showing All Indent Voucher</p>
+    </div>
+}
+else
+{
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <i class="icon-basket"></i>
+                <a href="javascript:;">Inventory</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <i class="fa fa-th-list"></i>
+                <a href="/Acquisition/ShowAllIndentVoucher">Indent History</a>
+            </li>
+        </ul>
+    </div>
+    <p>
+        <a data-toggle="tooltip" title="Add New" data-placement="top" href="@Html.EncodedParam("ManuallyIndentForInven", "Acquisition", new { type=1}, null)">
+            <span class="btn green"><i class="fa fa-plus"></i> Add New Voucher</span>
+        </a>
+    </p>
+}
+
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">Indent Voucher List</span>
+                </div>
+              <div class="actions" > 
+                  <a data-toggle="tooltip" id="IdForTransaactionHistory" target="_blank" title="Transaction History" data-placement="top" href="/Acquisition/IndentTransactionHis">
+                      <span class="btn btn-transparent green btn-outline btn-circle btn-sm"><i class="fa fa-history"></i> Transaction History</span>
+                  </a>
+                      <label class="green" id="IdForDateStatus"></label>
+                      <div class="btn-group btn-group-devided"  data-toggle="buttons">
+                          <div id="reportrange" class="pull-right" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
+                              <span></span> <b class="caret"></b>
+                          </div>
+                      </div>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="panel with-nav-tabs panel-default">
+                    <div class="panel-heading">
+                        <ul class="nav nav-tabs">
+                            <li class="active" id="liAllList"><a href="#tab1AllList" data-toggle="tab">All</a></li>
+                            <li id="liPendingList"><a href="#tab2PendingList" data-toggle="tab">Pending Voucher</a></li>
+                            <li id="liApprvdList"><a href="#tab3ApprvdList" data-toggle="tab">Approved Voucher</a></li>
+                            <li id="liWasteList"><a href="#tab4CompletedList" data-toggle="tab">Completed Voucher</a></li>
+                            <li id="liDeleteList"><a href="#tab5DeletedList" data-toggle="tab">Deleted Lists</a></li>
+                        </ul>
+                        <div id="multiselectSearch">
+                            @(Html.Kendo().MultiSelect()
+                              .Name("multiselectSearch")
+                              .DataTextField("Name")
+                              .DataValueField("VoucherId")
+                              .Placeholder("Start typing name")
+                              .Events(e => e.Change("onSearchChange"))
+                              .AutoClose(false)
+                              .DataSource(source =>
+                              {
+                                  source.Read(read =>
+                                  {
+                                      read.Action("SearchIndentVoucherList", "Acquisition").Data("additionalInfo");
+
+                                  });
+                                  source.ServerFiltering(false);
+                              })
+                            )
+                            <span class="k-icon k-i-search" style="margin-top:-27px;margin-right:10px;float:right;">&nbsp;</span>
+                        </div>
+                    </div>
+                    
+                    <div class="panel-body" style="border:none!important;" id="div_for_panel_body">
+                        <div class="tab-content">
+                            <div class="tab-pane fade in active" id="tab1AllList">
+                                <div class="win_loading_half"></div>
+                                @if (db.ManualIndentVouchers.Any())
+                                {
+                                    <script>
+                                        $("#Div_Upper_Portion").show();
+                                        $("#tab1AllList").empty();
+                                        $("#tab1AllList").append('<div class="win_loading_half"></div>');
+                                        $("#tab1AllList").load('@Url.Action("_ShowAllIndentVoucher", "Acquisition")');
+                                    </script>
+                                }
+                            </div>
+                            <div class="tab-pane fade" id="tab2PendingList"></div>
+                            <div class="tab-pane fade" id="tab3ApprvdList"></div>
+                            <div class="tab-pane fade" id="tab4CompletedList"></div>
+                            <div class="tab-pane fade" id="tab5DeletedList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="DivForUserDeatilsView"></div>
+<div id="loading" style="display:none"></div>
+<script id="temp_win_voucher_edit" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px"> #=msg# </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_indent_noty_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_indent_noty_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+
+<script>
+    var showCount = 0, totalCount = 0, sta = null, day = 0, inCallback = false, page = 0, content = '';
+    console.log("ShowAllIndentVoucher");
+
+    function additionalInfo() {
+        return {
+            Status: sta
+        }
+    }
+    @************************Auto complete search*********************************@
+
+    function onSearchChange() {
+        var id = this.value();
+        if (id != -111) {
+            if (sta == null) {
+                $("#tab1AllList").load('@Url.Action("_ShowAllIndentVoucher", "Acquisition")?VoucherId=' + id + '&status=' + sta);
+            }
+            if (sta == 0) {
+                $("#tab2PendingList").load('@Url.Action("_ShowAllIndentVoucher", "Acquisition")?VoucherId=' + id + '&status=' + sta);
+            }
+            if (sta == 1) {
+                $("#tab3ApprvdList").load('@Url.Action("_ShowAllIndentVoucher", "Acquisition")?VoucherId=' + id + '&status=' + sta);
+            }
+            if (sta == 2) {
+                $("#tab4CompletedList").load('@Url.Action("_ShowAllIndentVoucher", "Acquisition")?VoucherId=' + id + '&status=' + sta);
+            }
+            if (sta == -1) {
+                $("#tab5DeletedList").load('@Url.Action("_ShowAllIndentVoucher", "Acquisition")?VoucherId=' + id + '&status=' + sta);
+            }
+        }
+
+    }
+    function btn_today() {
+        loadTab(1);
+    };
+    function btn_last_seven() {
+        loadTab(7);
+    };
+    function btn_last_thirty() {
+        loadTab(30);
+    };
+    function btn_All() {
+        loadTab(0);
+    };
+    function restoreDate() {
+        $(".ranges").find('ul').find('li').each(function () {
+            if ($(this).hasClass("active") && $(this).data("range-key") != "All") {
+                $(this).removeClass("active");
+            }
+            if ($(this).data("range-key") == "All") {
+                $(this).addClass("active");
+            }
+        });
+        return;
+    }
+    $("#liAllList").click(function () {
+        restoreDate();
+        sta = null, page = 0;
+        $("#tab1AllList").empty();
+        $("#tab2PendingList").empty();
+        $("#tab3ApprvdList").empty();
+        $("#tab4CompletedList").empty();
+        $("#tab5DeletedList").empty();
+        $("#tab1AllList").append('<div class="win_loading_half"></div>');
+        $("#tab1AllList").load('@Url.Action("_ShowAllIndentVoucher", "Acquisition")');
+        $('#multiselectSearch').data('kendoMultiSelect').dataSource.read();
+        cb(0, 0);
+
+    });
+    //************* SHOWING ALL PENDING VOUCHER ************************
+    $("#liPendingList").click(function () {
+        sta = 0, page = 0;
+        restoreDate();
+        $("#tab1AllList").empty();
+        $("#tab3ApprvdList").empty();
+        $("#tab4CompletedList").empty();
+        $("#tab5DeletedList").empty();
+        $("#tab2PendingList").empty();
+        $("#tab2PendingList").append('<div class="win_loading_half"></div>');
+        $("#tab2PendingList").load('@Url.Action("_ShowAllIndentVoucher", "Acquisition")?status=0');
+        $('#multiselectSearch').data('kendoMultiSelect').dataSource.read();
+        cb(0, 0);
+
+    });
+    //************* SHOWING ALL APPROVED VOUCHER ************************
+    $("#liApprvdList").click(function () {
+        restoreDate();
+        sta = 1, page = 0;
+        $("#tab1AllList").empty();
+        $("#tab2PendingList").empty();
+        $("#tab3ApprvdList").empty();
+        $("#tab4CompletedList").empty();
+        $("#tab5DeletedList").empty();
+        $("#tab3ApprvdList").empty();
+        $("#tab3ApprvdList").append('<div class="win_loading_half"></div>');
+        $("#tab3ApprvdList").load('@Url.Action("_ShowAllIndentVoucher", "Acquisition")?status=1');
+        $('#multiselectSearch').data('kendoMultiSelect').dataSource.read();
+        cb(0, 0);
+
+    });
+    //************* SHOWING ALL COMPLETED VOUCHER ************************
+    $("#liWasteList").click(function () {
+        sta = 2, page = 0;
+        restoreDate();
+        $("#tab1AllList").empty();
+        $("#tab2PendingList").empty();
+        $("#tab3ApprvdList").empty();
+        $("#tab5DeletedList").empty();
+        $("#tab4CompletedList").empty();
+        $("#tab4CompletedList").append('<div class="win_loading_half"></div>');
+        $("#tab4CompletedList").load('@Url.Action("_ShowAllIndentVoucher", "Acquisition")?status=2');
+        $('#multiselectSearch').data('kendoMultiSelect').dataSource.read();
+        cb(0, 0);
+
+    });
+    //************* SHOWING ALL DELETED VOUCHER ************************
+    $("#liDeleteList").click(function () {
+        sta = -1, page = 0;
+        restoreDate();
+        $("#tab1AllList").empty();
+        $("#tab2PendingList").empty();
+        $("#tab3ApprvdList").empty();
+        $("#tab4CompletedList").empty();
+        $("#tab5DeletedList").empty();
+        $("#tab5DeletedList").append('<div class="win_loading_half"></div>');
+        $("#tab5DeletedList").load('@Url.Action("_ShowAllIndentVoucher", "Acquisition")?status=-1');
+        $('#multiselectSearch').data('kendoMultiSelect').dataSource.read();
+        cb(0, 0);
+        if ($('.ranges>ul>li').find('Active')) {
+            $('.ranges>ul>li').removeClass('active');
+        }
+    });
+
+
+    $(window).scroll(function () {
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    console.log("AllIndentVoucher");
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/Acquisition/GetIndentVoucher',
+            data: { page: page},
+            success: function (data) {
+                var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        if ('@roleid' == 11 || '@roleid' == 12) {
+                            $("#tbl_AllUser").append('<tr><td>' + showCount + '</td>' +
+
+                            '<td><a href="/Acquisition/IndentVoucherDetails?q='+getDataEncrypted("id=" + data[i].VoucherId + "?v ='dis'")+'">'+data[i].Name+'</a></td>'+
+
+                            '<td>'+
+                             ((data[i].VoucherStatus == 0) ? '<span>Pending</span>' : (data[i].VoucherStatus == 1) ? '<span>Approved</span>' : (data[i].VoucherStatus == 2) ? '<span>Completed</span>' : '<span>Deleted</span>') +
+                      '</td>' +
+
+
+                            '<td>' +
+                            ((data[i].CreatedBy != null) ?
+                                ((data[i].CreatedBy == 0) ? '<img src="/Images/UserPicture/thumb/admin.jpg" class="user-photo" />' +
+                                '<span>Super Admin</span>' : '<img src="/Images/UserPicture/thumb/' + data[i].CreatedUserPic + '" class="user-photo" />' +
+                                '<a href="#" id="IdForUserDetails" data-uid=' + data[i].CreatedBy + '><span>' + data[i].CreatedUserPic + '</span></a>') : 'N/A')+
+                            '</td>'+
+
+
+                            '<td>' + data[i].CreatedDateFormat + '</td>' +
+
+                            '<td>'+
+                                ((data[i].UpdatedBy != null)?
+                                ((data[i].UpdatedBy == 0) ? '<img src="/Images/UserPicture/thumb/admin.jpg" class="user-photo" />' +
+                                '<span>Super Admin</span>' : '<img src="/Images/UserPicture/thumb/' + data[i].UpdateUserPic + '" class="user-photo" />' +
+                                '<a href="#" id="IdForUserDetails" data-uid=' + data[i].UpdatedBy + '><span>' + data[i].UpdateUsername + '</span></a>') : '<span>Not updated yet</span>') +
+                            '</td>'+
+
+                            '<td>'+
+                             ((data[i].UpdatedBy != null) ? '<span>' + data[i].UpdatedDateFormate +'</span>' : '<span>Not updated yet</span>') +
+
+                            '</td>'+
+                            '<td>' +
+                            '<span class="green bold" data-toggle="tooltip" data-container="body" title="Print Indent Voucher" style="cursor:pointer;font-size:16px!important;">' +
+                                 '<a href="/Acquisition/IndentVoucherDetailsPrint?q=' + getDataEncrypted("id=" + data[i].VoucherId + "") + '" target="_blank"><small style="color:#3C8DBC"> <i class="fa fa-print"></i> Print </small></a></span>' +
+                            '<span class="green bold" data-toggle="tooltip" data-container="body" title="Print Indent Voucher With Transactions" style="cursor:pointer;font-size:16px!important;">'+
+                                 '<a href="/Acquisition/Print?q='+getDataEncrypted("id="+data[i].VoucherId+"") + '" target="_blank"><small style="color:#3C8DBC"> <i class="fa fa-print"></i> Print </small></a></span>'+
+                            '</td>'+
+                            '</tr>');
+                        } else {
+                            var edit = 'edit';
+                            var display = 'dis';
+                            $("#tbl_AllUser").append('<tr><td>' + showCount + '</td>' +
+
+                            '<td><a href="/Acquisition/IndentVoucherDetails?q='+getDataEncrypted("id="+ data[i].VoucherId+"?v="+display+"")+'">'+data[i].Name+'</a></td>'+
+
+                            '<td>'+
+                               ((data[i].VoucherStatus == 0) ? '<span>Pending</span>':(data[i].VoucherStatus == 1) ? '<span>Approved</span>':(data[i].VoucherStatus == 2) ? '<span>Completed</span>' : '<span>Deleted</span>') +
+                            '</td>'+
+
+                            '<td>'+
+                                ((data[i].CreatedBy > 0) ? '<img src="/Images/UserPicture/thumb/' + data[i].CreatedUserPic + '" class="user-photo" />' +
+                                '<a href="#" id="IdForUserDetails" data-uid=' + data[i].UserId + '><span>' + data[i].CreatedUserName + '</span></a>' : '<img src="/Images/UserPicture/thumb/admin.jpg" class="user-photo" />' +
+                                 '<span>Super Admin</span>')+
+                            '</td>'+
+
+                            '<td>' + data[i].CreatedDateFormat + '</td>' +
+
+                            '<td>'+
+                                ((data[i].UpdatedBy != null) ? '<img src="/Images/UserPicture/thumb/' + data[i].UpdateUserPic + '" class="user-photo" />' +
+                                '<a href="#" id="IdForUserDetails" data-uid=' + data[i].UpdatedBy + '><span>' + data[i].UpdateUsername + '</span></a>' : '<span>Not updated yet</span>') +
+                            '</td>'+
+
+                            '<td>'+
+                                ((data[i].UpdatedBy != null) ? '<span>' + data[i].UpdatedDateFormate +'</span>' : 'Not updated at all') +
+                             '</td>' +
+                             '<td>'+
+                                ((data[i].VoucherStatus == 0 || data[i].VoucherStatus == 1) ? '<a href="/Acquisition/IndentVoucherDetails?q=' + getDataEncrypted("id=" + data[i].VoucherId + "?v=" + edit + "") + '">' +
+                                    '<span class="btn green btn_edit_pro" style="margin-right:3px;" data-toggle="tooltip" title="Edit Manual Indent" data-id=' + data[i].VoucherId +'><i class="fa fa-pencil"></i></span></a>':'')+
+                                ((data[i].VoucherStatus == 0) ? '<span class="btn green btn_app_indent_voucher" style="margin-right:3px;" data-toggle="tooltip" title="Approve Manual Indent" data-container="body" data-id=' + data[i].VoucherId + '><i class="fa fa-check"></i></span>' :'') +
+                                ((data[i].VoucherStatus > -1 && data[i].VoucherStatus != 2)? '<span class="btn btn-danger btn_delete_voucher " data-id=' + data[i].VoucherId + ' data-status=' + data[i].VoucherStatus + ' data-toggle="tooltip" title="Delete Manual Indent" data-container="body"><i class="fa fa-trash"></i></span>':'')+
+                                 '<span class="green bold" data-toggle="tooltip" data-container="body" title="Print Indent Voucher" style="cursor:pointer;font-size:16px!important;">'+
+                                 '<a href="/Acquisition/IndentVoucherDetailsPrint?q=' + getDataEncrypted("id=" + data[i].VoucherId + "") + '" target="_blank"><small style="color:#3C8DBC"> <i class="fa fa-print"></i> Print </small></a></span>' +
+                                 '<span class="green bold" data-toggle="tooltip" data-container="body" title="Print Indent Voucher With Transactions" style="cursor:pointer;font-size:16px!important;">' +
+                                 '<a href="/Acquisition/Print?q=' + getDataEncrypted("id=" + data[i].VoucherId + "") + '" target="_blank"><small style="color:#3C8DBC"> <i class="fa fa-print"></i> Print </small></a></span>' +
+
+                            '</td>'+
+                            '</tr>');
+
+                        }
+
+                        $('[data-toggle="tooltip"]').tooltip();
+                    }
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+    //*******************************  APPROVE VOUCHER btn work*****************************************
+    $("#tab1AllList,#tab2PendingList").on("click", ".btn_app_indent_voucher", function () {
+        var id = $(this).data("id");
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose
+        });
+        msg = "Are you sure want to approve this voucher?";
+        var template = kendo.template($("#temp_win_voucher_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+
+        kendoWindow.find("#btn_indent_noty_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_indent_noty_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            notification.show({ message: "Approving...", showTime: startTime() }, "upload-progress");
+            $.ajax({
+                url: '@Url.Action("IndentVoucherStatusChange", "Acquisition")',
+                type: 'Post',
+                data: { VoucherId: id, CreatedBy: userId, voucherStatus: 1 },
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if (data != "Error") {
+                        notification.show({ message: "Indent has been successfully approved.", showTime: startTime() }, "upload-success");
+                        location.reload();
+
+                    } else {
+                        notification.show({ message: "Indent approved was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                },
+                error: function (err) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                }
+
+            });
+        }).end();
+    });
+    @****************************************Complete Voucher btn work******************************************************@
+    
+    @*$("#IdForProductCompleteBtn").click(function(){
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose
+        });
+
+        msg = "Are you sure want to complete this voucher?";
+        var template = kendo.template($("#temp_win_indent_complete").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+
+        kendoWindow.find("#btn_indent_complete_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+
+        }).end();
+        kendoWindow.find("#btn_indent_complete_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            CompleteVoucher();
+        }).end();
+    });
+    function CompleteVoucher() {
+        notification.show({ message: "Completing voucher...", showTime: startTime() }, "upload-progress");
+        var sendData = {
+            VoucherId:'@(Model.VoucherId)',
+            InsertedBy: userId,
+            comState:2
+        };
+        $.ajax({
+            url: '@Url.Action("CompleteVoucher", "Acquisition")',
+            type: 'Post',
+            data:sendData,
+            success: function (data) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                if (data != "Error") {
+                    notification.show({ message: "Voucher has been successfully completed.", showTime: startTime() }, "upload-success");
+                    $("#Div_Manual_Indent").empty();
+                    $("#Div_Manual_Indent").append('<div class="win_loading_half"></div>');
+                    $("#Div_Manual_Indent").load('@Url.Action("_AllManualIndent", "Acquisition")?v=' + '@(ViewBag.v)' + '&status=' +@Model.VoucherStatus +'&id='+@Model.VoucherId);
+                    location.reload();
+                } else {
+                    notification.show({ message: "Voucher completion was unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+            },
+            error: function (err) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+            }
+
+        });
+    }*@
+
+    //*******************************  SHOW SALARY PACKAGE DETAILS *****************************************
+    $("#tab1AllList,#tab2PendingList ,#tab3ApprvdList ,#tab4CompletedList").on("click", ".btn_delete_voucher", function () {
+        var id = $(this).data("id");
+        var statusId = $(this).data("status");
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose
+        });
+        msg = "Are you sure you want to delete this voucher? It may cause problem in your system.";
+        var template = kendo.template($("#temp_win_voucher_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+
+        kendoWindow.find("#btn_indent_noty_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+
+        kendoWindow.find("#btn_indent_noty_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            deleteVoucher(id, statusId);
+        }).end();
+    });
+
+    function deleteVoucher(id, statusId) {
+        notification.show({ message: "Indent voucher is deleting...", showTime: startTime() }, "upload-progress");
+        $.ajax({
+            url: '@Url.Action("IndentVoucherStatusChange", "Acquisition")',
+            type: 'Post',
+            data: { VoucherId: id, CreatedBy: userId, voucherStatus: -1, preState: statusId },
+            success: function (data) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                if (data === "Error") {
+                    notification.show({ message: "Indent voucher deletion was unsuccessful", showTime: startTime() }, "upload-error");
+                }
+                else {
+                    notification.show({ message: "Indent voucher has been successfully deleted.", showTime: startTime() }, "upload-success");
+                    if (sta == null) {
+                        var passdata = { days: day };
+                        $("#tab1AllList").empty();
+                        $("#tab1AllList").append('<div class="loading_partial"></div>');
+                        $("#tab1AllList").load('@Url.Action("_ShowAllIndentVoucher", "Acquisition")', passdata);
+                    }
+                    else if (sta == 0) {
+                        var passdata = { days: day, status: 0 };
+                        $("#tab2PendingList").empty();
+                        $("#tab2PendingList").append('<div class="loading_partial"></div>');
+                        $("#tab2PendingList").load('@Url.Action("_ShowAllIndentVoucher", "Acquisition")', passdata);
+                    }
+                    else if (sta == 1) {
+                        var passdata = { days: day, status: 1 };
+                        $("#tab3ApprvdList").empty();
+                        $("#tab3ApprvdList").append('<div class="loading_partial"></div>');
+                        $("#tab3ApprvdList").load('@Url.Action("_ShowAllIndentVoucher", "Acquisition")', passdata);
+                    }
+                    else if (sta == 2) {
+                        var passdata = { days: day, status: 2 };
+                        $("#tab4CompletedList").empty();
+                        $("#tab4CompletedList").append('<div class="loading_partial"></div>');
+                        $("#tab4CompletedList").load('@Url.Action("_ShowAllIndentVoucher", "Acquisition")', passdata);
+                    }
+
+                }
+            }
+        });
+    };
+    $("#tab1AllList,#tab2PendingList,#tab3ApprvdList,#tab4CompletedList,#tab5DeletedList").on("click", "#IdForUserDetails", function (e) {
+        e.preventDefault();
+        var id = $(this).data("uid");
+        $("#DivForUserDeatilsView").empty();
+        $("#DivForUserDeatilsView").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '50%',
+            title: "User Details",
+            close: onWindowClose
+        });
+        $("#DivForUserDeatilsView").html('<div class="win_loading_half"></div>');
+        var DivForUserDeatilsView = $("#DivForUserDeatilsView").data("kendoWindow");
+        DivForUserDeatilsView.refresh({ url: "/Acquisition/DisplayUserDetails?UserId=" + id });
+        DivForUserDeatilsView.center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+    });
+
+
+</script>
+
+<script>
+    var start = moment();
+    var end = moment().subtract(1, 'days');
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $("#liForInedntVou").addClass('sublistActive');
+        $('#reportrange').daterangepicker({
+            startDate: start,
+            endDate: end,
+            ranges: {
+                'All': [moment(), moment().subtract(1, 'days')],
+                'Today': [moment(), moment()],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            }
+        }, cb);
+
+        cb(start, end);
+        start = moment(); end = moment();
+
+        $('.ranges').on("click", "li", function () {
+            $("#cancelBt").text('Close');
+            var day = $(this).data("range-key");
+            if (day == "All") {
+                btn_All();
+                $("#IdForDateStatus").empty();
+            } else {
+                if (day == "Today") {
+                    btn_today();
+                } else if (day == "Last 7 Days") {
+                    btn_last_seven();
+                } else if (day == "Last 30 Days") {
+                    btn_last_thirty();
+                }
+            }
+        });
+        $(".applyBtn").click(function () {           
+            var startDate = $("[name=daterangepicker_start]").val();
+            var endDate = $("[name=daterangepicker_end]").val();           
+            loadTab(day, startDate, endDate);
+            $("#IdForDateStatus").empty();
+            $("#IdForDateStatus").append("Custom Range");
+        });
+    });
+    function cb(start, end) {
+
+        if (start == null && end == null) {
+            $('#reportrange span').html("All");
+            $("#IdForDateStatus").empty();
+            
+            return;
+        }
+        else if ((!start._isValid && !end._isValid)) {
+            $('#reportrange span').html("All");
+            $("#IdForDateStatus").empty();
+
+            return;
+        } else if (start._d > end._d) {
+            $('#reportrange span').html("All");
+            $("#IdForDateStatus").empty();
+            
+            return;
+        }
+        $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+    }
+   
+    function loadTab(day, startDate, endDate) {
+        page = 0;
+   
+        if (sta == null) {
+            var passdata = { days: day, StartDate: startDate, EndDate: endDate };
+            $("#tab1AllList").empty();           
+            $("#tab1AllList").append('<div class="loading_partial"></div>');
+            $("#tab1AllList").load('@Url.Action("_ShowAllIndentVoucher", "Acquisition")', passdata);
+            $("#IdForDateStatus").text((day == 1) ? 'Today' : 'Last ' + day + ' Days');           
+        }
+        else if (sta == 0) {
+            var passdata = { days: day,status: 0 , StartDate: startDate, EndDate: endDate };
+            $("#tab2PendingList").empty();
+            $("#tab2PendingList").append('<div class="loading_partial"></div>');
+            $("#tab2PendingList").load('@Url.Action("_ShowAllIndentVoucher", "Acquisition")', passdata);
+            $("#IdForDateStatus").text((day == 1) ? 'Today' : 'Last ' + day + ' Days');
+        }
+        else if (sta == 1) {
+            var passdata = { days: day, status: 1, StartDate: startDate, EndDate: endDate };
+            $("#tab3ApprvdList").empty();
+            $("#tab3ApprvdList").append('<div class="loading_partial"></div>');
+            $("#tab3ApprvdList").load('@Url.Action("_ShowAllIndentVoucher", "Acquisition")', passdata);
+            $("#IdForDateStatus").text((day == 1) ? 'Today' : 'Last ' + day + ' Days');
+           
+        }
+        else if (sta == 2) {
+            var passdata = { days: day, status: 2, StartDate: startDate, EndDate: endDate };
+            $("#tab4CompletedList").empty();          
+            $("#tab4CompletedList").append('<div class="loading_partial"></div>');
+            $("#tab4CompletedList").load('@Url.Action("_ShowAllIndentVoucher", "Acquisition")', passdata);
+            $("#IdForDateStatus").text((day == 1) ? 'Today' : 'Last ' + day + ' Days');
+        }
+        else if (sta == -1) {
+            var passdata = { days: day, status: -1, StartDate: startDate, EndDate: endDate };
+            $("#tab5DeletedList").empty();
+            $("#tab5DeletedList").append('<div class="loading_partial"></div>');
+            $("#tab5DeletedList").load('@Url.Action("_ShowAllIndentVoucher", "Acquisition")', passdata);
+            $("#IdForDateStatus").text((day == 1) ? 'Today' : 'Last ' + day + ' Days');
+        }
+    }
+</script>
+<style>
+      .order-id {
+            display: inline-block;
+            min-width: 60px;
+        }
+    #get {
+        float: right;
+        margin: 0px auto 0;
+    }
+</style>

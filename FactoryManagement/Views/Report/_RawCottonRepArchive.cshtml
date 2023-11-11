@@ -1,0 +1,40 @@
+﻿
+
+
+
+@using FactoryManagement.Helpers;
+
+@{
+    var count = 0;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<table class="table table-striped table-bordered table-hover" id="tbl_raw_cottn">
+    <tbody>
+        <tr>
+            <th>#</th>
+            <th>File Name</th>
+            <th>Generated Date</th>
+            <th></th>
+        </tr>
+        @foreach (var item in ViewBag.ReportList as IEnumerable<FactoryManagement.ModelView.Report.Daily_Raw_Cotton_Report_List_Model_View>)
+        {
+            count++;
+            string s = item.ReportName;
+            int idx = s.LastIndexOf('.');
+            string fileName = s.Substring(0, idx);
+            string extension = s.Substring(idx);
+            <tr>
+                <th>@count .</th>
+                <td>
+                    @Html.EncodedActionLink(fileName, "ShowRawCottonArchiveDetails", "Report", new { id = item.Id }, null)
+                </td>
+                <td>@item.CreatedDateFormat</td>
+                <td><a href="@Html.EncodedParam("ShowRawCottonArchiveDetails", "Report", new { id = item.Id }, null)"><span class="btn green" data-id="@item.Id"><i class="fa fa-info-circle"></i></span></a></td>
+            </tr>
+        }
+    </tbody>
+</table>
+<script>
+    totalCount = '@(ViewBag.TotalPro)';
+    showCount = '@count';
+</script>

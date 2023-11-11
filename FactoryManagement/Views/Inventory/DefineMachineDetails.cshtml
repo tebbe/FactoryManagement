@@ -1,0 +1,302 @@
+﻿
+
+
+
+@************************************** Created By Jerin Jahan (Date:27.07.2016)  ***************************************@
+
+
+@using FactoryManagement.Helpers;
+@model FactoryManagement.ModelView.Inventory.MachineListModelView
+@{
+    bool isAdd = ViewBag.isAdd;
+    int precount =Convert.ToInt32(Model.Pre_Quantity);
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var All_Id = db.Machines.Where(m => m.Acroynm == Model.MachineAcronym).Select(m => m.Id).ToList();
+    int existing_count = db.MachineLists.Where(m => All_Id.Contains(m.MachineTypeId)).Count();
+    existing_count = existing_count - Model.Quantity;
+}
+
+<style>
+    .table th ,table td{border:none!important;}
+</style>
+@using (Html.BeginForm())
+{
+    @Html.HiddenFor(m => m.MachineTypeId)
+    @Html.HiddenFor(m => m.CreatedBy)
+    <div class="col-md-12 col-sm-12" id="DivForMachineDefine">
+        @if (existing_count > 0)
+        {
+            <div class="row"><div class="col-md-3 col-md-push-9  col-sm-3 col-sm-push-9">
+                <span class="btn btn-xs blue" id="btn_Show_Pre_Machine"><i class="fa fa-list-ul"></i> Machine Name</span>
+            </div></div>
+            <div class="col-md-offset-1 col-md-6">
+                <table class="table">
+                    <tr><th width="5%">SL</th><th width="95%">Machine Name</th></tr>
+                    @for (int i = 1; i <= Model.Quantity; i++)
+                    {
+                        existing_count++;
+                        string count = existing_count.ToString("00");
+                        <tr>
+                            <td>@i.</td>
+                            <td>
+                                <input type="text" class="k-textbox txtMachineName" value=""
+                                       name="MachineName_@existing_count" id="MachineName_@existing_count" data-count="@count"
+                                       data-val-length-max="100"
+                                       data-val-remote="Machine name already exsits"
+                                       data-val-remote-additionalfields="*.MachineAcronym,*.MachineTypeId"
+                                       data-val-remote-type="Post" data-val-remote-url="/RemoteValidation/MachineAcronynmExist"
+                                       placeholder="@(ViewBag.Acronym) - @count"
+                                       onfocus="this.placeholder = ''" onblur="this.placeholder = ' @(ViewBag.Acronym) - @count ' "
+                                       style="width:40%!important;" />
+                                <span class="field-validation-valid text-danger" data-valmsg-for="MachineName_@i" data-valmsg-replace="true"></span>
+                            </td>
+                        </tr>
+                    }
+                    <tr>
+                        <td></td>
+                        <td>
+                            <input type="button" value="Save" class="btn green" id="btnMachineDefine" />
+                            <input type="reset" value="Refresh" class="btn yellow" id="btnMachineDefineRefresh" />
+                            <input type="button" value="Back" class="btn red" id="btnMachineDefineBack" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-5">
+                <div class="col-xs-12" id="divForSelectedParts">
+                    <h4>Added Main Parts List</h4><hr />
+                    <div class="form-group" id="DivForParts">
+                        @Html.Label("Select Spare Parts", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4" })
+                        <div class="col-md-7 col-sm-7 col-xs-11" id="DivForSpareParts">
+                            @(Html.Kendo().MultiSelect()
+                                        .Name("SpareParts")
+                                        .DataTextField("Name")
+                                        .DataValueField("PartsId")
+                                        .Placeholder("Select products...")
+                                        .AutoBind(false)
+                                        .HtmlAttributes(new { style = "width:100%" })
+                                        .Events(e => e.Change("onSparePartsChange").Select("onSparePartsSelect"))
+                                        .DataSource(source => { source.Read(read => { read.Action("GetAllSpareParts", "Inventory"); }).ServerFiltering(true); })
+                            )
+                            <span class="field-validation-valid text-danger" data-valmsg-for="SpareParts" data-valmsg-replace="true"></span>
+                        </div>
+                        @*<div class="col-md-1 col-sm-1 col-xs-1">
+                            <span class="k-icon k-i-plus" style="cursor:pointer;" id="btnAddNewParts"> Add New Parts</span>
+                        </div>*@
+                    </div>
+                    <div id="tblForAddedPart"  style="display:none;">
+                       
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="col-md-offset-1 col-md-6 col-sm-offset-1 col-sm-6">
+                <table class="table">
+                    <tr><th width="5%">SL</th><th width="95%">Machine Name</th></tr>
+                    @for (int i = 1; i <= Model.Quantity; i++)
+                    {
+                        string count = i.ToString("00");
+                        <tr>
+                            <td>@i.</td>
+                            <td>
+                                <input type="text" class="k-textbox txtMachineName" value=""
+                                       name="MachineName_@i" id="MachineName_@i" data-count="@count"
+                                       data-val-length-max="100"
+                                       data-val-remote="Machine name already exsits"
+                                       data-val-remote-additionalfields="*.MachineAcronym,*.MachineTypeId"
+                                       data-val-remote-type="Post" data-val-remote-url="/RemoteValidation/MachineAcronynmExist"
+                                       placeholder="@(ViewBag.Acronym) - @count"
+                                       onfocus="this.placeholder = ''" onblur="this.placeholder = ' @(ViewBag.Acronym) - @count ' "
+                                       style="width:40%!important;" />
+                                <span class="field-validation-valid text-danger" data-valmsg-for="MachineName_@i" data-valmsg-replace="true"></span>
+                            </td>
+                        </tr>
+                    }
+                    <tr>
+                        <td></td>
+                        <td>
+                            <input type="button" value="Save" class="btn green" id="btnMachineDefine" />
+                            <input type="reset" value="Refresh" class="btn yellow" id="btnMachineDefineRefresh" />
+                            <input type="button" value="Back" class="btn red" id="btnMachineDefineBack" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+          
+                <div class="col-md-5">
+                    <div class="col-xs-12" id="divForSelectedParts">
+                        <h4>Added Main Parts List</h4><hr />
+                        <div class="form-group" id="DivForParts">
+                            @Html.Label("Select Spare Parts", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4" })
+                            <div class="col-md-7 col-sm-7 col-xs-11" id="DivForSpareParts">
+                                @(Html.Kendo().MultiSelect()
+                                        .Name("SpareParts")
+                                        .DataTextField("Name")
+                                        .DataValueField("PartsId")
+                                        .Placeholder("Select products...")
+                                        .AutoBind(false)
+                                        .HtmlAttributes(new { style = "width:100%" })
+                                        .Events(e => e.Change("onSparePartsChange").Select("onSparePartsSelect"))
+                                        .DataSource(source => { source.Read(read => { read.Action("GetAllSpareParts", "Inventory"); }).ServerFiltering(true); })
+                                )
+                                <span class="field-validation-valid text-danger" data-valmsg-for="SpareParts" data-valmsg-replace="true"></span>
+                            </div>
+                            @*<div class="col-md-1 col-sm-1 col-xs-1">
+                                <span class="k-icon k-i-plus" style="cursor:pointer;" id="btnAddNewParts"> Add New Parts</span>
+                            </div>*@
+                        </div>
+                        <div id="tblForAddedPart" style="display:none;">
+                            
+                        </div>
+                    </div>
+                </div>
+            
+        }
+    </div>
+}
+<div id="Win_machine_name_list"></div>
+<script>
+    var AllMachineDetails = "";
+    var validation = $("#DivForMachineDefine").kendoValidator({
+        rules: {
+            remote: function (input) {
+                var errormessage;
+                var remoteAttr = input.attr("data-val-remote-url");
+                if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                    return true;
+                }
+                var isInvalid,MachineAcronym="";
+                var data = {};
+                if(input.val() == ""){MachineAcronym= '@(ViewBag.Acronym)'+' - '+input.data('count');}
+                else{MachineAcronym = input.val();}
+                data = { MachineTypeId: @Model.MachineTypeId, MachineAcronym: MachineAcronym };
+                $.ajax({
+                    url: remoteAttr,
+                    mode: "abort",
+                    port: "validate" + input.attr('name'),
+                    dataType: "json",
+                    type: input.attr("data-val-remote-type"),
+                    data: data,
+                    async: false,
+                    success: function (response) {
+                        isInvalid = response;
+                        if (isInvalid === true) {
+                            isInvalid = true;
+                        }
+                        else {
+                            isInvalid = false;
+                        }
+                    }
+                });
+                return isInvalid;
+            }
+        },
+        messages: {
+            remote: function (input) {return input.data('val-remote');}
+        }
+    }).data("kendoValidator");
+    $("#btnMachineDefine").click(function () {
+        if(validation.validate()){
+            if('@(ViewBag.isAdd)' === 'True'){
+                notification.show({ message: "Machine type creating....", showTime: startTime() }, "upload-progress");
+                var allMachineName= [];
+                var pre_count ='@(Model.Pre_Quantity)';
+                for (i = 1; i <= @Model.Quantity; i++) {
+                    pre_count++;
+                    if ($('#MachineName_' + i).val() === '') {
+                        allMachineName.push("@(ViewBag.Acronym)"+pre_count);
+                    }
+                    else {
+                        allMachineName.push($('#MachineName_' + i).val());
+                    }
+                }
+                sendData.allMachineName=allMachineName;
+                $.ajax({
+                    url: url,
+                    type: 'Post',
+                    data: sendData,
+                    success: function (data) {
+                        notification.hide();notification.setOptions({ autoHideAfter: 5000 });
+                        if (data === "Error") {
+                            notification.show({ message: "Machine type creation was unsuccessful.", showTime: startTime() }, "upload-error");
+                        } else {
+                            notification.show({ message: "Add new machine has been successfully saved. ", showTime: startTime() }, "upload-success");
+                            location.href='@Url.Action("AllEquipmentList", "Inventory")?MachineTypeId='+sendData.id;
+                        }
+                    }
+                });
+            }else{
+                notification.show({message: "All machine name saving...",showTime: startTime()}, "upload-progress");
+                var AllMachineDetails=[];
+                $(".txtMachineName").each(function(){
+                    if($(this).val() === ''){
+                        var count = $(this).data('count');
+                        AllMachineDetails.push("@(ViewBag.Acronym)"+" - "+count);
+                    }
+                    else{
+                        AllMachineDetails.push($(this).val());
+                    }
+                });
+                var data ={MachineTypeId:$("#MachineTypeId").val(),AllMachineDetails:AllMachineDetails,CreatedBy:userId};
+                $.ajax({
+                    url: '@Url.Action("SaveMachineName", "Inventory")',
+                    type: 'Post',
+                    data: data,
+                    success: function (data) {
+                        if (data === "Success") {
+                            notification.hide();notification.setOptions({ autoHideAfter: 5000 });
+                            notification.show({message: "Machine name has been successfully saved.", showTime: startTime()}, "upload-success");
+                            location.href='@Url.Action("AllEquipmentList", "Inventory")?q=' + getDataEncrypted("MachineTypeId=" +@Model.MachineTypeId);
+                        } else {
+                            notification.show({message: "Machine name save was unsuccessful.", showTime: startTime()}, "upload-error");
+                        }
+                    },
+                    error:function(err){
+                        notification.hide();notification.setOptions({ autoHideAfter: 5000 });
+                        notification.show({message: "Error occurred.", showTime: startTime()}, "upload-waring");
+                    }
+                });
+
+            }
+        }
+    });
+    $("#btnMachineDefineBack").click(function(){
+        location.reload();
+    });
+
+
+    //************************* Showing All Existing Machine Name ***********************************************************
+    $("#btn_Show_Pre_Machine").click(function () {
+        $("#Win_machine_name_list").empty();
+        $("#Win_machine_name_list").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '60%',
+            title: 'Showing All Existing Machine Name List',
+            overflow: 'hidden',
+            close: onWindowClose
+        });
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+
+        $("#Win_machine_name_list").html('<div class="loading_partial"></div>');
+        var Win_machine_name_list = $("#Win_machine_name_list").data("kendoWindow");
+        Win_machine_name_list.refresh({ url: "/Inventory/_ShowPreMachineName?Acronym="+encodeURIComponent('@Model.MachineAcronym')});
+        Win_machine_name_list.center().open();
+    });
+</script>
+<script>
+    console.log('DefineMachineDetails.cshtml line 294');
+    $("#btnMachineDefineRefresh").click(function(){
+        $("#div_For_DefineMachine").empty();
+        $("#div_For_DefineMachine").append('<div class="loading_partial"></div>');
+        $("#div_For_DefineMachine").show();
+        $("#div_For_DefineMachine").load('@Url.Action("DefineMachineDetails", "Inventory")?id=' + @Model.MachineTypeId + '&quan=' + @Model.Quantity + '&isAdd='+'@(isAdd)');
+    });
+    
+</script>

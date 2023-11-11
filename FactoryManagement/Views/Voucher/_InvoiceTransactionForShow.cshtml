@@ -1,0 +1,82 @@
+﻿@************************* Created By Jerin Jahan (Date : 24.01.2017) ***************************************@
+@model IEnumerable<FactoryManagement.Models.View_Voucher_Transaction>
+@using FactoryManagement.Helpers
+@{
+    var count = 0;
+}
+
+@if (Model.Count() > 0)
+{
+    <table class="table table-bordered" id="tbl_invoice_tran">
+        <tr>
+            <th>#</th>
+            <th>Transaction Name</th>
+            <th>Created By</th>
+            <th>Created Date</th>
+            <th>Approved By</th>
+            <th>Approved Date</th>
+            <th>Status</th>
+        </tr>
+        @foreach (var list in Model)
+        {
+            count++;
+            <tr>
+                <th>@count.</th>
+                <td><span style="color:#428bca;cursor:pointer;" class="tranname" data-id="@list.Id" data-name="@list.TranName">@list.TranName</span></td>
+                <td>
+                    @if (list.CreatedBy > 0)
+                    {
+                        <img class="user-photo" src="/Images/UserPicture/thumb/@list.CreatedUserPic">
+                        <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = list.CreatedBy, isDisplay = true }, null)">@list.CreatedUserName</a>
+                    }
+                    else
+                    {
+                        <img class="user-photo" src="/Images/UserPicture/thumb/@list.CreatedUserPic">
+                        <span>@list.CreatedUserName</span>
+                    }
+                </td>
+                <td>@list.CreatedDateName</td>
+                <td>
+                    @if (list.ApprovedBy != null)
+                    {
+                        if (list.ApprovedBy > 0)
+                        {
+                            <img class="user-photo" src="/Images/UserPicture/thumb/@list.ApprovedUserPic">
+                            <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = list.ApprovedBy, isDisplay = true }, null)">@list.ApprovedUserName</a>
+                        }
+                        else
+                        {
+                            <img class="user-photo" src="/Images/UserPicture/thumb/@list.ApprovedUserPic">
+                            <span>@list.ApprovedUserName</span>
+                        }
+                    }
+                    else
+                    {
+                        <span>Not approved yet</span>
+                    }
+                </td>
+                <td>@list.ApproveFormate</td>
+                <td style="font-weight:bold;">
+                    @if (list.ApproveStatus == 0)
+                    { <span class="text-warning">Not approved yet</span>}
+                    else if (list.ApproveStatus == 1)
+                    { <span class="text-info">Approved but not received yet</span>}
+                    else if (list.ApproveStatus == 2)
+                    { <span class="text-success">Received</span>}
+                    else
+                    {<span class="text-danger">Rejected</span> }
+                </td>
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <h4>There is no record to display</h4>
+}
+<script>
+    totalCount = '@(ViewBag.Count)';
+    showCount = '@count';
+</script>
+
+

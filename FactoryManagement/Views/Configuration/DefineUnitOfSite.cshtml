@@ -1,0 +1,368 @@
+﻿
+
+
+@************************************** Created By Mabia Mishu (Date:27.09.2016)  ***************************************@
+@model FactoryManagement.ModelView.Configuration.SiteListModelView
+@{
+    ViewBag.Title = "Define Unit Information";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    var j = (Model.UnitCount != 0 || Model.UnitCount != null) ? (Model.UnitCount + 1) : 1;
+    var p = (Model.UnitCount != 0 || Model.UnitCount != null) ? (Model.UnitCount + 1) : 1;
+}
+@if (Model.IsResidential)
+{
+    @Html.HiddenFor(m => m.SiteId)
+    @Html.HiddenFor(m => m.UnitId)
+
+    <div class="form-horizontal col-md-12 col-sm-12 col-xs-12" id="DivForUnitDefine">
+        <hr />
+        <div class="form-group">
+            @Html.LabelFor(model => model.SiteName, htmlAttributes: new { @class = "control-label col-md-2 col-sm-3" })
+            <div class="col-md-3 col-sm-4" style="padding-top:7px;">
+                @Html.DisplayFor(model => model.SiteName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        @if (Model.SiteAcronym != null)
+        {
+            <div class="form-group">
+                @Html.LabelFor(model => model.SiteAcronym, htmlAttributes: new { @class = "control-label col-md-2 col-sm-3" })
+                <div class="col-md-3 col-sm-4" style="padding-top:7px;">
+                    @Html.DisplayFor(model => model.SiteAcronym, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+            </div>
+        }
+        <div class="form-group">
+            @Html.LabelFor(model => model.UnitNumber, "Building Number", htmlAttributes: new { @class = "control-label col-md-2 col-sm-3" })
+            <div class="col-md-3 col-sm-4" style="padding-top:7px;">
+                @Html.DisplayFor(model => model.UnitNumber, new { htmlAttributes = new { } })
+            </div>
+        </div>
+        <div class="col-md-offset-2 col-sm-offset-3" id="divForUnitDetailsValidate">
+            <div class="form-group">
+                @Html.Label("Building Name", htmlAttributes: new { @class = "col-md-3 col-sm-4 col-xs-5" })
+            </div>
+
+            @for (int i = 1; i <= Model.UnitNumber; i++)
+            {
+                <div class="form-group">
+                    <div class="col-md-3 col-sm-4 col-xs-5">
+                        <input type="text" class="k-textbox text-box single-line k-invalid" value="" name="UnitName_@i" id="UnitName_@i"
+                               style="width:60%!important;" placeholder="Building-@j" onfocus="this.placeholder = ''" onblur="this.placeholder = ' Building-@j ' " />
+                        <span class="field-validation-valid text-danger" data-valmsg-for="UnitName_@i" data-valmsg-replace="true"></span>
+                    </div>
+                </div>
+                j++;
+            }
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10 col-sm-offset-3 col-sm-9">
+                <input type="button" value="Update" class="k-button k-state-default" id="btnUnitCreate" />
+                <input type="reset" value="Refresh" class="k-button k-state-default" id="btnRefresh" />
+                <input type="button" value="Cancel" class="k-button k-state-default" id="btnUnitCreateCancle" />
+            </div>
+        </div>
+    </div>
+    <script>
+        var AllUnitDetails = [];
+        $(document).ready(function(){
+            $("#liForConfig").addClass('active');
+        });
+        var validation = $("#DivForUnitDefine").kendoValidator().data("kendoValidator");
+        $("#btnUnitCreate").click(function () {
+            if(validation.validate()){
+                notification.show({message: "Saving unit name...",showTime: startTime()}, "upload-progress");
+                var j=(@Model.UnitCount != 0 || @Model.UnitCount != null)?(@Model.UnitCount+1):1 ;
+                for(i = 1; i <= @Model.UnitNumber; i++){
+                    var UnitName = "";
+                    if($('#UnitName_' + i).val() === ''){
+                        UnitName ="Building-"+j;
+                    }else{
+                        UnitName = $('#UnitName_' + i).val();
+                    }
+                    AllUnitDetails.push(UnitName); j++;
+                }
+                var data ={SiteId:$("#SiteId").val(),SiteName:'@(Model.SiteName)',AllUnitDetails:AllUnitDetails,CreatedBy:userId};
+                $.ajax({
+                    url: '@Url.Action("SaveSiteUnitInfo", "Configuration")',
+                    type: 'Post',
+                    data: data,
+                    success: function (data) {
+                        notification.hide();notification.setOptions({autoHideAfter: 2000});
+                        if (data !== "Error") {
+                            notification.show({message: "Unit successfully added", showTime: startTime()}, "upload-success");
+                            @*location.href='@Url.Action("ShowSiteInfoWithDeptList", "Configuration")?siteId='+$("#SiteId").val()+'&IsDisplay=false';*@
+                            location.href = "/Configuration/ShowSiteInfoWithDeptList?q=" + getDataEncrypted("siteId=" + $("#SiteId").val() + "?IsDisplay=false");
+                        } else {
+                            notification.show({message: "Unit add unsuccessful", showTime: startTime()}, "upload-error");
+                        }
+                    }
+                });
+            }
+        });
+        $("#btnRefresh").click(function(){
+            location.reload();
+        });
+        $("#btnUnitCreateCancle").click(function(){
+            location.href = "/Configuration/ShowSiteInfoWithDeptList?q=" + getDataEncrypted("siteId=" + $("#SiteId").val() + "?IsDisplay=false");
+        });
+    </script>
+}
+else
+{
+    @Html.HiddenFor(m => m.SiteId)
+    @Html.HiddenFor(m => m.UnitId)
+
+    <div class="form-horizontal col-md-12 col-sm-12 col-xs-12" id="DivForUnitDefine">
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.SiteName, htmlAttributes: new { @class = "control-label col-md-2 col-sm-3" })
+            <div class="col-md-3 col-sm-4" style="padding-top:7px;">
+                @Html.DisplayFor(model => model.SiteName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        @if (Model.SiteAcronym != null)
+        {
+            <div class="form-group">
+                @Html.LabelFor(model => model.SiteAcronym, htmlAttributes: new { @class = "control-label col-md-2 col-sm-3" })
+                <div class="col-md-3 col-sm-4" style="padding-top:7px;">
+                    @Html.DisplayFor(model => model.SiteAcronym, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+            </div>
+        }
+        <div class="form-group">
+            @Html.LabelFor(model => model.UnitNumber, "Unit Number", htmlAttributes: new { @class = "control-label col-md-2 col-sm-3" })
+            <div class="col-md-3 col-sm-4" style="padding-top:7px;">
+                @Html.DisplayFor(model => model.UnitNumber, new { htmlAttributes = new { } })
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-3 col-md-offset-2">
+                <div class="form-group">
+                    @Html.Label("Unit Name", htmlAttributes: new { @class = "col-md-12 col-sm-12 col-xs-12" })
+                </div>
+                @for (int i = 1; i <= Model.UnitNumber; i++)
+                {
+                    <div class="form-group">
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                            <input type="text" onclick="setSelectedNow('@i')"
+                                   class="k-textbox form-control" value=""
+                                   name="UnitName_@i" id="UnitName_@i"
+                                   data-val-remote="Unit name already exsits"
+                                   data-val-remote-additionalfields="*.UnitName,*.UnitId,*.SiteId"
+                                   data-val-remote-type="Post"
+                                   data-val-remote-url="/RemoteValidation/SiteUnitNameExist"
+                                   style="width:60%!important;" placeholder="Unit-@j"
+                                   onfocus="this.placeholder = ''"
+                                   onblur="this.placeholder = ' Unit-@j ' " />
+                            <span class="field-validation-valid text-danger" data-valmsg-for="UnitName_@i" data-valmsg-replace="true"></span>
+                        </div>
+                    </div>
+                    j++;
+                }
+            </div>
+            <div class="col-xs-3">
+                <div class="form-group">
+                    @Html.Label("Unit Acryonm", htmlAttributes: new { @class = "col-md-12 col-sm-12 col-xs-12" })
+                </div>
+
+                @for (int i = 1; i <= Model.UnitNumber; i++)
+                {
+                    <div class="form-group">
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                            <input type="text" onclick="setSelectedNow('@i')"
+                                   class="k-textbox form-control" value=""
+                                   name="UnitAcryonm_@i" id="UnitAcryonm_@i"
+                                   data-val-remote-additionalfields="*.SiteId,*.UnitAcryonm,*.UnitId"
+                                   data-val-remote-type="Post"
+                                   data-val-remote-url="/RemoteValidation/SiteUnitAcryonmExist"
+                                   style="width:60%!important;"
+                                   placeholder="Acryonm-@p"
+                                   onfocus="this.placeholder = ''"
+                                   onblur="this.placeholder = ' Acryonm-@p ' " />
+                            <span class="field-validation-valid text-danger" data-valmsg-for="UnitAcryonm_@i" data-valmsg-replace="true"></span>
+                        </div>
+                    </div>
+                    p++;
+                }
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10 col-sm-offset-3 col-sm-9">
+                <input type="button" value="Update" class="k-button k-state-default" id="btnUnitCreate" />
+                <input type="reset" value="Refresh" class="k-button k-state-default" id="btnRefresh" />
+                <input type="button" value="Cancel" class="k-button k-state-default" id="btnUnitCreateCancle" />
+            </div>
+        </div>
+    </div>
+    <script>
+        var AllUnitDetails = [];
+        var AllUnitAcryonm = [];
+        var totalUnit = parseInt('@Model.UnitNumber'), siteId = $("#SiteId").val(),selectedNow;
+        $(document).ready(function () {
+            $("#liForConfig").addClass('active');
+        });
+        function setSelectedNow(val) {
+            selectedNow = parseInt(val);
+        }
+        var prevalidate = $("#DivForUnitDefine").kendoValidator({
+            rules: {
+                remote: function (input) {
+                    var errormessage;
+                    var remoteAttr = input.attr("data-val-remote-url");
+                    if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                        return true;
+                    }
+                    var id =input.attr('id').split('_')[1];
+                    var isInvalid;
+                    var data = { SiteId: siteId, Unitname: $("#UnitName_" + id).val()};
+                    $.ajax({
+                        url: remoteAttr,
+                        mode: "abort",
+                        port: "validate" + input.attr('name'),
+                        dataType: "json",
+                        type: input.attr("data-val-remote-type"),
+                        data: data,
+                        async: false,
+                        success: function (response) {
+                            isInvalid = response;
+                            if (isInvalid === true) {
+                                isInvalid = true;
+                            }
+                            else {
+                                isInvalid = false;
+                            }
+                        }
+                    });
+                    return isInvalid;
+                },
+                remote_Acryonm: function (input) {
+                    var errormessage;
+                    var remoteAttr = input.attr("data-val-remote-url");
+                    if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                        return true;
+                    }
+                    var id =input.attr('id').split('_')[1];
+                    var isInvalid;
+                    var data = { SiteId: siteId, UnitAcryonm: $("#UnitAcryonm_" + id).val()};
+                    $.ajax({
+                        url: remoteAttr,
+                        mode: "abort",
+                        port: "validate" + input.attr('name'),
+                        dataType: "json",
+                        type: input.attr("data-val-remote-type"),
+                        data: data,
+                        async: false,
+                        success: function (response) {
+                            isInvalid = response;
+                            if (isInvalid === true) {
+                                isInvalid = true;
+                            }
+                            else {
+                                isInvalid = false;
+                            }
+                        }
+                    });
+                    return isInvalid;
+                },
+                //duplicate_UnitName: function (input) {
+                //    if (input.is("[name=UnitName_" + selectedNow + "]") && totalUnit > 1 && selectedNow > 1 && $("#UnitName_" + selectedNow).val()!="") {
+                //        alert("[name=UnitName_" + selectedNow + "]");
+                //        alert(selectedNow);
+
+                //        var x;
+                //        for (var i = 2; i <= totalUnit; i++) {
+                           
+                //            if ($("#UnitName_" + (i - 1)).val() == $("#UnitName_" + selectedNow).val()) {
+                //                return false;
+                //            } else {
+                //                x = true;
+                //            }
+                //        }
+                //        if (x) {
+                //            return x;
+                //        }
+                //    } else {
+                //        return true;
+                //    }
+                //},
+                //duplicate_UnitAcronym: function (input) {
+                //    if (input.is("[name=UnitAcryonm_" + selectedNow + "]") && totalUnit > 1 && selectedNow > 1 && $("#UnitAcryonm_" + selectedNow).val() != "") {
+                //        var x;
+                //        for (var i = 2; i <= totalUnit; i++) {
+                //            if ($("#UnitAcryonm_" + (i - 1)).val() == $("#UnitAcryonm_" + selectedNow).val()) {
+                //                return false;
+                //            } else {
+                //                x = true;
+                //            }
+                //        }
+                //        if (x) {
+                //            return x;
+                //        }
+                //    } else {
+                //        return true;
+                //    }
+                //},
+            },
+            messages: {
+                remote: "Unit name already exists!!!",
+                remote_Acryonm: "Unit acryonm already exists!!!",
+                //duplicate_UnitName: "You have already typed this name!!!",
+                //duplicate_UnitAcronym: "You have already typed this acronym!!!",
+            }
+        }).data("kendoValidator");
+
+
+
+
+        $("#btnUnitCreate").click(function () {
+            if (prevalidate.validate()){
+                notification.show({ message: "Saving unit name and acryonm...",showTime: startTime()}, "upload-progress");
+                var j=(@Model.UnitCount != 0 || @Model.UnitCount != null)?(@Model.UnitCount+1):1 ;
+                for(i = 1; i <= @Model.UnitNumber; i++){
+                    var UnitName = "",UnitAcryonm="";
+                    if($('#UnitName_' + i).val() === ''){
+                        UnitName ="Unit-"+j;
+                    }else{
+                        UnitName = $('#UnitName_' + i).val();
+                    }
+                    if ($('#UnitAcryonm_' + i).val() === '') {
+                        UnitAcryonm = "UnitAcryonm-" + j;
+                    } else {
+                        UnitAcryonm = $('#UnitAcryonm_' + i).val();
+                    }
+                    AllUnitDetails.push(UnitName);
+                    AllUnitAcryonm.push(UnitAcryonm);
+                    j++;
+                }
+
+                var data = { SiteId: $("#SiteId").val(), SiteName: '@(Model.SiteName)', AllUnitDetails: AllUnitDetails, AllUnitAcryonm:AllUnitAcryonm,CreatedBy:userId};
+                $.ajax({
+                    url: '@Url.Action("SaveSiteUnitInfo", "Configuration")',
+                    type: 'Post',
+                    data: data,
+                    success: function (data) {
+                        notification.hide();notification.setOptions({autoHideAfter: 2000});
+                        if (data !== "Error") {
+                            notification.show({message: "Unit successfully added", showTime: startTime()}, "upload-success");
+                            location.href = "/Configuration/ShowSiteInfoWithDeptList?q=" + getDataEncrypted("siteId=" + $("#SiteId").val() + "?IsDisplay=false");
+                        } else {
+                            notification.show({message: "Unit add unsuccessful", showTime: startTime()}, "upload-error");
+                        }
+                    }
+                });
+            }
+        });
+        $("#btnRefresh").click(function(){
+            location.reload();
+        });
+        $("#btnUnitCreateCancle").click(function(){
+            if('@(ViewBag.page)' == '1'){
+                location.href='@Url.Action("AllSiteInfo", "Configuration")';
+            }else{
+              
+                location.href = "/Configuration/ShowSiteInfoWithDeptList?q=" + getDataEncrypted("siteId=" + $("#SiteId").val() + "?IsDisplay=false");
+            }
+        });
+    </script>
+}

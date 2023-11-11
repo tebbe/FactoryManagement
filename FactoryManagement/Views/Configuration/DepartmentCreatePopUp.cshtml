@@ -1,0 +1,37 @@
+﻿
+@model FactoryManagement.ModelView.Configuration.DepartmentListModelView
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;">
+    <div id="DivForDeptCreate"></div>
+    <div class="k-edit-buttons k-state-default">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnDeptCreate"><span class="k-icon k-update"></span>Create</button>
+        <button type="reset" class="k-button k-button-icontext k-grid-update" id="btnDeptCreateRefresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnDeptCreateCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        var sendData = {
+            siteId: '@Model.SiteId',
+            siteName: '@Model.SiteName',
+            unitId : '@Model.UnitId',
+            pageName: "AllSiteInfo"
+        };
+        $("#DivForDeptCreate").load('@Url.Action("DepartmentCreate", "Configuration")', sendData);
+    });
+    $("#btnDeptCreateRefresh").click(function () {
+        var sendData = {
+            siteId: '@Model.SiteId',
+            siteName: '@Model.SiteName',
+            unitId: '@Model.UnitId',
+            pageName: "AllSiteInfo"
+        };
+        $("#DivForDeptCreate").empty();
+        $("#DivForDeptCreate").append('<div class="partial_loading_half"></div>');
+        $("#DivForDeptCreate").load('@Url.Action("DepartmentCreate", "Configuration")', sendData);
+        $("#DivForDeptCreate").show();
+    });
+    $("#btnDeptCreateCancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

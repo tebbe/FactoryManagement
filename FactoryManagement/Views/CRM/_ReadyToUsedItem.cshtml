@@ -1,0 +1,67 @@
+﻿
+
+
+@********************************************* Created By Jerin Jahan (04.10.2016) *******************************@
+
+@model IEnumerable<FactoryManagement.Models.View_All_Approved_AcquisitionList>
+
+@{
+    int ItemCount = 1;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int busId = ViewBag.busId;
+    
+}
+
+<h4>All Received Item List(Ready to be used)</h4><hr />
+<table class="table table-bordered" id="tbl_ready_Foruse">
+    <tbody>
+        <tr style="border:1px solid #ddd!important;">
+            <th width="5%">#</th>
+            <th width="30%">Product Name</th>
+            <th width="20%">Quantity</th>
+            <th width="20%">Status</th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            int Recieve_Quantity = Convert.ToInt32(db.BusinessOrderProductLists
+                .Where(m => m.AcquisitionOrderId == item.AcquisitionId && m.BusinessOrderId == busId)
+                .Select(m => m.ReceivedQuantity).FirstOrDefault());
+
+            int assign_Quan = Convert.ToInt32(db.BusinessOrderProductLists
+                .Where(m => m.AcquisitionOrderId == item.AcquisitionId && m.BusinessOrderId == busId)
+                .Select(m => m.AssignedQuantity).FirstOrDefault());
+            int remain_qan = Recieve_Quantity - assign_Quan;
+
+            if (Recieve_Quantity > 0 && remain_qan > 0)
+            {
+                <tr class="tbl_tr">
+                    <th scope="row">@ItemCount.</th>
+                    <td>@item.ProductName</td>
+                    <td>
+                        <span class="fa fa-check"
+                              data-acqid="@item.AcquisitionId"
+                              data-productid="@item.ProductId"
+                              data-quantity="@item.Quantity"
+                              data-uname="@item.UnitName"
+                              data-unitname="Bale">
+                            Received
+                        </span>
+                    </td>
+                    <td>
+                        <span id="rcvd_@item.AcquisitionId">@remain_qan</span>
+                        <span>@item.UnitName</span>
+                        <span class="fa fa-plus btnAddToCart"
+                              id="btn_plus_@item.AcquisitionId"
+                              data-acqid="@item.AcquisitionId"
+                              data-quan="@remain_qan"
+                              data-uname="@item.UnitName"
+                              data-pname="@item.ProductName">
+                        </span>
+                    </td>
+                </tr>
+                ItemCount++;
+            }
+        }
+    </tbody>
+</table>
+

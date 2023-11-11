@@ -1,0 +1,328 @@
+﻿@************************************** Created By Jerin Jahan (Date:18.08.2016)  ***************************************@
+
+@model FactoryManagement.ModelView.SalaryConfig.SalaryAccAddModelView
+
+
+<h4>Account Type Add</h4>
+<hr />
+<div id="DivForSalaryAccAdd">
+    @Html.HiddenFor(m => m.Acc_Id)
+    @Html.HiddenFor(m => m.AllMonthId)
+    @Html.HiddenFor(m => m.AllMonthName)
+    @Html.HiddenFor(m => m.AccPayType)
+    @Html.HiddenFor(m => m.IsBaseSalary)
+    <div class="form-group">
+        @Html.LabelFor(model => model.Catagory, "Catagory", htmlAttributes: new { @class = "control-label col-md-5 col-sm-5" })
+        <div class="col-md-6 col-sm-7">
+            @(Html.Kendo().DropDownListFor(model => model.Catagory)
+              .OptionLabel("--Select One--")
+              .DataTextField("Name")
+              .DataValueField("SalaryCatagoryId")
+              .DataSource(source =>
+              {
+                  source.Read(read =>
+                  {
+                      read.Action("GetSalaryCatagory", "SalaryConfig", new { HasBaseSalary = Model.IsBaseSalary, isBas = Model.IsBaseSalary });
+                  });
+              })
+              .Events(e => e.Change("onCatagoryChange"))
+              .HtmlAttributes(new { style = "width: 100%" })
+            )
+            @Html.ValidationMessageFor(model => model.Catagory, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group" id="Div_Acc_type">
+        @Html.LabelFor(model => model.AccountType, "Type", htmlAttributes: new { @class = "control-label col-md-5 col-sm-5" })
+        <div class="col-md-6 col-sm-7">
+            @(Html.Kendo().DropDownListFor(model => model.AccountType)
+            .OptionLabel("--Select One--")
+            .BindTo(ViewBag.AccountType as IEnumerable<SelectListItem>)
+            .HtmlAttributes(new { style = "width:100%" })
+            .Events(e => e.Change("onAccountTypeChange"))
+            )
+            @Html.ValidationMessageFor(model => model.AccountType, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group" id="DivForName">
+        @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-5 col-sm-5" })
+        <div class="col-md-6 col-sm-4">
+            @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group" id="DivForCheckBox">
+        <div class="col-md-offset-5 col-md-6">
+            <input id="SpMonth" name="AccPayTyp" type="radio" value="Specific Month" class="k-valid"> Specific Month
+            <input id="Holiday" name="AccPayTyp" type="radio" value="Event" class="k-valid"> Event
+            <input id="Annual" name="AccPayTyp" type="radio" value="Annual" class="k-valid"> Annual
+        </div>
+        @Html.ValidationMessageFor(model => model.AccPayType, "", new { @class = "text-danger" })
+    </div>
+    <div class="form-group" id="DivForSpMon" style="display:none;">
+        @Html.LabelFor(model => model.MonthId, htmlAttributes: new { @class = "control-label col-md-5 col-sm-5" })
+        <div class="col-md-6 col-sm-7">
+            @(Html.Kendo().MultiSelect()
+            .Name("MonthId")
+            .DataTextField("Text")
+            .DataValueField("Value")
+            .Placeholder("--Select One--")
+            .HtmlAttributes(new { style = "width:100%" })
+            .BindTo(
+                new List<SelectListItem>() {
+                new SelectListItem() {Text = "January",Value = "1-January"},
+                new SelectListItem() {Text = "February",Value = "2-February" },
+                new SelectListItem() {Text = "March",Value = "3-March"},
+                new SelectListItem() {Text = "April",Value = "4-April"},
+                new SelectListItem() {Text = "May",Value = "5-May" },
+                new SelectListItem() {Text = "June",Value = "6-June"},
+                new SelectListItem() {Text = "July",Value = "7-July"},
+                new SelectListItem() {Text = "August",Value = "8-August" },
+                new SelectListItem() {Text = "September",Value = "9-September"},
+                new SelectListItem() {Text = "October",Value = "10-October"},
+                new SelectListItem() {Text = "November",Value = "11-November" },
+                new SelectListItem() {Text = "December",Value = "12-December"}
+                }).Value(ViewBag.monthId)
+            )
+            @Html.ValidationMessageFor(model => model.MonthId, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group" id="DivForHoliday" style="display:none;">
+        @Html.LabelFor(model => model.HolidayId, htmlAttributes: new { @class = "control-label col-md-5 col-sm-5" })
+        <div class="col-md-6 col-sm-7">
+            @(Html.Kendo().DropDownListFor(model => model.HolidayId)
+                              .OptionLabel("--Select One--")
+                              .BindTo(ViewBag.HolidayId)
+                              .HtmlAttributes(new { style = "width:100%" })
+                              .Value(Model.HolidayId.ToString())
+            )
+            @Html.ValidationMessageFor(model => model.HolidayId, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group" id="DivForAmount">
+        @Html.LabelFor(model => model.Amount, htmlAttributes: new { @class = "control-label col-md-5 col-sm-5" })
+        <div class="col-md-6 col-sm-4">
+            @Html.EditorFor(model => model.Amount, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.Amount, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group" id="DivForPercentage">
+        @Html.LabelFor(model => model.Percentage, htmlAttributes: new { @class = "control-label col-md-5 col-sm-5" })
+        <div class="col-md-6 col-sm-4">
+            @Html.EditorFor(model => model.Percentage, new { htmlAttributes = new { @class = "form-control k-textbox", @style = "width:40%!important;float:left;" } })
+            <span style="margin-left:10px;"> % of @Model.BaseSalary</span>
+            @Html.ValidationMessageFor(model => model.Percentage, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.AccountType, "Type", htmlAttributes: new { @class = "control-label col-md-5 col-sm-5" })
+        <div class="col-md-6 col-sm-7" style="padding-top:7px;">
+            <input id="Addition" name="AmountType" type="radio" value="Addition" class="k-valid"> Addition
+            <input id="Deduction" name="AmountType" type="radio" value="Deduction" class="k-valid"> Deduction
+
+            @Html.ValidationMessageFor(model => model.AmountType, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-offset-5 col-md-7 col-sm-offset-5 col-sm-7">
+            <input type="button" value="Update" class="k-button k-state-default" id="btnEditAccount" />
+            <input type="reset" value="Refresh" class="k-button k-state-default" id="btnAddAccRefresh" />
+            <input type="button" value="Cancel" class="k-button k-state-default" id="btnAddAccCancel" />
+        </div>
+    </div>
+</div>
+
+<script id="temp_win_usr_cunt" type="text/x-kendo-template">
+    <p style="font-size: 14px; padding: 10px">
+        This package already assigned with #=data# users.If you change this account this will applicable for all users.
+        <span style="color:darkblue;cursor:pointer;" id="btn_See_All_Usr">See all user</span>
+    </p>
+    <div style="text-align: right">
+        <input type="button" value="Update" class="k-button k-state-default" id="btnOkUpdate" />
+    </div>
+</script>
+
+<script>
+    var AllMonthId,IsAddition = true,AccPayType;
+    $(document).ready(function(){
+        if('@(Model.AccountType)' === '2'){
+            $("#DivForPercentage").show();
+            $("#DivForAmount").hide();
+        }else{
+            $("#DivForPercentage").hide();
+            $("#DivForAmount").show();
+        }
+
+        if('@(Model.AccPayType)' === '1'){
+            $("#SpMonth").prop("checked",true);
+            $("#DivForSpMon").show();
+        }
+        if('@(Model.AccPayType)' === '2'){
+            $("#Holiday").prop("checked",true);
+            $("#DivForHoliday").show();
+        }
+        if('@(Model.AccPayType)' === '3'){
+            $("#Annual").prop("checked",true);
+        }
+
+        if('@(Model.IsAddition)' === 'True'){
+            $("#Addition").prop("checked",true);
+            IsAddition = true;
+        }else{
+            $("#Deduction").prop("checked",true);
+            IsAddition = false;
+        }
+
+        if('@(Model.IsBaseSalary)' === 'True'){
+            $("#Div_Acc_type").hide();
+            $("#AccountType").val(1);
+            $("#DivForName").hide();
+            $("#DivForCheckBox").hide();
+            $("#AccPayType").val(3);
+            $("#Deduction").attr('disabled', true);
+            $("#Annual").prop("checked",true);
+        }
+    });
+
+    $("#SpMonth").click(function () {
+        if ($(this).is(":checked")) {
+            $("#DivForSpMon").show();
+            $("#DivForHoliday").hide();
+            $("#AccPayType").val(1)
+        }
+        else {
+            $("#DivForSpMon").hide();
+        }
+    });
+    $("#Holiday").click(function () {
+        if ($(this).is(":checked")) {
+            $("#DivForHoliday").show();
+            $("#DivForSpMon").hide();
+            $("#AccPayType").val(2)
+        }
+        else {
+            $("#DivForHoliday").hide();
+        }
+    });
+    $("#Annual").click(function () {
+        if ($(this).is(":checked")) {
+            $("#DivForHoliday").hide();
+            $("#DivForSpMon").hide();
+            $("#AccPayType").val(3)
+        }
+    });
+    $("#Addition").click(function () {
+        if ($(this).is(":checked")) {
+            IsAddition = true;
+        }
+        else {
+            IsAddition = false;
+        }
+    });
+    $("#Deduction").click(function () {
+        if ($(this).is(":checked")) {
+            IsAddition = false;
+        }
+        else {
+            IsAddition = true;
+        }
+    });
+    $("#btnEditAccount").click(function (e) {
+        if (confirm('Are you sure want to edit this account type?')) {
+            e.preventDefault();
+            var validation = $("#DivForSalaryAccAdd").kendoValidator().data("kendoValidator");
+            if (validation.validate()) {
+                var sendData={PackageId:@Model.PackageId};
+                $.ajax({
+                    url: '@Url.Action("ChkSalaryPackageInUsed", "SalaryConfig")',
+                    type: 'Post',
+                    data: sendData,
+                    success: function (data) {
+                        if(data !== "Error"){
+                            if(data){
+                                var kendoWindow = $("<div />").kendoWindow({
+                                    actions: ["Close"],
+                                    title: "Alert",
+                                    resizable: false,
+                                    modal: true
+                                });
+
+                                var template = kendo.template($("#temp_win_usr_cunt").html());
+                                kendoWindow.data("kendoWindow").content(template(data)).center().open();
+
+                                kendoWindow.find("#btnOkUpdate").click(function () {
+                                    kendoWindow.data("kendoWindow").close();
+                                    UpdateAccountType();
+                                }).end()
+
+                                kendoWindow.find("#btn_See_All_Usr").click(function () {
+                                    kendoWindow.data("kendoWindow").close();
+                                    var window = $("#WinForSalaryPackConfig").data("kendoWindow");
+                                    window.setOptions({
+                                        width: '60%',
+                                        title: 'This Package Already Assigned With Following User/s.'
+                                    });
+                                    window.refresh({
+                                        url: "/SalaryConfig/_AllUserListForSpeficSalaryPack?PackageId=" + '@(Model.PackageId)'
+                                    });
+                                    window.open();
+                                    window.center();
+                                }).end()
+
+                            }
+                            else{
+                                UpdateAccountType();
+                            }
+
+                        }
+                    }
+                });
+            }
+
+        }
+    });
+
+
+    function UpdateAccountType(){
+        notification.show({ message: "Account type adding...",showTime: startTime()}, "upload-progress");
+
+        var sendData = {Acc_Id:@Model.Acc_Id,PackageId:@Model.PackageId,Catagory:$("#Catagory").val(),
+            AccountType:$("#AccountType").val(),
+            IsBaseSalary:$("#IsBaseSalary").val(),
+            Name:$("#Name").val(),AccPayType:$("#AccPayType").val(),
+            AllMonthId:$("#MonthId").data("kendoMultiSelect").value().join(","),
+            HolidayId:$("#HolidayId").val(),Amount:$("#Amount").val(),
+            Percentage:$("#Percentage").val(),IsAddition:IsAddition,CreatedBy:userId};
+        $.ajax({
+            url: '@Url.Action("EditSalaryPckAccountInfo", "SalaryConfig")',
+            type: 'Post',
+            data: sendData,
+            success: function (data) {
+                notification.hide();
+                notification.setOptions({autoHideAfter: 5000});
+
+                if(data === "Success"){
+                    notification.show({message: "Account type successfully updated", showTime: startTime()},"upload-success");
+
+                    $("#Div_Salay_Acc_Add").empty();
+                    $("#Div_Salay_Acc_Add").hide();
+                    $("#Div_Already_Add_Acc").load('@Url.Action("AddedAccountWithPackList", "SalaryConfig")?PackageId=' + '@(Model.PackageId)');
+                }
+                else{
+                    notification.show({message: "Account type update unsuccessful", showTime: startTime()},"upload-error");
+                }
+            }
+        });
+
+    }
+
+    $("#btnAddAccRefresh").click(function(){
+        var sendData = {HasBaseSalary:HasBaseSalary,PackageId:@(Model.PackageId),AccountId:@(Model.Acc_Id)};
+        $("#Div_Salay_Acc_Add").load('@Url.Action("SalaryPackageAccEdit", "SalaryConfig")?',sendData);
+        $("#Div_Salay_Acc_Add").show();
+    });
+
+    $("#btnAddAccCancel").click(function(){
+        $("#Div_Salay_Acc_Add").empty();
+        $("#Div_Salay_Acc_Add").hide();
+    });
+</script>

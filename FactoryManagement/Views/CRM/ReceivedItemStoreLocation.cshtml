@@ -1,0 +1,143 @@
+﻿
+
+
+@********************************* CREATED BY JERIN JAHAN (DATE @ 03.10.2016) **************************************************@
+
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+
+<div class="k-edit-form-container col-lg-10 col-md-10 col-sm-10 col-xs-10" style="margin-bottom:4%;" id="Div_For_Direct_Sup_Order">
+    <div class="editor-label"><label>Store Into</label></div>
+    <div class="editor-field">
+        <div class="col-sm-11 col-xs-11" style="padding-right:0px;padding-left:0px!important">
+            @(Html.Kendo().DropDownList()
+              .Name("StoreLocation")
+              .OptionLabel("--Select One Type--")
+              .DataTextField("Text")
+              .DataValueField("Value")
+              .Events(e => e.Change("onStoreLocationChange"))
+              .BindTo(new List<SelectListItem>() {
+                  new SelectListItem() {
+                      Text = "Store",
+                      Value = "1"
+                  },
+                  new SelectListItem() {
+                      Text = "Ware-House",
+                      Value = "2"
+                  },
+                  new SelectListItem() {
+                      Text = "Custom",
+                      Value = "3"
+                  }
+              })
+              .HtmlAttributes(new { style = "width: 40%" })
+            )
+        </div>
+    </div>
+    <div id="Div_For_Store" style="display:none;">
+        <div class="editor-label"><label>Store</label></div>
+        <div class="editor-field">
+            <div class="col-sm-11 col-xs-11" style="padding-right:0px;padding-left:0px!important">
+                @(Html.Kendo().DropDownList().Name("StoreId")
+                  .OptionLabel("--Select One Type--")
+                  .BindTo(ViewBag.StoreId)
+                  .HtmlAttributes(new { style = "width:40%" })
+                )
+            </div>
+        </div>
+    </div>
+    <div id="Div_For_Ware" style="display:none;">
+        <div class="editor-label"><label>Ware-House</label></div>
+        <div class="editor-field">
+            <div class="col-sm-11 col-xs-11" style="padding-right:0px;padding-left:0px!important">
+                @(Html.Kendo().DropDownList().Name("WareHouseId")
+                  .OptionLabel("--Select One Type--")
+                  .BindTo(ViewBag.WareHouseId)
+                  .HtmlAttributes(new { style = "width:40%" })
+                )
+            </div>
+        </div>
+    </div>
+
+    <div id="Div_For_Site" style="display:none;">
+        <div class="editor-label"><label>Site</label></div>
+        <div class="editor-field">
+            <div class="col-sm-11 col-xs-11" style="padding-right:0px;padding-left:0px!important">
+                @(Html.Kendo().DropDownList().Name("SiteId")
+                  .OptionLabel("--Select One Type--")
+                  .BindTo(ViewBag.SiteId as SelectList)
+                  .Events(e => e.Select("onSiteIdSelect"))
+                  .HtmlAttributes(new { style = "width:40%" })
+                )
+            </div>
+        </div>
+    </div>
+   
+
+    <div class="k-edit-buttons k-state-default col-xs-11">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_item_store"><span class="k-icon k-update"></span>Assign</button>
+        <button type="reset" class="k-button k-button-icontext k-grid-cancel" id="btn_item_store_Cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+<script>
+    $("#btn_item_store_Cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#btn_item_store").click(function () {
+        var sendData = "";
+        if (locationtype === 1) {
+            sendData = {
+                id: AddedCartId,
+                qan: AddedCartQuan,
+                type: locationtype,
+                storeId: $("#StoreId").val(),
+                bus_id:BusinessOrderId,
+                UserId: userId
+            };
+        } else if (locationtype === 2) {
+            sendData = {
+                id: AddedCartId,
+                qan: AddedCartQuan,
+                type: locationtype,
+                wareId: $("#WareHouseId").val(),
+                bus_id: BusinessOrderId,
+                UserId: userId
+            };
+        } else {
+            sendData = {
+                id: AddedCartId,
+                qan: AddedCartQuan,
+                type: locationtype,
+                lineId: $("#LineId").val(),
+                bus_id: BusinessOrderId,
+                UserId: userId
+            };
+        } 
+        $.ajax({
+            url: '@Url.Action("AssignReceivedItem", "CRM")',
+            type: 'Post',
+            data: sendData,
+            success: function (data) {
+                if (data === "Success") {
+                    $("#btn_item_store").closest(".k-window-content").data("kendoWindow").close();
+
+                    $("#tbl_add_item").empty();
+                    count = 0;
+
+                    $("#div_all_received").empty();
+                    $("#div_all_received").append('<div class="loading_partial"></div>');
+                    $("#div_all_received").show();
+                    $("#div_all_assigen").empty();
+                    $("#div_all_assigen").append('<div class="loading_partial"></div>');
+                    $("#div_all_assigen").show();
+                    $("#div_all_received").load('@(Url.Action("_ReadyToUsedItem", "CRM"))?busId=' + BusinessOrderId);
+                    $("#div_all_assigen").load('@(Url.Action("_AssignButNotAcceptItem", "CRM"))?busId=' + BusinessOrderId);
+                } else {
+                    alert("Error");
+                }
+            }
+        });
+    });
+   
+</script>

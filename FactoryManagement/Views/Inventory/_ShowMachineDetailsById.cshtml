@@ -1,0 +1,38 @@
+﻿@model IEnumerable<FactoryManagement.Models.View_Machine_Line_Dept_Unit_List>
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-top:1%;margin-bottom:2%">
+    <style>
+       table tr{
+            height:25px;
+        }
+    </style>
+    <div class="col-xs-offset-1 col-xs-10">
+       <table style="width:70%">
+           @foreach (var item in Model)
+           {
+               <tr>
+                   <td width="40%">Machine Name</td>
+                   <td>@item.MachineAcronym</td>
+               </tr>          
+               <tr>           
+                   <td width="40%">Site Name</td>
+                   <td>@item.SiteName</td>
+               </tr>         
+               <tr>       
+                   <td width="40%">Unit Name</td>
+                   <td>@item.UnitName</td>
+               </tr>
+            <tr>
+                <td width="40%">Department Name</td>
+                <td>@item.DeptName</td>
+            </tr>
+            <tr>
+                <td width="40%">Line Name</td>
+                <td>@item.LineName</td>
+            </tr>
+           }
+       </table>
+    </div>
+</div>
+
+    
+

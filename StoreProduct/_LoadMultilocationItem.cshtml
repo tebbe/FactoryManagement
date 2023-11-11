@@ -1,0 +1,123 @@
+﻿
+@using FactoryManagement.Helpers
+
+@model FactoryManagement.Models.View_ProList_WithLC
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var ProductImageName = db.Inventory_Image_Lists.Where(m => m.InventoryId == Model.InventoryId).Select(m => m.ImageName).FirstOrDefault();
+    int multiCount = 1;
+    int added_qun = 0;
+    int max_quan = Convert.ToInt32(Model.Quantity);
+    int count = ViewBag.count;
+}
+<td class="col-md-1 col-sm-2" style="display:table-cell; vertical-align:middle; text-align:center;">
+    @if (ProductImageName != null)
+    {<img class="imgresize" src="~/Images/Inventory/Store/Resize/@ProductImageName" />}
+    else
+    {<img class="imgresize" src="~/Images/Inventory/Store/no_img.jpg" />}
+</td>
+<td class="col-sm-8">
+    <div class="col-sm-7 col-xs-12">
+        <a href="@Html.EncodedParam("StoreProductWithLCDetails","StoreProduct",new {id=Model.LocationId },null)">
+            <label class="name" id="lbl_Proname_@Model.LocationId"
+                   data-price="@Model.Price"
+                   data-name="@Model.ProductName (L/C : @Model.LC)"
+                   data-picture="@ProductImageName"
+                   data-quantity="@Model.Quantity"
+                   data-unitname="@Model.UnitName">
+                @Model.ProductName (L/C : @Model.LC)
+            </label>
+        </a>
+        <p class="lblProDesc">Staple @Html.DisplayFor(modelModel => Model.Description)</p>
+        @if (Model.Model != null)
+        {
+            <p>Model : @Model.Model</p>
+        }
+        @if (Model.BrandName != null)
+        {
+            <p>Brand : @Model.BrandName</p>
+        }
+        @if (Model.CountryName != null)
+        {
+            <p>Country of Origin: @Model.CountryName</p>
+        }
+    </div>
+    <div class="col-sm-5" style="padding:0px!important;">
+        @if (db.Inventory_Item_Location.Where(m => m.InventoryId == Model.InventoryId).Count() > 0)
+        {
+            var multipleList = (from m in db.Inventory_Item_Location
+                                where m.InventoryId == Model.InventoryId && m.ImportId == Model.ImportId
+                                group m by new
+                                {
+                                    m.StoreId,
+                                    m.WarehouseId
+                                } into i
+                                select new
+                                {
+                                    LocationId = i.FirstOrDefault().LocationId,
+                                    StoreId = i.FirstOrDefault().StoreId,
+                                    WareId = i.FirstOrDefault().WarehouseId,
+                                    StoreName = (i.FirstOrDefault().StoreId > 0) ? db.StoreLists.Where(sm => sm.Id == i.FirstOrDefault().StoreId).Select(sm => sm.StoreName).FirstOrDefault() : "",
+                                    WareName = (i.FirstOrDefault().WarehouseId > 0) ? db.WarehouseLists.Where(sm => sm.Id == i.FirstOrDefault().WarehouseId).Select(sm => sm.WarehouseName).FirstOrDefault() : "",
+                                    Quantity = i.Sum(x => x.Quantity)
+                                }).ToList();
+            foreach (var multi in multipleList)
+            {
+                int locid = multi.LocationId;
+                var lname = "";
+                <div>
+                    <div class="col-xs-7" style="padding:0px!important;">
+                        <p><strong>@multiCount.</strong> 
+                            @if (multi.StoreId > 0)
+                            {
+                                lname = multi.StoreName;
+                                <span>@multi.StoreName</span>
+                            }
+                            else
+                            {
+                                lname = multi.WareName;
+                                <span>@multi.WareName</span>
+                            }
+                        </p>
+                        <p>Quantity : <span id="spn_quan_@locid">@multi.Quantity</span> @Model.UnitName</p>
+                    </div>
+                    @if (Convert.ToDouble(multi.Quantity) > 0)
+                    {  
+                        <div class="col-xs-5" style="padding:0px!important;">
+                            <input type="button" value="Add To Cart"
+                                   class="btn btn-default cartItemOrder"
+                                   id="btnOrder_@locid"
+                                   data-quan="@multi.Quantity"
+                                   data-locationid="@locid"
+                                   data-multiple="1"
+                                   data-locname="@lname"
+                                   data-showplus="true"
+                                   data-picture="@ProductImageName"
+                                   data-name="@Model.ProductName (L/C : @Model.LC)"
+                                   data-unitname="@Model.UnitName" />
+                            <div id="divForOrder_@locid" style="display:none;font-size:16px;">
+                                <span class="fa fa-minus cartItemMinus" id="minusIcon_@locid" data-locationid="@locid" data-multiple="1" style="cursor:pointer;"></span>
+                                <span class="ProductInCart" id="cart_@locid">@added_qun</span>
+                                <input class="k-textbox txt_quantity" style="width:40%!important;display:none;"
+                                       data-max="@multi.Quantity"
+                                       data-locationid="@locid" data-multiple="1"
+                                       data-val-required="Please enter amount"
+                                       id="txt_quan_@locid" name="txt_quan_@locid"
+                                       value="@added_qun"
+                                       type="text" onkeypress="return cartQuan(event, this.value)">
+                                <span class="fa fa-plus cartItemPlus"
+                                      id="addIcon_@locid"
+                                      data-locationid="@locid" data-multiple="1"
+                                      style="cursor:pointer;"></span>
+                            </div>
+                        </div>
+                    }
+                </div>
+                multiCount++;
+            }
+        }
+    </div>
+</td>
+<script>
+    $('.imgresize').nailthumb({ width: 150, height: 150 });
+</script>

@@ -1,0 +1,183 @@
+﻿@{
+    int type = ViewBag.type;
+}
+<table class="table table-bordered table-striped table-condensed table-hover" style="margin-bottom:0px!important;border-bottom:none!important;">
+    <tbody>
+        <tr>
+            <td>
+                <span class="col-sm-4" style="padding-left:0px!important;">
+                    <span class="autocomplete-wrapper">
+                        <input class="text-field" id="textForSearch" placeholder="Type items name" type="text" autocomplete="off" style="height:2em">
+                    </span>
+                </span>
+                <span class="col-sm-3" style="padding-left:0px!important;">
+                    @(Html.Kendo().DatePicker()
+                        .Name("searchDate" + type).Format("dd-MMM-yy").Max(DateTime.Now)
+                        .HtmlAttributes(new { @style = "width:100%", @placeholder = "From Date" }))
+                </span>
+                <span class="col-sm-3" style="padding-left:0px!important;">
+                    @(Html.Kendo().DatePicker()
+                          .Name("searchToDate" + type).Format("dd-MMM-yy").Max(DateTime.Now)
+                          .HtmlAttributes(new { @style = "width:100%", @placeholder = "To Date" }))
+                </span>
+                <button class="btn btn-sm" id="searchWaste-@type"><i class="fa fa-search"></i></button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<div id="load_waste_table-@type"></div>
+<script id="temp_win_invalid_date" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px"> #=msg# </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_invalid_date_ok"><span class="k-icon k-update"></span>I got it</button>
+        </div>
+    </div>
+</script>
+<script>
+    $(document).ready(function () {
+        var param = getParam();
+        $("#load_waste_table-" + '@type').empty();
+        $("#load_waste_table-" + '@type').append('<div class="loading_half"></div>');
+        $("#load_waste_table-" + '@type').load('@Url.Action("_InvenMcsWasteList", "StoreProduct")', param);
+    });
+
+    $(function () {
+        $("#textForSearch").autocomplete({
+            minLength: 0,
+            source: function (request, response) {
+                content = $.trim(request.term);
+                $.ajax({
+                    url: '@Url.Action("ProductNameSearchForWaste", "StoreProduct")',
+                    type: "POST",
+                    dataType: "json",
+                    data: { prefix: content,type:@type},
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return { label: item.ProductName, value: item.ProductName, id: item.InventoryId };
+                        }))
+                    }
+                })
+            },
+            minLength: 1,
+            select: function (event, ui) {
+                isloadFirstTime = true;
+                searchInvenId = ui.item.id;
+                seachOnSelect();
+            },
+        })
+    .keyup(function () {
+        if ($.trim($("#textForSearch").val()) == "") {
+            searchInvenId = '';
+            var param = getParam();
+            $("#load_waste_table-" + '@type').empty().clearQueue();
+            $("#load_waste_table-" + '@type').append('<div class="loading_half"></div>');
+            $("#load_waste_table-" + '@type').load('@Url.Action("_InvenMcsWasteList", "StoreProduct")', param);
+        }
+    })
+    .autocomplete("instance")._renderItem = function (ul, item) {
+        var term = $.trim(this.term);
+        var re = new RegExp("(" + term + ")", "gi"),
+                   cls = "bold-text",
+                   template = "<span class='" + cls + "'>$1</span>",
+                   label = item.label.replace(re, template),
+                   $li = $("<li/>").appendTo(ul);
+        $("<span/>").attr("href", "#")
+                 .html(label)
+                 .appendTo($li);
+        return $li;
+    };
+    });
+
+    function seachOnSelect() {
+        var param = getParam();
+        $("#load_waste_table-" + '@type').empty().clearQueue();
+        $("#load_waste_table-" + '@type').append('<div class="loading_half"></div>');
+        $("#load_waste_table-" + '@type').load('@Url.Action("_InvenMcsWasteList", "StoreProduct")', param);
+    }
+
+    $("#searchToDate" + "@type")
+        .change(function () { dateSearchOnChange(); })
+        .keyup(function () { dateSearch(); });
+    $("#searchDate" + "@type")
+        .keyup(function () { dateSearch(); })
+        .change(function () { dateSearchOnChange(); });
+
+    $("#searchWaste-" + '@type').click(function () {
+        var param = getParam();
+        $("#load_waste_table-" + '@type').empty().clearQueue();
+        $("#load_waste_table-" + '@type').append('<div class="loading_half"></div>');
+        $("#load_waste_table-" + '@type').load('@Url.Action("_InvenMcsWasteList", "StoreProduct")', param);
+    });
+    function dateSearch() {
+        if ($("#searchToDate" + "@type").val() == "" && $("#searchDate" + "@type").val() == "") {
+            var param = getParam();
+            $("#load_waste_table-" + '@type').empty().clearQueue();
+            $("#load_waste_table-" + '@type').append('<div class="loading_half"></div>');
+            $("#load_waste_table-" + '@type').load('@Url.Action("_InvenMcsWasteList", "StoreProduct")', param);
+            return;
+        }
+    }
+    function dateSearchOnChange() {
+        var fromDate = $('#searchDate' + '@type').data("kendoDatePicker");
+        var toDate = $('#searchToDate' + '@type').data("kendoDatePicker");
+        if (fromDate.value() != "") {
+            toDate.min(new Date(fromDate.value()));
+        }
+        var param = getParam();
+        if (param.fromDate != "" && param.toDate != "") {
+            $("#load_waste_table-" + '@type').empty().clearQueue();
+            $("#load_waste_table-" + '@type').append('<div class="loading_half"></div>');
+            $("#load_waste_table-" + '@type').load('@Url.Action("_InvenMcsWasteList", "StoreProduct")', param);
+        }
+    }
+    $("#load_waste_table-" + '@type').on("click", "#orderby_date-" + '@type', function () {
+        var orderDate;
+        var caret = $(this).find('i');
+        if (caret.hasClass('fa-caret-down')) {
+            orderDate = 2;
+        } else {
+            orderDate = 1;
+        }
+        var param = {
+            type: '@ViewBag.type',
+            order: orderDate,
+            inventoryId: searchInvenId,
+            fromDate: $("#searchDate" + '@type').val(),
+            toDate: $("#searchToDate" + '@type').val()
+        }
+        $("#load_waste_table-" + '@type').empty().clearQueue();
+        $("#load_waste_table-" + '@type').append('<div class="loading_half"></div>');
+        $("#load_waste_table-" + '@type').load('@Url.Action("_InvenMcsWasteList", "StoreProduct")', param);
+    });
+    function getParam() {
+        var fromdate = new Date($("#searchDate" + '@type').val()) ? new Date($("#searchDate" + '@type').val()) : null;
+        var toDate = new Date($("#searchToDate" + '@type').val()) ? new Date($("#searchToDate" + '@type').val()) : null;
+        if (fromdate > toDate) {
+            $("#searchDate" + '@type').val('');
+            $("#searchToDate" + '@type').val('');
+            dateSearch();
+            var kendoWindow = $("<div />").kendoWindow({
+                actions: ["Close"],
+                title: "Alert",
+                resizable: false,
+                width: "30%",
+                modal: true
+            });
+            msg = "Please select valid date.From date can not be grater than To date.";
+            var template = kendo.template($("#temp_win_invalid_date").html());
+            kendoWindow.data("kendoWindow").content(template).center().open();
+            kendoWindow.find("#btn_invalid_date_ok").click(function () {
+                kendoWindow.data("kendoWindow").close();
+            }).end();
+        }
+        var param = {
+            type: '@ViewBag.type',
+            order: '@ViewBag.order',
+            inventoryId: searchInvenId,
+            fromDate: $("#searchDate" + '@type').val(),
+            toDate: $("#searchToDate" + '@type').val()
+        }
+        return param;
+    }
+</script>

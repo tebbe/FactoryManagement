@@ -1,0 +1,52 @@
+﻿@model IEnumerable<FactoryManagement.ModelView.Inventory.InventoryListModelView>
+
+@******************************** Created By Jerin Jahan (Date:24.09.2016) *********************************@
+
+@{
+    var count = 0;
+}
+@if (Model.Count() > 0)
+{
+    <table class="table table-bordered" id="tbl_store_pro">
+        <tbody>
+            <tr>
+                <th width="50%">
+                    <span></span>
+                    <span>Name</span>
+                </th>
+                <th width="30%">Created By</th>
+                <th width="10%">Created Date</th>
+                <th width="5%"></th>
+            </tr>
+
+            @foreach (var item in Model)
+            {
+                count++;
+                <tr id="tr_pro_@item.InventoryId">
+                    <td>
+                        <span>@count.</span>
+                        <span><a href="/StoreProduct/StoreProductDetails?id=@item.InventoryId">@item.ProductName</a></span>
+                    </td>
+                    <td>
+                        @if (item.CreatedBy == 1)
+                        {
+                        <img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" /><span> Super Admin</span>
+                        }
+                        else
+                        {
+                            FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+                            var user = db.View_UserLists.Where(m => m.UserType == 1 && m.UserId == item.CreatedBy).FirstOrDefault();
+                        <img src="~/Images/UserPicture/thumb/@user.Picture" class="user-photo" />
+                        <span><a href="/HumanResource/DisplayEmployeeDetails?UserId=@item.CreatedBy&userType=1">@user.UserName</a></span>
+                        }
+                    </td>
+                    <td>@Convert.ToDateTime(item.CreatedDate).ToString("MMM dd yyyy")</td>
+                    <td>
+                        <span data-id="@item.InventoryId" class="btnAcqOrderEdit"> <span class="fa fa-pencil-square-o"></span></span>
+                        <span data-id="@item.InventoryId" class="btn_pro_delete"><span class="fa fa-trash"></span></span>
+                    </td>
+                </tr>  
+            }
+        </tbody>
+    </table>
+}

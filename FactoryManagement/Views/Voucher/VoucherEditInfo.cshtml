@@ -1,0 +1,17 @@
+﻿
+
+
+@model FactoryManagement.ModelView.Voucher.VoucherModelView
+<style>
+        #div_for_vou_info table td,#div_for_vou_info table th{border: none !important;}
+</style>
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;" >
+    <div id="div_for_vou_info" style="width:100%!important;float:left;"><div class="loading_partial"></div></div>
+</div>
+<script>
+    var IsVatSelected = 0;
+    $(document).ready(function () {
+        $("#div_for_vou_info").load('@Url.Action("ShowVoucher", "Voucher")?VoucherId=' + '@Model.VoucherId' + '&Display=0' + '&IsAccSelect' + '@Model.IsAccountSelected');
+    });
+</script>
+

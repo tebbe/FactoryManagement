@@ -1,0 +1,302 @@
+﻿@*********************************************** Created By Jerin Jahan Date(14.05.2017) ************************@
+@using FactoryManagement.Helpers
+@{
+    ViewBag.Title = "Indent Transaction History";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<link href="~/Content/DateRangeCSS/daterangepicker.css" rel="stylesheet" />
+<script src="~/Scripts/BateRangeJS/moment.js"></script>
+<script src="~/Scripts/BateRangeJS/daterangepicker.js"></script>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <a href="javascript:;">Inventory</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Acquisition/ShowAllIndentVoucher">Indent History</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Acquisition/IndentTransactionHis">Indent Trasaction List</a>
+        </li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">Indent Trasaction List</span>
+                </div>
+                
+                <div class="actions">
+                    <label class="green" id="IdForDateStatus"></label>
+                    <div class="btn-group btn-group-devided" data-toggle="buttons">
+                        <div id="reportrange" class="pull-right" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
+                            <span></span> <b class="caret"></b>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div style="margin-bottom:15px;">
+                    @(Html.Kendo().MultiSelect()
+                      .Name("multiselectSearch")
+                      .DataTextField("SearchTag")
+                      .DataValueField("Id")
+                              .Placeholder("Start typing name")
+                      .Events(e => e.Change("onSearchChange"))
+                      .AutoClose(false)
+                      .DataSource(source =>
+                      {
+                          source.Read(read =>
+                          {
+                              read.Action("SearchTransactionList", "Acquisition"); //Set the Action and Controller names.
+
+                          });
+                          source.ServerFiltering(false);
+                      })
+                    )
+                    <span class="k-icon k-i-search" style="margin-top:-27px;margin-right:10px;float:right;">&nbsp;</span>
+                </div>
+
+                <div class="table-responsive">
+                    <div id="Div_All_Indent_Trans" style="display:none;"><div class="loading_partial"></div></div>                 
+                    <div id="loading" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="Win_show_Trans_His_Dtls"></div>
+<div id="DivForTranUserDetails"></div>
+<script>
+    var showCount = 0, totalCount = 0, day = 0, inCallback = false, page = 0, content = '';
+    var start = moment();
+    var end = moment().subtract(1, 'days');
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $("#liForInedntVou").addClass('sublistActive');
+
+        $("#Div_All_Indent_Trans").show();
+        $("#Div_All_Indent_Trans").load("_IndentTransactionHis", "Acquisition");
+
+     
+        //Datepicker search code
+        $('#reportrange').daterangepicker({
+            startDate: start,
+            endDate: end,
+            ranges: {
+                'All': [moment(), moment().subtract(1, 'days')],
+                'Today': [moment(), moment()],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            }
+        }, cb);
+
+        cb(start, end);
+        start = moment(); end = moment();
+
+        $('.ranges').on("click", "li", function () {
+            var day = $(this).data("range-key");
+            if (day == "All") {
+                btn_All();
+            } else {
+                if (day == "Today") {
+                    btn_today();
+                } else if (day == "Last 7 Days") {
+                    btn_last_seven();
+                } else if (day == "Last 30 Days") {
+                    btn_last_thirty();
+                }
+            }
+        });
+        $(".applyBtn").click(function () {
+            page = 0;
+            var startDate = $("[name=daterangepicker_start]").val();
+            var endDate = $("[name=daterangepicker_end]").val();
+            var passData = {StartDate: startDate, EndDate: endDate };
+            $("#Div_All_Indent_Trans").load('@Url.Action("_IndentTransactionHis", "Acquisition")', passData);
+            $("#IdForDateStatus").empty();
+            $("#IdForDateStatus").append("Custom Range");
+        });
+    });
+    function onSearchChange() {
+        var id = this.value();
+        $("#Div_All_Indent_Trans").load('@Url.Action("_IndentTransactionHis", "Acquisition")?search=' + id);
+    }
+    @******************Multi selector******************@
+    function cb(start, end) {
+        if (start == null && end == null) {
+            $('#reportrange span').html("All");
+            return;
+        }
+        else if ((!start._isValid && !end._isValid)) {
+            $('#reportrange span').html("All");
+            return;
+        } else if (start._d > end._d) {
+            $('#reportrange span').html("All");
+            return;
+        }
+        $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+    }
+</script>
+<script>
+    @******************************** OnScroll Bind Table Data *************************@
+    $(window).scroll(function () {
+        var countBytype, result;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/Acquisition/GetIndentTransaction',
+            data: { page: page },
+            success: function (data){
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        $("table#tbl_indent_trans").append('<tr><th>' + showCount + '.</th>' +
+                            '<td><span class="lblShowTransDetails" style="color:#5b9bd1;cursor:pointer;" data-id="' + data[i].Id + '">' + data[i].TransactionName + '</span></td>' +
+                             '<td>' + data[i].Name + '</td>' +
+                            '<td>' + data[i].ProName + '</td>' +
+                            '<td>'+data[i].Quantity+' '+data[i].UnitName+'</td>' +
+                            '<td><img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].InsertedUserPic + '">' +
+                                ((data[i].InsertedBy == 0) ? ' Super Admin ' :
+                                '<a href="#" id="IdForUserDetails" data-uid='+ data[i].InsertedBy +'><span>' + data[i].InsertedUserName + '</span></a>') +
+                            '</td>' +
+                            '<td>' + data[i].InsertedDateName + '</td>' +
+                            '<td>'+
+                                '<a href="/Acquisition/IndentTransactionPrint?q='+getDataEncrypted("id=" + data[i].Id + "")+'" target="_blank" data-toggle="tooltip" title="Print Indent Transaction"> <span class="btn green btn_edit_pro"> <i class="fa fa-print"></i> Print </span></a>'+
+                            '</td>');
+                    }
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+    @****************************Auto Complete Search**********************************************@
+  
+    
+    //******************* Show Import Details Transactionwise ************************
+    $("#Div_All_Indent_Trans").on("click", ".lblShowTransDetails", function () {
+        var id = $(this).data("id");
+        $("#Win_show_Trans_His_Dtls").empty();
+        $("#Win_show_Trans_His_Dtls").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width:'50%',
+            height:'27%',
+            title: 'Transaction Details',
+            close: onWindowClose
+        });
+        $("#Win_show_Trans_His_Dtls").html('<div class="win_loading_half"></div>');
+        var Win_show_Trans_His_Dtls = $("#Win_show_Trans_His_Dtls").data("kendoWindow");
+        Win_show_Trans_His_Dtls.refresh({ url: "/Acquisition/_IndentTransDetails?id=" + id });
+        Win_show_Trans_His_Dtls.center().open();
+
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+    //******************* Show User Details  ************************
+    $("#Div_All_Indent_Trans").on("click", "#IdForUserDetails", function (e) {
+        e.preventDefault();
+        var id = $(this).data("uid");
+        $("#DivForTranUserDetails").empty();
+        $("#DivForTranUserDetails").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '50%',
+            title: "User Details",
+            close: onWindowClose
+        });
+        $("#DivForTranUserDetails").html('<div class="win_loading_half"></div>');
+        var DivForTranUserDetails = $("#DivForTranUserDetails").data("kendoWindow");
+        DivForTranUserDetails.refresh({ url: "/Acquisition/DisplayUserDetails?UserId=" + id });
+        DivForTranUserDetails.center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+    });
+</script>
+<script>
+    function   btn_today() {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = { days: 1};
+        $("#Div_All_Indent_Trans").empty();
+        $("#Div_All_Indent_Trans").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Today's Dispatched History");
+        $("#Div_All_Indent_Trans").load('@Url.Action("_IndentTransactionHis", "Acquisition")', passdata);      
+        days = 1;
+        $("#IdForDateStatus").text('Today');
+    };
+
+    function  btn_last_seven() {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = { days: 7};
+        $("#Div_All_Indent_Trans").empty();
+        $("#Div_All_Indent_Trans").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Last 7 Days Dispatched History");
+        $("#Div_All_Indent_Trans").load('@Url.Action("_IndentTransactionHis", "Acquisition")', passdata);
+        days = 7;
+        $("#IdForDateStatus").text('Last ' + days + ' Days');
+    };
+    function   btn_last_thirty() {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = { days: 30};
+        $("#Div_All_Indent_Trans").empty();
+        $("#Div_All_Indent_Trans").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Last 30 Days Dispatched History");
+        $("#Div_All_Indent_Trans").load('@Url.Action("_IndentTransactionHis", "Acquisition")', passdata);
+        days = 30;
+        $("#IdForDateStatus").text('Last ' + days + ' Days');
+    };
+    function btn_All() {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        $("#Div_All_Indent_Trans").empty();
+        $("#Div_All_Indent_Trans").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing All History");
+        $("#Div_All_Indent_Trans").load('@Url.Action("_IndentTransactionHis", "Acquisition")');
+        days = 0;
+        $("#IdForDateStatus").empty();
+    };
+</script>
+<style>
+    #get {
+        float: right;
+        margin: 0px auto 0;
+    }
+    .k-floatwrap{
+        padding:5px!important;
+    }
+</style>

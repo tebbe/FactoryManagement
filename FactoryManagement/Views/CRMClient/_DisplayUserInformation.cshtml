@@ -1,0 +1,120 @@
+﻿@model FactoryManagement.ModelView.CRM.Client_User_ListsModelView
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var clientUserContactList = db.Client_User_ContactList.Where(m => m.UserId == Model.UserId).ToList();
+    var count = 1;
+
+}
+<div class="k-edit-form-container col-lg-12 col-md-12 col-sm-12 col-xs-12" style="margin-bottom:4%;" id="DivForUserUpdate">   
+    <div class="form-horizontal col-md-6 col-sm-6" id="DivForUserBasicInformation" style="padding:0px;">        
+        <div class="editor-label" ><label for="UserName">Name</label></div>
+        <div class="editor-field" style="padding-top:6px;">
+                @Html.DisplayFor(model => model.UserName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        </div>
+        @if (Model.Designation != null)
+        {
+       <div class="editor-label"><label for="Designation">Designation</label></div>
+      <div class="editor-field" style="padding-top:6px;">
+            @Html.DisplayFor(model => model.Designation, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+      </div>
+        }
+        @if (Model.Address != null)
+        {
+            <div class="editor-label"><label for="Address">Address</label></div>
+        <div class="editor-field" style="padding-top:6px;">
+            @Html.DisplayFor(model => model.Address, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        </div>
+        }
+        @if (Model.AddressLine1 != null)
+        {
+         <div class="editor-label" ><label for="AddressLine1">Address Line1</label></div>
+        <div class="editor-field" style="padding-top:6px;">
+            @Html.DisplayFor(model => model.AddressLine1, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        </div>
+        }
+        @if (Model.Country != null)
+        {
+        <div class="editor-label"><label for="Country">Country</label></div>
+        <div class="editor-field" style="padding-top:6px;">
+            @Html.DisplayFor(model => model.CountryName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        </div>
+        }
+        @if (Model.DivisionName != null)
+        {
+        <div id="DivForDivision">
+        <div class="editor-label" ><label for="DivisionId">Division</label></div>
+        <div class="editor-field" style="padding-top:6px;">
+           @Html.DisplayFor(model => model.DivisionName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        </div>
+        </div>
+        }
+        @if (Model.State != null)
+        {
+         <div id="DivForState" class=".DivForState" style="display:none;">
+             <div class="editor-label" ><label for="State">State</label></div>
+             <div class="editor-field" style="padding-top:6px;">
+                @Html.DisplayFor(model => model.State, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+             </div>
+        </div>
+        }
+        @if (Model.City != null)
+        {
+            <div class="editor-label"><label for="City">City</label></div>
+            <div class="editor-field" style="padding-top:6px;">
+            @Html.DisplayFor(model => model.City, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        }
+        @if (Model.PostalCode != null)
+        {
+            <div class="editor-label"><label for="PostalCode">PostalCode</label></div>
+            <div class="editor-field" style="padding-top:6px;">
+                @Html.DisplayFor(model => model.PostalCode, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        }
+        @if (Model.Email != null)
+        {
+            <div class="editor-label"><label for="Email">Email</label></div>
+            <div class="editor-field" style="padding-top:6px;">
+                @Html.DisplayFor(model => model.Email, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        }
+        @if (Model.Fax != null)
+        {
+            <div class="editor-label"><label for="Fax">Fax</label></div>
+            <div class="editor-field" style="padding-top:6px;">
+                @Html.DisplayFor(model => model.Fax, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        }
+        <div id="divForUserContact">
+
+            @foreach (var item in clientUserContactList as IEnumerable<FactoryManagement.Models.Client_User_ContactList>)
+            {
+                <div class="form-horizontal form-widget">
+                    <div id="divForUserContactLabel-@item.Id">
+                        <div class="editor-label" style="float:left;padding-left:0px;"><label for="Contact">Contact</label></div>
+                        <div class=" col-md-5 col-sm-5 col-xs-5" style="float:left;padding-right:0px;padding-top:7px;">
+                            <p>@item.Contact (@item.ContactTypeName)</p>
+                            <p>@item.Comments</p>
+                        </div>
+                    </div>
+                </div>
+                count++;
+            }
+        </div>
+       
+    </div>
+    <div class="form-horizontal col-md-6 col-sm-6" style="padding:0px;">
+        @if (Model.PictureName != "" && Model.PictureName != null)
+        { <div style="float:right;" id="DivForUserPictureDisplay">
+            <img src="~/Images/Client/ClientUserImage/Original/@Model.PictureName" />
+        </div>
+        }
+        <div class="clearfix"></div>
+       
+    </div>
+    <div class="k-edit-buttons k-state-default col-xs-11">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-cancel" id="btnUserInfoDisplayCancel">
+        <span class="k-iconk-cancel"></span>Close</button>
+    </div>
+    <br />
+</div>

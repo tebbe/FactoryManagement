@@ -1,0 +1,142 @@
+﻿@model FactoryManagement.ModelView.CRM.BusiOrder_ManualSpecModelView
+
+<style>
+    #tbl_spec_edit th {
+        border: none !important;
+    }
+
+    #tbl_spec_edit td {
+        border: none !important;
+    }
+
+    .k-textbox {
+        width: 100%;
+    }
+</style>
+
+@using (Html.BeginForm())
+{
+    <div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;" id="div_maual_spec_edit">
+        <div class="col-sm-offset-1 col-sm-10" id="maual_Spec_Edit_Div">
+            <table class="table" id="tbl_spec_edit">
+                <tr>
+                    <th width="25%">Specification</th>
+                    <th width="10%">Quantity</th>
+                    <th width="20%">Unit</th>
+                    <th width="15%">Status</th>
+                    <th width="30%">Description</th>
+                </tr>
+                <tr id="tbl_tr_edit">
+                    <td>
+                        <input class="k-textbox" id="Spec_lbl" name="Spec_lbl" type="text" value="@Model.Spec_lbl"
+                               data-val="true" data-val-length="Length exceed" data-val-length-max="100"
+                               data-val-length-min="1" data-val-required="*">
+                    </td>
+                    <td>
+                        <input class="k-textbox" id="Quantity" name="Quantity" type="text" value="@Model.Quantity"
+                               data-val="true" data-val-length="Length exceed" data-val-length-max="4"
+                               data-val-length-min="1" data-val-required="*" onkeypress="return isNumber(event)">
+                    </td>
+                    <td>
+                        @(Html.Kendo().DropDownList()
+                        .Name("UnitId")
+                        .HtmlAttributes(new { required = "required", style = "Width: 100%" })
+                        .OptionLabel("---Select One---")
+                        .BindTo(ViewBag.UnitId)
+                        )
+                    </td>
+                    <td>
+                        @(Html.Kendo().DropDownList()
+                        .Name("ProStatus")
+                        .DataTextField("Text")
+                        .DataValueField("Value")
+                        .HtmlAttributes(new { required = "required", style = "Width: 100%" })
+                        .OptionLabel("--Select One---")
+                        .BindTo(new List<SelectListItem>() {
+                                      new SelectListItem() {
+                                          Text = "Not in production",
+                                          Value = "0"
+                                      },
+                                      new SelectListItem() {
+                                          Text = "In Production",
+                                          Value = "1"
+                                      },
+                                      new SelectListItem() {
+                                          Text = "Delay",
+                                          Value = "2"
+                                      },
+                                       new SelectListItem() {
+                                          Text = "Complete",
+                                          Value = "3"
+                                      }
+                                  })
+                            .SelectedIndex(Model.ProStatus)
+                        )
+                    </td>
+                    <td>
+                        @Html.TextAreaFor(model => model.Spec_Description, 5, 25, new { maxlength = 200, data_val_length = "length exceed", @class = "form-control k-textbox" })
+                        @*<textarea class="form-control k-textbox k-valid txt_des_" cols="25" rows="5"
+                            value="@Model.Spec_Description"
+                            data-val="true"
+                            data-val-length="*"
+                            id="Spec_Description" name="Spec_Description"></textarea>*@
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="k-edit-buttons k-state-default col-xs-11">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_manual_spec_edit"><span class="k-icon k-update"></span>Update</button>
+            <button type="reset" class="k-button k-button-icontext k-grid-update" id="btn_manual_spec_edit_Refresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_manual_spec_edit_cancel"><span class="k-icon k-i-cancel"></span>Cancel</button>
+        </div>
+    </div>
+}
+<script>
+    $("#btn_manual_spec_edit_Refresh").click(function () {
+        $("#divForAddManualSpecEdit").empty();
+        $("#divForAddManualSpecEdit").show();
+        $("#divForAddManualSpecEdit").append('<div class="win_loading_half"></div>');
+        $("#divForAddManualSpecEdit").load('@Url.Action("BusManualSpecEdit", "CRM")?SpecId=' + '@(Model.Id)');
+    });
+    $("#btn_manual_spec_edit_cancel").click(function () {
+        $("#div_win_manual_spec_edit").data("kendoWindow").close();
+    });
+    $("#btn_manual_spec_edit").click(function () {
+        var id = @Model.Id;
+        var validate_table = $("#maual_Spec_Edit_Div").kendoValidator(
+            {
+                rules: { },
+                messages: { required:"*" }
+            }
+        ).data("kendoValidator");
+        if (validate_table.validate()) {
+            notification.show({ message: "Updating manual specification....", showTime: startTime() }, "upload-progress");
+            var lbl = $("#Spec_lbl").val();
+            var quan = $("#Quantity").val();
+            var unit = $("#UnitId").val();
+            var des = $("#Spec_Description").val();
+            var status = $("#ProStatus").val();
+            $.ajax({
+                url: '@Url.Action("EditManualSpec", "CRM")',
+                type: 'Post',
+                data: { Id: id, Spec_lbl: lbl, Quantity: quan, UnitId: unit, Spec_Description: des, ProStatus: status, CreatedBy: userId },
+                success: function (data) {
+                    $("#div_win_manual_spec_edit").data("kendoWindow").close();
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if (data == "Error") {
+                        notification.show({ message: "Specification update unsuccessful.", showTime: startTime() }, "upload-error");
+                    } else {
+                        notification.show({ message: "Specification updated successfully", showTime: startTime() }, "upload-success");
+                        $("#div_Main_Manual_Spec").empty();
+                        $("#div_Main_Manual_Spec").append('<div class="loading_partail"></div>');
+                        $("#div_Main_Manual_Spec").load('@Url.Action("ManualSpecification", "CRM")?BusinessOrderId='+@Model.BusOrdId);
+                    }
+                },
+                error: function (error) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 2000 });
+                    notification.show({ message: "Specification updated unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+            });
+        }
+    });
+</script>

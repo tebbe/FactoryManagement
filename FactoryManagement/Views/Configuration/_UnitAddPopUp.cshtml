@@ -1,0 +1,26 @@
+﻿
+
+@model FactoryManagement.Models.Site_Unit_Lists
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" id="" style="margin-bottom:4%;margin-top:2%;">
+    <div id="DivForUnitCreate"></div>
+    <div class="k-edit-buttons k-state-default">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_Add_Unit_Create"><span class="k-icon k-update"></span>Create</button>
+        <button type="reset" class="k-button k-button-icontext k-grid-update" id="btn_Add_Unit_Refresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_Add_Unit_Cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#DivForUnitCreate").load('@Url.Action("_UnitAdd", "Configuration")?siteId=' + '@Model.SiteId' + '&UnitId=' + '@Model.UnitId');
+    });
+    $("#btn_Add_Unit_Refresh").click(function () {
+        $("#DivForUnitCreate").empty();
+        $("#DivForUnitCreate").append('<div class="tiny_loading"></div>');
+        $("#DivForUnitCreate").load('@Url.Action("_UnitAdd", "Configuration")?siteId=' + '@Model.SiteId' + '&UnitId=' + '@Model.UnitId');
+        $("#DivForUnitCreate").show();
+    });
+    $("#btnDeptCreateCancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

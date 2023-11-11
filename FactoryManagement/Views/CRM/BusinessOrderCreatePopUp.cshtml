@@ -1,0 +1,15 @@
+﻿
+
+
+
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" id="" style="margin-bottom:4%;margin-top:2%;">
+    <div id="Div_For_Busi_Create"></div>
+</div>
+<script>
+    $(document).ready(function () {
+        $("#Div_For_Busi_Create").append('<div class="loading_15"></div>');
+        $("#Div_For_Busi_Create").show();
+        $("#Div_For_Busi_Create").load('@Url.Action("BusinessOrderCreate", "CRM")?BusinessOrderId=' + '@ViewBag.BusinessOrderId' + "&OrderType=" + '@ViewBag.OrderType');
+    });
+</script>

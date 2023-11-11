@@ -1,0 +1,38 @@
+﻿
+@********************* Created By Jerin Jahan (Date: 07.05.2017) ****************************@
+@model IEnumerable<FactoryManagement.ModelView.Inventory.Store.View_Dispacth_Item_DetailsModelView>
+@{
+    int count = 1;
+    var db = new FactoryManagement.Models.FactoryManagementEntities();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    int seven = 1;
+    int all = 1;
+}
+
+<table class="table bootstrap-datatable datatable small-font dataTable no-footer" id="DataTables_Table_0" role="grid">
+    <thead>
+        <tr role="row">
+            <th>#</th>
+            <th>Voucher Name</th>
+            <th>Item Name</th>
+            <th>Quantity</th>
+            <th>Dispatched By</th>
+            <th>Dispatched Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var list in Model)
+        {
+            <tr>
+                <td>@count.</td>
+                <td><a href="#">@list.VoucherName</a></td>
+                <td>@list.ProductName</td>
+                <td>@list.Quantity @list.UnitName</td>
+                <td><a href="/HumanResource/DisplayEmployeeDetails?UserId=@list.DispatchedBy&isDisplay=true">@list.DispatchedUserName</a></td>
+                <td>@Convert.ToDateTime(list.DispatchedDate).ToString("MMM dd, yyyy hh:mm:tt")</td>
+            </tr>
+            count++;
+        }
+
+    </tbody>
+</table>

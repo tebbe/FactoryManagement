@@ -1,0 +1,47 @@
+﻿
+
+
+@********************************************* Created By Jerin Jahan (04.10.2016) *******************************@
+
+@*@model IEnumerable<FactoryManagement.Models.View_Busi_Order_Assigned_Item>*@
+
+@model IEnumerable<FactoryManagement.Models.View_All_AcquisitionList>
+@{
+    var count = 1;
+}
+<style>
+    #tbl_resvrd_item_lists td {
+        border: none !important;
+    }
+</style>
+
+<table class="table" id="tbl_resvrd_item_lists">
+    <tr>
+        <th width="4%">#</th>
+        <th width="25%">Item Name</th>
+        <th width="15%">Assigned Quantity</th>
+        <th width="15%">Received Quantity</th>
+        <th width="15%">Remaining Quantity</th>
+        <th width="4%"></th>
+    </tr>
+    @foreach (var item in Model)
+    {
+        int remain_qua = Convert.ToInt32(item.AssignedQuantity) - Convert.ToInt32(item.ReceivedQuantity);
+        <tr>
+            <td>@count .</td>
+            <td>@item.ProductName</td>
+            <td><span>@item.AssignedQuantity  @item.UnitName</span></td>
+            <td><span>@Convert.ToInt32(item.ReceivedQuantity)  @item.UnitName</span></td>
+            <td><span>@remain_qua  @item.UnitName</span></td>
+            <td>
+                <span class="fa fa-check btn_Rcvd_item" 
+                      data-acqId="@item.AcquisitionOrderId" 
+                      data-proid="@item.ProductId" 
+                      data-unitname="@item.UnitName"
+                      data-quantity="@remain_qua">
+                </span>
+            </td>
+        </tr>
+        count++;
+    }
+</table>

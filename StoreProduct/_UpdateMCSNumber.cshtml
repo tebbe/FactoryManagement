@@ -1,0 +1,47 @@
+﻿
+@*********************************************** Created By Jerin Jahan Date(13.05.2017) ************************@
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var allUnitList = db.Site_Unit_Lists.Where(m => m.UnitStatus == 1).ToList();
+    var width = 100 / (allUnitList.Count() + 1);
+}
+<div class="editor-label"><label for="HolidayName">Item Name</label></div>
+<div class="editor-field" style="padding-top:6px;">@ViewBag.name</div>
+
+<div class="editor-label"><label for="HolidayName">Quantity</label></div>
+<div class="editor-field">
+    <table>
+        <tr>
+            @foreach (var u in allUnitList)
+            {
+                <th width="@width%">@u.UnitAcryonm</th>
+            }
+            <th width="@width%"></th>
+        </tr>
+        <tr>
+            @foreach (var u in ViewBag.list as IEnumerable<FactoryManagement.Models.Inventory_Pro_Waste_List>)
+            {
+                <td width="@width%">
+                    <input class="k-textbox txtUnitQuan" data-val="true"
+                           data-val-length="Type atleast one character"
+                           data-val-length-max="100"
+                           data-val-length-min="1"
+                           id="txtU_@u.UnitId" name="txtU_@u.UnitId"
+                           data-id="@u.Id"
+                           data-invenid="@u.InventoryId"
+                           data-val-required="*" data-uid="@u.UnitId"
+                           style="width:100%!important" type="text" value="@u.Quantity" aria-invalid="true">
+                    <span class="field-validation-valid text-Danger" data-valmsg-for="txtU_@u.UnitId" data-valmsg-replace="true"></span>
+                </td>
+            }
+            <td width="@width%">
+                @(Html.Kendo().DropDownList().Name("UnitId")
+                            .OptionLabel("--Select One Type--")
+                            .BindTo(ViewBag.UnitId as SelectList)
+                            .HtmlAttributes(new { style = "width:100%" })
+                )
+                <span class="field-validation-valid text-danger" data-valmsg-for="UnitId" data-valmsg-replace="true"></span>
+            </td>
+        </tr>
+    </table>
+</div>

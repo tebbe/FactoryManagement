@@ -1,0 +1,12 @@
+﻿@model FactoryManagement.ModelView.CRM.Client_Vehicle_ListsModelView
+@Html.HiddenFor(m => m.ClientId)
+@Html.HiddenFor(m => m.VehicleId)
+
+<div id="divForVehicleTotalInfoLoad"></div>
+<script>
+    var vehicleID = '@Model.VehicleId';
+    $(document).ready(function () {
+        $("#divForVehicleTotalInfoLoad").empty();
+        $("#divForVehicleTotalInfoLoad").load('@Url.Action("_EditVehicleDetails","CRMClient")?VehicleId='+vehicleID);
+    });
+</script>

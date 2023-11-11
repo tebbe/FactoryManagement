@@ -1,0 +1,183 @@
+﻿
+
+@************************************* Created by Jerin Jahan (Date: 04.02.2017) ******************************************@
+@{
+    ViewBag.Title = "Voucher List";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+
+<div class="row">
+    <center><h3>All Voucher List</h3></center>
+    <div id="Div_Upper_Portion" style="display:none;">
+        <h4 id="h4title">Showing All Transaction/s</h4>
+        <p style="margin-bottom:4em;">
+            <span class="col-sm-8" style="padding-left:0px!important;">
+                <span class="btn btn-info" id="btn_today"><i class="fa fa-list-ul"></i> Today</span>
+                <span class="btn btn-info" id="btn_last_seven"><i class="fa fa-list-ul"></i> Last 7 Days</span>
+                <span class="btn btn-info" id="btn_last_thirty"><i class="fa fa-list-ul"></i> Last 30 Days</span>
+                <span class="btn btn-info" id="btn_All"><i class="fa fa-list-ul"></i> All</span>
+            </span>
+            <span class="col-sm-4" style="padding:0px!important;">
+                @(Html.Kendo().DropDownList().Name("LocationId")
+                  .OptionLabel("All")
+                  .DataTextField("SiteName")
+                  .DataValueField("SiteId")
+                  .DataSource(source =>
+                  {
+                      source.Read(read =>
+                      {
+                          read.Action("GetAllPlaceId", "Voucher");
+                      });
+                  })
+                  .Events(e => e.Change("onLocationChange"))
+                  .HtmlAttributes(new { style = "width: 100%" })
+                )
+            </span>
+        </p>
+    </div>
+    <div id="Div_Invoice_Tran" style="display:none;"></div>
+    @if (db.View_Invoice_Service.Any())
+    {
+        <script>
+            $("#Div_Upper_Portion").show();
+            $("#Div_Invoice_Tran").append('<div class="loading_partial"></div>');
+            $("#Div_Invoice_Tran").show();
+            $("#Div_Invoice_Tran").load('@Url.Action("_InvoiceServiceList", "Voucher")');
+        </script>
+    }
+    else
+    {
+        <script>
+            $("#Div_Invoice_Tran").append(' <h3>There is no record to display...</h3>');
+            $("#Div_Invoice_Tran").show();
+        </script>
+    }
+</div>
+<div id="loading" style="display:none;"></div>
+<div id="win_tran_info"></div>
+<script id="temp_win_confirm" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">#=message#</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_confirm_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_confirm_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    var showCount = 0, totalCount = 0, page = 0, inCallback = false, days = 0, total_amt = 0;
+    $(document).ready(function () {
+        $("#liForAccounting").addClass('active');
+        $("#liForInvoiceTran").addClass('sublistActive');
+        $("#top_header_link").append('<span>Finance</span><span><i class="fa fa-angle-right fa-2x"></i></span>' +
+            '<span class="current"><a href="/Voucher/InvoiceTransaction"> All Transacton</a></span>');
+    });
+    $(document).on("click", "#btn_page_back", function () {
+        window.history.back();
+    });
+    function onLocationChange(e) {
+        var dataItem = this.dataItem(e.item);
+        showCount = 0, totalCount = 0, page = 0, inCallback = false, days = 0, total_amt = 0;
+        if (this.value() === '') {
+            $("#Div_Invoice_Tran").empty();
+            $("#Div_Invoice_Tran").append('<div class="loading_partial"></div>');
+            $("#Div_Invoice_Tran").show();
+            $("#Div_Invoice_Tran").load('@Url.Action("_InvoiceServiceList", "Voucher")');
+        } else {
+            $("#Div_Invoice_Tran").empty();
+            $("#Div_Invoice_Tran").append('<div class="loading_partial"></div>');
+            $("#Div_Invoice_Tran").show();
+            $("#Div_Invoice_Tran").load('@Url.Action("_InvoiceServiceListLocWise", "Voucher")?locaId=' + dataItem.SiteIdWithChar);
+        }
+    }
+</script>
+<script>
+    @******************************** OnScroll Bind Table Data *************************@
+    $(window).scroll(function () {
+        var countBytype, result;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/Voucher/GetInvoiceServiceList',
+            data: { page: page },
+            success: function (data) {
+                if (data != '') {
+                    $("#td_total_count").remove();
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        total_amt = parseFloat(total_amt) + parseFloat(data[i].Amount);
+                        $("table#tbl_voucher_list").append('<tr><th>' + showCount + '.</th>' +
+                            '<td><span style="color:#428bca;cursor:pointer;" class="tranname" data-id="'+ data[i].Id+'" data-name="'+ data[i].VoucherTitle+'">'+ data[i].VoucherTitle+'</span></td>' +
+                            '<td>' + data[i].Number + '</td>' +
+                            '<td>' + data[i].Name + '</td>' +
+                            '<td>' + data[i].CreatedDateName + '</td>'+
+                            '<td>' + Currency + ' ' + data[i].Amount + '</td></tr>');
+                    }
+                    $("table#tbl_voucher_list").append('<tr><td colspan="5" style="font-weight:bold;">Total Amount = ' + Currency + ' ' + total_amt + '</td></tr>');
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+</script>
+<script>
+    $("#btn_today").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0, inCallback = false, days = 0, total_amt = 0;
+        passdata = { days: 1 };
+        $("#Div_Invoice_Tran").empty();
+        $("#Div_Invoice_Tran").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Today's Transaction/s");
+        $("#Div_Invoice_Tran").load('@Url.Action("_InvoiceServiceListDayWise", "Voucher")', passdata);
+        days = 1;
+    });
+
+    $("#btn_last_seven").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0, inCallback = false, days = 0, total_amt = 0;
+        passdata = { days: 7 };
+        $("#Div_Invoice_Tran").empty();
+        $("#Div_Invoice_Tran").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Last 7 Days Transactions");
+        $("#Div_Invoice_Tran").load('@Url.Action("_InvoiceServiceListDayWise", "Voucher")', passdata);
+        days = 7;
+    });
+    $("#btn_last_thirty").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0, inCallback = false, days = 0, total_amt = 0;
+        passdata = { days: 30 };
+        $("#Div_Invoice_Tran").empty();
+        $("#Div_Invoice_Tran").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Last 30 Days Transaction");
+        $("#Div_Invoice_Tran").load('@Url.Action("_InvoiceServiceListDayWise", "Voucher")', passdata);
+        days = 30;
+    });
+    $("#btn_All").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0, inCallback = false, days = 0, total_amt = 0;
+        $("#Div_Invoice_Tran").empty();
+        $("#Div_Invoice_Tran").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing All Transaction/s");
+        $("#Div_Invoice_Tran").load('@Url.Action("_InvoiceTransactionForShow", "Voucher")');
+        days = 0;
+    });
+</script>

@@ -1,0 +1,215 @@
+﻿@******************************** Created By Mabia Mishu (Date:28.09.2016) *********************************@
+
+@model FactoryManagement.ModelView.Configuration.SiteListModelView
+@Html.HiddenFor(m => m.Status)
+<br />
+
+<div id="divForSiteUpdate">
+    <div class="editor-label"><label for="SiteName">Site Name</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.SiteName, new { htmlAttributes = new { @class = "k-textbox" } })
+        @Html.ValidationMessageFor(model => model.SiteName, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="SiteAcronym">Site Acronym</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.SiteAcronym, new { htmlAttributes = new { @class = "k-textbox" } })
+        @Html.ValidationMessageFor(model => model.SiteAcronym, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="Address">Address</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "k-textbox" } })
+        @Html.ValidationMessageFor(model => model.Address, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="AddressLine1">Address Line1</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.AddressLine1, new { htmlAttributes = new { @class = "k-textbox" } })
+        @Html.ValidationMessageFor(model => model.AddressLine1, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="Country">Country</label></div>
+    <div class="editor-field">
+        @(Html.Kendo().DropDownListFor(model => model.Country)
+        .OptionLabel("--Select Country--")
+        .Events(e => e.Change("onCountryChange"))
+        .BindTo(ViewBag.CountryId)
+        .HtmlAttributes(new { style = "width:100%" })
+        )
+        @Html.ValidationMessageFor(model => model.Country, "", new { @class = "text-danger" })
+    </div>
+    <div id="Div_Division">
+        <div class="editor-label"><label for="DivisionId">Division</label></div>
+        <div class="editor-field">
+            @(Html.Kendo().DropDownListFor(model => model.DivisionId)
+                          .Name("DivisionId")
+                          .OptionLabel("--Select One Division--")
+                          .BindTo(ViewBag.DivisionList)
+            )
+            @Html.ValidationMessageFor(model => model.DivisionId, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div id="Div_State">
+        <div class="editor-label"><label for="Statename">State Name</label></div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.Statename, new { htmlAttributes = new { @class = "k-textbox" } })
+            @Html.ValidationMessageFor(model => model.Statename, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="editor-label"><label for="City">City</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.City, new { htmlAttributes = new { @class = "k-textbox" } })
+        @Html.ValidationMessageFor(model => model.City, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="Area">Area</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.Area, new { htmlAttributes = new { @class = "k-textbox" } })
+        @Html.ValidationMessageFor(model => model.Area, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="PostalCode">Postal Code</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.PostalCode, new { htmlAttributes = new { @class = "k-textbox" } })
+        @Html.ValidationMessageFor(model => model.PostalCode, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="Status">Status</label></div>
+    <div class="editor-field">
+        @(Html.Kendo().DropDownList()
+                           .Name("StatusValue")
+                           .DataTextField("Text")
+                           .DataValueField("Value")
+                           .OptionLabel("--Select One Type--")
+                           .Events(e => e.Change("onStatusChange"))
+                           .BindTo(new List<SelectListItem>() {
+                              new SelectListItem() {
+                                  Text = "Active",
+                                  Value = "1"
+                              },
+                              new SelectListItem() {
+                                  Text = "Inactive",
+                                  Value = "0"
+                              },
+                          })
+                          .Value(Model.Status.ToString())
+        )
+        @Html.ValidationMessageFor(model => model.Status, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="IsComposite">IsComposite</label></div>
+    <div class="editor-field">
+        @Html.CheckBoxFor(model => model.IsComposite, new { }) Check If There Is Any Unit
+        @Html.ValidationMessageFor(model => model.IsComposite, "", new { @class = "text-danger" })
+    </div>
+</div>
+<script>
+    var siteId = '@Model.Id';
+    var SiteName = '';
+    var changeComposite=0 ;
+
+    $(document).ready(function(){
+        if('@(Model.Country)' === "BD"){
+            $("#Div_State").hide();
+            $("#Div_Division").show();
+        }else{
+            $("#Div_Division").hide();
+            $("#Div_State").show();
+        }
+        if ('@Model.IsComposite' == "True") {
+            $("#IsComposite").prop(':checked');
+            $("#IsComposite").val(true);
+            $("#IsComposite").attr(':checked', true);
+        } else {
+            $("#IsComposite").attr(':checked', false);
+            $("#IsComposite").val(false);
+        }
+    });
+    $("#IsComposite").change(function () {
+        if($(this).is(':checked')){
+            $("#IsComposite").attr(':checked', true);
+            $("#IsComposite").val(true);
+        }else{
+            $("#IsComposite").val(false);
+        }
+        changeComposite = 1;
+    });
+
+    function siteUpdate(senddata){
+        $.ajax({
+            url: '@Url.Action("SiteCreateSave", "Configuration")',
+            type: 'Post',
+            data: senddata,
+            success: function (data) {
+                notification.hide();
+                notification.setOptions({ autoHideAfter: 5000 });
+                if (data !== "Error") {
+                    $("#btnSiteInfoUpdate").closest(".k-window-content").data("kendoWindow").close();
+                    notification.show({ message: "Site information has been successfully updated", showTime: startTime() }, "upload-success");
+                    @*$("#divFor_site_Info").load('@Url.Action("_ShowSiteDetails", "Configuration")?siteId=' +siteId+'&view=partial');*@
+                     location.reload();
+                    @*var passDa = { siteId: '@Model.SiteId', SiteName: '@Model.SiteName' };
+                    $("#divForAll_Dept_List").empty();
+                    $("#divForAll_Dept_List").append('<div class="loading_half"></div>');
+                    $("#divForAll_Dept_List").load('@Url.Action("_ShowAllDeptListBySite", "Configuration")', passDa);*@
+                    @*$("#divForAll_Dept_List").load('@Url.Action("_ShowAllDeptListBySite", "Configuration")?siteId=' + siteId );*@
+                } else {
+                    notification.show({ message: "Site information update was unsuccessful", showTime: startTime() }, "upload-error");
+                }
+            }
+        });
+    }
+ 
+    var validation = $("#divForSiteUpdate").kendoValidator({
+        rules:{
+            Statename:function (input) {
+                if (input.is("[name=Statename]") && $("#Country").val() !== "BD" && $("#Statename").val() == '') {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            DivisionId: function (input) {
+                if (input.is("[name=DivisionId]") && input.val() === "" && $("#Country").val() === "BD" ) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        },
+        messages:{
+            Statename:"Please enter state name",
+            DivisionId: "Please select one division"
+        }
+    }).data("kendoValidator");
+   
+    $("#btnSiteInfoUpdate").click(function () {
+        if (validation.validate()) {
+            notification.show({ message: "Updating site info...", showTime: startTime() }, "upload-progress");
+            var senddata = {
+                Id: '@Model.SiteId', SiteName: $("#SiteName").val(), SiteAcronym: $("#SiteAcronym").val(),
+                Address: $("#Address").val(), AddressLine1: $("#AddressLine1").val(), Country: $("#Country").val(),
+                Statename:$("#Statename").val(),DivisionId: $("#DivisionId").val(), City: $("#City").val(),
+                Area: $("#Area").val(), PostalCode: $("#PostalCode").val(),
+                Status: $("#Status").val(), CreatedBy: userId, IsComposite: $("#IsComposite").val()
+            };
+            if($("#Status").val()== 0){
+                $.ajax({
+                    url: '@Url.Action("CanSiteStatusUpdate", "Configuration")',
+                    type: 'Post',
+                    data: {Id: @Model.SiteId, SiteName:'@Model.SiteName', CreatedBy: userId},
+                    success: function (data) {
+                        if (data == "Success"){
+                            siteUpdate(senddata);
+                        }
+                        else{
+                            $("#btnSiteInfoUpdate").closest(".k-window-content").data("kendoWindow").close();
+                            notification.hide();notification.setOptions({ autoHideAfter: 5000 });
+                            notification.show({ message: data, showTime: startTime() }, "upload-error");
+                        }
+                    }
+                });
+            }
+            else{
+                siteUpdate(senddata);
+            }
+        }
+    });
+    $("#btnSiteUpdateCancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+   
+</script>

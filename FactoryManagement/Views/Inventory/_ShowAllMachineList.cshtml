@@ -1,0 +1,78 @@
+﻿@******************************** Updated By ZAD (Date:16.09.2016) *********************************@
+@using FactoryManagement.Helpers
+@{
+    var count = 0;
+}
+@if (((IEnumerable<dynamic>)ViewBag.machineList).Count() > 0)
+{
+    <table class="table table-bordered table-striped table-condensed table-hover tbl_Machine_List" id="tbl_Machine_List">
+        <tr>
+            <th width="3%">#</th>
+            <th width="10%">Acronym </th>
+            <th width="10%">Type</th>
+            <th width="15%">Brand</th>
+            <th width="15%">Model</th>
+            <th width="10%">Mgf. Year</th>
+            <th width="12%">Country Of Origin</th>
+            <th width="5%">Status</th>
+            <th width="15%"></th>
+        </tr>
+        @foreach (var item in ViewBag.machineList as IEnumerable<FactoryManagement.Models.View_Machine_Lists>)
+        {
+            count++;
+            <tr>
+                <th>@count.</th>
+                <td>@Html.EncodedActionLink(item.MachineAcronym, "MachineDetails", "Inventory", new { machineId = item.MachineId }, null)</td>
+                <td>@Html.DisplayFor(modelItem => item.MachineTypeName)</td>
+                <td>@Html.DisplayFor(modelItem => item.BrandName)</td>
+                <td>@Html.DisplayFor(modelItem => item.ModelName)</td>
+                <td>@Html.DisplayFor(modelItem => item.Mgf)</td>
+                <td>@Html.DisplayFor(modelItem => item.CountryName)</td>
+                <td>
+                    @if (item.Status == 1)
+                    {
+                        <span>Active</span>
+                    }
+                    else
+                    {
+                        <span>Inactive</span>
+                    }
+                </td>
+                <td>
+                    <span data-toggle="tooltip" title="Edit Macine" class="btn green btn_Edit_Machine" data-id="@item.MachineId" data-name="@item.MachineAcronym"><span class="fa fa-pencil"></span></span>
+                    <a href="@Html.EncodedParam("MachineDetails", "Inventory", new { machineId = item.MachineId }, null)" data-toggle="tooltip" title="Machine information" data-container="body">
+                        <span type="button" class="btn blue"><i class="fa fa-info-circle"></i></span>
+                    </a>
+                    <span data-toggle="tooltip" title="Delete Machine" data-id="@item.MachineId" class="btn btn-danger btnDeleteMachine" data-name="@item.MachineAcronym" data-assignstatus="@item.AssignStatus"><i class="fa fa-trash"></i></span>
+                    <a href="@Html.EncodedParam("MachineMaintanence", "Inventory", new { machineId = item.MachineId }, null)" data-toggle="tooltip" title="Machine Maintanence" data-container="body">
+                        <span type="button" class="btn purple"><i class="fa fa-info-circle"></i></span>
+                    </a>
+                    @if (item.Status == 1)
+                    {
+                        <span class="btn btn-danger BtnForStatus"  data-id="@item.MachineId" data-status="@item.Status" data-toggle="tooltip" title="Change to Inactive"><i class="fa fa-stop"></i></span>
+                    }
+                    else
+                    {
+                        <span class="btn green BtnForStatus"  data-id="@item.MachineId" data-status="@item.Status" data-toggle="tooltip" title="Change to Active"><i class="fa fa-play-circle"></i></span>
+                    }
+
+                   
+                </td>
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <p>There is no record to display.....</p>
+}
+<script>
+    total = '@(ViewBag.TotalMachineCount)';
+    showCount = '@(count)';
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>
+
+
+

@@ -1,0 +1,53 @@
+﻿
+
+
+
+
+@model FactoryManagement.ModelView.CRM.BusinessOrderListModelView
+<style>
+    .btn_Order_Details {
+            cursor:pointer;
+            margin-left:2%;
+        }
+</style>
+<div id="div_Order_Det" style="float:right !important;">
+    @if (Model.OrderStatus == 0)
+    {
+        <span class="label label-success hover-pointer btn_Order_Details" data-toggle="tooltip" title="Edit Order" id="btn_busi_det_edit" data-placement="top" data-id="@Model.BusinessOrderId">
+            <i class="fa fa-pencil"></i>
+        </span>
+        if (Model.OrderType == 1)
+        {
+            <span class="label label-success hover-pointer btn_Order_Details" id="btn_busi_ord_det_appr" data-toggle="tooltip" title="Approve Order" data-status="1">
+                <i class="fa fa-check"></i>
+            </span>
+        }
+        else
+        {
+            <span class="label label-success hover-pointer btn_Order_Details" id="btn_busi_ord_det_appr" data-toggle="tooltip" title="Confirm Business Order" data-status="3">
+                <i class="fa fa-check"></i>
+            </span>
+        }
+    }
+    @if (Model.OrderStatus > 0 && Model.OrderStatus < 3)
+    {
+        <span class="label label-success hover-pointer btn_Order_Details" data-toggle="tooltip" title="Complete Order" id="btn_bus_ord_com">
+            <i class="fa fa-check"></i>
+        </span>
+    }
+</div>
+
+
+<div id="div_order_deatis">
+    <p>Order Name : @Model.OrderName</p>
+    @if (Model.OrderType == 1)
+    {
+        <p>Buyer Name : @Model.ClientName</p>
+    }
+    <p>
+        Order Status : @Model.OrderAprvStatus
+    </p>
+</div>
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+</script>

@@ -1,0 +1,114 @@
+﻿
+@{
+    ViewBag.Title = "HolidayCreate";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+
+<h2>Holiday Create</h2>
+
+
+<div class="row">
+    <div class="form-horizontal col-md-6 col-sm-6 col-xs-12" style="border:1px solid #ddd;">
+        <div class="loading_partial" id="Div_Loading_lyt_Add_Holiday"></div>
+        <div style="display:none;" id="Div_Holiday_Add"></div>
+    </div>
+    <div class="form-horizontal col-md-6 col-sm-6 col-xs-12" style="border:1px solid #ddd;" id="Div_ryt">
+        <div class="loading_partial" id="Div_Loading_Ryt_Added_Holiday"></div>
+        <div style="display:none;"  id="Div_Already_Created_Holiday"></div>
+    </div>
+</div>
+<script id="temp_holi_delete" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">Are you sure want to delete this holiday?</p>
+        <div style="text-align: right;">
+            <input type="button" value="OK" class="k-button k-state-default" id="btn_delete_ok" />
+            <input type="button" value="Cancel" class="k-button k-state-default" id="btn_delete_cancel" />
+        </div>
+    </div>
+</script>
+
+<script>
+    var userId;
+    $(document).ready(function () {
+        userId = @Request.Cookies["CookieAdminInfo"].Values["userid"].ToString();
+        $("#liForHR").addClass('active');
+        $("#liForHolidayAdd").addClass('sublistActive');
+
+        $("#Div_Holiday_Add").load('@Url.Action("_HolidayCreate", "Holiday")');
+        $("#Div_Loading_lyt_Add_Holiday").hide();
+        $("#Div_Holiday_Add").show();
+
+        if('@(ViewBag.HasHoliday)' === 'True'){
+            $("#Div_Already_Created_Holiday").load('@Url.Action("_AllHolidayList", "Holiday")');
+            $("#Div_Loading_Ryt_Added_Holiday").hide();
+            $("#Div_Already_Created_Holiday").show();
+        }
+    });
+
+    $("#Div_Already_Created_Holiday").on("click",".btn_holiday_edit",function(){
+        var id = $(this).data("id");
+
+        $("#Div_Loading_lyt_Add_Holiday").show();
+        $("#Div_Holiday_Add").hide();
+
+        $("#Div_Holiday_Add").load('@Url.Action("_HolidayCreate", "Holiday")?id='+id);
+        $("#Div_Loading_lyt_Add_Holiday").hide();
+        $("#Div_Holiday_Add").show();
+    });
+
+    $("#Div_Already_Created_Holiday").on("click",".btn_holiday_delete",function(){
+        var id = $(this).data("id");
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width:"30%",
+            modal: true
+        });
+
+        var template = kendo.template($("#temp_holi_delete").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+
+        kendoWindow.find("#btn_delete_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_delete_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            deleteHoliday(id);
+        }).end();
+    });
+
+    function deleteHoliday(id){
+        notification.show({message: "Holiday deleting...",showTime: startTime()}, "upload-progress");
+
+        $.ajax({
+            url: '@Url.Action("DeleteHoliday", "Holiday")',
+            type: 'Post',
+            data: {id:id,UserId: userId},
+            success: function (data) {
+                
+                notification.hide();
+                notification.setOptions({autoHideAfter: 2000});
+
+                if(data === "Error"){
+                    notification.show({message: "Holiday deletion unsuccessful", showTime: startTime()}, "upload-error");
+                }else{
+                    notification.show({message: "Holiday successfully deleted", showTime: startTime()}, "upload-success");
+                    if(data){
+                        $("#Div_Already_Created_Holiday").hide();
+                        $("#Div_Loading_Ryt_Added_Holiday").show();
+                        
+
+                        $("#Div_Already_Created_Holiday").load('@Url.Action("_AllHolidayList", "Holiday")');
+                        $("#Div_Loading_Ryt_Added_Holiday").hide();
+                        $("#Div_Already_Created_Holiday").show();
+                    }else{
+                        $("#Div_Already_Created_Holiday").empty();
+                        $("#Div_Already_Created_Holiday").hide();
+                    }
+                    $("#Div_Salay_Acc_Add").hide();
+                }
+            }
+        });
+    }
+</script>

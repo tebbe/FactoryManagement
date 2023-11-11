@@ -1,0 +1,113 @@
+﻿@model FactoryManagement.Models.AccountName
+
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    var allUser = (from m in db.AccNameAssignedWithUsers
+                   join v in db.View_UserLists on m.UserId equals v.UserId
+                   where m.AccId == Model.AccId
+                   select new
+                   {
+                       Id = m.UserId,
+                       Username = v.UserName,
+                       Pic = v.Picture
+                   }).ToList();
+}
+<style>
+    .dl-horizontal{
+        width:100%;
+    }
+    .dl-horizontal dt {
+    float: left;
+    width: 250px;
+    overflow: hidden;
+    clear: left;
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-top:8px;
+}
+   .dl-horizontal dd {
+    margin-left: 260px;
+   margin-top:8px;
+}
+</style>
+<dl class="dl-horizontal">
+    <dt>Account Name </dt>
+    <dd>
+        <span>@Html.DisplayFor(model => model.AccountName1)</span>
+        <span class="btn green" id="btn_Acc_Edit" data-toggle="tooltip" data-original-title="Edit Account Name"><i class="fa fa-pencil"></i></span>
+    </dd>  
+    <dt>Account Cash Flow Type </dt>
+    <dd>
+        @if (Model.Acc_CashType == 1)
+        {
+            <span>Debit</span>
+        }
+        else if (Model.Acc_CashType == 2)
+        {
+            <span>Credit</span>
+        }
+        else
+        {
+            <span>Debit & Credit</span>
+        }
+    </dd>
+    @if (Model.Acc_CashType == 1 || Model.Acc_CashType == 3)
+    {
+        <dt>Account Type</dt>
+        <dd>
+            @if (Model.Acc_Type == 1)
+            {
+                <span>Salary</span>
+            }
+            else if (Model.Acc_Type == 2)
+            {
+                <span>Utility</span>
+            }
+            else
+            {
+                <span>Cash</span>
+            }
+        </dd>
+
+        <dt>Working Balance</dt>
+        <dd>@currency @Model.Balance</dd>
+
+        <dt>Total Credit Limit</dt>
+        <dd>@currency @Model.TotalCreditLimit</dd>
+
+        <dt>Transaction Highest Amount(Per Month)</dt>
+        <dd>@currency @Model.TransactionHigestAmount</dd>
+
+        <dt>No.of Transaction(Per Month)</dt>
+        <dd>@Model.NoOfTranPerMonth</dd>
+    }
+    else
+    {
+        <dt>Current Balance @currency</dt>
+        <dd>@Model.Balance</dd>
+    }
+
+    @************************* All Assigned User List ********************************@
+    <dt>All User Who Can Access</dt>
+    <dd>
+        @{
+            foreach (var usr in allUser)
+            {
+                <div>
+                    <img src="~/Images/UserPicture/thumb/@usr.Pic" class="user-photo" />@usr.Username
+                </div>
+            }
+        }
+    </dd>
+    @if (Model.Description != null)
+    {
+        <dt>Current Balance</dt>
+        <dd>@Model.Balance</dd>
+    }
+</dl>
+
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+</script>

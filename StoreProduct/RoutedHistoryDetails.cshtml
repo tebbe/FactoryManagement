@@ -1,0 +1,325 @@
+﻿@**************************** Created By Jerin Jahan (Date:04.12.2016) *****************************************@
+@using FactoryManagement.Helpers
+@model FactoryManagement.ModelView.Inventory.StoreItemDispatchedHistoryModelView
+@{
+    ViewBag.Title = "Routed History Details";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int count = 0;
+    var lists = (from bs in db.View_Dispacth_Item_Details
+                 where bs.DispatchedId == Model.Id
+                 group bs by bs.InventoryId into g
+                 orderby g.Sum(x => x.Quantity)
+                 select new FactoryManagement.ModelView.Inventory.Store.View_Dispacth_Item_DetailsModelView
+                 {
+                     Id = g.FirstOrDefault().Id,
+                     DispatchedId = g.FirstOrDefault().DispatchedId,
+                     Name = g.FirstOrDefault().Name,
+                     VoucherName = g.FirstOrDefault().VoucherName,
+                     ProductName = g.FirstOrDefault().ProductName,
+                     InventoryId = g.FirstOrDefault().InventoryId,
+                     LocationId = g.FirstOrDefault().LocationId,
+                     Quantity = g.FirstOrDefault().Quantity,
+                     UnitId = g.FirstOrDefault().UnitId.Value,
+                     UnitName = g.FirstOrDefault().UnitName,
+                     ReturnQuantity = g.FirstOrDefault().ReturnQuantity,
+                     OrderId = g.FirstOrDefault().OrderId,
+                     DispatchedDate = g.FirstOrDefault().DispatchedDate.Value,
+                     DispatchedBy = g.FirstOrDefault().DispatchedBy.Value,
+                     DispatchedDateName = g.FirstOrDefault().DispatchedDateName,
+                     DispatchedUserName = g.FirstOrDefault().DispatchedUserName,
+                     DispatchedUserPic = g.FirstOrDefault().DispatchedUserPic,
+                     Total_Quantity = g.Sum(x => x.Quantity),
+                     Total_Return = g.Sum(x => x.ReturnQuantity.Value),
+                     Total_UsedQuan = g.Sum(x => x.UsedQuan.Value)
+                 }).OrderBy(o => o.DispatchedDate).ToList();
+}
+
+<h3 class="page-title">
+    Routed
+    <small>Details</small>
+    <a href="@Html.EncodedParam("RoutedHistoryDetailsPrint", "StoreProduct", new { id = Model.Id }, null)" target="_blank" style="float:right;cursor:pointer;">
+        <small style="color:#3C8DBC"> <i class="fa fa-print"></i> Print </small>
+    </a>
+</h3>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/StoreProduct/InvenRouteVoucherList">All Routed History</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <span>Routed Details</span>
+        </li>
+    </ul>
+</div>
+<div class="portlet light bordered">
+    <div class="portlet-title">
+        <div class="caption font-green">
+            <i class="fa fa-info-circle font-green"></i>
+            <span class="caption-subject bold uppercase">Route Details</span>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-horizontal">
+            <div class="form-body">
+                <dl class="dl-horizontal">
+                    <dt>Name :</dt>
+                    <dd>@Model.VoucherName</dd>
+
+                    <dt>Routed Date :</dt>
+                    <dd>@Convert.ToDateTime(Model.DispatchedDate).ToString("MMM dd, yyyy hh:mm:tt")</dd>
+
+                    <dt>Assigned By :</dt>
+                    <dd>
+                        <a href="@Html.EncodedParam("DisplayEmployeeDetails","HumanResource",new {UserId=Model.DispatchedBy,isDisplay=true },null)">
+                            <img class="img-circle" src="/Images/UserPicture/thumb/@Model.DispatchUserPic">
+                            @Model.DispatchUserName
+                        </a>
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="portlet box green">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-list-ul"></i>Item Lists
+        </div>
+    </div>
+    <div class="portlet-body">
+        <table class="table table-bordered" id="tbl_all_item">
+            <tr>
+                <th width="3%">#</th>
+                <th width="35%">Name</th>
+                <th width="10%">Quantity</th>
+                <th width="10%">Return Quantity</th>
+                <th width="15%">Total Stored Quantity</th>
+            </tr>
+            @foreach (var m in lists)
+            {
+                string impname = m.ProductName;
+                count++;
+                var receivedUserList = db.DispatchedItemAssignUsers.Where(d => d.DispatchItemId == m.Id).ToList();
+                var allUser = (from d in db.DispatchedItemAssignUsers
+                               join u in db.View_UserLists on d.UserId equals u.UserId
+                               where d.DispatchId == Model.Id && (d.MachineId == m.MachineId || d.OrderId == m.OrderId)
+                               select new
+                               {
+                                   UserId = d.UserId,
+                                   Username = db.View_UserLists.Where(o => o.UserId == d.UserId).Select(o => o.UserName).FirstOrDefault(),
+                                   Userpic = db.View_UserLists.Where(o => o.UserId == d.UserId).Select(o => o.Picture).FirstOrDefault()
+                               }).ToList();
+                if (db.Inventory_Item_Location.Where(i => i.LocationId == m.LocationId && i.ImportId > 0).Any())
+                {
+                    var impId = db.Inventory_Item_Location.Where(i => i.LocationId == m.LocationId).Select(i => i.ImportId).FirstOrDefault();
+                    impname = impname + "( L/C : " + db.Import_History.Where(imp => imp.ImportId == impId).Select(imp => imp.L_C).FirstOrDefault() + " )";
+                }
+                <tr>
+                    <td>@count.</td>
+                    <td><a href="@Html.EncodedParam("StoreProductWithLCDetails", "StoreProduct", new { id = m.LocationId}, null)">@impname</a></td>
+                    <td>
+                        <span class="itemQuan" style="color:#428bca;cursor:pointer;" data-invenid="@m.InventoryId" data-proname="@m.ProductName">@m.Total_Quantity @m.UnitName</span>
+                    </td>
+                    <td>
+                        @if (m.Total_Return > 0)
+                        {
+                            <span class="itemReQuan" style="color:#428bca;cursor:pointer;" data-invenid="@m.InventoryId" data-proname="@impname">
+                                @m.Total_Return @m.UnitName
+                            </span>
+                        }
+                        else
+                        {
+                            <span>@m.Total_Return @m.UnitName</span>
+                        }
+                    </td>
+                    <td>@m.Total_UsedQuan @m.UnitName</td>
+                </tr>
+            }
+        </table>
+    </div>
+</div>
+
+<div id="win_item_quan_info"></div>
+<div id="win_item_requan_info"></div>
+<div id="win_item_quan_edit"></div>
+<div id="win_item_quan_insert"></div>
+
+<script id="temp_win_site_edit" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">#=message#</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_edit_quan_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_edit_quan_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    $("#liForInventory").addClass('active');
+    $("#liForRouteVouHis").addClass('sublistActive');
+    $(document).on("click", "#btn_page_back", function () {
+        window.history.back();
+    });
+</script>
+<script>
+    //*******************************  SHOW INVENTORY ITEM DISPATCH QUANTITY DETIALS *****************************************
+    $("#tbl_all_item").on("click", ".itemQuan", function (e) {
+        e.preventDefault();
+        var invenid = $(this).data("invenid");
+        var proname = $(this).data("proname");
+        $("#win_item_quan_info").empty();
+        $("#win_item_quan_info").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '80%',
+            height: '50%',
+            title: proname + ' Route Info'
+        });
+        $("#win_item_quan_info").html('<div class="win_loading_half"></div>');
+        var win_item_quan_info = $("#win_item_quan_info").data("kendoWindow");
+        win_item_quan_info.refresh({ url: "/StoreProduct/ShowInvenRouteQuanDetails?invenid=" + invenid + '&DisId=' + '@(Model.Id)' });
+        win_item_quan_info.center().open();
+    });
+
+    $("#tbl_all_item").on("click", ".itemReQuan", function (e) {
+        e.preventDefault();
+        var invenid = $(this).data("invenid");
+        var proname = $(this).data("proname");
+        $("#win_item_requan_info").empty();
+        $("#win_item_requan_info").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '80%',
+            height: '50%',
+            title: proname + ' Route Info'
+        });
+        $("#win_item_requan_info").html('<div class="win_loading_half"></div>');
+        var win_item_requan_info = $("#win_item_requan_info").data("kendoWindow");
+        win_item_requan_info.refresh({ url: "/StoreProduct/ShowInvenRouteReQuanDetails?invenid=" + invenid + '&DisId=' + '@(Model.Id)' });
+        win_item_requan_info.center().open();
+    });
+
+    //******************************* QUANTITY EDIT FUNCTION *****************************************
+    $("#win_item_quan_info").on("click", ".btn_item_quan_revert", function (e) {
+        e.preventDefault();
+        var id = $(this).data("id");
+        var proname = $(this).data("proname");
+
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        message = "Are you sure you want to return quantity?";
+        var template = kendo.template($("#temp_win_site_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        kendoWindow.find("#btn_edit_quan_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_edit_quan_ok").click(function () {
+            editQuan(id, proname);
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+    });
+
+
+    //******************************* QUANTITY EDIT FUNCTION *****************************************
+    $("#win_item_quan_info").on("click", ".btn_item_quan_insert", function (e) {
+        e.preventDefault();
+        var id = $(this).data("id");
+        var inven = $(this).data("inven");
+        var proname = $(this).data("proname");
+        var quan = $(this).data("quan");
+        var storeid = $(this).data("storeid");
+        var wareid = $(this).data("wareid");
+
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        message = "Are you sure you receive this quantity?";
+        var template = kendo.template($("#temp_win_site_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        kendoWindow.find("#btn_edit_quan_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_edit_quan_ok").click(function () {
+            insertQuan(id,inven, proname, quan, storeid, wareid);
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+    });
+
+    function editQuan(id, proname) {
+        $("#win_item_quan_edit").empty();
+        $("#win_item_quan_edit").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            position: { top: '20%' },
+            title: proname + ' Dispatch Quantity Edit'
+        });
+        $("#win_item_quan_edit").html('<div class="win_loading_half"></div>');
+        var win_item_quan_edit = $("#win_item_quan_edit").data("kendoWindow");
+        win_item_quan_edit.refresh({ url: "/StoreProduct/DispatchItemQuanEditMain?id=" + id });
+        win_item_quan_edit.center().open();
+    }
+    function insertQuan(id,inven, proname, quan, storeid, wareid) {
+        //$("#win_item_quan_insert").empty();
+        //$("#win_item_quan_insert").kendoWindow({
+        //    actions: ["Close"],
+        //    draggable: false,
+        //    modal: true,
+        //    visible: false,
+        //    width: '50%',
+        //    position: { top: '20%' },
+        //    title: proname + ' Insert'
+        //});
+        //$("#win_item_quan_insert").html('<div class="win_loading_half"></div>');
+        //var win_item_quan_insert = $("#win_item_quan_insert").data("kendoWindow");
+        //win_item_quan_insert.refresh({ url: "/StoreProduct/RouteItemInsertMain?id=" + id });
+        //win_item_quan_insert.center().open();
+        //notification.show({ message: "Routed item is receiving...", showTime: startTime() }, "upload-progress");
+        var sendData = {
+            Id: id, inven: inven, Quantity: quan,
+            proname: proname, voucher: '@(Model.VoucherName)',
+            storeid: storeid, wareid: wareid, UserId: userId
+        };
+        $.ajax({
+            url: '@Url.Action("RouteItemInsertSave", "StoreProduct")',
+            type: 'Post',
+            data: sendData,
+            success: function (data) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                if (data === "Success") {
+                    notification.show({ message: "Routed item quantity has been successfully received.", showTime: startTime() }, "upload-success");
+                    location.reload();
+                } else {
+                    notification.show({ message: "Routed item quantity receive was unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+            },
+            error: function (xhr) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occured.", showTime: startTime() }, "upload-warning");
+            }
+        });
+    }
+</script>

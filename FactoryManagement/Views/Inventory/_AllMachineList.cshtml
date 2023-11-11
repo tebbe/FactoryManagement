@@ -1,0 +1,92 @@
+﻿@model IEnumerable<FactoryManagement.Models.Machine>
+@using FactoryManagement.Helpers
+
+@{
+    var count = 1;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+
+<table class="table table-hover table-bordered table-striped table-condensed" id="tbl_machine">
+    <tbody>
+        <tr>
+            <th width="4%">#</th>
+            <th width="11%">Machine Name</th>
+            <th width="10%">Model</th>
+            <th width="8%">Brand</th>
+            <th width="15%">Created By</th>
+            <th width="10%">Created Date</th>
+            <th width="15%">Last Updated By</th>
+            <th width="12%">Last Updated Date</th>
+            <th width="15%"></th>
+        </tr>
+        @foreach (var item in Model)
+        {
+           
+            string brand = db.BrandLists.Where(m => m.BrandId == item.BrandId).Select(m => m.BrandName).FirstOrDefault();
+            <tr id="tr_@item.Id">
+                <th>@count.</th>
+                <td>@Html.DisplayFor(modelItem => item.Acroynm)</td>
+                <td>@Html.DisplayFor(modelItem => item.ModelName)</td>
+                <td>@brand</td>
+                <td>
+                    @if (item.CreatedBy > 0)
+                    {
+                        var user = db.View_UserLists.Where(m => m.UserType == 1 && m.UserId == item.CreatedBy).FirstOrDefault();
+                        <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = item.CreatedBy,isDisplay=true }, null)">
+                            <img src="~/Images/UserPicture/thumb/@user.Picture" class="img-circle" />@user.UserName
+                        </a>
+                    }
+                    else
+                    {
+                        <img src="~/Images/UserPicture/thumb/admin.jpg" class="img-circle" />
+                        <span>Super Admin</span>
+                    }
+                </td>
+                <td>@Convert.ToDateTime(item.CreatedDate).ToString("MMM dd,yyyy")</td>
+                <td>
+                    @if (item.UpdatedBy != null)
+                    {
+                        if (item.UpdatedBy > 0)
+                        {
+                            var user = db.View_UserLists.Where(m => m.UserId == item.UpdatedBy).FirstOrDefault();
+                            <img src="~/Images/UserPicture/thumb/@user.Picture" class="user-photo" />
+                            @Html.EncodedActionLink(user.UserName, "DisplayEmployeeDetails", "HumanResource", new { UserId = item.UpdatedBy, isDisplay = true }, null)
+                        }
+                        else
+                        {
+                            <img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" />
+                            <span>Super Admin</span>
+                        }
+                    }
+                    else
+                    {
+                        <span>Not yet updated</span>
+                    }
+                </td>
+                <td>
+                    @if (item.UpdatedBy != null)
+                    {
+                        <span>@Convert.ToDateTime(item.UpdatedDate).ToString("MMM dd,yyyy")</span>
+                    }
+                    else
+                    {
+                        <span>Not yet updated</span>
+                    }
+                </td>
+                <td>
+                    <span data-toggle="tooltip" title="Edit Macine" class="btn green btn_Edit_Machine" data-id="@item.Id" data-name="@item.Acroynm"><span class="fa fa-pencil"></span></span>
+                    <span data-toggle="tooltip" title="Add more Equipment" class="btn green btn_Add_Equip" data-id="@item.Id" data-name="@item.Acroynm"><span class="fa fa-plus"></span></span>
+                    @*<span data-toggle="tooltip" title="Delete Machine" class="btn btn-danger btn_Remv_Machine" data-id="@item.Id" data-name="@item.Acroynm"><span class="fa fa-trash"></span></span>*@
+                    @Html.EncodedActionLink("<span data-toggle = \"tooltip\" Title= \"Machine Equipments\"  class=\"btn blue\"><span class=\"fa fa-list-ul\"></span></span>", "AllEquipmentList", "Inventory", new { acronynm = item.Acroynm }, null)
+                </td>
+            </tr>
+                    count++;
+        }
+    </tbody>
+</table>
+
+<script>
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>

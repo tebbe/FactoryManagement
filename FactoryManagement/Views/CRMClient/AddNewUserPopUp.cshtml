@@ -1,0 +1,193 @@
+﻿<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;">   
+ <div class="form-horizontal form-widget" id="loadAddNewUserForm"></div>
+ <div class="k-edit-buttons k-state-default">
+    <button type="button" class="k-button k-button-icontext k-primary k-grid-save" id="btnAddNewUser"><span class="k-icon k-update"></span>Save</button>
+    <button type="reset" class="k-button k-button-icontext k-grid-refresh" id="btnRefreshAddnewUser"><span class="k-icon k-i-refresh"></span>Refresh</button>
+    <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnAddNewUserCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+  </div>
+</div>
+<script>
+    var id = "";
+    var count = 1;
+    $(document).ready(function () {
+        id = "userTxtContact-1";
+        logUserId = loginUserId;           
+        $("#loadAddNewUserForm").load('@Url.Action("_AddNewUser", "CRMClient")?ClientId=' + CliId);
+    });
+//**************user add page Cancel and Refresh btn*******************************************
+    $("#btnAddNewUserCancel").click(function () {
+        $("#div_userEntry_panel").empty();
+        $("#div_userEntry_panel").data("kendoWindow").close();        
+        $("#div_ryt_panel").empty();
+        $("#div_ryt_panel").load('@Url.Action("UserList", "CRMClient")?Id=' + CliId + '&isDisplay=' + isDisplay);
+    });  
+//***************Field Validation******************************
+    var userEntryvalidation = $("#loadAddNewUserForm").kendoValidator({
+        rules: {
+            custom: function (input) {
+                var errormessage;
+                var remoteAttr = input.attr("data-val-remote-url");
+                if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                    return true;
+                }
+                var isInvalid;
+                var data = {};
+                var ClientId = $("#ClientId").val();
+                var Name = input.val();
+                data = { ClientId: ClientId, Name: Name };
+                $.ajax({
+                    url: remoteAttr,
+                    mode: "abort",
+                    port: "validate" + input.attr('name'),
+                    dataType: "json",
+                    type: input.attr("data-val-remote-type"),
+                    data: data,
+                    async: false,
+                    success: function (response) {
+                        isInvalid = response;
+                        if (isInvalid === true) {
+                            isInvalid = true;
+                        }
+                        else {
+                            isInvalid = false;
+                        }
+                    }
+                });
+                return isInvalid;
+            },
+
+            Contact: function (input) {
+                if (input.attr("id") === "userTxtContact-" + count) {
+                    if (telInput.intlTelInput("isValidNumber")) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+                return true;
+            },
+            ContactType: function (input) {
+                if (input.attr("id") === "txtContactType-" + count && input.val() === "") {
+                    return false;
+                }
+                else{
+                    return true;
+                }
+            },
+            Address: function (input) {
+                if (input.is("[name=Address]") && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Country: function (input) {
+                if (input.is("[name=userCountry]") && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Division: function (input) {
+                if (input.is("[name=userDivisionId]") && $("#userCountry").val() == "BD" && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            City: function (input) {
+                if (input.is("[name=City]") && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            }, 
+            
+            ClientType: function (input) {
+                if (input.is("[name=IsBuyer]")) {
+                    if ($("#IsBuyer").val() === "True" || $("#IsSupplier").val() === 'True' || $("#IsOutSourcer").val() === 'True' || $("#IsLogistic").val() === 'True') {
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                return true;
+            },
+            State: function (input) {
+                if (input.is("[name=State]") && $("#userCountry").val() != "BD" && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        },
+
+        messages: {
+            custom: function (input) {
+                return "Client Name Already Exist!";
+            },
+            Country: "Please select country",
+            Division: "Please select division",
+            City: "Please enter city",          
+            ClientType: "Please enter one type",
+            State: "Please enter state",
+            Contact: "Please enter valid contact number",
+            ContactType: "Please select contact type"
+        }
+    }).data("kendoValidator");
+
+//***************************New user Save******************************************
+    $("#btnAddNewUser").click(function () {      
+        if (userEntryvalidation.validate()) {
+            if (parseInt(count) > 1) {
+                var allCntactList = "";
+                var allComments = "";
+                for (i = 1; i <= count; i++) {
+                    allCntactList += $("#userTxtContact-" + i).intlTelInput("getNumber") + "|" + $("#txtContactType-" + i).val() + "|" + $("#txtComment-" + i).val() + ",";
+                }
+            }
+            else {
+                allCntactList = $("#userTxtContact-1").intlTelInput("getNumber") + "|" + $("#txtContactType-1").val() + "|" + $("#txtComment-1").val() + ",";
+            }         
+            var sendData = new FormData();
+            sendData.append("UserId", $("#UserId").val());
+            sendData.append("UserName", $("#UserName").val());
+            sendData.append("files", allMainFile[0]);
+            sendData.append("CreatedBy", logUserId);
+            sendData.append("AllContactList", allCntactList);
+            sendData.append("RegisterNo", $("#RegisterNo").val());
+            sendData.append("ClientId", CliId);
+            sendData.append("Designation", $("#Designation").val());
+            sendData.append("Address", $("#Address").val());
+            sendData.append("AddressLine1", $("#AddressLine1").val());
+            sendData.append("Country", $("#userCountry").val());
+            sendData.append("DivisionId", $("#userDivisionId").val());
+            sendData.append("State", $("#State").val());
+            sendData.append("City", $("#City").val());
+            sendData.append("Email", $("#Email").val());
+            sendData.append("Fax", $("#Fax").val());
+            sendData.append("PostalCode", $("#PostalCode").val());
+            $.ajax({
+                url: '@Url.Action("AddNewUser", "CRMClient")',
+                type: 'Post',
+                data: sendData,
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({autoHideAfter: 2000});
+                    if (data != null) {
+                        if (data === 'Error'){ notification.show({ message: "Add new user was unsuccessful.", showTime: startTime() }, "upload-error"); }
+                    else {notification.show({ message: "New user successfully added", showTime: startTime()}, "upload-success");}
+                    }
+                    $("#div_userEntry_panel").empty();
+                    $("#div_userEntry_panel").data("kendoWindow").close();
+                    $("#div_ryt_panel").append('<div class="loading_half"></div>');
+                    $("#div_ryt_panel").load('@Url.Action("UserList", "CRMClient")?Id=' + CliId + '&isDisplay=' + isDisplay);
+                },
+                error: function (error) {notification.show({ message: "Upload unsuccessful" }, "upload-error");}
+            });
+        }
+    });
+</script>

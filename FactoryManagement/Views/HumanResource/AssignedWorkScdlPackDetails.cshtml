@@ -1,0 +1,34 @@
+﻿
+@******************************** Created By Kaikubad (Date: 26.01.2017) ******************************************************@
+@model FactoryManagement.Models.WorkingScheduleList
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var daylist = db.WorkingDayLists.Where(x => x.WorkingScheduleId == Model.WorkingScheduleId).Select(x => x.Day).ToList();
+}
+
+<div class="form-group">
+    <label class="control-label col-md-3 col-sm-3">Package Name</label>
+    <div class="col-md-3 col-sm-4" style="padding-top:7px!important;">@Model.SchedulName</div>
+</div>
+<div class="form-group">
+    <label class="control-label col-md-3 col-sm-3">No. of Paid Leave</label>
+    <div class="col-md-3 col-sm-4" style="padding-top:7px!important;">@Model.NoOfPaidLeave days</div>
+</div>
+<div class="form-group">
+    <label class="control-label col-md-3 col-sm-3">Working Days</label>
+    <div class="col-md-3 col-sm-4" style="padding-top:7px!important;">
+        @foreach (var day in daylist)
+        {
+            <span>@day ,</span>
+        }
+</div>
+</div>
+<div class="form-group">
+    <label class="control-label col-md-3 col-sm-3">Start Time</label>
+    <div class="col-md-3 col-sm-4" style="padding-top:7px!important;">@Model.StartTime </div>
+</div>
+<div class="form-group">
+    <label class="control-label col-md-3 col-sm-3">End Time</label>
+    <div class="col-md-3 col-sm-4" style="padding-top:7px!important;">@Model.EndTime</div>
+</div>
+

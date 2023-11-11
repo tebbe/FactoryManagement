@@ -1,0 +1,376 @@
+﻿
+
+@************************ Created By Jerin Jahan (Date: 10.01.2017) *******************************************@
+@model FactoryManagement.Models.View_All_InventoryList
+@{
+    ViewBag.Title = "InventoryItemLocationSet";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db=new FactoryManagement.Models.FactoryManagementEntities();
+    var Currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+
+
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-list"></i>
+            <a href="/StoreProduct/Store">Store</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-arrow-circle-down" aria-hidden="true"></i>
+            <a href="/StoreProduct/InventoryItemLocationSet"> Import</a>
+        </li>
+    </ul>
+</div>
+<div class="portlet light bordered">
+    <div class="portlet-title">
+        <div class="caption font-green">
+            <i class="fa fa-arrow-circle-down green" aria-hidden="true"></i>
+            <span class="caption-subject bold uppercase">Import</span>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-horizontal" id="Div_For_Finished_Pro">
+            <div class="form-body">
+                @if (Model.InventoryId == 0)
+                {
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.ProductName, "Selected Product Name", htmlAttributes: new { @class = "col-sm-4 col-xs-12",@style="text-align:center" })
+                        <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" id="div_proname_autocom">
+                            @(Html.Kendo().AutoComplete()
+                               .Name("ProductName")
+                               .Placeholder("Search product name here")
+                               .DataTextField("ProductName")
+                               .Filter("contains")
+                               .MinLength(0)
+                               .HtmlAttributes(new { style = "width:100%" })
+                               .Events(e => e.Select("InventoryItemSelect"))
+                               .DataSource(source =>
+                                 {
+                                     source.Read(read =>
+                                     {
+                                         read.Action("ProductNameSearching", "StoreProduct").Data("onAdditionalData");
+                                     })
+                                     .ServerFiltering(true);
+                                 })
+                            )
+                            @Html.ValidationMessageFor(model => model.ProductName, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" style="display:none;" id="div_pro_select">
+                            <label id="lbl_Pro_Name"></label>
+                            <span class="k-icon k-i-close" id="btnCloseForProduct" data-id="1"></span>
+                        </div>
+                    </div>
+                }
+                <div id="loadAutoCompleteData" class="form-group"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var inventoryId, UnitId,Unitname="";
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $("#liForAllInventoryList").addClass('sublistActive');
+        
+
+        if ('@Model.InventoryId' > 0) {
+            inventoryId = '@Model.InventoryId';
+            UnitId = '@Model.UnitId';
+            $("#loadAutoCompleteData").empty();
+            $("#loadAutoCompleteData").append('<div class="partial_loading_half"></div>');
+            $("#loadAutoCompleteData").load('@Url.Action("ProductDetailsofAutocomplete", "StoreProduct")?InventoryId=' + inventoryId);
+        }
+    });
+    $("#btnCloseForProduct").click(function () {
+        $("#div_proname_autocom").show();
+        $("#div_pro_select").hide();
+        $("#loadAutoCompleteData").empty();
+        $("#ProductName").val('');
+    });
+    function onAdditionalData() {
+        return { prefix: $("#ProductName").val(), isStore: false, isware: false };
+    }
+    function onAdditionalLc() {
+        return { prefix: inventoryId };
+    }
+    function onBrandData() {
+        return {
+            prefix: $("#BrandName").val()
+        };
+    }
+    function InventoryItemSelect(e) {
+        var dataItem = this.dataItem(e.item.index());
+        inventoryId = dataItem.InventoryId;
+        $("#div_proname_autocom").hide();
+        $("#div_pro_select").show();
+        $("#loadAutoCompleteData").empty();
+        $("#loadAutoCompleteData").append('<div class="partial_loading_half"></div>');
+        $("#loadAutoCompleteData").load('@Url.Action("ProductDetailsofAutocomplete", "StoreProduct")?InventoryId=' + dataItem.InventoryId);
+        $("#lbl_Pro_Name").text(dataItem.ProductName);
+        $("#InventoryId").val(dataItem.InventoryId);
+    }
+    function onLCSelect(e) {
+        var dataItem = this.dataItem(e.item.index());
+        $("#ImportId").val(dataItem.Import);
+    }
+    function isNumber(e, v) {
+        e = (e) ? e : window.event;
+        var charCode = (e.which) ? e.which : e.keyCode;
+        if ((charCode != 46 || v.indexOf('.') != -1) && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+        return true;
+    }
+    function isNumberForDyn(e, v) {
+        e = (e) ? e : window.event;
+        var charCode = (e.which) ? e.which : e.keyCode;
+        if ($("#Quantity").val() == "") {
+            alert("Please enter Total quantity");
+            return false;
+        }
+        if ((charCode != 46 || v.indexOf('.') != -1) && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+        return true;
+    }
+</script>
+<script>
+    var count = 0;
+    var current = "", previous;
+    function onLocationSelect(e) {
+        previous = this._savedOld;
+        current = this.value();
+        var diff = [];
+        if (previous) {
+            diff = $(previous).not(current).get();
+        }
+        this._savedOld = current.slice(0);
+        if (diff.length > 0 && current != '') {
+            $("#tr_loc_" + diff).remove();
+        } else {
+            var dataItem = this.dataSource.view()[e.item.index()];
+            var id = dataItem.Id;
+            var unic_id = dataItem.IdWithChar;
+            if ($("#tr_loc_" + unic_id).length == 0) {
+                count++;
+                $("#tbl_Div_Loc").css('width', '97%');
+                $("#tbl_Div_Loc").append(
+                    //'<tr>' +
+                    //'<th>SL.</th>' +
+                    //   '<th>Name</th>' +
+                    //      '<th>Quantity</th>' +
+                    //        '<th>Minimum Quantity</th>' +
+                    //'</tr>' +
+                    '<tr id="tr_loc_' + unic_id + '">' +
+                        '<th width="5%">' + count + '.</th>' +
+                        '<td width="30%">' + dataItem.Name + '</td>' +
+                        '<td width="25%">' +
+                        '<input class="form-control k-textbox txtquan" data-val="true"' +
+                                'data-val-required="Please enter quantity"' +
+                                'data-val-number="Quantity must be a number."' +
+                                'id="txt_quan_' + unic_id + '" name="txt_quan_' + unic_id + '"' +
+                                'placeholder="Quantity" ' +
+                                'onfocus="this.placeholder = \'\'" ' +
+                                'onblur="this.placeholder = \'Quantity\' "' +
+                                'onkeypress="return isNumberForDyn(event, this.value)"' +
+                                'type="text" value="" style="width:100%;">' +
+                         '<span class="field-validation-valid text-danger" ' +
+                         'data-valmsg-for="txt_quan_' + unic_id + '" data-valmsg-replace="true"></span>' +
+                        '</td>' +
+                      '<td width="25%">' +
+                         '<input class="form-control k-textbox txtMin_quan" data-val="true"' +
+                               // 'data-val-required="Please enter minimum quantity"' +
+                                'data-val-number="Minimun quantity must be a number."' +
+                                'id="txt_min_quan_' + unic_id + '" name="txt_min_quan_' + unic_id + '"' +
+                                'placeholder="Minimum Quantity" ' +
+                                'onfocus="this.placeholder = \'\'" ' +
+                                'onblur="    this.placeholder = \'Minimum Quantity\' "' +
+                                'onkeypress="return isNumber(event, this.value)"' +
+                                'type="text" value="">' +
+                        // '<span class="field-validation-valid text-danger" data-valmsg-for="txt_min_quan_' + unic_id + '" data-valmsg-replace="true"></span>' +
+                     '</td>' +
+                    
+                 '</tr>');
+                $("#Div_Dyn_Loc").show();
+            }
+            var sendData = {
+                inventoryId: inventoryId,
+                storewareId: id,
+                isStore: dataItem.IsStore,
+            };
+            $.ajax({
+                url: '@Url.Action("GetMinimumQuantity", "StoreProduct")',
+                type: 'get',
+                data: sendData,
+                success: function (data) {
+                    if (data != "Error") {
+                        $("#txt_min_quan_" + dataItem.IdWithChar).val(data.MinimumQuantity);
+                    }
+                },
+                error: function (error) {}
+            });
+        }
+    }
+    function onLocationChange(e) {
+        previous = this._savedOld;
+        current = this.value();
+        var diff = [];
+        if (previous) {
+            diff = $(previous).not(current).get();
+        }
+        this._savedOld = current.slice(0);
+        if (diff.length > 0) {
+            count--;
+            $("#tr_loc_" + diff).remove();
+            if (current == "") {
+                $("#Div_Dyn_Loc").hide();
+                $("#tbl_Div_Loc").empty();
+            }
+            var id = diff.toString().split('-')[0];
+        }
+    }
+    function remove_row(removeData) {
+        var data = $("#location").data("kendoMultiSelect").value();
+        for (var i = 0; i < data.length; i++) {
+            if (data[i] == removeData) {
+                data.splice(i, 1);
+            }
+        }
+        count--;
+        $("#tr_loc_" + removeData).remove();
+        $("#location").data("kendoMultiSelect")._savedOld = data;
+        $("#location").data("kendoMultiSelect").value(data);
+    }
+</script>
+<script>
+    $("#loadAutoCompleteData").on("click","#btn_Loc_define_refresh",function () {
+        location.reload();
+    });
+    $("#loadAutoCompleteData").on("click","#btn_Loc_define_cancel",function () {
+        window.history.back();
+    });
+
+    //*************************** Save Button Click******************************************************
+    $("#loadAutoCompleteData").on("click","#btn_Loc_define_save",function () {
+        var qun_err_msg = "";
+        var validation = $("#div_Loc_define").kendoValidator({
+            rules: {
+                LCselect: function (input) {
+                    if (input.is("[name=LC") && ($("#LC").val() === "" || $("#LC").val() === null)) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
+                multiselect: function (input) {
+                    if (input.is("[name=location") && $("#location").val() === null) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
+                TotalQuantityValidation: function (input) {
+                    if (input.is("[name=TotalQuan") && $("#TotalQuantity").val() !== "") {
+                        var quan = $("#TotalQuantity").val();
+                        var totalQuan = 0;
+                        $(".txtquan").each(function () {
+                            totalQuan = totalQuan + parseFloat($(this).val());
+                        });
+                        if (parseFloat(quan) == parseFloat(totalQuan)) {
+                            return true;
+                        } else {
+                            if ($("#TotalQuantity").val() !== "" && totalQuan > 0 && parseFloat(quan) > parseFloat(totalQuan)) {
+                                txt_min_quan_ = "Quantity is not equal to " + $("#TotalQuantity").val();
+                                return false;
+                            } if (parseFloat(totalQuan) > parseFloat(quan)) {
+                                txt_min_quan_ = "Quantity can not be greater than " + $("#TotalQuantity").val();
+                                return true;
+                            }
+                        }
+                    } else {
+                        return true;
+                    }
+                },
+                TotalQuanMax: function (input) {
+                    if (input.is("[name=TotalQuan") && $("#TotalQuantity").val() !== "") {
+                        var quan = $("#TotalQuantity").val();
+                        var totalQuan = 0;
+                        $(".txtquan").each(function () {
+                            totalQuan = totalQuan + parseFloat($(this).val());
+                        });
+                        if (parseFloat(quan) == parseFloat(totalQuan)) {
+                            return true;
+                        } else {
+                            if (parseFloat(quan) > parseFloat(totalQuan) && $("#TotalQuantity").val() !== "") {
+                                return true;
+                            } if (parseFloat(totalQuan) > parseFloat(quan)) {
+                                return false;
+                            }
+                        }
+                    } else {
+                        return true;
+                    }
+                }
+            },
+            messages: {
+                Quantity: "Please enter quantity",
+                multiselect: "Please select one",
+                TotalQuantityValidation: "Quantity is not equal to " + $("#TotalQuantity").val(),
+                TotalQuanMax: "Quantity can not be greater than " + $("#TotalQuantity").val(),
+                LCselect: "Please enter LC no.",
+            }
+        }).data("kendoValidator");
+        if (validation.validate()) {
+            notification.show({ message: "Item qunatity and location is saving...", showTime: startTime() }, "upload-progress");
+            var AllQuan = [], AllMinQuan = [];
+            $(".txtquan").each(function () {
+                AllQuan.push(parseFloat($(this).val()).toFixed(2));
+            });
+            $(".txtMin_quan").each(function () {
+                AllMinQuan.push(parseFloat($(this).val()).toFixed(2));
+            });
+
+            var sendData = {
+                InventoryId: inventoryId,
+                AllLocId: $("#location").data("kendoMultiSelect").value().join(","),
+                L_C: $("#LC").val(),
+                Quantity: $("#TotalQuantity").val(),
+                UnitName:Unitname,
+                ProductName: $("#ProductName").val(),
+                UnitId: UnitId,
+                AllQuan: AllQuan,
+                AllMinQuan: AllMinQuan,
+                InsertedBy: userId
+            };
+            $.ajax({
+                url: '@Url.Action("InventoryLocSave", "StoreProduct")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if (data != null) {
+                        if (data === 'Error') {
+                            notification.show({ message: "Inventory product location define was unsuccessful.", showTime: startTime() }, "upload-error");
+                        }
+                        else {
+                            notification.show({ message: "Inventory product location has been successfully defined.", showTime: startTime() }, "upload-success");
+                            location.reload();
+                        }
+                    }
+                },
+                error: function (error) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+</script>

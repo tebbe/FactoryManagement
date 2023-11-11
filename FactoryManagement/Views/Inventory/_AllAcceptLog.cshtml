@@ -1,0 +1,42 @@
+﻿@model IEnumerable<FactoryManagement.Models.View_DisItemReturnDetails>
+    @using FactoryManagement.Helpers
+@{ int count = 0;}
+<table class="table table-bordered table-hover table-striped">
+    <thead>
+        <tr>
+            <th>SL.</th>
+            <th>Voucher name</th>
+            <th>Transaction Name</th>
+            <th>Product name</th>
+            <th>Machine</th>
+           <th>Returned Quantity</th>
+        
+            <th>Return Date</th>
+            <th>Return By</th>
+            <th>Accept Date</th>
+            <th>Accepted By</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model) {
+            count++;
+            <tr>
+                <td>@count</td>
+                <td>@item.VoucherName</td>
+                <td><span style="cursor:pointer;color:#0094ff" class="return_Tran_Name" data-id="@item.Id">@item.ReturnTransactionName</span></td>
+                <td>@Html.EncodedActionLink(item.ProductName, "StoreProductWithLCDetails", "StoreProduct", new { id = item.LocationId }, null)</td>
+                <td>@item.ReturnFrom</td>
+                <td>@item.Quantity</td>         
+                <td>@item.ReturnDateName</td>
+                <td>@item.ReturnUserName</td>
+                <td>@item.AcceptDate</td>
+                <td>@item.AcceptBUserName</td>
+                <td><a href="/Inventory/AcceptLogPrint?id=@item.Id" target="_blank"><i class="fa fa-print" data-toggle="tooltip" title="Print"></i></a></td>
+            </tr>
+        }
+    </tbody>
+</table>
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+</script>

@@ -1,0 +1,56 @@
+﻿<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10">
+    <div id="divForBusinessSupplierHistory"><div class="loading_partial"></div></div>
+</div>
+<script>
+    var specCount = 1;
+    $(document).ready(function () {
+        $("#divForBusinessSupplierHistory").load('@Url.Action("_DisplayBusinessSupplierList", "CRMClient")?ClientId=' + '@(ViewBag.ClientId)');
+    });
+    $("#divForBusinessSupplierHistory").on("click", ".btn_expandSupplierList", function (e) {
+        e.preventDefault();
+        var typeId = $(this).data("id");
+        $(this).find('i').toggleClass('fa-plus-square-o fa-2 fa-minus-square-o fa-2');
+        if ($(this).data("isclick") == "0") {
+            $(this).data("isclick", "1");
+            $(this).attr("dataisclick", "1");
+            $.ajax({
+                url: '@Url.Action("GetAllSupplierList", "CRMClient")',
+                type: 'Post',
+                data: { ParentId: typeId },
+                success: function (data) {
+                    if (data) {
+                        specCount = 1;
+                        $(".trforchild_" + typeId).empty();
+                        $(".trforchild_" + typeId).show();
+                        var crntSpan = $("#spanForName_" + typeId);
+                        var getPadValue = parseInt(crntSpan.css('padding-left'));
+                        for (var i = 0; i < data.length; i++) {
+                            $("#tr_" + typeId).after('<tr id ="tr_' + data[i].BusinessOrderId + '" class="trforchild_' + typeId + '" data-proid="' + data[i].BusinessOrderId + '">' +
+                                       '<td colspan="7">'+
+                                            '<span class="col-sm-3" style="padding-left:10%;">' + data[i].ProductName + '</span>' +
+                                            '<span class="col-sm-1" >' + data[i].Quantity + ' ' + data[i].UnitName + '</span>' +
+                                            '<span class="col-sm-1">' + Currency + ' '+ data[i].PerPiece +'</span>' +
+                                            '<span class="col-sm-1">' + Currency + ' ' + data[i].TotalPriece + '</span>' +
+                                            '<span class="col-sm-2">' + ((data[i].ReceivedStatus == 1) ? ' ' + "Waiting to be delivered" + ' ' : (data[i].ProStatus == 2) ? ' ' + " Partially received " + ' ' : " Assigned") + '</span>' +
+                                        '</td>' +
+                                    '</tr>');
+                            specCount++;
+                        }
+                    }
+                }
+            });
+        }
+        else {
+            $(this).data("isclick", "0");
+            $(this).attr("dataisclick", "0");
+            $(".trforchild_" + typeId).each(function () {
+                var id = $(this).data("proid");
+                var haschild = $(this).data("prochild");
+                if (haschild == "True") {
+                    childremove(id);
+                }
+            });
+            $(".trforchild_" + typeId).remove();
+        }
+    });
+</script>

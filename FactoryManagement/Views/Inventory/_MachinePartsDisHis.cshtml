@@ -1,0 +1,199 @@
+﻿
+
+
+
+@************************************** Created By Jerin Jahan (Date:24.06.2017)  ***************************************@
+
+@using FactoryManagement.Helpers;
+@model IEnumerable<FactoryManagement.Models.View_Dispacth_Item_Details>
+@{
+    int count = 0;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+@if (Model.Count() > 0)
+{
+     <style>
+        #tbl_dis_parts_list{width:85%!important;margin-left:5%!important;}
+        #tbl_dis_parts_list th{border:none!important;}
+        #tbl_dis_parts_list td{border:none!important;}
+    </style>
+    <table class="table table-condensed" id="tbl_dis_parts_list">
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Voucher Name</th>
+            <th>Quantity</th>
+            @*<th>Dispatched By</th>*@
+            <th>Dispatched Date</th>
+            <th>Received By</th>
+        </tr>
+        @foreach (var list in Model)
+        {
+            count++;
+            var uname = db.View_All_InventoryList.Where(m => m.InventoryId == list.InventoryId).Select(m => m.UnitName).FirstOrDefault();
+            <tr>
+                <th>@count.</th>
+                <td>@list.ProductName</td>
+                <td><a data-dispatchedid="@list.DispatchedId" class="voucher_details">@list.VoucherName</a></td>
+                <td>@list.Quantity @uname</td>
+                @*<td><span><img class="img-circle" src="/Images/UserPicture/thumb/@list.DispatchedUserPic">@list.DispatchedUserName</span></td>*@
+                <td>@list.DispatchedDateName</td>
+                <td>
+                    @if (ViewBag.type == 1)
+                    {
+                        if (list.WareId > 0)
+                        {
+                            if (db.DispatchedItemAssignUsers.Where(m => m.WareId == list.WareId && m.DispatchItemId == list.Id).Any())
+                            {
+                                var userList = (from d in db.DispatchedItemAssignUsers
+                                                join v in db.View_UserLists on d.UserId equals v.UserId
+                                                where d.WareId == list.WareId && d.DispatchItemId == list.Id
+                                                select new
+                                                {
+                                                    username = v.UserName,
+                                                    userpic = v.Picture,
+                                                    userid = v.UserId
+                                                }).ToList();
+                                foreach (var u in userList)
+                                {
+                                    <p><img class="user-photo" src="/Images/UserPicture/thumb/@u.userpic">@u.username</p>
+                                }
+                            }
+                            else
+                            {
+                                var userList = (from d in db.DispatchedItemAssignUsers
+                                                join v in db.View_UserLists on d.UserId equals v.UserId
+                                                where d.DispatchId == list.DispatchedId
+                                                select new
+                                                {
+                                                    username = v.UserName,
+                                                    userpic = v.Picture,
+                                                    userid = v.UserId
+                                                }).ToList();
+                                foreach (var u in userList)
+                                {
+                                    <p><img class="user-photo" src="/Images/UserPicture/thumb/@u.userpic">@u.username</p>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (db.DispatchedItemAssignUsers.Where(m => m.StoreId == list.StoreId && m.DispatchItemId == list.Id).Any())
+                            {
+                                var userList = (from d in db.DispatchedItemAssignUsers
+                                                join v in db.View_UserLists on d.UserId equals v.UserId
+                                                where d.StoreId == list.StoreId && d.DispatchItemId == list.Id
+                                                select new
+                                                {
+                                                    username = v.UserName,
+                                                    userpic = v.Picture,
+                                                    userid = v.UserId
+                                                }).ToList();
+                                foreach (var u in userList)
+                                {
+                                    <p><img class="user-photo" src="/Images/UserPicture/thumb/@u.userpic">@u.username</p>
+                                }
+                            }
+                            else
+                            {
+                                var userList = (from d in db.DispatchedItemAssignUsers
+                                                join v in db.View_UserLists on d.UserId equals v.UserId
+                                                where d.DispatchId == list.DispatchedId
+                                                select new
+                                                {
+                                                    username = v.UserName,
+                                                    userpic = v.Picture,
+                                                    userid = v.UserId
+                                                }).ToList();
+                                foreach (var u in userList)
+                                {
+                                    <p><img class="user-photo" src="/Images/UserPicture/thumb/@u.userpic">@u.username</p>
+                                }
+                            }
+                        }
+
+                    }
+                    else
+                    {
+                        if (list.DeptId > 0)
+                        {
+                            if (db.DispatchedItemAssignUsers.Where(m => m.DeptId == list.DeptId && m.DispatchItemId == list.Id).Any())
+                            {
+                                var userList = (from d in db.DispatchedItemAssignUsers
+                                                join v in db.View_UserLists on d.UserId equals v.UserId
+                                                where d.DeptId == list.DeptId && d.DispatchItemId == list.Id
+                                                select new
+                                                {
+                                                    username = v.UserName,
+                                                    userpic = v.Picture,
+                                                    userid = v.UserId
+                                                }).ToList();
+                                foreach (var u in userList)
+                                {
+                                    <p><img class="user-photo" src="/Images/UserPicture/thumb/@u.userpic">@u.username</p>
+                                }
+                            }
+                            else
+                            {
+                                var userList = (from d in db.DispatchedItemAssignUsers
+                                                join v in db.View_UserLists on d.UserId equals v.UserId
+                                                where d.DispatchId == list.DispatchedId
+                                                select new
+                                                {
+                                                    username = v.UserName,
+                                                    userpic = v.Picture,
+                                                    userid = v.UserId
+                                                }).ToList();
+                                foreach (var u in userList)
+                                {
+                                    <p><img class="user-photo" src="/Images/UserPicture/thumb/@u.userpic">@u.username</p>
+                                }
+                            }
+
+                        }
+                        else if (list.MachineId > 0)
+                        {
+                            if (db.DispatchedItemAssignUsers.Where(m => m.MachineId == list.MachineId && m.DispatchItemId == list.Id).Any())
+                            {
+                                var userList = (from d in db.DispatchedItemAssignUsers
+                                                join v in db.View_UserLists on d.UserId equals v.UserId
+                                                where d.MachineId == list.MachineId && d.DispatchItemId == list.Id
+                                                select new
+                                                {
+                                                    username = v.UserName,
+                                                    userpic = v.Picture,
+                                                    userid = v.UserId
+                                                }).ToList();
+                                foreach (var u in userList)
+                                {
+                                    <p><img class="user-photo" src="/Images/UserPicture/thumb/@u.userpic">@u.username</p>
+                                }
+                            }
+                            else
+                            {
+                                var userList = (from d in db.DispatchedItemAssignUsers
+                                                join v in db.View_UserLists on d.UserId equals v.UserId
+                                                where d.DispatchId == list.DispatchedId
+                                                select new
+                                                {
+                                                    username = v.UserName,
+                                                    userpic = v.Picture,
+                                                    userid = v.UserId
+                                                }).ToList();
+                                foreach (var u in userList)
+                                {
+                                    <p><img class="user-photo" src="/Images/UserPicture/thumb/@u.userpic">@u.username</p>
+                                }
+                            }
+
+                        }
+                    }
+                </td>
+            </tr>          
+        }
+    </table>
+}
+else
+{
+    <center><label>There is no record to display.....</label></center>
+}

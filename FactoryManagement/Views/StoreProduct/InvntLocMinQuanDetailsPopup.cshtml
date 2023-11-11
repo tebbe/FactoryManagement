@@ -1,0 +1,217 @@
+﻿@model FactoryManagement.Models.View_All_InventoryList
+@{
+    int count = 0;
+    bool check = false;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var storeList = db.StoreLists.ToList();
+    var wareList = db.WarehouseLists.ToList();
+    var locationList = (from m in db.Inventory_Item_Location
+                        where m.InventoryId == Model.InventoryId
+                        group m by new
+                        {
+                            m.StoreId,
+                            m.WarehouseId
+                        } into i
+                        select new
+                        {
+                            InventoryId = i.FirstOrDefault().InventoryId,
+                            LocationId = i.FirstOrDefault().LocationId,
+                            StoreId = i.FirstOrDefault().StoreId,
+                            MinimumQuantity = i.FirstOrDefault().MinimumQuantity,
+                            WarehouseId = i.FirstOrDefault().WarehouseId,
+                            StoreName = (i.FirstOrDefault().StoreId > 0) ? db.StoreLists.Where(sm => sm.Id == i.FirstOrDefault().StoreId).Select(sm => sm.StoreName).FirstOrDefault() : "",
+                            WareName = (i.FirstOrDefault().WarehouseId > 0) ? db.WarehouseLists.Where(sm => sm.Id == i.FirstOrDefault().WarehouseId).Select(sm => sm.WarehouseName).FirstOrDefault() : "",
+                            Quantity = i.Sum(x => x.Quantity)
+                        }).ToList();
+}
+<style>
+    .table-bordered > tbody > tr > td, .table-bordered > tbody > tr > th {
+        border: 1px solid #ddd !important;
+    }
+
+    .table-bordered {
+        border: none !important;
+    }
+
+    .btn_reset_min_Quan {
+        cursor: pointer;
+        margin-left: 2% !important;
+    }
+
+    .btn_edit_min_Quan {
+        cursor: pointer;
+    }
+</style>
+<div class="k-edit-form-container col-md-10 col-sm-10 col-xs-10" style="margin-bottom:4%;" id="div_Min_Quantity">
+    <table class="table table-bordered table-condensed">
+        <tr>
+            <th width="10%">#</th>
+            <th width="20%">Location Name</th>
+            @*<th width="20%">Quantity</th>*@
+            <th width="30%">Minimum Quantity</th>
+            <th width="20%"></th>
+        </tr>
+        @foreach (var ware in wareList)
+        {
+            check = false;
+            count++;
+            <tr>
+                <th scope="row">@count.</th>
+                <td><span>@ware.WarehouseName</span></td>
+                <td>
+                    @if (locationList.Where(x => x.WarehouseId == ware.Id).Any())
+                    {
+                        double minQuan = 0;
+                        minQuan = locationList.FirstOrDefault(x => x.WarehouseId == ware.Id).MinimumQuantity;
+                        if (minQuan > 0)
+                        {
+                            <label id="span_label_Min_Quan_W_@ware.Id" data-id="@ware.Id" class="span_label_Min_Quan">
+                                @minQuan
+                            </label>
+                            <span id="span_edit_Min_Quan_W_@ware.Id" style="display:none;" data-id="@ware.Id" data-minquan="@minQuan" class="span_edit_Min_Quan">
+                            <input class="k-textbox"
+                                   style="width:60%!important;"
+                                   type="text" min="1"
+                                   id="txt_edit_Min_Quan_W_@ware.Id"
+                                   data-val="true"
+                                   data-val-required="*"
+                                   data-val-number="*"
+                                   onkeypress="return isNumber(event)"
+                                   value="@minQuan" />
+                            <span class="field-validation-valid text-danger" data-valmsg-for="txt_edit_Min_Quan_W_@ware.Id" data-valmsg-replace="true"></span>
+                            <span class="k-icon k-i-close btnTxtCloseMinQuan" data-toggle="tooltip" title="Cancel Edit" data-typeid="W" data-id="@ware.Id"></span>
+                            </span>
+                            check = true;
+                        }
+                    }
+                    @if(check == false)
+                    {
+                        <label id="span_label_Min_Quan_W_@ware.Id" data-id="@ware.Id" class="span_label_Min_Quan">
+                            N/A
+                        </label>
+                        <span id="span_edit_Min_Quan_W_@ware.Id" style="display:none;" data-id="@ware.Id" data-minquan="" class="span_edit_Min_Quan">
+                            <input class="k-textbox"
+                                   style="width:60%!important;"
+                                   type="text" min="1"
+                                   id="txt_edit_Min_Quan_W_@ware.Id"
+                                   data-val="true"
+                                   data-val-required="*"
+                                   data-val-number="*"
+                                   onkeypress="return isNumber(event)"
+                                   value="" />
+                            <span class="field-validation-valid text-danger" data-valmsg-for="txt_edit_Min_Quan_W_@ware.Id" data-valmsg-replace="true"></span>
+                            <span class="k-icon k-i-close btnTxtCloseMinQuan" data-toggle="tooltip" title="Cancel Edit" data-typeid="W" data-id="@ware.Id"></span>
+                        </span>
+                    }
+                </td>
+                <td>
+                    <span class="label label-success hover-pointer btn_tik_min_Quan" style="display:none;" id="btn_tik_min_Quan_W_@ware.Id" data-toggle="tooltip" title="Save" data-typeid="W" data-id="@ware.Id">
+                        <i class="fa fa-check" aria-hidden="true"></i>
+                    </span>
+                    <span class="label label-success hover-pointer btn_edit_min_Quan" id="btn_edit_min_Quan_W_@ware.Id" data-toggle="tooltip" title="Edit Minimum Quantity" data-typeid="W" data-id="@ware.Id">
+                        <i class="fa fa-pencil"></i>
+                    </span>
+                    @if (locationList.Where(x => x.WarehouseId == ware.Id && x.MinimumQuantity > 0).Any())
+                    {
+                        <span class="label label-danger hover-pointer btn_reset_min_Quan" id="btn_reset_min_Quan_W_@ware.Id" data-toggle="tooltip" title="Reset Minimum Quantity" data-typeid="W" data-id="@ware.Id">
+                            <i class="fa fa-repeat"></i>
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="label label-danger hover-pointer btn_reset_min_Quan" style="display:none;" id="btn_reset_min_Quan_W_@ware.Id" data-toggle="tooltip" title="Reset Minimum Quantity" data-typeid="W" data-id="@ware.Id">
+                            <i class="fa fa-repeat"></i>
+                        </span>
+                    }
+                </td>
+            </tr>
+        }
+
+        @foreach (var store in storeList)
+        {
+            check = false;
+            count++;
+            <tr>
+                <th scope="row">@count.</th>
+                <td><span>@store.StoreName</span></td>
+                <td>
+                    @if (locationList.Where(x => x.StoreId == store.Id).Any())
+                    {
+                        double minQuan = 0;
+                        minQuan = locationList.FirstOrDefault(x => x.StoreId == store.Id).MinimumQuantity;
+                        if (minQuan > 0)
+                        {
+                            <label id="span_label_Min_Quan_S_@store.Id" data-id="@store.Id" class="span_label_Min_Quan">
+                                @minQuan
+                            </label>
+                         <span id="span_edit_Min_Quan_S_@store.Id" style="display:none;" data-id="@store.Id" data-minquan="@minQuan" class=" span_edit_min_quan">
+                            <input class="k-textbox"
+                                   style="width:60%!important;"
+                                   type="text" min="1"
+                                   id="txt_edit_Min_Quan_S_@store.Id"
+                                   data-val="true"
+                                   data-val-required="*"
+                                   data-val-number="*"
+                                   onkeypress="return isNumber(event)"
+                                   value="@minQuan" />
+                            <span class="field-validation-valid text-danger" data-valmsg-for="txt_edit_Min_Quan_S_@store.Id" data-valmsg-replace="true"></span>
+                            <span class="k-icon k-i-close btnTxtCloseMinQuan" data-toggle="tooltip" title="Cancel Edit" data-typeid="S" data-id="@store.Id"></span>
+                        </span>
+                        check = true;
+                        }
+                    }
+                    @if (check == false)
+                    {
+                        <label id="span_label_Min_Quan_S_@store.Id" data-id="@store.Id" class="span_label_Min_Quan">
+                            N/A
+                        </label>
+                        <span id="span_edit_Min_Quan_S_@store.Id" style="display:none;" data-id="@store.Id" data-minquan="" class=" span_edit_min_quan">
+                            <input class="k-textbox"
+                                   style="width:60%!important;"
+                                   type="text" min="1"
+                                   id="txt_edit_Min_Quan_S_@store.Id"
+                                   data-val="true"
+                                   data-val-required="*"
+                                   data-val-number="*"
+                                   onkeypress="return isNumber(event)"
+                                   value="" />
+                            <span class="field-validation-valid text-danger" data-valmsg-for="txt_edit_Min_Quan_S_@store.Id" data-valmsg-replace="true"></span>
+                            <span class="k-icon k-i-close btnTxtCloseMinQuan" data-toggle="tooltip" title="Cancel Edit" data-typeid="S" data-id="@store.Id"></span>
+                        </span>
+                    }
+                </td>
+                <td>
+                    <span class="label label-success hover-pointer btn_tik_min_Quan" style="display:none;" id="btn_tik_min_Quan_S_@store.Id" data-toggle="tooltip" title="Save" data-typeid="S" data-id="@store.Id">
+                        <i class="fa fa-check" aria-hidden="true"></i>
+                    </span>
+                    <span class="label label-success hover-pointer btn_edit_min_Quan" id="btn_edit_min_Quan_S_@store.Id" data-toggle="tooltip" title="Edit Minimum Quantity" data-typeid="S" data-id="@store.Id">
+                        <i class="fa fa-pencil"></i>
+                    </span>
+                    @if (locationList.Where(x => x.StoreId == store.Id && x.MinimumQuantity > 0).Any())
+                    {
+                        <span class="label label-danger hover-pointer btn_reset_min_Quan" id="btn_reset_min_Quan_S_@store.Id" data-toggle="tooltip" title="Reset Minimum Quantity" data-typeid="S" data-id="@store.Id">
+                            <i class="fa fa-repeat"></i>
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="label label-danger hover-pointer btn_reset_min_Quan" style="display:none;" id="btn_reset_min_Quan_S_@store.Id" data-toggle="tooltip" title="Reset Minimum Quantity" data-typeid="S" data-id="@store.Id">
+                            <i class="fa fa-repeat"></i>
+                        </span>
+                    }
+                </td>
+            </tr>
+        }
+    </table>
+</div>
+<div class="class="k-edit-buttons k-state-default">
+    <button type="button" class="k-button k-button-icontext k-grid-cancel pull-right" id="btn_minQuan_Cancel" style="margin-right:20px!important;"><span class="k-icon k-cancel"></span>Cancel</button>
+</div>
+<script>
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+    $("#btn_minQuan_Cancel").click(function () {
+        $("#Win_Min_Quan_Deatils").data("kendoWindow").close();
+    });
+</script>

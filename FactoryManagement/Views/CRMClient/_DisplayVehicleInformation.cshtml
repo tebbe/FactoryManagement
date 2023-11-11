@@ -1,0 +1,89 @@
+﻿@model FactoryManagement.ModelView.CRM.Client_Vehicle_ListsModelView
+@{
+   FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<style>
+    .vehiclePicture {
+        width: 225px;
+        height: 225px;
+    }
+</style>
+<div class="k-edit-form-container">
+    <div class="col-md-7 col-sm-7">
+        <div class="editor-label"><label for="VehicleName">Name</label></div>
+        <div class="editor-field" style="padding-top:6px">
+            @Html.DisplayFor(model => model.VehicleName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        </div>
+        <div class="editor-label"><label for="RegisterNo">RegisterNo</label></div>
+        <div class="editor-field" style="padding-top:6px">
+            @Html.DisplayFor(model => model.RegisterNo, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        </div>
+        @if (Model.Description != null)
+        {
+            <div class="editor-label"><label for="Description">Description</label></div>
+            <div class="editor-field" style="padding-top:6px">
+                @Html.DisplayFor(model => model.Address, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        }
+        @if (Model.AddressLine1 != null)
+        {
+            <div class="editor-label"><label for="AddressLine1">Address Line1</label></div>
+            <div class="editor-field" style="padding-top:6px">
+                @Html.DisplayFor(model => model.AddressLine1, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        }
+        @if (Model.Country != null)
+        {
+            <div class="editor-label"><label for="Country">Country</label></div>
+            <div class="editor-field" style="padding-top:6px">
+                @Html.DisplayFor(model => model.CountryName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        }
+        @if (Model.DivisionName != null)
+        {
+            <div id="DivForDivision">
+                <div class="editor-label"><label for="DivisionId">Division</label></div>
+                <div class="editor-field" style="padding-top:6px">
+                    @Html.DisplayFor(model => model.DivisionName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+            </div>
+        }
+
+        @if (Model.State != null)
+        {
+            <div id="DivForState" class=".DivForState" style="display:none;">
+                <div class="editor-label"><label for="State">State</label></div>
+                <div class="editor-field" style="padding-top:6px">
+                    @Html.DisplayFor(model => model.State, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+            </div>
+        }
+        @if (Model.City != null)
+        {
+            <div class="editor-label"><label for="City">City</label></div>
+            <div class="editor-field" style="padding-top:6px">
+                @Html.DisplayFor(model => model.City, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        }
+
+        @if (Model.PostalCode != null)
+        {
+            <div class="editor-label"><label for="PostalCode">PostalCode</label></div>
+            <div class="editor-field" style="padding-top:6px">
+                @Html.DisplayFor(model => model.PostalCode, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        }
+    </div>
+    <div class=" col-md-4 col-sm-4">
+        @if (Model.PictureName != "" && Model.PictureName != null)
+        { <div style="float:right;" id="DivForUserPictureDisplay">
+            <img class="vehiclePicture" src="~/Images/Client/ClientVehicleImage/Original/@Model.PictureName" />
+        </div>
+        }
+    </div>
+
+    <div class="k-edit-buttons k-state-default">
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnDisplayCancel"><span class="k-icon k-cancel"></span>Close</button>
+    </div>
+    <br />
+</div>

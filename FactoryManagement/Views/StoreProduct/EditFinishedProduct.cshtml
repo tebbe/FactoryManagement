@@ -1,0 +1,413 @@
+﻿
+
+
+@*********************************************** Created By Jerin Jahan Date(17-05-2017) ************************@
+
+@model FactoryManagement.Models.Factory_Finished_Pro_Title
+@{
+    ViewBag.Title = "Edit Finished Product";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    int count = 0;
+    var allProList = db.Finished_Product_List.Where(m => m.TitleId == Model.Id).ToList();
+    int total_count = allProList.Count();
+}
+
+<h3 class="page-title">
+    Finished Product <small>Edit Finished Product</small>
+</h3>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <a href="javascript:;">Inventory</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/StoreProduct/FinishedProList">All Finished Product List</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <a href="javascript:;">Edit Finished Product</a>
+        </li>
+    </ul>
+</div>
+<div class="portlet light bordered">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-pencil"></i>
+            <span class="caption-subject font-red-sunglo bold uppercase">Edit Finished Product</span>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="form-horizontal" id="Div_For_Finished_Pro">
+            <div class="form-body">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Title, "Title", htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+                    <div class="col-md-5 col-sm-6">
+                        @Html.EditorFor(model => model.Title, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                        @Html.ValidationMessageFor(model => model.Title, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.SubTitle, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+                    <div class="col-md-5 col-sm-6">
+                        @Html.EditorFor(model => model.SubTitle, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                        @Html.ValidationMessageFor(model => model.SubTitle, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <h4>Finished Product</h4>
+                <div class="form-group">
+                    <div class="col-md-12 col-sm-12 col-xs-11">
+                        <table class="table table-bordered table-condensed" id="tbl_add_pro">
+                            <tr>
+                                <th width="5%">SL NO</th>
+                                <th width="15%">Name </th>
+                                <th width="10%">M/C QTY</th>
+                                <th width="10%">LOT</th>
+                                <th width="15%">Lot Start Date</th>
+                                <th width="10%">Bag</th>
+                                <th width="7%">KG</th>
+                                <th width="3%"></th>
+                                <th width="20%">Remark</th>
+                                <th width="5%"></th>
+                            </tr>
+                            @foreach (var m in allProList)
+                            {
+                                count++;
+                                int val = 0;
+                                if (m.ParentId > 0)
+                                {
+                                    val = 1;
+                                }
+                                <tr id="th_pro_@count" data-id="@m.Id">
+                                    <td>@count.</td>
+                                    <td>
+                                        <span id="span_for_entry_count_@count">
+                                            <input class="txtPro" id="txtPro_@count" name="txtPro_@count" style="width: 100%;" data-val="@val" data-val-required="*" value="@m.Count_Name"/>
+                                            <span class="field-validation-valid text-danger" data-valmsg-for="txtPro_@count" data-valmsg-replace="true"></span>
+                                        </span>
+                                        <span id="span_dis_count_@count" style="display:none;">
+                                            <label id="lbl_Count_Name_@count"></label>
+                                            <span class="k-icon k-i-close btnSelectedProClose" data-id="@count"></span>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <input class="form-control k-textbox" id="txtMCQuan_@count" name="txtMCQuan_@count" type="text" value="@m.M_C_Qty">
+                                        <span class="field-validation-valid text-danger" data-valmsg-for="txtMCQuan_@count" data-valmsg-replace="true"></span>
+                                    </td>
+                                    <td>
+                                        <input class="form-control k-textbox" id="txtLot_@count" name="txtLot_@count" type="text" value="@m.Lot">
+                                        <span class="field-validation-valid text-danger" data-valmsg-for="txtLot_@count" data-valmsg-replace="true"></span>
+                                    </td>
+                                    <td>
+                                        <input id="txtDatePicker_@count" name="txtDatePicker_@count" value="@m.Lot_StartedDate" title="datepicker" style="width: 100%" />
+                                        <span class="field-validation-valid text-danger" data-valmsg-for="txtDatePicker_@count" data-valmsg-replace="true"></span>
+                                    </td>
+                                    <td>
+                                        <input class="form-control k-textbox" id="txtBag_@count" name="txtBag_@count" type="text" value="@m.Bag">
+                                        <span class="field-validation-valid text-danger" data-valmsg-for="txtBag_@count" data-valmsg-replace="true"></span>
+                                    </td>
+                                    <td>
+                                        <input class="form-control k-textbox" id="txtKG_@count" name="txtKG_@count" type="text" value="@m.KG">
+                                        <span class="field-validation-valid text-danger" data-valmsg-for="txtKG_@count" data-valmsg-replace="true"></span>
+                                    </td>
+                                    <td>
+                                        <input class="k-textbox" id="txtUnit_@count" name="txtUnit_@count" type="text" value="@m.UnitId" data-val-required="*">
+                                        <span class="field-validation-valid text-danger" data-valmsg-for="txtUnit_@count" data-valmsg-replace="true"></span>
+                                    </td>
+                                    <td>
+                                        <textarea class="form-control k-textbox" rows="3" cols="40" name="txtRemark_@count" id="txtRemark_@count" value="">@m.Remark</textarea>
+                                        <span class="field-validation-valid text-danger" data-valmsg-for="txtRemark_@count" data-valmsg-replace="true"></span>
+                                    </td>
+                                    <td>
+                                        @if (count == total_count)
+                                        {
+                                            <span id="td_pro_@count">
+                                                <span class="k-icon k-i-plus" id="btnAdd"></span>
+                                                @if (count > 1)
+                                                {
+                                                    <span class="k-icon k-i-close" id="btnRemove"></span>
+                                                }
+                                                
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span id="td_pro_@count" style="display:none;">
+                                                <span class="k-icon k-i-plus" id="btnAdd"></span>
+                                                @if (count > 1)
+                                                {
+                                                    <span class="k-icon k-i-close" id="btnRemove"></span>
+                                                }
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                                <script>
+                                    $("#txtPro_@count").kendoAutoComplete({
+                                        dataTextField: "Count_Name",
+                                        filter: "contains",
+                                        minLength: 2,
+                                        select: function onSelectCount(e) {
+                                            var dataItem = this.dataItem(e.item.index());
+                                            $("#lbl_Count_Name_@count").text(dataItem.Count_Name);
+                                            $("#span_for_entry_count_@count").hide();
+                                            $("#span_dis_count_@count").show();
+                                            $("#txtPro_@count").data("val", dataItem.Id);
+                                        },
+                                        dataSource: {
+                                            transport: {
+                                                read: {
+                                                    url: "@Url.Action("GetCountName", "StoreProduct")", type: "GET"
+                                            }
+                                        }
+                                        }
+                                    });
+                                    $("#txtDatePicker_@count").kendoDatePicker();
+                                    $("#txtUnit_@count").kendoDropDownList({
+                                        dataTextField: "UnitName",
+                                        dataValueField: "UnitId",
+                                        optionLabel: "--Select One--",
+                                        dataSource: {
+                                            transport: {
+                                                read: {
+                                                    url: "@Url.Action("GetUnit", "StoreProduct")", type: "GET"
+                                                }
+                                            }
+                                        }
+                                    });
+                                </script>
+                            }
+                           
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="form-actions">
+                <div class="row">
+                    <div class="col-md-offset-9 col-md-3 col-sm-offset-9 col-sm-3" style="text-align:right;">
+                        <input type="button" value="Update" class="btn green" id="btn_Finished_ProSave" />
+                        <input type="button" value="Refresh" class="btn default" id="btn_Finished_Refresh" />
+                        <input type="button" value="Cancel" class="btn default" id="btn_Finished_Cancel" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var isVatSelected = false, vatColumnId = 0, count = @total_count, deletedid=[];
+    $(document).ready(function () {
+        $("#liForAccounting").addClass('active');
+        $("#liForVoucherList").addClass('sublistActive');
+    });
+    $("#tbl_add_pro").on("click", "#btnAdd", function () {
+        var validation = $("#th_pro_" + count).kendoValidator({
+            rules: {
+                location: function (input) {
+                    if (input.attr('class') === "txtPro k-input") {
+                        if(input.data('val') == 0 && input.val() == ""){
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                location: "*"
+            }
+        }).data("kendoValidator");
+        if (validation.validate()) {
+            $("#td_pro_" + count).hide();
+            count++;
+            $("#tbl_add_pro").append('<tr id="th_pro_' + count + '" data-id="0">' +
+                                '<td>' + count + '.</td>' +
+                                '<td>' +
+                                    ' <span id="span_for_entry_count_' + count + '">' +
+                                        '<input class="txtPro" id="txtPro_' + count + '" name="txtPro_' + count + '" style="width: 100%;" data-val="0" data-val-required="*" />' +
+                                        '<span class="field-validation-valid text-danger" data-valmsg-for="txtPro_' + count + '" data-valmsg-replace="true"></span>' +
+                                    '</span>' +
+                                    '<span id="span_dis_count_' + count + '" style="display:none;">' +
+                                        '<label id="lbl_Count_Name_' + count + '"></label>' +
+                                        '<span class="k-icon k-i-close btnSelectedProClose" data-id="' + count + '"></span>' +
+                                    '</span>' +
+                                '</td>' +
+                                '<td>' +
+                                    '<input class="form-control k-textbox" id="txtMCQuan_' + count + '" name="txtMCQuan_' + count + '" type="text" value="">' +
+                                    '<span class="field-validation-valid text-danger" data-valmsg-for="txtMCQuan_' + count + '" data-valmsg-replace="true"></span>' +
+                                '</td>' +
+                                '<td>' +
+                                    '<input class="form-control k-textbox" id="txtLot_' + count + '" name="txtLot_' + count + '" type="text" value="">' +
+                                    '<span class="field-validation-valid text-danger" data-valmsg-for="txtLot_' + count + '" data-valmsg-replace="true"></span>' +
+                                '</td>' +
+                                '<td>' +
+                                    '<input id="txtDatePicker_' + count + '" name="txtDatePicker_' + count + '" value="" title="datepicker" style="width: 100%" />' +
+                                    '<span class="field-validation-valid text-danger" data-valmsg-for="txtDatePicker_' + count + '" data-valmsg-replace="true"></span>' +
+                                '</td>' +
+                                '<td>' +
+                                    '<input class="form-control k-textbox" id="txtBag_' + count + '" name="txtBag_' + count + '" type="text" value="">' +
+                                    '<span class="field-validation-valid text-danger" data-valmsg-for="txtBag_' + count + '" data-valmsg-replace="true"></span>' +
+                                '</td>' +
+                                '<td>' +
+                                    '<input class="form-control k-textbox" id="txtKG_' + count + '" name="txtKG_' + count + '" type="text" value="">' +
+                                    '<span class="field-validation-valid text-danger" data-valmsg-for="txtKG_' + count + '" data-valmsg-replace="true"></span>' +
+                                '</td>' +
+                                '<td>' +
+                                    '<input class="k-textbox" id="txtUnit_' + count + '" name="txtUnit_' + count + '" type="text" value="" data-val-required="*">' +
+                                    '<span class="field-validation-valid text-danger" data-valmsg-for="txtUnit_' + count + '" data-valmsg-replace="true"></span>' +
+                                '</td>' +
+                                '<td>' +
+                                    '<textarea class="form-control k-textbox" rows="3" cols="40" name="txtRemark_' + count + '" id="txtRemark_' + count + '" value=" "></textarea>' +
+                                    '<span class="field-validation-valid text-danger" data-valmsg-for="txtRemark_' + count + '" data-valmsg-replace="true"></span>' +
+                                '</td>' +
+                                '<td>' +
+                                    '<span id="td_pro_' + count + '"><span class="k-icon k-i-plus" id="btnAdd"></span>' +
+                                    '<span class="k-icon k-i-close" id="btnRemove"></span></span>' +
+                                '</td>' +
+                            '</tr>');
+            $("#txtPro_" + count).kendoAutoComplete({
+                dataTextField: "Count_Name",
+                filter: "contains",
+                minLength: 2,
+                select: function onSelectCount(e) {
+                    var dataItem = this.dataItem(e.item.index());
+                    $("#lbl_Count_Name_" + count).text(dataItem.Count_Name);
+                    $("#span_for_entry_count_" + count).hide();
+                    $("#span_dis_count_" + count).show();
+                    $("#txtPro_" + count).data("val", dataItem.Id);
+                },
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "@Url.Action("GetCountName", "StoreProduct")", type: "GET"
+                        }
+                    }
+                }
+            });
+            $("#txtDatePicker_" + count).kendoDatePicker();
+            $("#txtUnit_" + count).kendoDropDownList({
+                dataTextField: "UnitName",
+                dataValueField: "UnitId",
+                optionLabel: "--Select One--",
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "@Url.Action("GetUnit", "StoreProduct")", type: "GET"
+                        }
+                    }
+                }
+            });
+        }
+    });
+    $("#tbl_add_pro").on('click', '#btnRemove', function () {
+        if($("#th_pro_" + count).data('id')  > 0){
+            deletedid.push($("#th_pro_" + count).data('id'));
+        }
+        $("#th_pro_" + count).remove();
+        count--;
+        $("#td_pro_" + count).show();
+    });
+    $("#tbl_add_pro").on("click", ".btnSelectedProClose", function () {
+        var id = $(this).data("id");
+        $("#span_dis_count_" + id).hide();
+        $("#lbl_Count_Name_" + id).text("");
+        $("#txtPro_" + id).val("");
+        $("#span_for_entry_count_" + id).show();
+        $("#txtPro_" + id).data("val", 0);
+    });
+    $("#btn_Finished_Refresh").click(function () {
+        location.reload();
+    });
+</script>
+<script>
+    $("#btn_Finished_ProSave").click(function () {
+        var validation = $("#Div_For_Finished_Pro").kendoValidator({
+            rules: {
+                title: function (input) {
+                    if (input.attr('name') === "Title" && $("#Title").val() === "") {
+                        return false;
+                    }
+                    return true;
+                },
+                subtitle: function (input) {
+                    if (input.attr('name') === "SubTitle" && $("#SubTitle").val() === "") {
+                        return false;
+                    }
+                    return true;
+                },
+                location: function (input) {
+                    if (input.attr('class') === "txtPro k-input" && (input.data('val') == 0 && input.val() == "")) {
+                        return false;
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                title: "Please enter title",
+                subtitle: "Please enter subtitle",
+                location: "*"
+            }
+        }).data("kendoValidator");
+
+        if (validation.validate()) {
+            notification.show({ message: "Data is saving...", showTime: startTime() }, "upload-progress");
+            var AllName = [];
+            var AllMC = [];
+            var AllLot = [];
+            var AllLotDate = [];
+            var AllBag = [];
+            var AllKg = [];
+            var AllUnit = [];
+            var AllRemark = [];
+
+            for (var i = 1; i <= count; i++) {
+                AllName.push($("#th_pro_" + i).data('id') + "|" + $("#txtPro_" + i).data("val")+ "|" +$("#txtPro_" + i).val());
+                AllMC.push($("#txtMCQuan_" + i).val());
+                AllLot.push($("#txtLot_" + i).val());
+                AllLotDate.push($("#txtDatePicker_" + i).val());
+                AllBag.push($("#txtBag_" + i).val());
+                AllKg.push($("#txtKG_" + i).val());
+                AllUnit.push($("#txtUnit_" + i).val());
+                AllRemark.push($("#txtRemark_" + i).val());
+            }
+            var sendData = {
+                Id:'@(Model.Id)',
+                Title: $("#Title").val(),
+                SubTitle: $("#SubTitle").val(),
+                AllName: AllName,
+                AllMC: AllMC,
+                AllLot: AllLot,
+                AllLotDate: AllLotDate,
+                AllBag: AllBag,
+                AllKg: AllKg,
+                AllUnit: AllUnit,
+                AllRemark: AllRemark,
+                CreatedBy: userId,
+                deletedid:deletedid
+            };
+            alert(JSON.stringify(sendData));
+            $.ajax({
+                url: '@Url.Action("EditFinishedPro", "StoreProduct")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === "Error") {
+                        notification.show({ message: "Data update was unsuccessful.", showTime: startTime() }, "upload-error");
+                    } else {
+                        notification.show({ message: "Data has been successfully updated.", showTime: startTime() }, "upload-success");
+                        location.href = ('@Url.Action("FinishedProList", "StoreProduct")');
+                    }
+                },
+                error: function (err) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+</script>

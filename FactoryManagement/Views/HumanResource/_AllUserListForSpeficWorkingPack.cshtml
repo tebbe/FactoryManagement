@@ -1,0 +1,10 @@
+﻿@model IEnumerable<FactoryManagement.Models.View_UserLists>
+<table style="margin:0 auto;margin-top:3%;margin-bottom:2%">
+    @foreach (var user in Model) {
+        <tr>
+            <td>
+                <img class="img-circle" src="/Images/UserPicture/thumb/@user.Picture"> @user.UserName
+            </td>
+        </tr>
+    }
+</table>

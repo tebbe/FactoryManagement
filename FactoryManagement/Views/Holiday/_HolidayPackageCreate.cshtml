@@ -1,0 +1,124 @@
+﻿
+
+@************************************** Created By Jerin Jahan (Date:12.07.2016)  ***************************************@
+@************************************** Edited By Kaikubad (Date:24.01.2017)  ***************************************@
+<div id="Div_Holiday_Pck_Create_refresh">
+    @model FactoryManagement.ModelView.HR.HolidayPackageListModelView
+    @Html.HiddenFor(m => m.HolidayPackId)
+
+    <input id="WorkingDay" name="WorkingDay" type="hidden" value="">
+
+    <div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="Div_Holiday_Pck_Create">
+
+        <div class="editor-label"><label for="DeptName">Package Name</label></div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.HolidayPackName, new { htmlAttributes = new { @class = "k-textbox" } })
+            @Html.ValidationMessageFor(model => model.HolidayPackName, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="editor-label"><label for="DeptAcronym">No. Of Paid Leave</label></div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.NoOfPaidLeave, new { htmlAttributes = new { @class = "k-textbox" } })
+            @Html.ValidationMessageFor(model => model.NoOfPaidLeave, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="col-sm-11 col-xs-11">
+            <div class="k-edit-buttons k-state-default">
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_Holi_Pck_Create"><span class="k-icon k-update"></span>Create</button>
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="Holiday_Pck_Create_refresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+                <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_Holi_Pck_Cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script>
+    $("#Holiday_Pck_Create_refresh").click(function () {
+        $("#Div_Holiday_Pck_Create_refresh").empty();
+        $("#Div_Holiday_Pck_Create_refresh").append('<div class="win_loading_half"></div>');
+        $("#Div_Holiday_Pck_Create_refresh").load('@Url.Action("_HolidayPackageCreate", "Holiday")');
+    });
+
+    var validation = $("#Div_Holiday_Pck_Create").kendoValidator({
+        rules: {
+            remote: function (input) {
+                var errormessage;
+                var remoteAttr = input.attr("data-val-remote-url");
+                if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                    return true;
+                }
+                var isInvalid;
+                var data = {};
+
+                var HolidayPackId = $("#HolidayPackId").val();
+                var HolidayPackName = $.trim($("#HolidayPackName").val());
+
+                data = { HolidayPackId: HolidayPackId, HolidayPackName: HolidayPackName };
+                $.ajax({
+                    url: remoteAttr,
+                    mode: "abort",
+                    port: "validate" + input.attr('name'),
+                    dataType: "json",
+                    type: input.attr("data-val-remote-type"),
+                    data: data,
+                    async: false,
+                    success: function (response) {
+                        isInvalid = response;
+                        if (isInvalid === true) {
+                            isInvalid = true;
+                        }
+                        else {
+                            isInvalid = false;
+                        }
+                    }
+                });
+
+                return isInvalid;
+            },
+            HolidayPackName: function (input) {
+                if (input.is("[name=HolidayPackName]") && $("#HolidayPackName").val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        },
+        messages: {
+            remote: function (input) { return input.data('val-remote'); },
+            HolidayPackName: "Please enter Holiday Pack Name"
+        }
+    }).data("kendoValidator");
+    $("#btn_Holi_Pck_Create").click(function () {
+        if (validation.validate()) {
+            notification.show({ message: "Creating new holiday package...", showTime: startTime() }, "upload-progress");
+            var senddata = {
+                HolidayPackName: $("#HolidayPackName").val(), NoOfPaidLeave: $("#NoOfPaidLeave").val(),
+                CreatedBy: userId
+            };
+            $.ajax({
+                url: '@Url.Action("HolidayPackSave", "Holiday")',
+                type: 'Post',
+                data: senddata,
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if (data !== "Error") {
+                        notification.show({ message: "Holiday package '" + senddata.HolidayPackName + "' has been successfully created.", showTime: startTime() }, "upload-success");
+                        $("#Div_Holiday_Pck_List").empty();
+                        $("#Div_Holiday_Pck_List").append('<div class="loading_partial"></div>');
+                        $("#Div_Holiday_Pck_List").load('@Url.Action("_HolidayPackage", "Holiday")');
+                    } else {
+                        notification.show({ message: "Holiday package '" + senddata.HolidayPackName + "' create was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                    $("#btn_Holi_Pck_Create").closest(".k-window-content").data("kendoWindow").close();
+                },
+                error: function (error) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+    $("#btn_Holi_Pck_Cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

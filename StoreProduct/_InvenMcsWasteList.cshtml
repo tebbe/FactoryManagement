@@ -1,0 +1,76 @@
+﻿@*********************************************** Created By Jerin Jahan Date(13.05.2017) ************************@
+@model IEnumerable<FactoryManagement.ModelView.Inventory.Store.Inventory_Pro_Waste_ListModelView>
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int type = ViewBag.type;
+    int count = 0;
+    var allUnitList = db.Site_Unit_Lists.Where(m => m.UnitStatus == 1).ToList();
+}
+@if (Model.Count() > 0)
+{
+    <style>
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            padding: 8px !important;
+            line-height: 1.8 !important;
+            vertical-align: top;
+            border: 1px solid #ddd !important;
+            font-size: 13px !important;
+            color: #333333 !important;
+        }
+    </style>
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered table-striped table-condensed" id="tbl_waste">
+            <tbody>
+                <tr>
+                    <th>SL.</th>
+                    <th>Item</th>
+                    @foreach (var u in allUnitList)
+                    {
+                        <th>@u.UnitAcryonm</th>
+                    }
+                    <th style="cursor:pointer" id="orderby_date-@ViewBag.type">Inserted Date <i class="fa fa-caret-down" aria-hidden="true"></i></th>
+                    <th>Action</th>
+                </tr>
+
+                @foreach (var item in Model)
+                {
+                    count++;
+                    <tr>
+                        <td>@count .</td>
+                        <td>@item.ProductName</td>
+                        @foreach (var u in allUnitList)
+                        {
+                            var quan = db.Inventory_Pro_Waste_List.Where(m => m.LocationId == u.UnitId && m.InventoryId == item.InventoryId && m.InsertedDate == item.InsertedDate)
+                                         .Select(m => m.Quantity).FirstOrDefault();
+                            <td>@quan @item.Unitname</td>
+                        }
+                        <td>@item.InsertedDate.ToString("dd-MM-yyyy")</td>
+                        <td>
+                            <span class="btn btn-xs green btn_edit_waste" data-toggle="tooltip" title="Edit" data-productname="@item.ProductName" data-date="@item.InsertedDate" data-invenid="@item.InventoryId" data-type="@item.Type"><i class="fa fa-pencil"></i></span>
+                            <span class="btn btn-xs red btn_delete" data-id="@item.InventoryId" data-inserteddate="@item.InsertedDate" data-type="@item.Type" data-toggle="tooltip" title="Delete"><i class="fa fa-trash"></i></span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <script>
+        $(document).ready(function () {
+            var caret = $("#orderby_date-" + '@ViewBag.type').find('i');
+            if ('@ViewBag.order' == 1) {
+                if (!caret.hasClass('fa-caret-down')) {
+                    caret.removeClass('fa-caret-up').addClass('fa-caret-down');
+                }
+            }
+            if ('@ViewBag.order' == 2) {
+                if (!caret.hasClass('fa-caret-up')) {
+                    caret.removeClass('fa-caret-down').addClass('fa-caret-up');
+                }
+            }
+        });
+    </script>
+}
+else
+{
+    <p>There is no record to display.</p>
+}

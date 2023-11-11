@@ -1,0 +1,35 @@
+﻿
+
+
+@model FactoryManagement.ModelView.Configuration.SiteListModelView
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;">
+    <div id="DivForUnitCreate"></div>
+    <div class="k-edit-buttons k-state-default">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnSiteUnitCreate"><span class="k-icon k-update"></span>Create</button>
+        <button type="reset" class="k-button k-button-icontext k-grid-update" id="btnUnitCreateRefresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnUnitCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        var sendData = {
+            siteId: '@Model.SiteId',
+            isresi: '@Model.IsResidential',
+        };
+        $("#DivForUnitCreate").load('@Url.Action("_AddUnitToSite", "Configuration")', sendData);
+    });
+    $("#btnUnitCreateRefresh").click(function () {
+        var sendData = {
+            siteId: '@Model.SiteId',
+            isresi: '@Model.IsResidential',
+        };
+        $("#DivForUnitCreate").empty();
+        $("#DivForUnitCreate").append('<div class="tiny_loading"></div>');
+        $("#DivForUnitCreate").load('@Url.Action("_AddUnitToSite", "Configuration")', sendData);
+        $("#DivForUnitCreate").show();
+    });
+    $("#btnUnitCancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

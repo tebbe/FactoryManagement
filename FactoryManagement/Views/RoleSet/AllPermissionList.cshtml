@@ -1,0 +1,151 @@
+﻿
+
+@*********************************   Created By Jerin Jahan (Date: 2016-11-07) **************************************@
+@{
+    int count = 1;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int roleId = ViewBag.RoleId;
+}
+<h4>
+    <span> All Module Name List</span>
+    <span style="float:right;cursor:pointer;margin-right:10px;"><span class="fa fa-check-square-o" id="btn_SavePermission" style="color:#428bca;"></span></span>
+</h4>
+<hr />
+<p style="font-weight:bold;color:#0094ff;">Role Name : @ViewBag.roleName</p>
+<table class="table" id="tbl_Con_Name_List">
+    @foreach (var list in ViewBag.list as IEnumerable<FactoryManagement.Controllers.ControllerNameList>)
+    {
+        var con_name = list.ControllerName.Replace("Controller", "");
+        if (con_name != "RoleSet" && con_name != "Manage")
+        {
+            var Actionname = db.RolePermissionLists.Where(m => m.RoleId == roleId && m.ControllerName == con_name).ToList();
+            <tr style="font-weight:bold;"><td><span>@count. </span> Module Name : @list.ControllerName</td></tr>
+            <tr>
+                <td style="padding-left:40px;">
+                    @if (Actionname.Where(m => m.Permissionname == "Admin").Any())
+                    {
+                        int role_id = Actionname.Where(m => m.Permissionname == "Admin").Select(m => m.Id).FirstOrDefault();
+                        <span class="col-sm-4">
+                            <input name="grpName" class="grpName" type="checkbox" value="" style="cursor:pointer;" data-actionid="@role_id"
+                                   data-conname="@con_name" data-id="1" data-conid="@list.UniqueId" data-name="Admin" data-pechk="1" checked>
+                            Admin
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="col-sm-4">
+                            <input name="grpName" class="grpName" type="checkbox" value="" style="cursor:pointer;"
+                                   data-conname="@con_name" data-id="1" data-conid="@list.UniqueId" data-name="Admin" data-pechk="0">
+                            Admin
+                        </span>
+                    }
+                   @if (Actionname.Where(m => m.Permissionname == "Operator").Any())
+                   {
+                       int role_id = Actionname.Where(m => m.Permissionname == "Operator").Select(m => m.Id).FirstOrDefault();
+                        <span class="col-sm-4">
+                            <input name="grpName" class="grpName" type="checkbox" value="" style="cursor:pointer;" data-actionid="@role_id"
+                                   data-conname="@con_name" data-id="2" data-conid="@list.UniqueId" data-name="Operator" data-pechk="1" checked>
+                            Operator
+                        </span>
+                   }
+                   else
+                   {
+                        <span class="col-sm-4">
+                            <input name="grpName" class="grpName" type="checkbox" value="" style="cursor:pointer;"
+                                   data-conname="@con_name" data-id="2" data-conid="@list.UniqueId" data-name="Operator" data-pechk="0">
+                            Operator
+                        </span>
+                   }
+                   @if (Actionname.Where(m => m.Permissionname == "Viewer").Any())
+                   {
+                       int role_id = Actionname.Where(m => m.Permissionname == "Viewer").Select(m => m.Id).FirstOrDefault();
+                        <span class="col-sm-4">
+                            <input name="grpName" class="grpName" type="checkbox" value="" style="cursor:pointer;" data-actionid="@role_id"
+                                   data-conname="@con_name" data-id="3" data-conid="@list.UniqueId" data-name="Viewer" data-pechk="1" checked>
+                            Viewer
+                        </span>
+                   }
+                   else
+                   {
+                    <span class="col-sm-4">
+                        <input name="grpName" class="grpName" type="checkbox" value="" style="cursor:pointer;"
+                               data-conname="@con_name" data-id="3" data-conid="@list.UniqueId" data-name="Viewer" data-pechk="0">
+                        Viewer
+                    </span>
+                   }
+                    
+                </td>
+            </tr>
+
+            @*if (list.Actions.Count > 0)
+                {
+                    foreach (var grp in list.Actions)
+                    {
+                        var re_typename = grp.ReturnType.Replace("System.Web.Mvc.", "");
+                        <span class="col-sm-8" style="margin-left:40px;">
+                            <input name="grpName" class="grpName" type="checkbox" value="" style="cursor:pointer;" data-id="@grp.Id"> @grp.Name
+                            <span>( Return Type: @re_typename)</span>
+                        </span>
+                    }
+                }*@
+            count++;
+        }
+    }
+</table>
+<script>
+    var allData = [];
+    var allPreChekId = [];
+    function GetAllChkValue() {
+        allData = []; allPreChekId = [];
+        $(".grpName").each(function () {
+            var prechk = $(this).data('pechk');
+            if ($(this).is(":checked") && prechk === 0) {
+                var conname = $(this).data('conname');
+                var conid = $(this).data('conid');
+                var id = $(this).data('id');
+                var name = $(this).data('name');
+                var t = "";
+                t = conname + "|" + conid + ";" + name;
+                allData.push(t);
+            }
+            else if ($(this).is(":checked") === false && prechk === 1) {
+                allPreChekId.push($(this).data('actionid'));
+            }
+        });
+    }
+
+    $("#btn_SavePermission").click(function () {
+        GetAllChkValue();
+        if (allData.length > 0 || allPreChekId.length > 0) {
+            notification.show({ message: "Permission saving...", showTime: startTime() }, "upload-progress");
+            $.ajax({
+                url: '@Url.Action("SavePermission", "RoleSet")',
+                type: 'Post',
+                data: { allData: allData, userId: userId, roleId: '@(ViewBag.RoleId)', rolename: selectedRoleName, allPreChekId: allPreChekId },
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+
+                    if (data === "Success") {
+                        notification.show({ message: "Data successfully saved", showTime: startTime() }, "upload-success");
+
+                        var sendData = { RoleId: '@(ViewBag.RoleId)', roleName: selectedRoleName };
+                        $("#Div_ModuleList").empty();
+                        $("#Div_ModuleList").append('<div class="loading_half"></div>');
+                        $("#Div_ModuleList").load('@Url.Action("AllPermissionList", "RoleSet")', sendData);
+                    } else {
+                        notification.show({ message: "Data save unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                },
+                error: function (xhr) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error.", showTime: startTime() }, "upload-error");
+                }
+            });
+        }
+        else {
+            alert("You didn't change anything.");
+        }
+    });
+</script>

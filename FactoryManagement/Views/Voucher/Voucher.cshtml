@@ -1,0 +1,16 @@
+﻿
+@{
+    ViewBag.Title = "Voucher";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+
+<h2> Voucher </h2>
+
+<div>
+    <span class="btn btn-success" id="btn_CreateVoucher"><i class="fa fa-plus"></i> Create Voucher</span>
+</div>
+<script>
+    $("#btn_CreateVoucher").click(function () {
+        location.href = ('@Url.Action("CreateVoucher","Voucher")');
+    });
+</script>

@@ -1,0 +1,44 @@
+﻿
+
+
+@*********************************   Created By Jerin Jahan (Date: 2016-11-07) **************************************@
+
+@{
+    ViewBag.Title = "AllControllerList";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<style>
+    #tbl_Con_Name_List tr {
+        border: none !important;
+    }
+
+    #tbl_Con_Name_List td {
+        border: none !important;
+    }
+</style>
+<h2>Role Permission Settings</h2><hr />
+<div class="row">
+    <div class="form-horizontal col-md-6 col-sm-6 col-xs-12" id="div_role_list" style="border:1px solid #ddd;">
+        <h4>All Role Name List</h4><hr />
+    </div>
+    @if (db.RoleNameLists.Any())
+    {
+        <script>
+            $("#div_role_list").append('<div class="loading_half"></div>');
+            $("#div_role_list").load("ShowAllRoleName", "RoleSet");
+        </script>
+    }
+    <div class="col-sm-6" style="border:1px solid #ddd;" id="Div_ModuleList"><h4>All Module Name List</h4><hr /></div>
+</div>
+<script>
+    var selectedRoleName = "";
+    $("#div_role_list").on("click", ".btn_Role_Per_Assign", function () {
+        selectedRoleName = $(this).data("name");
+        var id = $(this).data('id');
+        var sendData = { RoleId: id, roleName: selectedRoleName };
+        $("#Div_ModuleList").empty();
+        $("#Div_ModuleList").append('<div class="loading_half"></div>');
+        $("#Div_ModuleList").load('@Url.Action("AllPermissionList", "RoleSet")', sendData);
+    });
+</script>

@@ -1,0 +1,433 @@
+﻿
+
+@********************************************* Created By (JERIN JAHAN)(07.09.2016) *******************************@
+
+@model FactoryManagement.ModelView.CRM.BusinessOrderListModelView
+@{
+    ViewBag.Title = "OrderDetails";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+<link href="~/Content/BusiOrderDetails.css" rel="stylesheet" />
+<style>
+    .table-bordered th {
+        border: none !important;
+    }
+    .table-bordered td {
+        border: none !important;
+    }
+    #tbl_all_Sup{
+        border:none!important;
+    }
+     #tbl_all_Sup th {
+        border: none !important;
+    }
+    #tbl_all_Sup td {
+        border: none !important;
+    }
+    #Div_Assin_btn{
+        float:right;text-align:right;margin-right:0px!important;padding-right:0px!important;display:none;
+    }
+</style>
+
+@using (Html.BeginForm())
+{
+    @Html.HiddenFor(m => m.BusinessOrderId)
+    @Html.HiddenFor(m => m.ClientId)
+    @Html.HiddenFor(m => m.Client_User_Id)
+    @Html.HiddenFor(m => m.AllFilename)
+    <h3>
+        Order Details
+        @if (Model.OrderType == 2)
+        {
+            @*<span class="fa fa-pencil" style="float:right;cursor:pointer;" id="btn_bus_ord"></span>*@
+        }
+    </h3>
+    <hr />
+<div class="row">
+    <div class="form-horizontal col-md-12 col-sm-12 col-xs-12 row">
+        <div class="col-md-7 col-sm-7 col-xs-12" id="div_order_deatis">
+            <p>Order Name : @Model.OrderName</p>
+            @if (Model.OrderType == 1)
+                {<p>Buyer Name : @Model.ClientName</p>}
+            <p>
+                Order Status : @if (Model.OrderStatus == 0)
+                    {<span>Not yet approved by head office.</span>}
+                    else
+                    {<span>Approved by head office</span>}
+            </p>
+            <p>Supplier Name : @Model.SupplierName</p>
+            <p>Total Cost : @Model.TotalCost @currency</p>
+            <p>Total Product Cost : @Model.TotalProCost @currency</p>
+            <p>Others Cost : @Model.TotalOthersCost @currency</p>
+        </div>
+        <div class="col-md-7 col-sm-7 col-xs-12" id="div_order_Edit" style="display:none;"></div>
+    </div>
+    
+    <div class="col-md-12 col-sm-12 col-xs-12 row" style="border:1px solid #ddd;" id="Div_Wait_Deliver">
+        <div class="loading_half"></div>
+    </div>
+    <script>
+        $("#Div_Wait_Deliver").load('@(Url.Action("_WaitingToBeDeliverdItemList", "CRM"))?busId='+@Model.BusinessOrderId);
+    </script>
+    <div class="row" style="margin-top:2em;">
+        <div class="col-md-6 col-sm-6 col-xs-12" style="border:1px solid #ddd;display:none;" id="div_all_received">
+            <div class="loading_half"></div>
+        </div>
+        @if (db.BusinessOrderProductLists.Where(m => m.ReceivedStatus > 1 && m.BusinessOrderId == Model.BusinessOrderId).Any())
+        {
+            <script>
+                $("#div_all_received").show();
+                $("#div_all_received").load('@(Url.Action("_ReadyToUsedItem", "CRM"))?busId='+@Model.BusinessOrderId);
+            </script>
+            <div class="col-md-6 col-sm-6 col-xs-12" style="border:1px solid #ddd;" id="div_added_item">
+                <h4>All Added Item </h4><hr />
+                <table class="table" id="tbl_add_item"></table>
+            </div>
+            <div class="col-md-offset-10 col-md-2 col-sm-offset-10 col-sm-2" id="Div_Assin_btn">
+                <input type="button" value="Assign" class="k-button k-state-default" id="btn_Assign_Item">
+            </div>
+        }
+    </div>
+    <div class="row" style="margin-top:2em;">
+        <div class="col-md-12 col-sm-6112 col-xs-12" style="border:1px solid #ddd;display:none;" id="div_all_assigen">
+            <div class="loading_half"></div>
+        </div>
+        @if (db.BusinessOrderProductLists.Where(m => m.ReceivedStatus > 2 && m.BusinessOrderId == Model.BusinessOrderId).Any())
+        {
+            <script>
+                $("#div_all_assigen").show();
+                $("#div_all_assigen").load('@(Url.Action("_AssignButNotAcceptItem", "CRM"))?busId='+@Model.BusinessOrderId);
+            </script>
+        }
+    </div>
+</div>
+}
+@(Html.Kendo().Window()
+       .Name("WinForAddItem")
+       .Visible(false)
+       .Modal(true)
+       .Draggable(true)
+)
+<script>
+    var AddedCartId = [], AddedCartQuan = [];
+    var fileType = 0;
+    var count = 0;
+    var BusinessOrderId = '@(Model.BusinessOrderId)';
+    var storeId = 0, wareId = 0, locationtype = 0, siteId = 0, unitId = 0, deptId = 0, lineId = 0;
+    $(document).ready(function () {
+        $("#liForCRM").addClass('active');
+        $("#liForBusinessOrder").addClass('sublistActive');
+    });
+    function onStoreLocationChange(e) {
+        var dataItem = this.dataItem(e.item);
+        if (dataItem.Value === '1') {
+            $("#Div_For_Site").hide();
+            $("#Div_For_Ware").hide();
+            $("#Div_For_Store").show();
+            storeId = dataItem.Value;
+            wareId = 0;
+            orderId = 0;
+            locationtype = 1;
+        }
+        else if (dataItem.Value === '2') {
+            $("#Div_For_Site").hide();
+            $("#Div_For_Store").hide();
+            $("#Div_For_Ware").show();
+            wareId = dataItem.Value;
+            storeId = 0;
+            orderId = 0;
+            locationtype = 2;
+        }
+        else if (dataItem.Value === '3') {
+            $("#Div_For_Ware").hide();
+            $("#Div_For_Store").hide();
+            $("#Div_For_Site").show();
+            orderId = dataItem.Value;
+            wareId = 0;
+            storeId = 0;
+            locationtype = 3;
+        }
+        else {
+            $("#Div_For_Ware").hide();
+            $("#Div_For_Store").hide();
+            locationtype = 0;
+            wareId = 0;
+            storeId = 0;
+        }
+    }
+
+    $("#tbl_all_Item").on("click", ".btnOrderItemRecvd", function () {
+        var Acqid = $(this).data("acqid");
+        var proId = $(this).data("productid");
+        var uname = $(this).data("uname");
+        var window = $("#WinForAddItem").data("kendoWindow");
+        window.setOptions({
+            width: '75%',
+            title: 'This item request came from following order'
+        });
+        window.refresh({ url: '@Url.Action("StoreReceiveItem", "CRM")?Acqid=' + Acqid + '&proId=' + proId + '&Unitname=' + uname });
+        window.center();
+        window.open();
+    });
+
+    //************************** CART ADD ITEM  ************************
+    $("#div_all_received").on("click", ".btnAddToCart", function () {
+        var id = $(this).data("acqid");
+        var quan = $(this).data("quan");
+        var uname = $(this).data("uname");
+        var pname = $(this).data("pname");
+        count++;
+        if (count === 1) {
+            $("#Div_Assin_btn").show();
+        }
+        $("#tbl_add_item").append('<tr id="tr_' + id + '"><td width="40%">' + pname + '</td>' +
+            '<td width="45%"><span class="col-xs-5" style="padding-right:0px!important;">' +
+            '<input class="form-control k-textbox text-box single-line k-invalid txtquantity" data-val="true" data-val-length="Invalid" ' +
+            'data-val-required="*" ' +
+            'id="txt_' + id + '" name="txt_' + id + '" type="text" value=""  data-acqid="' + id + '" data-quan=' + quan + '></span>' +
+            '<span class="col-xs-3" style="padding-left:5px!important;padding-right:0px!important;">' + uname + '</span>' +
+            '<span class="col-xs-3" style="padding-left:0px!important;padding-right:0px!important;">' +
+            '<span class="field-validation-valid text-danger" data-valmsg-for="txt_' + id + '" data-valmsg-replace="true"></span></span></td>' +
+            '<td width="5%"><span class="fa fa-close btn_addCart_rmv" id="btn_addCart_rmv_' + id + '" data-acqid="' + id + '"></span></td></tr>');
+        $("#btn_plus_" + id).hide();
+        AddedCartId.push(id);
+    });
+    //************************** CART REMOVE ITEM  *********************
+    $("#tbl_add_item").on("click", ".btn_addCart_rmv", function () {
+        var id = $(this).data("acqid");
+        count--;
+        if (count === 0) {
+            $("#Div_Assin_btn").hide();
+        }
+        $("#tr_" + id).remove();
+        $("#btn_plus_" + id).show();
+        $("#rcvd_" + id).text($("#btn_plus_" + id).data('quan'));
+    });
+    //***************************** KEYUP FUNCTION *********************
+    $("#tbl_add_item").on('keyup', '.txtquantity', function () {
+        var id = $(this).data("acqid");
+        var quan = $(this).data("quan");
+        var value = $(this).val();
+        if (value === '') {
+            $("#rcvd_" + id).text(quan);
+        } else {
+            if (parseInt(value) > parseInt(quan)) {
+                alert('Value can not be greater than receive quantity');
+            } else {
+                var re_qun = parseInt(quan) - parseInt(value);
+                $("#rcvd_" + id).text(re_qun);
+            }
+        }
+    });
+    //***************************** KEYUP FUNCTION *********************
+    $("#tbl_add_item").on('keypress', '.txtquantity', function (e) {
+        e = (e) ? e : window.event;
+        var charCode = (e.which) ? e.which : e.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        } else {
+            var id = $(this).data("acqid");
+            var quan = $(this).data("quan");
+            var value = $(this).val();
+            if (window.event) { // IE
+                keynum = e.keyCode;
+            } else if (e.which) { // Netscape/Firefox/Opera
+                keynum = e.which;
+            }
+            var ttl = value + String.fromCharCode(keynum);
+            if (parseInt(ttl) > parseInt(quan)) {
+                return false;
+            }
+            return true;
+        }
+    });
+    //******************** BUTTON CLICK ASSIGN FUNCTION *****************
+    $("#btn_Assign_Item").click(function () {
+        var tbl_validate = $("#tbl_add_item").kendoValidator().data("kendoValidator");
+        if (tbl_validate.validate()) {
+            var i = 0;
+            $(".txtquantity").each(function () {
+                var id = $(this).data("acqid");
+                AddedCartId[i] = id;
+                AddedCartQuan[i] = $("#txt_" + id).val();
+                i++;
+            });
+            var Acqid = $(this).data("acqid");
+            var proId = $(this).data("productid");
+            var uname = $(this).data("uname");
+            var window = $("#WinForAddItem").data("kendoWindow");
+            window.setOptions({width: '75%',title: 'This is title'});
+            window.refresh({ url: '@Url.Action("ReceivedItemStoreLocation", "CRM")' });
+            window.center();
+            window.open();
+        }
+    });
+
+
+    //************************** ON SITEID CHANGE FUNCTION ******************************
+
+    function onSiteIdSelect(e) {
+        var dataItem = this.dataItem(e.item);
+        if (dataItem.Value == '') {
+            $("#Div_For_Dept").remove();
+            $("#Div_For_Line").remove();
+            $("#Div_For_Line").remove();
+        } else {
+            $.ajax({
+                url: '@Url.Action("ChkIsSiteComposite", "CRM")',
+                type: 'Post',
+                data: { siteId: dataItem.Value },
+                success: function (data) {
+                    if (data) {
+                        if ($("#Div_For_Unit").length == 0) {
+                            $("#Div_For_Site").append('<div id="Div_For_Unit">' +
+                                                      '<div class="editor-label"><label>Unit</label></div>' +
+                                                      '<div class="editor-field">' +
+                                                      '<div class="col-sm-11 col-xs-11" style="padding-right:0px;padding-left:0px!important">' +
+                                                      '<label id="unitId" style="width:40%;"></label>' +
+                                                      '</div>' +
+                                                      '</div>' +
+                                                      '</div>');
+                        }
+                        $("#unitId").kendoDropDownList({
+                            dataValueField: "UnitId",
+                            dataTextField: "UnitName",
+                            select: onUnitNameSelect,
+                            optionLabel: "--Select One--",
+                            dataSource: { transport: { read: { url: "@Url.Action("GetAllUnitName", "CRM")?ParentId=" + dataItem.Value, type: "GET" } } }
+                        });
+                        $("#Div_For_Dept").remove();
+                    } else {
+                        if ($("#Div_For_Dept").length == 0) {
+                            $("#Div_For_Site").append('<div id="Div_For_Dept">' +
+                                                      '<div class="editor-label"><label>Dept</label></div>' +
+                                                      '<div class="editor-field">' +
+                                                      '<div class="col-sm-11 col-xs-11" style="padding-right:0px;padding-left:0px!important">' +
+                                                      '<label id="DeptId" style="width:40%;"></label>' +
+                                                      '</div>' +
+                                                      '</div>' +
+                                                      '</div>');
+
+                        }
+                        $("#DeptId").kendoDropDownList({
+                            dataValueField: "DeptId",
+                            dataTextField: "DeptName",
+                            select: onDeptNameSelect,
+                            optionLabel: "--Select One--",
+                            dataSource: { transport: { read: { url: "@Url.Action("GetAllDeptName", "CRM")?ParentId=" + dataItem.Value + "&IsCom=false", type: "GET" } } }
+                        });
+                    $("#Div_For_Unit").remove();
+                    }
+                }
+            });
+        }
+    }
+    function onUnitNameSelect(e) {
+        var dataItem = this.dataItem(e.item);
+        if (dataItem.UnitId == '') {
+            $("#Div_For_Dept").remove();
+            $("#Div_For_Line").remove();
+        } else {
+            if ($("#Div_For_Dept").length == 0) {
+                $("#Div_For_Site").append('<div id="Div_For_Dept">' +
+                                          '<div class="editor-label"><label>Dept</label></div>' +
+                                          '<div class="editor-field">' +
+                                          '<div class="col-sm-11 col-xs-11" style="padding-right:0px;padding-left:0px!important">' +
+                                          '<label id="DeptId" style="width:40%;"></label>' +
+                                          '</div>' +
+                                          '</div>' +
+                                          '</div>');
+
+            }
+            $("#DeptId").kendoDropDownList({
+                dataValueField: "DeptId",
+                dataTextField: "DeptName",
+                select: onDeptNameSelect,
+                optionLabel: "--Select One--",
+                dataSource: { transport: { read: { url: "@Url.Action("GetAllDeptName", "CRM")?ParentId=" + dataItem.UnitId+"&IsCom=true", type: "GET" } } }
+            });
+        }
+    }
+    function onDeptNameSelect(e) {
+        var dataItem = this.dataItem(e.item);
+        if (dataItem.DeptId == '') {
+            $("#Div_For_Line").remove();
+        } else {
+            if ($("#Div_For_Line").length == 0) {
+                $("#Div_For_Site").append('<div id="Div_For_Line">' +
+                                              '<div class="editor-label"><label>Line</label></div>' +
+                                                  '<div class="editor-field">' +
+                                                      '<div class="col-sm-11 col-xs-11" style="padding-right:0px;padding-left:0px!important">' +
+                                                          '<label id="LineId" style="width:40%;"></label>' +
+                                                  '</div>' +
+                                              '</div>' +
+                                          '</div>');
+            }
+            $("#LineId").kendoDropDownList({
+                dataValueField: "LineId",
+                dataTextField: "LineName",
+                optionLabel: "--Select One--",
+                dataSource: { transport: { read: { url: "@Url.Action("GetAllLineName", "CRM")?ParentId=" + dataItem.DeptId, type: "GET" } } }
+            });
+        }
+    }
+</script>
+<script>
+    var id = [];
+    var quan = [];
+
+    $("#Div_Wait_Deliver").on("click", ".QuantyUp", function () {
+        var id = $(this).data("id");
+        var quantity = $("#span_quantity_" + id).text();
+        var max_quan = $(this).data("quan");
+        $("#span_quantity_" + id).text(parseInt(quantity) + 1);
+        if ((parseInt(quantity) + 1) == 2) {
+            $("#QuantyDwn_" + id).show();
+        }
+        if ((parseInt(quantity) + 1) == max_quan) {
+            $("#QuantyUp_" + id).hide();
+        }
+    });
+    $("#Div_Wait_Deliver").on("click", ".QuantyDwn", function () {
+        var id = $(this).data("id");
+        var quantity = $("#span_quantity_" + id).text();
+        $("#span_quantity_" + id).text(parseInt(quantity) - 1);
+        $("#QuantyUp_" + id).show();
+        if ((parseInt(quantity) - 1) == 1) {
+            $("#QuantyDwn_" + id).hide();
+        }
+    });
+
+
+    //***************************** Assigen Item Accept *****************************
+
+    $("#div_all_assigen").on("click", ".btn_Accpt_item", function () {
+        var id = $(this).data("id");
+        notification.show({ message: "Data saving...", showTime: startTime() }, "upload-progress");
+        $.ajax({
+            url: '@Url.Action("AcceptAssignedItem", "CRM")',
+            type: 'Post',
+            data: {id:id,UserId:userId},
+            success: function (data) {
+                notification.hide();
+                notification.setOptions({ autoHideAfter: 2000 });
+                if (data === "Success") {
+                    notification.show({ message: "Item received successfully.", showTime: startTime() }, "upload-success");
+                    $("#div_all_assigen").empty();
+                    $("#div_all_assigen").append('<div class="loading_half"></div>');
+                    $("#div_all_assigen").show();
+                    $("#div_all_assigen").load('@(Url.Action("_AssignButNotAcceptItem", "CRM"))?busId=' + BusinessOrderId);
+                } else {
+                    notification.show({ message: "Unsuccessful", showTime: startTime() }, "upload-error");
+                }
+            },
+            error:function(data){
+                notification.hide();
+                notification.setOptions({ autoHideAfter: 2000 });
+                notification.show({ message: "Unsuccessful", showTime: startTime() }, "upload-error");
+            }
+        });
+    });
+</script>

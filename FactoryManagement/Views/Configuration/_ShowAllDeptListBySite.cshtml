@@ -1,0 +1,239 @@
+﻿@******************************** Created By Mabia Mishu (Date:17.09.2016) *********************************@
+@using FactoryManagement.Helpers
+@model IEnumerable<FactoryManagement.Models.DepartmentList>
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var count = 0;
+}
+
+@if (ViewBag.isResi == true)
+{
+
+    <div class="portlet light portlet-fit bordered">
+        <div class="portlet-title">
+            <div class="caption">
+                <i class="fa fa-list-ul font-green"></i>
+                <span class="caption-subject font-green bold uppercase">Department List</span>
+            </div>
+        </div>
+        <div class="portlet-body">
+            <div class="table-responsive">
+
+                <table class="table table-bordered table-condensed" id="tbl_dept_list">
+                    <tr>
+                        <th width="3%">#</th>
+                        <th width="12%">Dept.Name</th>
+                        <th width="5%">Acronym</th>
+                        <th width="8%">No.Of Line</th>
+                        <th width="8%">Status</th>
+                        <th width="19%">Created By</th>
+                        <th width="13%">Created Date</th>
+                        <th width="15%">Last Updated By</th>
+                        <th width="10%">Last Updated Date</th>
+                        <th width="10%"></th>
+                    </tr>
+                    @foreach (var item in Model)
+                    {
+                        count++;
+                        <tr>
+                            <th>@count.</th>
+                            <td>
+                                <a style="cursor:pointer" class="linkForDeptDetails" data-id="@item.DeptId">@Html.DisplayFor(modelItem => item.DeptName)</a>
+                            </td>
+                            <td>@Html.DisplayFor(modelItem => item.DeptAcronym)</td>
+                            <td>@Html.DisplayFor(modelItem => item.NumberOfLine)</td>
+                            <td>
+                                @if (item.Status == 1)
+                                { <span>Active</span>}
+                                else
+                                { <span>Inactive</span>}
+                            </td>
+                            <td>
+                                @if (item.CreatedBy > 0)
+                                {
+                                    var user = db.View_UserLists.Where(m => m.UserType == 1 && m.UserId == item.CreatedBy).FirstOrDefault();
+                                    <img src="~/Images/UserPicture/thumb/@user.Picture" class="img-circle" />
+                                    <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = item.CreatedBy, isDisplay = true }, null)"><span>@user.UserName</span></a>
+
+                                }
+                                else
+                                {
+                                    <img src="~/Images/UserPicture/thumb/admin.jpg" class="img-circle" />
+                                    <span> Super Admin</span>
+                                }
+                            </td>
+                            <td>@Convert.ToDateTime(item.CreatedDate).ToString("MMM dd,yyyy hh:mm tt")</td>
+                            <td>
+                                @if (item.UpdatedBy != null)
+                                {
+                                    if (item.UpdatedBy > 0)
+                                    {
+                                        var user = db.View_UserLists.Where(m => m.UserType == 1 && m.UserId == item.UpdatedBy).FirstOrDefault();
+                                        <img src="~/Images/UserPicture/thumb/@user.Picture" class="img-circle" />
+                                        <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = item.UpdatedBy, isDisplay = true }, null)"><span>@user.UserName</span></a>
+                                    }
+                                    else
+                                    {
+                                        <img src="~/Images/UserPicture/thumb/admin.jpg" class="img-circle" />
+                                        <span> Super Admin</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span>Not yet updated</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.UpdatedBy != null)
+                                {
+                                    @Convert.ToDateTime(item.UpdatedDate).ToString("MMM dd,yyyy hh:mm tt")
+                                }
+                                else
+                                {
+                                    <span>Not yet updated</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="btn green linkForEditDept" data-toggle="tooltip" title="Edit Department" data-id="@item.DeptId" style="cursor:pointer"><i class="fa fa-pencil"></i></span>
+                                <span class="btn btn-danger btn_dept_delete" data-toggle="tooltip" title="Delete Department" data-deptid="@item.DeptId" data-status="@item.Status" style="cursor:pointer"><i class="fa fa-trash"></i></span>
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    @*<p><span class="btn green" data-toggle="tooltip" title="Add New Department" id="btn_dept_add_into_site"><i class="fa fa-plus"></i> Add New Dept.</span></p>*@
+    <div class="portlet light portlet-fit bordered">
+        <div class="portlet-title">
+            <div class="caption">
+                <i class="fa fa-list-ul font-green"></i>
+                <span class="caption-subject font-green bold uppercase">Department List</span>
+            </div>
+        </div>
+        <div class="portlet-body">
+            <div class="table-responsive">
+                @if (Model.Count() > 0)
+                {
+                    <table class="table table-bordered table-condensed" id="tbl_dept_list">
+                        <tr>
+                            <th width="2%">#</th>
+                            <th width="12%">Dept.Name</th>
+                            <th width="5%">Acronym</th>
+                            <th width="8%">No.Of Line</th>
+                            <th width="5%">Status</th>
+                            <th width="19%">Created By</th>
+                            <th width="13%">Created Date</th>
+                            <th width="15%">Last Updated By</th>
+                            <th width="13%">Last Updated Date</th>
+                            <th width="10%"></th>
+                        </tr>
+                        @foreach (var item in Model)
+                        {
+                            count++;
+                            <tr>
+                                <th>@count.</th>
+                                <td>
+                                    <a style="cursor:pointer" class="linkForDeptDetails" data-id="@item.DeptId">@Html.DisplayFor(modelItem => item.DeptName)</a>
+                                </td>
+                                <td>@Html.DisplayFor(modelItem => item.DeptAcronym)</td>
+                                <td>@Html.DisplayFor(modelItem => item.NumberOfLine)</td>
+                                <td>
+                                    @if (item.Status == 1)
+                                    { <span>Active</span>}
+                                    else
+                                    { <span>Inactive</span>}
+                                </td>
+                                <td>
+                                    @if (item.CreatedBy > 0)
+                                    {
+                                        var user = db.View_UserLists.Where(m => m.UserType == 1 && m.UserId == item.CreatedBy).FirstOrDefault();
+                                        <img src="~/Images/UserPicture/thumb/@user.Picture" class="img-circle" />
+                                        <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = item.CreatedBy, isDisplay = true }, null)"><span>@user.UserName</span></a>
+                                    }
+                                    else
+                                    {
+                                        <img src="~/Images/UserPicture/thumb/admin.jpg" class="img-circle" />
+                                        <span> Super Admin</span>
+                                    }
+                                </td>
+                                <td>@Convert.ToDateTime(item.CreatedDate).ToString("MMM dd,yyyy hh:mm tt")</td>
+                                <td>
+                                    @if (item.UpdatedBy != null)
+                                    {
+                                        if (item.UpdatedBy > 0)
+                                        {
+                                            var user = db.View_UserLists.Where(m => m.UserType == 1 && m.UserId == item.UpdatedBy).FirstOrDefault();
+                                            <img src="~/Images/UserPicture/thumb/@user.Picture" class="img-circle" />
+                                            <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = item.UpdatedBy, isDisplay = true }, null)"><span>@user.UserName</span></a>
+                                        }
+                                        else
+                                        {
+                                            <img src="~/Images/UserPicture/thumb/admin.jpg" class="img-circle" />
+                                            <span> Super Admin</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span>Not yet updated</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.UpdatedBy != null)
+                                    {
+                                        @Convert.ToDateTime(item.UpdatedDate).ToString("MMM dd,yyyy hh:mm tt")
+                                    }
+                                    else
+                                    {
+                                        <span>Not yet updated</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span data-toggle="tooltip" title="Edit Department" class="btn green linkForEditDept" data-id="@item.DeptId" style="cursor:pointer"><i class="fa fa-pencil"></i></span>
+                                    <span data-toggle="tooltip" title="Delete Department" class="btn btn-danger btn_dept_delete" data-deptid="@item.DeptId" data-status="@item.Status" data-name="@item.DeptName"><i class="fa fa-trash"></i></span>
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                }
+                <script>
+                    $("#Span_DeptCount").text('@(count)');
+                </script>
+            </div>
+        </div>
+    </div>
+}
+<script>
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+        if (canDisplay == 'True' || displayInfo == 'True') {
+            $(".linkForEditDept").hide();
+            $(".btn_dept_delete").hide();
+            $("#linkForDeptCreate").hide();
+        }
+    });
+    $(".linkForDeptDetails").click(function () {
+        var Deptid = $(this).data("id");
+        if (uId > 0) {
+            var backlist = canDisplay + ',' + displayInfo;
+            @*location.href = '@Url.Action("ShowDeptWithLineInfo", "Configuration")?deptId=' + Deptid + '&display=' + canDisplay + '&IsInfo=true' + '&Backtolist=' + backlist;*@
+            location.href = "/Configuration/ShowDeptWithLineInfo?q=" + getDataEncrypted("deptId=" + Deptid + "?display=" + canDisplay + "?IsInfo=true" + "?Backtolist=" + backlist);
+        }
+        else {
+            @*location.href = '@Url.Action("ShowDeptWithLineInfo", "Configuration")?deptId=' + Deptid + '&display=' + canDisplay + '&IsInfo=true';*@
+            location.href = "/Configuration/ShowDeptWithLineInfo?q=" + getDataEncrypted("deptId=" + Deptid + "?display=" + canDisplay + "?IsInfo=true");
+        }
+    });
+    $(".linkForEditDept").click(function () {
+        var Deptid = $(this).data("id");
+        if (uId > 0) {
+            var backlist = canDisplay + ',' + displayInfo;
+            location.href = "/Configuration/ShowDeptWithLineInfo?q=" + getDataEncrypted("deptId=" + Deptid + "?display=" + canDisplay + "?IsInfo=false" + "?Backtolist=" + backlist);
+        } else {
+            location.href = "/Configuration/ShowDeptWithLineInfo?q=" + getDataEncrypted("deptId=" + Deptid + "?display=" + canDisplay + "?IsInfo=false");
+        }
+    });
+</script>

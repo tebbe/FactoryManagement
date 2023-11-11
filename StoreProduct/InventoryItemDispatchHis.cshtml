@@ -1,0 +1,266 @@
+﻿
+
+
+@************************* Created By Jerin Jahan (Date : 24.01.2017) ***************************************@
+@{
+    ViewBag.Title = "Inventory Item Dispatch History";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>          
+            <i class="fa fa-th-list"></i>
+            <a href="/StoreProduct/InvenDisVoucherList">Inventory Item Dispatch History</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/StoreProduct/InventoryItemDispatchHis">Product Wise</a>
+        </li>
+    </ul>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">Inventory Item Dispatch History <small>Product Wise</small></span>
+                </div>
+                <div class="actions">
+                    <div class="btn-group btn-group-devided" data-toggle="buttons" id="Div_Upper_Portion" style="display:none;">
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm active" id="btn_All" data-toggle="tooltip" title="All History" data-container="body">
+                            <input type="radio" name="options" class="toggle">All
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_today" data-toggle="tooltip" title="Today History" data-container="body">
+                            <span><input type="radio" name="options" class="toggle">Today</span>
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_seven" data-toggle="tooltip" title="Last 7 days History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 7 Days
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_thirty" data-toggle="tooltip" title="Last 30 day History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 30 Days
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div id="Div_All_His" style="display:none;"></div>
+                @if (db.View_Dispacth_Item_Details.Any())
+                {
+                    <script>
+                        $("#Div_Upper_Portion").show();
+                        $("#Div_All_His").append('<div class="loading_partial"></div>');
+                        $("#Div_All_His").show();
+                        $("#Div_All_His").load("_InventoryItemDispatchHis", "StoreProduct");
+                    </script>
+                }
+                else
+                {
+                    <script>
+                        $("#Div_All_His").append(' <h3>There is no record to display...</h3>');
+                        $("#Div_All_His").show();
+                    </script>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="win_item_quan_info"></div>
+<div id="win_item_requan_info"></div>
+<div id="win_item_usedquan_info"></div>
+
+<script>
+    var showCount = 0, totalCount = 0, page = 0, inCallback = false;
+    var days = 0;
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $("#liForDisVouHis").addClass('sublistActive');
+    });
+    $(document).on("click", "#btn_page_back", function () {
+        window.history.back();
+    });
+    function onSitenameChange() {
+        if (this.value() === '') {
+            $("#Div_All_His").empty();
+            $("#Div_All_His").append('<div class="loading_partial"></div>');
+            $("#Div_All_His").load("_AllUserLists", "HumanResource");
+        } else {
+            $("#Div_All_His").empty();
+            $("#Div_All_His").append('<div class="loading_partial"></div>');
+            $("#Div_All_His").load('@Url.Action("_AllUserLists", "HumanResource")?siteId=' + this.value());
+        }
+    }
+
+    @******************************** OnScroll Bind Table Data *************************@
+    $(window).scroll(function () {
+        var countBytype, result;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/HumanResource/GeUserList',
+            data: { page: page },
+            success: function (data) {
+                var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        var date = new Date(data[i].JoinDateName);
+                        var getdate = (monthNames[date.getMonth()]) + " " + date.getDate() + "," + date.getFullYear();
+
+                        $("table#tbl_All_his > tbody").append('<tr><th scope="row">' + showCount + '.</th>' +
+                            '<td><img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].Picture + '">' +
+                            '<a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].UserId +"?isDisplay=true")  + '">' +
+                             '' + data[i].UserName + '</a></td><td>' + data[i].UserTypeName + '</td><td>' + data[i].Designation + '</td><td>' + getdate + '</td><td>' +
+
+                            '<a class="btn btn-success" style="margin-right:2%;" href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId="+data[i].UserId+"?isDisplay=false") +'">' +
+                             '<i class="fa fa-pencil"></i></a>' +
+
+                             '<span class="btn btn-danger deleteUser" style="margin-right:2%;" data-userid="' + data[i].UserId + '" data-usertype="' + data[i].UserId + '">' +
+                             '<i class="fa fa-trash"></i></span>' +
+                             '<span class="btn btn-info showPckDetails" style="margin-right:2%;" data-userid="' + data[i].UserId + '" ' +
+                             ' data-pckid="' + data[i].SalaryPackageId + '" data-usertype="' + data[i].UserId + '">' +
+                             '<i class="fa fa-info-circle"></i></span>' +
+                             '<span class="btn btn-warning chngSalaryPck" style="margin-right:2%;" data-userid="' + data[i].UserId + '" ' +
+                             'data-pckid="' + data[i].SalaryPackageId + '" data-usertype="' + data[i].UserId + '">' +
+                             '<i class="fa fa-edit"></i></span>' +
+                             '</td></tr>');
+                    }
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+
+    //*******************************  SHOW INVENTORY ITEM DISPATCH QUANTITY DETIALS *****************************************
+    $("#Div_All_His").on("click", ".itemQuan", function (e) {
+        e.preventDefault();
+        var invenid = $(this).data("invenid");
+        var proname = $(this).data("proname");
+        $("#win_item_quan_info").empty();
+        $("#win_item_quan_info").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '70%',
+            height: '60%',
+            title: proname + ' Dispatch Details'
+        });
+        $("#win_item_quan_info").html('<div class="win_loading_half"></div>');
+        var win_item_quan_info = $("#win_item_quan_info").data("kendoWindow");
+        win_item_quan_info.refresh({ url: "/StoreProduct/ShowInvenDispacthQuanDetails?invenid=" + invenid + "&days=" + days });
+        win_item_quan_info.center().open();
+    });
+    //*******************************  SHOW INVENTORY ITEM Return QUANTITY DETIALS *****************************************
+    $("#Div_All_His").on("click", ".itemReQuan", function (e) {
+        e.preventDefault();
+        var invenid = $(this).data("invenid");
+        var proname = $(this).data("proname");
+        $("#win_item_requan_info").empty();
+        $("#win_item_requan_info").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '70%',
+            height: '50%',
+            title: proname + ' Return Quantity Details'
+        });
+        $("#win_item_requan_info").html('<div class="win_loading_half"></div>');
+        var win_item_requan_info = $("#win_item_requan_info").data("kendoWindow");
+        win_item_requan_info.refresh({ url: "/StoreProduct/ShowInvenDispacthReQuanDetails?invenid=" + invenid });
+        win_item_requan_info.center().open();
+    });
+    //*******************************  SHOW INVENTORY ITEM USED QUANTITY DETIALS *****************************************
+    $("#Div_All_His").on("click", ".itemUsed", function (e) {
+        e.preventDefault();
+        var invenid = $(this).data("invenid");
+        var proname = $(this).data("proname");
+        $("#win_item_usedquan_info").empty();
+        $("#win_item_usedquan_info").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '70%',
+            height: '50%',
+            title: proname + ' Used Quantity Details'
+        });
+        $("#win_item_usedquan_info").html('<div class="win_loading_half"></div>');
+        var win_item_usedquan_info = $("#win_item_usedquan_info").data("kendoWindow");
+        win_item_usedquan_info.refresh({ url: "/StoreProduct/ShowInvenDispacthUsedQuanDetails?invenid=" + invenid });
+        win_item_usedquan_info.center().open();
+    });
+
+</script>
+<script>
+    $("#btn_today").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = {days: 1 };
+        $("#Div_All_His").empty();
+        $("#Div_All_His").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Today's Dispatched History");
+        $("#Div_All_His").load('@Url.Action("_InventoryItemDispatchHisDayWise", "StoreProduct")', passdata);
+        days = 1;
+    });
+
+    $("#btn_last_seven").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = { days: 7 };
+        $("#Div_All_His").empty();
+        $("#Div_All_His").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Last 7 Days Dispatched History");
+        $("#Div_All_His").load('@Url.Action("_InventoryItemDispatchHisDayWise", "StoreProduct")', passdata);
+        days = 7;
+    });
+    $("#btn_last_thirty").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = { days: 30 };
+        $("#Div_All_His").empty();
+        $("#Div_All_His").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Last 30 Days Dispatched History");
+        $("#Div_All_His").load('@Url.Action("_InventoryItemDispatchHisDayWise", "StoreProduct")', passdata);
+        days = 30;
+    });
+    $("#btn_All").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        $("#Div_All_His").empty();
+        $("#Div_All_His").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing All History");
+        $("#Div_All_His").load('@Url.Action("_InventoryItemDispatchHis", "StoreProduct")');
+        days = 0;
+    });
+</script>

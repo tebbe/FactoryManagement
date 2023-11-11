@@ -1,0 +1,64 @@
+﻿@******************** Created By Kaikubad(Date:25.12.2016) **************************@
+@using (Html.BeginForm())
+{
+    <div class="form-horizontal col-md-12 col-sm-12 col-xs-12" id="Div_Single_User_Attend">
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3">Working Schedule</label>
+            <div class="col-md-4 col-sm-5">
+                @(Html.Kendo().DropDownList().Name("WorkingScheduleId")
+                 .OptionLabel("--Select One Package--")
+                 .BindTo(ViewBag.WorkingScheduleId as SelectList)
+                 .Events(e => e.Change("onChangeWorkScdl"))
+                 .HtmlAttributes(new { style = "width:100%" })
+                )
+                <span class="field-validation-valid text-danger" data-valmsg-for="WorkingScheduleId" data-valmsg-replace="true"></span>
+            </div>
+        </div>
+        <div id="div_selected_work_scdl" style="display:none;"></div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-offset-3 col-md-9 col-sm-offset-3 col-sm-9">
+            <input type="button" value="Assign" data-toggle="tooltip" title="Assign Working Schedule" data-placement="bottom" data-container="body" class="btn green" id="btn_Work_scdl_save" />
+            <input type="reset" value="Refresh" data-toggle="tooltip" title="Reset Values" data-container="body" data-placement="bottom" class="btn yellow" id="btn_Work_scdl_Refresh" />
+        </div>
+    </div>
+}
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+    $(document).ready(function () {
+        $("#btn_Work_scdl_save").prop('disabled', true);
+    });
+    $("#btn_Work_scdl_Refresh").click(function () {
+        $("#div_selected_work_scdl").empty();
+        $("#div_selected_work_scdl").hide();
+        $("#btn_Work_scdl_save").prop("disabled", true);
+    });
+    $("#btn_Work_scdl_save").click(function () {
+        notification.show({ message: "Assigning Working Schedule...", showTime: startTime() }, "upload-progress");
+        var senddata = {
+            WorkingScheduleId: $("#WorkingScheduleId").val(),
+            UserId: EmpId,
+            AssignedBy: userId
+        };
+        $.ajax({
+            url: '@Url.Action("AssignWorkingScheduleWithUser", "HumanResource")',
+            type: 'Post',
+            data: senddata,
+            success: function (data) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                if (data !== "Error") {
+                    notification.show({ message: "Working Schedule has been successfully assigned.", showTime: startTime() }, "upload-success");
+                    $("#tab1workscdl").empty();
+                    $("#tab1workscdl").load('@Url.Action("SelectedSchedule", "HumanResource")?id=' + senddata.WorkingScheduleId + '&reason=edit&UserId=' + EmpId + "&view=display");
+                } else {
+                    notification.show({ message: "Working Schedule assign was unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+            },
+            error: function (error) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+            }
+        });
+    });
+</script>
+

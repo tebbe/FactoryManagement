@@ -1,0 +1,89 @@
+﻿
+@model FactoryManagement.ModelView.Accounting.BankAccountListModelView
+
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+@Html.HiddenFor(m => m.BankAccountId)
+@Html.HiddenFor(m => m.BranchId)
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="DivForBankAccountDisplay">
+    <div class="row" id="DivForBankAccountInfo">
+        <div class="loading_half"></div>
+        <script>
+            $("#DivForBankAccountInfo").load('@Url.Action("DisplayAccountInfo", "Accounting")?BankAccountId=' + '@(Model.BankAccountId)');
+        </script>
+    </div>
+    <div class="row">
+        <div class="col-md-offset-2">
+            <span class="btn btn-success" id="btn_add_invoice_with_bank_account"><i class="fa fa-plus"></i> Create New Voucher</span>
+        </div>
+    </div>
+    <br />
+    <div class="col-sm-11" style="padding-left:0px!important;padding-right:0px!important;">
+        <div class="panel with-nav-tabs panel-default">
+            <div class="panel-heading">
+                <ul class="nav nav-tabs">
+                    <li class="active"><a href="#tab1Pck" data-toggle="tab">Transaction History</a></li>
+                    <li id="liBankSalaryPay"><a href="#tab2BankSalaryPay" data-toggle="tab">Salary Pay History</a></li>
+                    <li id="liBankLoanHistory"><a href="#tab3BankLoan" data-toggle="tab">Loan History</a></li>
+                </ul>
+            </div>
+            <div class="panel-body" style="border:none!important;">
+                <div class="tab-content">
+                    <div class="tab-pane fade in active" id="tab1Pck"><div class="loading_half"></div></div>
+                    <div class="tab-pane fade" id="tab2BankSalaryPay"><div class="loading_half"></div></div>
+                    <div class="tab-pane fade" id="tab3BankLoan"><div class="loading_half"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $("#tab1Pck").load('@Url.Action("_TransactionforBankAccount", "Accounting")?BankAccountId=' + '@Model.BankAccountId');
+    });
+    $("#liBankSalaryPay").click(function () {
+        $("#tab2BankSalaryPay").load('@Url.Action("DisplaySalaryPay", "Accounting")?BankAccountId=' + '@(Model.BankAccountId)');
+    });
+    $("#liBankLoanHistory").click(function () {
+        $("#tab3BankLoan").load('@Url.Action("DisplayLoanList", "Accounting")?BankAccountId=' + '@(Model.BankAccountId)');
+    });
+    $("#btn_add_invoice_with_bank_account").click(function () {
+        location.href = '@Url.Action("CreateVoucher","Voucher")?IsAccSelect=true&type=2&accId=' + '@(Model.BankAccountId)';
+    });
+    $("#div_for_Bank_transaction_history").on("click", ".btn_tran_receive", function (e) {
+        e.preventDefault();
+        var id = $(this).data('id');
+        var bankId = $(this).data('bankid');
+        var voucherType = $(this).data('vouchertype');
+        var amount = $(this).data('amount');
+        var sendData = {
+            id: id,
+            bankId: bankId,
+            voucherType: voucherType,
+            amount: amount,
+            CreatedBy: userId
+        };
+        $.ajax({
+            url: '@Url.Action("TransactionReceiveCalculation", "Accounting")',
+            type: 'Post',
+            data: sendData,
+            success: function (data) {
+                notification.hide();
+                notification.setOptions({ autoHideAfter: 5000 });
+                if (data === "Error") {
+                    notification.show({ message: "Transaction receive was unsuccessful.", showTime: startTime() }, "upload-error");
+                } else {
+                    notification.show({ message: "Transaction has been successfully received.", showTime: startTime() }, "upload-success");
+                }
+                $(this).closest(".k-window-content").data("kendoWindow").close();
+            },
+            error: function (err) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+            }
+        });
+    })
+</script>

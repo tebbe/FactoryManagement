@@ -1,0 +1,157 @@
+﻿<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;">
+        <div id="department_edit_popup"></div>
+        <div class="k-edit-buttons k-state-default" style="margin-top:-15px">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnDeptEditSave">
+                <span class="k-icon k-update"></span>Update
+            </button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnDeptEditRefresh">
+                <span class="k-icon k-i-refresh"></span>Refresh
+            </button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnDeptEditCancel">
+                <span class="k-icon k-cancel"></span>Cancel
+            </button>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $("#department_edit_popup").empty().append('<div class="partial_loading_half"><div/>')
+            $("#department_edit_popup").load('@Url.Action("_ShowDeptDetails", "Configuration")?deptId=' + '@ViewBag.deptId' + '&isDisplay=false');
+        });
+        $("#btnDeptEditRefresh").click(function () {
+            $("#department_edit_popup").empty().append('<div class="partial_loading_half"><div/>')
+            $("#department_edit_popup").load('@Url.Action("_ShowDeptDetails", "Configuration")?deptId=' + '@ViewBag.deptId' + '&isDisplay=false');
+        });
+        $("#btnDeptEditCancel").click(function () {
+            $(this).closest(".k-window-content").data("kendoWindow").close();
+        });
+        $("#btnDeptEditSave").click(function () {
+            var validationedit = $("#department_edit_popup").kendoValidator({
+                rules: {
+                    remote: function (input) {
+                        if (input.is("[name=DeptName]")) {
+                            var errormessage;
+                            var remoteAttr = input.attr("data-val-remote-url");
+                            if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                                return true;
+                            }
+                            var isInvalid;
+                            var data = {};
+                            var SiteId = (siteId > 0) ? siteId : null;
+                            var UnitId = unitId;
+                            var DeptId = deptId;
+                            var DeptName = $.trim($("#DeptName").val());
+                            $("#DeptName").val(DeptName);
+                            data = { DeptId: DeptId, DeptName: DeptName, SiteId: SiteId, UnitId: UnitId };
+                            $.ajax({
+                                url: remoteAttr,
+                                mode: "abort",
+                                port: "validate" + input.attr('name'),
+                                dataType: "json",
+                                type: input.attr("data-val-remote-type"),
+                                data: data,
+                                async: false,
+                                success: function (response) {
+                                    isInvalid = response;
+                                    if (isInvalid === true) {
+                                        isInvalid = true;
+                                    }
+                                    else {
+                                        isInvalid = false;
+                                    }
+                                }
+                            });
+                            return isInvalid;
+                        } else {
+                            return true;
+                        }
+                    },
+                    remoteAcrm: function (input) {
+                        var errormessage;
+                        var remoteAttr = input.attr("data-val-remote-url");
+                        if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                            return true;
+                        }
+                        var isInvalid;
+                        var data = {};
+                        var SiteId = (siteId > 0) ? siteId : null;
+                        var UnitId = unitId;
+                        var DeptId = deptId;
+                        var DeptAcronym = $.trim($("#DeptAcronym").val());
+                        $("#DeptAcronym").val(DeptAcronym);
+                        data = { DeptId: DeptId, DeptAcronym: DeptAcronym, SiteId: SiteId, UnitId: UnitId };
+                        $.ajax({
+                            url: remoteAttr,
+                            mode: "abort",
+                            port: "validate" + input.attr('name'),
+                            dataType: "json",
+                            type: input.attr("data-val-remote-type"),
+                            data: data,
+                            async: false,
+                            success: function (response) {
+                                isInvalid = response;
+                                if (isInvalid === true) {
+                                    isInvalid = true;
+                                }
+                                else {
+                                    isInvalid = false;
+                                }
+                            }
+                        });
+                        return isInvalid;
+                    },
+                    DeptAcrm: function (input) {
+                        if (input.is("[name=DeptAcronym]") && $("#DeptAcronym").val() === "") {
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    }
+                },
+                messages: {
+                    remote: function (input) { return input.data('val-remote'); },
+                    remoteAcrm: function (input) { return input.data('val-remote'); },
+                    DeptAcrm: "Please enter line acronym"
+                }
+            }).data("kendoValidator");
+            if (validationedit.validate()) {
+                notification.show({ message: "Updating department to site...", showTime: startTime() }, "upload-progress");
+                if (siteId > 0) {
+                    var senddata = {
+                        SiteId: siteId, SiteName: siteName,
+                        DeptId: deptId, DeptName: $("#DeptName").val(), DeptAcronym: $("#DeptAcronym").val(), Status: Deptstatus, CreatedBy: userId
+                    };
+                }
+                else {
+                    var senddata = {
+                        UnitId: unitId, UnitName: unitName, SiteName: siteName,
+                        DeptId: deptId, DeptName: $("#DeptName").val(), DeptAcronym: $("#DeptAcronym").val(), Status: Deptstatus, CreatedBy: userId
+                    };
+                }
+                if (Deptstatus == 0) {
+                    $.ajax({
+                        url: '@Url.Action("CanDeptStatusUpdate", "Configuration")',
+                        type: 'Post',
+                        data: { DeptId: deptId, DeptName: $("#DeptName").val(), CreatedBy: userId },
+                        success: function (data) {
+                            if (data == "Success") {
+                                $("#department_edit_popup").closest(".k-window-content").data("kendoWindow").close();
+                                DeptUpdateSave(senddata);
+                            }
+                            else {
+                                notification.hide(); notification.setOptions({ autoHideAfter: 3000 });
+                                $("#department_edit_popup").closest(".k-window-content").data("kendoWindow").close();
+                                $("#divFor_dept_Info").empty();
+                                $("#divFor_dept_Info").append('<div class="loading_partial"></div>');
+                                $("#divFor_dept_Info").load('@Url.Action("_ShowDeptDetails", "Configuration")?deptId=' + deptId + '&isDisplay=true');
+                                notification.show({ message: data, showTime: startTime() }, "upload-error");
+                            }
+                        }
+                    });
+                }
+                else {
+                    $("#department_edit_popup").closest(".k-window-content").data("kendoWindow").close();
+                    DeptUpdateSave(senddata);
+                }
+            }
+        });
+    </script>

@@ -1,0 +1,10 @@
+﻿@model FactoryManagement.Models.View_DisItemReturnDetails
+    @{FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+        var reason = db.TransactionEditReasons.Find(Model.ReturnReasonId).Reason;}
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-top:1%;">
+    <div id="div_working_schedule"></div>
+    <div class="col-sm-11 col-xs-11">
+        <span style="color:black"> Return Reason:</span> <label style="color:black">@reason</label>
+            
+        </div>
+    </div>

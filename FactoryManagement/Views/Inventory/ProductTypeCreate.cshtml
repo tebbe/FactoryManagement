@@ -1,0 +1,132 @@
+﻿
+@*----------------------Created By (Mabia Mishu) Date(05/09/2016)-----------------*@
+
+@model FactoryManagement.ModelView.Inventory.Product.ProductTypeViewModel
+<style>
+    #div_for_pro_type_create .editor-label{width:30%!important;}
+</style>
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" id="div_for_pro_type_create" style="margin-bottom:4%;margin-top:2%;">
+        <div class="editor-label"><label for="ProductTypeName">Product Type Name</label></div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.ProductTypeName, new { htmlAttributes = new { @class = "k-textbox" } })
+            @Html.ValidationMessageFor(model => model.ProductTypeName, "", new { @class = "text-danger" })
+        </div>
+    <div class="k-edit-buttons k-state-default">
+        @if (Model.ProductTypeId != 0)
+        {
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnCreate"><span class="k-icon k-update"></span>Update</button>
+        }
+        else
+        {
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnCreate"><span class="k-icon k-update"></span>Create</button>
+        }
+      
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+
+</div>
+    <script>
+        var validation = $("#div_for_pro_type_create").kendoValidator({
+            rules: {
+                remote: function (input) {
+                    var remoteAttr = input.attr("data-val-remote-url");
+                    if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                        return true;
+                    }
+                    var isInvalid;
+                    var data = {};
+                    var ProductTypeId = '@Model.ProductTypeId';
+                    var ProductTypeName = $.trim($("#ProductTypeName").val());
+                    $("#ProductTypeName").val(ProductTypeName);
+                    if (input.attr('name') === "ProductTypeName") {
+                        data = { ProductTypeId: ProductTypeId, ProductTypeName: ProductTypeName };
+                    }
+                    $.ajax({
+                        url: remoteAttr,
+                        mode: "abort",
+                        port: "validate" + input.attr('name'),
+                        dataType: "json",
+                        type: input.attr("data-val-remote-type"),
+                        data: data,
+                        async: false,
+                        success: function (response) {
+                            isInvalid = response;
+                            if (isInvalid == true) {
+                                isInvalid = true;
+                            }
+                            else {
+                                isInvalid = false;
+                            }
+                        }
+                    });
+                    return isInvalid;
+                }
+            },
+            messages: {
+                remote: function (input) {
+                    return input.data('val-remote');
+                }
+            }
+        }).data("kendoValidator");
+
+        $("#btnCreate").click(function (e) {
+            e.preventDefault();
+            var msg = "";
+            if (validation.validate()) {
+                var sendData = {
+                    ProductTypeId: '@Model.ProductTypeId', ProductTypeName: $("#ProductTypeName").val(),
+                    HasParent: '@Model.HasParent', ParentId: '@Model.ParentId', ParentName: '@Model.ParentName', CreatedBy: userId
+                };
+                msg = ('@Model.ProductTypeId' > 0) ? "Updating product type information" : "Creating new product Type";
+                notification.show({
+                    message: msg,
+                    showTime: startTime(),
+                }, "upload-progress");
+                $.ajax({
+                    url: '@Url.Action("ProductTypeCreateSave", "Inventory")',
+                    type: 'Post',
+                    data: sendData,
+                    success: function (response) {
+                       
+                        notification.hide();
+                        notification.setOptions({
+                            autoHideAfter: 5000
+                        });
+                        if (response === "Success") {
+                            if ($("#ProductTypeId").val() > 0) {
+                                msg = "Product type information successfully updated";
+                            } else {
+                                msg = ('@Model.HasParent' == 'True') ? "Product type has been successfully added" : "Product type has been successfully created";
+                            }
+                            notification.show({
+                                message: msg, showTime: startTime(),
+                            }, "upload-success");
+                           
+                            $("#divForAll_Pro_type").empty();
+                            $("#divForAll_Pro_type").append('<div class="loading_partial"></div>');
+                            $("#divForAll_Pro_type").load('@Url.Action("_ShowAllProductTypeList", "Inventory")');
+                        }
+                        else {
+                            msg = ('@Model.HasParent' == 'True') ? "Add product type attempt unsuccessful" : "Product type create attempt unsuccessful";
+                            notification.show({
+                                message: msg, showTime: startTime()
+                            }, "upload-error");
+                        }
+                        $("#btnCreate").closest(".k-window-content").data("kendoWindow").close();
+                        $("#div_for_pro_type_create").empty();
+                        //$(this).closest(".k-window-content").data("kendoWindow").close();
+                    },
+                    error: function (err) {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                    }
+                });
+            }
+        });
+        $("#btnCancel").click(function () {
+            $(this).closest(".k-window-content").data("kendoWindow").close();
+        });
+    </script>
+
+
+

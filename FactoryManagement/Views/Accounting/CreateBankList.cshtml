@@ -1,0 +1,292 @@
+﻿@******************************** Tasnim Tuli *************************************@
+@model FactoryManagement.ModelView.Configuration.BankListModelView
+
+@{
+    ViewBag.Title = "CreateBankList";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+<link href="~/Scripts/intl-tel-input-master/build/css/intlTelInput.css" rel="stylesheet" />
+@using (Html.BeginForm())
+{
+<h2>Create Bank List</h2>
+<hr/>
+@Html.HiddenFor(m => m.BankId)
+
+
+<div class="form-horizontal col-lg-12 col-md-12 col-sm-12" id="Div_For_Bank_Create" >
+    <div class="form-group">
+        @Html.LabelFor(model => model.BankName,"Bank Name", htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+        <div class="col-md-6 col-sm-5">
+            @Html.EditorFor(model => model.BankName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.BankName, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.Address, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+        <div class="col-md-6 col-sm-5">
+            @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.Address, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.AddressLine1,"Address Line1", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3" })
+        <div class="col-md-6 col-sm-4">
+            @Html.EditorFor(model => model.AddressLine1, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.AddressLine1, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.Country, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+        <div class="col-md-6 col-sm-4">
+            @(Html.Kendo().DropDownListFor(model => model.Country)
+                      //.Name("Country")
+                      .OptionLabel("--Select One Country--")
+                      .Events(e => e.Change("onChangeOfCountry"))
+                      .BindTo(ViewBag.CountryId)
+                      .HtmlAttributes(new { style = "width:100%" })
+            )
+            @Html.ValidationMessageFor(model => model.Country, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group" id="DivForDivision" style="display:none;">
+        @Html.LabelFor(model => model.DivisonId, "Division", htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+        <div class="col-md-6 col-sm-4">
+            @(Html.Kendo().DropDownListFor(model => model.DivisonId)
+                      //.Name("DivisionId")
+                      .OptionLabel("--Select One Division--")
+                      .BindTo(ViewBag.DivisionList)
+                      .HtmlAttributes(new { style = "width:100%" })
+            )
+            @Html.ValidationMessageFor(model => model.DivisonId, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group" id="DivForState">
+        @Html.LabelFor(model => model.State, htmlAttributes: new { @class = "control-label col-md-3 col-sm-3" })
+        <div class="col-md-6 col-sm-4">
+            @Html.EditorFor(model => model.State, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.State, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.City, htmlAttributes: new { @class = "control-label col-md-3 col-sm-3" })
+        <div class="col-md-6 col-sm-4">
+            @Html.EditorFor(model => model.City, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.City, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.PostalCode,"Postal code", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3" })
+        <div class="col-md-6 col-sm-4">
+            @Html.EditorFor(model => model.PostalCode, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.PostalCode, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.PhoneNo,"Phone no", htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+        <div class="col-md-6 col-sm-5">
+            @Html.EditorFor(model => model.PhoneNo, new { htmlAttributes = new { @class = "form-control k-textbox", @type = "tel" } })
+            @Html.ValidationMessageFor(model => model.PhoneNo, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.MobileNo,"Mobile no", htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+        <div class="col-md-6 col-sm-5">
+            @Html.EditorFor(model => model.MobileNo, new { htmlAttributes = new { @class = "form-control k-textbox", @type = "tel" } })
+            @Html.ValidationMessageFor(model => model.MobileNo, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-offset-3 col-md-8 col-sm-offset-4 col-sm-8">
+            <input type="button" value="Next" class="k-button k-state-default" id="btnCreateBank" />
+            <input type="reset" value="Refresh" class="k-button k-state-default" id="btnBankListRefresh" />
+            <input type="button" value="Cancel" class="k-button k-state-default" id="btnBankListCancel" />
+        </div>
+    </div>
+</div>
+}
+<script src="~/Scripts/intl-tel-input-master/build/js/intlTelInput.min.js"></script>
+<script>
+    var telInput;
+    $(document).ready(function(){
+        //mobile
+        telInput = $("#MobileNo");
+        telInput.intlTelInput({
+            geoIpLookup: function (callback) {
+                $.get("http://ipinfo.io", function () { }, "jsonp").always(function (resp) {
+                    var countryCode = (resp && resp.country) ? resp.country : "";
+                    callback(countryCode);
+                });
+            },
+            initialCountry: "auto",
+            utilsScript: "../Scripts/intl-tel-input-master/build/js/utils.js"
+        });
+        var reset = function () {
+            telInput.removeClass("error");
+        };
+        telInput.on("keyup change", reset);
+
+
+        //Phone function
+        telInput1 = $("#PhoneNo");
+        telInput1.intlTelInput({
+            geoIpLookup: function (callback) {
+                $.get("http://ipinfo.io", function () { }, "jsonp").always(function (resp) {
+                    var countryCode = (resp && resp.country) ? resp.country : "";
+                    callback(countryCode);
+                });
+            },
+            initialCountry: "auto",
+            utilsScript: "../Scripts/intl-tel-input-master/build/js/utils.js"
+        });
+        var reset = function () {
+            telInput1.removeClass("error");
+        };
+        telInput1.on("keyup change", reset);
+    });
+
+    function onChangeOfCountry() {
+        var country = $("#Country").val();
+        if (country == "BD") {
+            $("#DivForDivision").show();
+            $("#DivForState").hide();
+        }
+        else {
+            $("#DivForState").show();
+            $("#DivForDivision").hide();
+        }
+    };
+
+    function onOpen() {
+        kendoConsole.log("event: open");
+    }
+    var validation = $("#Div_For_Bank_Create").kendoValidator({
+        rules: {
+            custom: function (input) {
+                var errormessage;
+                var remoteAttr = input.attr("data-val-remote-url");
+                if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                    return true;
+                }
+                var isInvalid;
+                var data = {};
+                var BankId = $("#BankId").val();
+                var BankName = input.val();
+                data = { BankId: BankId, BankName: BankName };
+                $.ajax({
+                    url: remoteAttr,
+                    mode: "abort",
+                    port: "validate" + input.attr('name'),
+                    dataType: "json",
+                    type: input.attr("data-val-remote-type"),
+                    data: data,
+                    async: false,
+                    success: function (response) {
+                        isInvalid = response;
+                        if (isInvalid === true) {
+                            isInvalid = true;
+                        }
+                        else {
+                            isInvalid = false;
+                        }
+                    }
+                });
+                return isInvalid;
+            },
+            Division: function (input) {
+                if (input.is("[name=DivisonId]") && $("#Country").val() == "BD" && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            State: function (input) {
+                if (input.is("[name=State]") && $("#Country").val() != "BD" && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            MobileNo: function (input) {
+                if (input.is("[name=MobileNo]")) {
+                    if (input.val() != "") {
+                        if (telInput.intlTelInput("isValidNumber")) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+                return true;
+            },
+            Phone: function (input) {
+                if (input.is("[name=PhoneNo]")) {
+                    if (telInput1.intlTelInput("isValidNumber")) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        },
+        messages: {
+            custom: function (input) {
+                return "Bank Name Already Exist!";
+            },
+            Division: "Please enter division",
+            State: "Please enter state",
+            MobileNo: "Please enter valid contact number",
+            Phone: "Please enter valid contact number"
+        }
+    }).data("kendoValidator");
+    $("#btnCreateBank").click(function () {
+        var forDisplay;
+        if (validation.validate()) {
+            var MobileNo = $("#MobileNo").intlTelInput("getNumber");
+            var PhoneNo = $("#PhoneNo").intlTelInput("getNumber");
+
+            var sendData = new FormData();
+            sendData.append("BankName", $("#BankName").val());
+            sendData.append("BankId", $("#BankId").val());
+            sendData.append("Address", $("#Address").val());
+            sendData.append("CreatedBy", userId);
+            sendData.append("AddressLine1", $("#AddressLine1").val());
+            sendData.append("Country", $("#Country").val());
+            sendData.append("DivisonId", $("#DivisonId").val());
+            sendData.append("State", $("#State").val());
+            sendData.append("City", $("#City").val());
+            sendData.append("PostalCode", $("#PostalCode").val());
+            sendData.append("PhoneNo", PhoneNo);
+            sendData.append("Status", $("#Status").val());
+            sendData.append("MobileNo", MobileNo);
+            $.ajax({
+                url: '@Url.Action("EditExistingBankInfo", "Configuration")',
+                type: 'Post',
+                data: sendData,
+                contentType: false,
+                processData: false,
+                success: function (bankId) {
+                    notification.hide();
+                    notification.setOptions({
+                        autoHideAfter: 2000
+                    });
+                    notification.show({
+                        message: "Bank info successfully added", showTime: startTime()
+                    }, "upload-success");
+                    forDisplay = 0;
+                    location.href = '@Url.Action("BankAccountDetails", "Configuration")?Id=' + bankId + '&forDisplay=' + forDisplay;
+            },
+            error: function (error) {
+                notification.show({
+                    message: "Upload unsuccessful"
+                }, "upload-error");
+            }
+        });
+    }
+  });
+    $("#btnBankListCancel").click(function(){
+        location.href = '@Url.Action("AllBankList","Configuration")';
+    });
+
+</script>

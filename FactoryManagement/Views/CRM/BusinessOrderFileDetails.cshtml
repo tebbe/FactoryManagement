@@ -1,0 +1,54 @@
+﻿
+
+@********************************************* Created By (JERIN JAHAN)(08.09.2016) *******************************@
+
+@model FactoryManagement.Models.View_BusinessOrder_File
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    string s = Model.FileOriginalName;
+    int idx = s.LastIndexOf('.');
+    string fileName = s.Substring(0, idx);
+    string extension = s.Substring(idx);
+}
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;">
+    <div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">File Type</label></div>
+    <div class="editor-field" style="float:left;">
+        <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;padding-top:7px;">
+            @if (Model.FileType == 1)
+            {
+                <span>Specification</span>
+            }
+            else if (Model.FileType == 2)
+            {
+                <span>Negotiation</span>
+            }
+            else
+            {
+                <span>Finance</span>
+            }
+        </div>
+    </div>
+    <div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">File Name</label></div>
+    <div class="editor-field" style="float:left;">
+        <div class="col-sm-11 col-xs-11 " style="float:right;padding-right:0px;padding-top:7px;" data-extension="@extension" id="DivFileName">
+            <img style="float:left; width:25px;height:25px;" src="" /><span style="margin-left:5px;">@fileName</span> 
+        </div>
+    </div>
+    <div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">File Send By</label></div>
+    <div class="editor-field" style="float:left;">
+        <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;padding-top:7px;">
+            <span>@Model.FileSend (Date: @Convert.ToDateTime(Model.CreatedDate).ToString("MMMM dd,yyyy hh:mm:ss:tt"))</span>
+        </div>
+    </div>
+    <div class="editor-label" style="float:left;padding-left:0px;"><label for="PackageName">File Uploaded By</label></div>
+    <div class="editor-field" style="float:left;">
+        <div class="col-sm-11 col-xs-11" style="float:right;padding-right:0px;padding-top:7px;">
+            <img style="float:left;" src="~/Images/UserPicture/thumb/@Model.PictureName" class="user-photo" />
+            <span style="display: inline-block;padding-top: 10px;padding-left: 5px;">@Model.UserName</span>
+        </div>
+    </div>
+</div>
+<script>
+    var t = addExtensionFormaterial('@(extension)');
+    $("#DivFileName").children('img').attr('src', t);
+</script>

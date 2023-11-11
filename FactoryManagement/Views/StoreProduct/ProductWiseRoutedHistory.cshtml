@@ -1,0 +1,96 @@
+﻿@{
+    int count = 0;
+    ViewBag.Title = "ProductWiseRoutedHistory";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db= new FactoryManagement.Models.FactoryManagementEntities();
+    var data = db.View_Routedhistory.ToList();
+    var list = data.GroupBy(m => m.InventoryId).Select(x => new FactoryManagement.Models.View_Routedhistory
+    {
+        Id = x.FirstOrDefault().Id,
+        DispatchedId = x.FirstOrDefault().DispatchedId,
+        DispatchedBy=x.FirstOrDefault().DispatchedBy,
+        DispatchedDate=x.FirstOrDefault().DispatchedDate,
+        InventoryId=x.FirstOrDefault().InventoryId,
+        Picture=x.FirstOrDefault().Picture,
+        Quantity=x.Sum(m=>m.Quantity),
+        ReturnQuantity=x.Sum(m=>m.ReturnQuantity),
+        UsedQuan=x.Sum(m=>m.UsedQuan),
+        ProductName=x.FirstOrDefault().ProductName
+    }).ToList();
+}
+@using FactoryManagement.Helpers
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/StoreProduct/InvenRouteVoucherList"> Routed History</a>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <span>Product Wise Routed History </span>
+        </li>
+    </ul>
+</div>
+<div class="note note-success"><p id="h4title">Showing Product Wise Routed History</p></div>
+<div class="row" style="margin-bottom:10px">
+    <div class="col-xs-12">
+        <a href="/StoreProduct/LocationWiseRoutedHistory" class="btn green" data-toggle="tooltip" data-container="body" title="View Location wise History">Location Wise</a>
+        <a href="/StoreProduct/ProductWiseRoutedHistory" class="btn purple" data-toggle="tooltip" data-container="body" title="View Product wise History">Product Wise</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">Product Wise Routed History</span>
+                </div>
+                
+            </div>
+            <div class="portlet-body">
+                <table class="table table-bordered table-hover table-striped">
+                    <thead>
+                        <tr>
+                                <th>SL</th>
+                                <th>Product Name</th>
+                                <th>Total Quantity</th>
+                                <th>Total Returned Quantity</th>
+                            <th>Total Used Quqntity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in list) {
+                            count++;
+                            <tr>
+                                <td>@count</td>
+                                <td><a href="@Html.EncodedParam("StoreProductDetails","StoreProduct",new { id=item.InventoryId},null)">
+                                    @item.ProductName
+                                    </a>
+                                </td>
+                                <td>
+                                @item.Quantity</td>
+                                <td>@item.ReturnQuantity</td>
+                                <td>@item.UsedQuan</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+               
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#liForInventory").addClass("active");
+        $("#liForRouteVouHis").addClass("sublistActive");
+    });
+</script>

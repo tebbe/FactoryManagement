@@ -1,0 +1,24 @@
+﻿
+@*********************** Created By Jerin Jahan Date(01.07.2017) *******************************************@
+@model IEnumerable<FactoryManagement.Models.StoreItemDispatchedHistory>
+@{
+    int count = 0;
+}
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" id="div_CartDis_option">
+    <table class="table">
+        <tr>
+            <th>Sl</th>
+            <th>Name</th>
+            <th>Date</th>
+        </tr>
+        @foreach (var n in Model)
+        {
+            count++;
+            <tr>
+                <td>@count .</td>
+                <td>@n.VoucherName</td>
+                <td>@n.DispatchedDate.ToString("dd MMM , yyyy")</td>
+            </tr>
+        }
+    </table>
+</div>

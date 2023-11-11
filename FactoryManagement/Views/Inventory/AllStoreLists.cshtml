@@ -1,0 +1,194 @@
+﻿
+
+
+@************************************** Created By Jerin Jahan (Date:04.09.2016)  ***************************************@
+@using FactoryManagement.Helpers
+@model IEnumerable<FactoryManagement.ModelView.Inventory.Store.StoreListsModelView>
+@{
+    ViewBag.Title = "All Store Lists";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    long loginUserId = Convert.ToInt32(Request.Cookies["CookieAdminInfo"].Values["userid"].ToString());
+    var count = 1;
+}
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-gears"></i>
+            <span>Configuration</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Inventory/AllStoreLists">All Store Lists</a>
+        </li>
+    </ul>
+</div>
+@if (loginUserId < 1)
+{
+    <p><a data-toggle="tooltip" title="Add New Store" href="/Inventory/AddNewStore"><span class="btn green"><i class="fa fa-plus"></i> Add New Store</span></a></p>
+}
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase"> All Store Lists</span>
+                </div>
+                
+            </div>
+            <div class="portlet-body">
+                @if (Model.Count() > 0)
+                {
+                    <table class="table table-hover table-bordered table-striped table-condensed" id="tbl_store_list">
+                        <tr>
+                            <th width="4%">#</th>
+                            <th width="10%">Name</th>
+                            <th width="8%">Acroynm</th>
+                            <th width="20%">Assigned User</th>
+                            <th width="15%">Created By</th>
+                            <th width="10%">Created Date</th>
+                            <th width="10%" class="td_btn"></th>
+                        </tr>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <th scope="row">@count .</th>
+                                <td><span style="color:#0094ff;cursor:pointer" class="storeDetails_class" data-id="@item.Id">@Html.DisplayFor(modelItem => item.StoreName)</span></td>
+                                <td>@Html.DisplayFor(modelItem => item.StoreAcroynm)</td>
+                                @if (item.AssignUserName == "")
+                                {
+                                    <td><span>No user assign</span></td>
+                                }
+                                else
+                                {
+                                    <td>@Html.DisplayFor(modelItem => item.AssignUserName)</td>
+                                }
+
+                                <td>
+                                    <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource",new { UserId=item.CreatedBy,isDisplay=true },null)">
+                                        <img class="img-circle" src="~/Images/UserPicture/thumb/@item.Picture" /> <span>@item.Username</span>
+                                    </a>
+
+                                </td>
+                                <td>@Html.DisplayFor(modelItem => item.CreatedDateName)</td>
+                                <td class="td_btn">
+
+                                    @Html.EncodedActionLink("<span data-toggle=\"tooltip\" title=\"Update Store\" class=\"btn green\"><i class=\"fa fa-pencil\"></i></span>", "AddNewStore", "Inventory", new { Id = item.Id }, null)
+                                    <span data-toggle="tooltip" title="Delete Store" data-id="@item.Id" data-name="@item.StoreName" style="cursor:pointer;" class="btn btn-danger btnStoreDelete"><i class="fa fa-trash"></i></span>
+                                </td>
+                            </tr>
+                                count++;
+                        }
+                    </table>
+                }
+                else
+                {
+                    <p>There is no record to display.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="win_store_details"></div>
+<script id="temp_win_site_edit" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px"> Are you sure want to delete this store? </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_editSite_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_editSite_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $('#liForInvenConfig').addClass('open');
+        $('#liForInvenConfig .sub-menu').show();
+        $("#liForStoreList").addClass('sublistActive');
+
+        if (userId > 0) {
+            $(".td_btn").hide();
+        }
+    });
+    //***********************************Store DETAILS********************************************
+    $(".storeDetails_class").click(function (e) {
+        e.preventDefault();
+        var storeId = $(this).data("id");
+        $("#win_store_details").empty();
+        $("#win_store_details").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '55%',
+            title: 'Store Details',
+            close: onWindowClose
+        });
+        var win_store_details = $("#win_store_details").data("kendoWindow");
+        win_store_details.refresh({ url: "/Inventory/_ShowStoreDetailsById?Id=" + storeId });
+        win_store_details.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no";
+    });
+
+    //********************************* STORE DELETE *********************************************
+    function deleteStore(storeId, name) {
+        notification.show({ message: "Store deleting...", showTime: startTime() }, "upload-progress");
+        $.ajax({
+            url: '@Url.Action("DeleteStore", "Inventory")',
+            type: 'Post',
+            data: { storeId: storeId, UserId: userId },
+            success: function (data) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 2000 });
+
+                if (data === "Success") {
+                    notification.show({ message: "Store '" + name + "' has been successfully deleted.", showTime: startTime() }, "upload-success");
+                    location.reload();
+                } else {
+                    if (data === "error") {
+                        notification.show({ message: "Store '" + name + "' deletion was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                    else {
+                        notification.show({ message: data, showTime: startTime() }, "upload-error");
+                    }
+                }
+
+            }
+        });
+    }
+    $("#tbl_store_list").on("click", ".btnStoreDelete", function (e) {
+        e.preventDefault();
+        
+        var storeId = $(this).data("id");
+        var name = $(this).data("name");
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose
+        });
+        var template = kendo.template($("#temp_win_site_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        kendoWindow.find("#btn_editSite_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_editSite_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            deleteStore(storeId, name);
+            document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+            document.body.scroll = "no"; // ie only
+        }).end();
+    });
+
+</script>

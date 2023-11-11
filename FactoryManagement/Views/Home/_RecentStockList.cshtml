@@ -1,0 +1,30 @@
+﻿
+@********************* Created By Jerin Jahan (Date: 07.05.2017) ****************************@
+@model IEnumerable<FactoryManagement.Models.View_All_InventoryList>
+@{
+    int count = 1;
+    var db = new FactoryManagement.Models.FactoryManagementEntities();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    int seven = 1;
+    int all = 1;
+}
+<table class="table bootstrap-datatable datatable small-font dataTable no-footer" id="DataTables_Table_0" role="grid">
+    <thead>
+        <tr role="row">
+            <th width="5%">#</th>
+            <th width="20%">Item Name</th>
+            <th width="20%">Quantity</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var list in Model)
+        {
+            <tr>
+                <td>@count.</td>
+                <td>@list.ProductName</td>
+                <td>@list.Quantity @list.UnitName</td>
+            </tr>
+            count++;
+        }
+    </tbody>
+</table>

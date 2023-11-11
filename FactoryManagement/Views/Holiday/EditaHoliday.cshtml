@@ -1,0 +1,185 @@
+﻿
+
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="Div_For_holiday_Edit">
+    <div id="div_holi_pack_edit">
+    
+    </div>
+    
+    <div class="col-sm-11 col-xs-11" style="margin-top:5px;float:right">
+        <div class="k-edit-buttons k-state-default">
+            @if (ViewBag.view == "edit")
+            {
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_holiday_pck_updated"><span class="k-icon k-update"></span>Update</button>
+            }
+            else
+            {
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_holiday_pck_dup"><span class="k-icon k-update"></span>Copy Holiday Package</button>
+            }
+            <button type="reset" class="k-button k-button-icontext k-grid-cancel" id="btn_Holiday_Refresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_holiday_pck_up_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        $("#div_holi_pack_edit").empty();
+        $("#div_holi_pack_edit").append('<div class="partial_loading_half"></div>');
+        $("#div_holi_pack_edit").load('@Url.Action("_EditHolyPackWin", "Holiday")?HolidayPackId=' + '@(ViewBag.HolidayPackId)' + '&view=' + '@(ViewBag.view)');
+    });
+    var HolidayPackId = '@(ViewBag.HolidayPackId)';
+    $("#btn_holiday_pck_up_cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#btn_Holiday_Refresh").click(function () {
+        $("#div_holi_pack_edit").empty();
+        $("#div_holi_pack_edit").append('<div class="partial_loading_half"></div>');
+        $("#div_holi_pack_edit").load('@Url.Action("_EditHolyPackWin", "Holiday")?HolidayPackId=' + HolidayPackId + '&view=' + '@(ViewBag.view)');
+    });
+
+    var validation = $("#Div_For_holiday_Edit").kendoValidator({
+        rules: {
+            remote: function (input) {
+                var errormessage;
+                var remoteAttr = input.attr("data-val-remote-url");
+                if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                    return true;
+                }
+                var isInvalid;
+                var data = {};
+                var HolidayPackName = $.trim($("#HolidayPackName").val());
+                if ('@(ViewBag.view)' == "edit") {
+                    data = { HolidayPackId: HolidayPackId, HolidayPackName: HolidayPackName };
+                } else {
+                    data = { HolidayPackName: HolidayPackName };
+                }
+                $.ajax({
+                    url: remoteAttr,
+                    mode: "abort",
+                    port: "validate" + input.attr('name'),
+                    dataType: "json",
+                    type: input.attr("data-val-remote-type"),
+                    data: data,
+                    async: false,
+                    success: function (response) {
+                        isInvalid = response;
+                        if (isInvalid === true) {
+                            isInvalid = true;
+                        }
+                        else {
+                            isInvalid = false;
+                        }
+                    }
+                });
+                return isInvalid;
+            },
+            HolidayPackName: function (input) {
+                if (input.is("[name=HolidayPackName]") && $("#HolidayPackName").val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            NoOfPaidLeave: function (input) {
+                if (input.is("[name=NoOfPaidLeave]") && $("#NoOfPaidLeave").val() === "" && '@(ViewBag.view)' == "edit") {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        },
+        messages: {
+            remote: function (input) { return input.data('val-remote'); },
+            HolidayPackName: "Please enter a Holiday Pack name",
+            NoOfPaidLeave: "Plaease enter Number Of Paid Leave"
+        }
+    }).data("kendoValidator");
+
+
+    //************************************* Holiday Package  Update Function ************************************************
+    $("#btn_holiday_pck_updated").click(function () {
+        if (validation.validate()) {
+            var sendData = {
+                HolidayPackId: HolidayPackId,
+                HolidayPackName: $("#HolidayPackName").val(),
+                NoOfPaidLeave: $("#NoOfPaidLeave").val(),
+                UpdatedBy: userId,
+            };
+            $.ajax({
+                url: '@Url.Action("EditaHolidayPack", "Holiday")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    $("#btn_holiday_pck_updated").closest(".k-window-content").data("kendoWindow").close();
+                    if (data == "Success") {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        notification.show({ message: "Holiday Package '" + sendData.HolidayPackName + "' information has been successfully updated.", showTime: startTime() }, "upload-success");
+
+                        $("#div_holiday_pck_details").empty();
+                        $("#div_holiday_pck_details").append('<div class="win_loading_half"></div>');
+                        $("#div_holiday_pck_details").load('@Url.Action("_HolidayPackInfo", "Holiday")?id=' + HolidayPackId);
+                    }
+                    if (data == "Error") {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        notification.show({ message: "Holiday Package '" + sendData.HolidayPackName + "' information update was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+
+                },
+                error: function (err) {
+                    $("#btn_holiday_pck_updated").closest(".k-window-content").data("kendoWindow").close();
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+
+
+
+    //************************************* Holiday Package Duplicate Function ************************************************
+
+    $("#btn_holiday_pck_dup").click(function(){
+        var from='@ViewBag.from';
+        if (validation.validate()) {
+            var sendData = {
+                HolidayPackId: HolidayPackId,
+                HolidayPackName: $("#HolidayPackName").val(),
+                CreatedBy: userId,
+                pageName: from
+            };
+            $.ajax({
+                url: '@Url.Action("CopyHoliday", "Holiday")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    $("#btn_holiday_pck_dup").closest(".k-window-content").data("kendoWindow").close();
+                    if (data !== "Error" && data > 0) {
+                        $("#btn_holiday_pck_dup").closest(".k-window-content").data("kendoWindow").close();
+
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        notification.show({ message: "Holiday Package '" + sendData.HolidayPackName + "' information has been successfully duplicated.", showTime: startTime() }, "upload-success");
+                        if (from == "HolidayPackDetails") {
+                            location.href = "/Holiday/HolidayPackDetails?id=" + data;
+                        }
+                        else {
+                            $("#Div_Holiday_Pck_List").empty();
+                            $("#Div_Holiday_Pck_List").append('<div class="loading_partial"></div>');
+                            $("#Div_Holiday_Pck_List").load('@Url.Action("_HolidayPackage", "Holiday")');
+                        }
+                    }
+                    if (data == "Error") {
+                        notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                        notification.show({ message: "Error occurred", showTime: startTime() }, "upload-warning");
+                    }
+                },
+                error: function (err) {
+                    $("#btn_holiday_pck_dup").closest(".k-window-content").data("kendoWindow").close();
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+</script>

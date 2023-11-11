@@ -1,0 +1,26 @@
+﻿
+@model FactoryManagement.ModelView.Configuration.LineInfoModelView
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10"  style="margin-bottom:4%;margin-top:2%;">
+    <div id="Div_Line_Edit"></div>
+        <div class="k-edit-buttons k-state-default">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_line_up"><span class="k-icon k-update"></span>Update</button>
+            <button type="reset" class="k-button k-button-icontext k-grid-update" id="btn_line_up_Refresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_line_up_Cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#Div_Line_Edit").load('@Url.Action("_EditLineInfo", "Configuration")?id=' + '@Model.LineId');
+    });
+    $("#btn_line_up_Refresh").click(function () {
+        $("#Div_Line_Edit").empty();
+        $("#Div_Line_Edit").append('<div class="tiny_loading"></div>');
+        $("#Div_Line_Edit").load('@Url.Action("_EditLineInfo", "Configuration")?id=' + '@Model.LineId');
+        $("#Div_Line_Edit").show();
+    });
+    $("#btn_line_up_Cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

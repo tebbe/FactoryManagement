@@ -1,0 +1,104 @@
+﻿
+
+@model FactoryManagement.ModelView.HR.UserInformationModelView
+@Html.HiddenFor(m => m.UserId)
+@Html.HiddenFor(m => m.UserName)
+
+<div class="col-md-6 col-sm-6">
+    <div class="editor-label"><label>User Type</label></div>
+    <div class="editor-field">
+        @(Html.Kendo().DropDownList()
+                               .Name("UserType")
+                               .DataTextField("Text")
+                               .DataValueField("Value")
+                               .OptionLabel("--Select One User Type--")
+                               .Events(e => e.Change("onChangeUserType"))
+                               .HtmlAttributes(new { style = "width:100%" })
+                               .BindTo(new List<SelectListItem>() {
+                                  new SelectListItem() {
+                                      Text = "User",
+                                      Value = "1"
+                                  },
+                                  new SelectListItem() {
+                                      Text = "Labour",
+                                      Value = "2"
+                                  },
+                              })
+        )
+        @Html.ValidationMessageFor(model => model.UserType, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="EmpId">Employee Id</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.EmpId, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        @Html.ValidationMessageFor(model => model.EmpId, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="DesignationId">Designation</label></div>
+    <div class="editor-field">
+        @(Html.Kendo().DropDownListFor(model => model.DesignationId)
+                      .OptionLabel("--Select One--")
+                      .BindTo(ViewBag.DesignationId)
+                      .DataTextField("Text")
+                      .HtmlAttributes(new { @style = "width:100%;" }))
+        @Html.ValidationMessageFor(model => model.DesignationId, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="JoinDate">Joining Date</label></div>
+    <div class="editor-field">
+        <input data-val="true" name="JoinDate" value="@Model.JoinDate.Value.ToString("MMM dd yyyy")" type="text" style="width: 100%;" data-val-required="Please enter Joining Date" id="JoinDate" />
+        @Html.ValidationMessageFor(model => model.JoinDate, "", new { @class = "text-danger" })
+    </div>
+</div>
+<div class="col-md-5 col-sm-5">
+    <div class="editor-label"><label for="SiteId">Site</label></div>
+    <div class="editor-field">
+        @(Html.Kendo().DropDownListFor(model => model.SiteId)
+                          .DataTextField("SiteName")
+                          .DataValueField("Id")
+                          .OptionLabel("--Select Site--")
+                          .Events(e => e.Select("onSiteSelect"))
+                          .BindTo(ViewBag.SiteId)
+                          .HtmlAttributes(new { style = "width:100%" })
+        )
+        <span class="field-validation-valid text-danger" data-valmsg-for="SiteId" data-valmsg-replace="true"></span>
+    </div>
+    <div id="divForUnit"></div>
+    <div id="divForDepartment"></div>
+    <div id="divForLine"></div>
+    <div id="divformachine"></div>
+</div>
+<script>
+    var UserId;
+    $("#JoinDate").kendoDatePicker({
+        max: new Date(),
+        format: "MMM dd yyyy",
+        dateInput: true,
+    });
+    $(document).ready(function () {
+        if ('@Model.UnitId' > 0) {
+            var passData = { SiteId: '@Model.SiteId', UnitId: '@Model.UnitId', UserType: '@Model.UserType', pageType: 'win' };
+            $("#divForUnit").load('@Url.Action("_GetUnitList", "HumanResource")', passData);
+            $("#divForUnit").show();
+
+            var DataForDept = { UnitId: '@Model.UnitId', deptId: '@Model.DeptId', UserType: '@Model.UserType', pageType: 'win' };
+            $("#divForDepartment").load('@Url.Action("_GetDept", "HumanResource")', DataForDept);
+            $("#divForDepartment").show();
+        } else {
+            var DataForDept = { SiteId: '@Model.SiteId', deptId: '@Model.DeptId', UserType: '@Model.UserType', pageType: 'win' };
+            $("#divForDepartment").load('@Url.Action("_GetDept", "HumanResource")', DataForDept);
+            $("#divForDepartment").show();
+        }
+        if ('@Model.UserType' === '1') {
+            $("#divForLine").hide();
+            $("#divformachine").hide();
+        } else {
+            $("#divForLine").load('@Url.Action("_GetLineList", "HumanResource")?DeptId=' + '@Model.DeptId' + '&pageType=win&LineId=' + '@Model.LineId');
+            $("#divForLine").show();
+            if ('@Model.MachineId' > 0) {
+                $("#divformachine").load('@Url.Action("_GetMachineList", "HumanResource")?LineId=' + '@Model.LineId' + '&pageType=win&MachineId=' + '@Model.MachineId');
+                $("#divformachine").show();
+            } else {
+                $("#divformachine").hide();
+            }
+        }
+    });
+    
+</script>

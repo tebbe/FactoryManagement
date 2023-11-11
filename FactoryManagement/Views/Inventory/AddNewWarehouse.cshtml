@@ -1,0 +1,381 @@
+﻿@************************************** Created By Mabia Mishu (Date:27.07.2016)  ***************************************@
+
+@model FactoryManagement.ModelView.Inventory.Warehouse.WarehouseListsModelView
+@{
+    ViewBag.Title = "Add New Warehouse";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var list = ViewBag.displayUser;
+}
+<style>
+    .tblDyn th, .tblDyn td{border:none!important;}
+</style>
+@using (Html.BeginForm())
+{
+    @Html.HiddenFor(m => m.Id)
+    @Html.HiddenFor(m => m.CreatedBy)
+    @Html.HiddenFor(m => m.AllSiteLists)
+    <div class="page-bar">
+        <ul class="page-breadcrumb">
+            <li>
+                <i class="icon-basket"></i>
+                <span>Inventory</span>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <i class="fa fa-gears"></i>
+                <span>Configuration</span>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            <li>
+                <i class="fa fa-th-list"></i>
+                <a href="/Inventory/AllWareHouseLists">All WareHouse Lists</a>
+                <i class="fa fa-angle-right"></i>
+            </li>
+            @if (Model.Id > 0)
+            {
+                <li>
+                    <i class="fa fa-plus"></i>
+                    <a href="/Inventory/AddNewWarehouse">Edit Warehouse</a>
+                </li>
+            }
+            else
+            {
+                <li>
+                    <i class="fa fa-plus"></i>
+                    <a href="/Inventory/AddNewWarehouse">Add New Warehouse</a>
+                </li>
+            }
+
+        </ul>
+    </div>
+    <div class="portlet light bordered">
+        <div class="portlet-title">
+
+            <div class="caption font-green">
+                <i class="fa fa-plus font-green"></i>
+                @if (Model.Id > 0)
+                {
+                    <span class="caption-subject bold uppercase">Edit Store Details</span>
+                }
+                else
+                {
+                    <span class="caption-subject bold uppercase">Add New Warehouse</span>
+                }
+
+
+            </div>
+        </div>
+        <div class="portlet-body form">
+            <div class="form-horizontal" id="Div_Add_Ware">
+                <div class="form-body">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.WarehouseName, "Warehouse Name", htmlAttributes: new { @class = "control-label col-md-2 col-sm-3" })
+                        <div class="col-md-3 col-sm-4">
+                            @Html.EditorFor(model => model.WarehouseName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                            @Html.ValidationMessageFor(model => model.WarehouseName, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-1 col-sm-1 col-xs-2 Cus_tooltip" id="toolTipForWarehouseName">
+                            <img src="~/Content/Icon/tooltip.jpg" class="info" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.WarehouseAcroynm, "Warehouse Acroynm", htmlAttributes: new { @class = "control-label col-md-2 col-sm-3" })
+                        <div class="col-md-3 col-sm-4">
+                            @Html.EditorFor(model => model.WarehouseAcroynm, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                            @Html.ValidationMessageFor(model => model.WarehouseAcroynm, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-1 col-sm-1 col-xs-2 Cus_tooltip" id="toolTipForWarehouseAcroynm"><img src="~/Content/Icon/tooltip.jpg" class="info" /></div>
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("Select User", htmlAttributes: new { @class = "control-label col-md-2 col-sm-3" })
+                        <div class="col-md-3 col-sm-4">
+                            @(Html.Kendo().MultiSelect()
+                .Name("UserListsss")
+                .HtmlAttributes(new { style = "width:100%" })
+                .Events(e => e.Change("UserSelectChange").Select("UserSelect"))
+                .BindTo(ViewBag.allUserList)
+                .Value(ViewBag.displayUser)
+                .AutoClose(false)
+                .Placeholder("-- Select One --"))
+                            @Html.ValidationMessage("UserLists", "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <div class="col-md-offset-2 col-md-10 col-sm-offset-3 col-sm-9" id="Div_Selected_User_List" style="padding-left:0px!important;">
+                        @if (Model.Id > 0 && Model.AllAssignUserId != "")
+                        {
+                            var allUserList = (from m in db.AssignStoreWithUsers
+                                               join v in db.View_UserLists on m.UserId equals v.UserId
+                                               where m.WareId == Model.Id
+                                               select new
+                                               {
+                                                   UserId = v.UserId,
+                                                   Username = v.UserName
+                                               }).ToList();
+                            foreach (var u in allUserList)
+                            {
+                        <div class="col-sm-3 selectedDiv" id="div_user_@u.UserId" data-id="@u.UserId" style="padding-left:0px!important;">
+                            <table class="table tblDyn" id="tbl_User_@u.UserId">
+                                <tr><th><span>@u.Username</span></th></tr>
+                                <tr><td><span>Select Unit To Assign </span></td></tr>
+                                <tr id="trAssignUnit_@u.UserId">
+                                    <td>
+                                        <input id="assignUnit_@u.UserId" name="assignUnit_@u.UserId" class="customers unit" data-id="@u.UserId" style="width: 90%;" />
+                                        <span class="field-validation-valid text-danger" data-valmsg-for="assignUnit_@u.UserId" data-valmsg-replace="true"></span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <script>
+                                    $("#trAssignUnit_"+'@(u.UserId)').load('@Url.Action("_loadUserAssiegnedUnit", "Inventory")?uId='+'@(u.UserId)'+'&id='+'@(Model.Id)'+'&isStore=false');
+                        </script>
+                            }
+                        }
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <div class="row">
+                        <div class="col-md-offset-2 col-md-10 col-sm-offset-3 col-sm-9">
+                            <button type="button" class="btn green" id="btnHouseCreate">Create</button>
+                            <button type="button" class="btn yellow" id="btnHouseRefresh">Refresh</button>
+                            <button type="button" class="btn red" id="btnHouseCreateCancel">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<script>
+    var AllSiteListsId="",msg="",time;
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $('#liForInvenConfig').addClass('open');
+        $('#liForInvenConfig .sub-menu').show();
+        $("#liForWareList").addClass('sublistActive');
+
+        $("#top_header_link").append('<span>Inventory</span><span><i class="fa fa-angle-right fa-2x"></i></span>' +
+               '<span><a href="/Inventory/LiForWarehouse"> All Warehouse Lists</a></span>'+
+               '<span><i class="fa fa-angle-right fa-2x"></i></span>' +
+               '<span class="current"><a href="/Inventory/AddNewWarehouse"> Add New Warehouse</a></span>');
+        if ('@Model.Id' > 0) {
+            $("#btnHouseCreate").val("Update");
+        }else{
+            $("#Div_Selected_User_List").hide();
+        }
+    });
+
+    $("#toolTipForWarehouseName").kendoTooltip({
+        content: function () {
+            return "Please Enter Warehouse Name";
+        },
+        show: function (e) {
+            e.sender.popup.element.addClass("k-widget k-tooltip k-tooltip-validation k-invalid-msg field-validation-error");
+        },
+        position: "right"
+    });
+    $("#toolTipForWarehouseAcroynm").kendoTooltip({
+        content: function () {
+            return "Please Enter Warehouse Acroynm";
+        },
+        show: function (e) {
+            e.sender.popup.element.addClass("k-widget k-tooltip k-tooltip-validation k-invalid-msg field-validation-error");
+        },
+        position: "right"
+    });
+
+    $("#btnHouseCreate").click(function () {
+        var validator= $("#Div_Add_Ware").kendoValidator({
+            rules: {
+                remote: function (input) {
+                    var errormessage;
+                    var remoteAttr = input.attr("data-val-remote-url");
+                    if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                        return true;
+                    }
+                    var isInvalid;
+                    var data = {};
+                    var Id = $("#Id").val();
+                    var WarehouseName = $("#WarehouseName").val();
+                    if (input.attr('name') === "WarehouseName") {
+                        data = { Id: Id, WarehouseName: WarehouseName };
+                    }
+                    $.ajax({
+                        url: remoteAttr,
+                        mode: "abort",
+                        port: "validate" + input.attr('name'),
+                        dataType: "json",
+                        type: input.attr("data-val-remote-type"),
+                        data: data,
+                        async: false,
+                        success: function (response) {
+                            isInvalid = response;
+                            if (isInvalid === true) {
+                                isInvalid = true;
+                            }
+                            else {
+                                isInvalid = false;
+                            }
+                        }
+                    });
+                    return isInvalid;
+                },
+                selectSiteList: function (input) {
+                    if (input.is("[name=UserLists]")) {
+                        var ms = input.data("kendoMultiSelect");
+                        if (ms.value().length === 0) {
+                            return false;
+                        }
+                    }
+                    return true;
+                },
+                selectUnitList: function (input) {
+                    if ((input.attr("class") === 'customers unit') || (input.attr("class") === 'customers unit k-valid') || (input.attr("class") === 'customers unit k-invalid')) {
+                        var id = input.attr("id");
+                        if ($("#"+id).data("kendoMultiSelect").value().length === 0) {
+                            return false;
+                        } else {
+                            isValid = true;
+                        }
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                remote: function (input) {return input.data('val-remote');},
+                selectSiteList:"Please select atleast one user",
+                selectUnitList: "Please select atleast one unit"
+            }
+        }).data("kendoValidator");
+        if (validator.validate()) {
+            notification.show({ message: "New store is adding....", showTime: startTime() }, "upload-progress");
+
+            var AllUserId=[],AllUnitId=[];
+            var url="",sendData="";
+            if(@(Model.Id) > 0){
+                url='@Url.Action("EditWareData", "Inventory")';
+                $(".unit").each(function(){
+                    if($(this).attr("id") != undefined){
+                        var id= $(this).attr("id").split('_')[1];
+                        AllUserId.push(id);
+                        AllUnitId.push($("#assignUnit_"+id).data("kendoMultiSelect").value().join(","));
+                    }
+                });
+                sendData = {
+                    Id:$("#Id").val(),
+                    WarehouseName: $("#WarehouseName").val(),
+                    WarehouseAcroynm: $("#WarehouseAcroynm").val(),
+                    AllUserId:AllUserId,
+                    AllUnitId:AllUnitId,
+                    CreatedBy: userId
+                };
+
+            }else{
+                url='@Url.Action("NewWarehouseSave", "Inventory")';
+                $("input.unit").each(function(){
+                    var id = $(this).data('id');
+                    AllUserId.push(id);
+                    AllUnitId.push($("#assignUnit_"+id).data("kendoMultiSelect").value().join(","));
+                });
+                sendData = {
+                    Id:$("#Id").val(),
+                    WarehouseName: $("#WarehouseName").val(),
+                    WarehouseAcroynm: $("#WarehouseAcroynm").val(),
+                    AllUserId:AllUserId,
+                    AllUnitId:AllUnitId,
+                    CreatedBy: userId
+                };
+            }
+            $.ajax({
+                url: url,
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === "Error") {
+                        if(@(Model.Id) > 0){
+                            notification.show({ message: "Warehouse '"+sendData.WarehouseName+"' information update was unsuccessful.", showTime: startTime() }, "upload-error");
+                        }else{
+                            notification.show({ message: "Add new warehouse '"+sendData.WarehouseName+"' was unsuccessful.", showTime: startTime() }, "upload-error");
+                        }
+                    } else {
+                        if(@(Model.Id) > 0){
+                            notification.show({ message: "Warehouse '"+sendData.WarehouseName+"' information has been successfully updated. ", showTime: startTime() }, "upload-success");
+                        }else{
+                            notification.show({ message: "New warehouse '"+sendData.WarehouseName+"' has been successfully created. ", showTime: startTime() }, "upload-success");
+                        }
+                        location.href='@Url.Action("AllWareHouseLists", "Inventory")';
+                    }
+                },
+                error:function(err){
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+    $("#btnHouseRefresh").click(function(){
+        if(@(Model.Id) > 0){
+            location.href = '@Url.Action("AddNewWarehouse", "Inventory")?id='+@(Model.Id);
+        }else{
+            location.href = '@Url.Action("AddNewWarehouse", "Inventory")';
+        }
+    });
+    $("#btnHouseCreateCancel").click(function () {
+        location.href = '@Url.Action("AllWareHouseLists", "Inventory")';
+    });
+</script>
+<script>
+    function UserSelect(e) {
+        previous = this._savedOld;
+        current = this.value();
+        var diff = [];
+        if (previous) {diff = $(previous).not(current).get();}
+        this._savedOld = current.slice(0);
+        if (diff.length > 0 && current != '') {$("#div_user_" + diff).remove();}
+        else {
+            var dataItem = this.dataSource.view()[e.item.index()];
+            var UserId = dataItem.Value;
+            if ($("#div_user_" + UserId).length == 0) {
+                $("#Div_Selected_User_List").append('<div class="col-sm-3 selectedDiv" id="div_user_' + UserId + '" data-id="' + UserId + '" style="padding-left:0px!important;">' +
+                    '<table class="table tblDyn" id="tbl_User_' + UserId + '">' +
+                        '<tr>' +
+                            '<th><span>' + dataItem.Text + '</span></th>'+
+                        '</tr>' +
+
+                        '<tr><td><span>Select Unit To Assign </span></td></tr><tr><td>' +
+                        '<input id="assignUnit_' + UserId + '" name="assignUnit_' + UserId + '" class="customers unit" data-id="' + UserId + '" style="width: 90%;" />' +
+                        '<span class="field-validation-valid text-danger" data-valmsg-for="assignUnit_' + UserId + '" data-valmsg-replace="true"></span></td></tr>'+
+
+                    '</table>' +
+                   '</div>');
+
+                $("#assignUnit_" + UserId).kendoMultiSelect({
+                    placeholder: "Select unit...",
+                    dataTextField: "UnitName",
+                    dataValueField: "UnitId",
+                    dataSource: { transport: { read: { url: "@Url.Action("GetAllUnitName", "Inventory")" } } }
+                });
+            }
+            $("#Div_Selected_User_List").show();
+        }
+    }
+    function UserSelectChange(e) {
+        previous = this._savedOld;
+        current = this.value();
+        var diff = [];
+        if (previous) {
+            diff = $(previous).not(current).get();
+        }
+        this._savedOld = current.slice(0);
+        if (diff.length > 0) {
+            $("#div_user_" + diff).remove();
+            if (current == "") {
+                $("#Div_Selected_User_List").hide();
+                $("#Div_Selected_User_List").empty();
+            }
+            var id = diff.toString().split('-')[0];
+        }
+
+    }
+</script>

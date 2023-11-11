@@ -1,0 +1,16 @@
+﻿@model FactoryManagement.ModelView.Voucher.VoucherModelView
+<style>
+    #display_Voucher table td, #display_Voucher table th {
+        border: none !important;
+    }
+</style>
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;">
+    <div id="display_Voucher" style="width:100%!important;float:left;"><div class="loading_partial"></div></div>
+</div>
+<script>
+    $(document).ready(function () {
+        @*$("#display_Voucher").load('@Url.Action("ShowVoucher", "Voucher")?VoucherId=' + '@Model.VoucherId' + '&Display=1');*@
+        $("#display_Voucher").load('@Url.Action("ShowVoucher", "Voucher")?VoucherId=' + '@Model.VoucherId' + '&Display=1' + '&IsAccSelect' + '@Model.IsAccountSelected');
+    });
+
+</script>

@@ -1,0 +1,88 @@
+﻿
+@********************************************** CREATED BY JERIN JAHAN (DATE : 06.10.2016) **************************************************************************@
+
+@model FactoryManagement.Models.View_All_InventoryList
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var location = db.Inventory_Item_Location.Where(m=> m.InventoryId == Model.InventoryId).ToList();
+    double min_quan = 0;
+}
+
+<div class="form-group">
+    @Html.LabelFor(model => model.ProductTypeId, "Product Type Name", htmlAttributes: new { @class = "control-label col-md-3 col-sm-4 col-xs-12" })
+    <div class="col-md-9 col-sm-8 col-xs-7" style="padding-top:7px;">
+        @Html.DisplayFor(model => model.ProductType, new { htmlAttributes = new { } })
+    </div>
+</div>
+<div class="form-group">
+    @Html.LabelFor(model => model.CountryName, "Country", htmlAttributes: new { @class = "control-label col-md-3 col-sm-4 col-xs-12" })
+    <div class="col-md-2 col-sm-3 col-xs-7" style="padding-top:7px;">
+        @Html.DisplayFor(model => model.CountryName, new { htmlAttributes = new { } })
+    </div>
+</div>
+@if (Model.BrandName != null)
+{
+    <div class="form-group">
+        @Html.LabelFor(model => model.BrandName, "Brand Name", htmlAttributes: new { @class = "control-label col-md-3 col-sm-4 col-xs-12" })
+        <div class="col-md-2 col-sm-3 col-xs-7" style="padding-top:7px;">
+            @Html.DisplayFor(model => model.BrandName, new { htmlAttributes = new { } })
+        </div>
+    </div>
+}
+@if (Model.Model != null)
+{
+    <div class="form-group">
+        @Html.LabelFor(model => model.Model, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4 col-xs-12" })
+        <div class="col-md-2 col-sm-3 col-xs-7" style="padding-top:7px;">
+            @Html.DisplayFor(model => model.Model, new { htmlAttributes = new { } })
+        </div>
+    </div>
+}
+@if (Model.Description != null)
+{
+    <div class="form-group">
+        @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4 col-xs-12" })
+        <div class="col-md-6 col-sm-7 col-xs-7" style="padding-top:7px;">
+            @Html.DisplayFor(model => model.Description, new { htmlAttributes = new { } })
+        </div>
+    </div>
+}
+<div class="form-group">
+    <label class="control-label col-md-3 col-sm-4 col-xs-12">Location</label>
+    <div class="col-lg-9 col-md-9 col-sm-8 col-xs-8" style="padding-top:7px;">
+        @foreach (var loc in location)
+        {
+            min_quan = loc.MinimumQuantity;
+            string name = "";
+            if (loc.StoreId > 0)
+            {
+                name = db.StoreLists.Where(m => m.Id == loc.StoreId).Select(m => m.StoreName).FirstOrDefault();
+            }
+            else if (loc.WarehouseId > 0)
+            {
+                name = db.WarehouseLists.Where(m => m.Id == loc.WarehouseId).Select(m => m.WarehouseName).FirstOrDefault();
+            }
+            else
+            {
+                name = db.LineInfoes.Where(m => m.LineId == loc.LineId).Select(m => m.LineAcronym).FirstOrDefault();
+            }
+            <span class="col-md-9 col-sm-9 col-xs-9" style="padding-left:0px!important;">
+                @name
+            <span style="font-size:12px;color:#808080;">(Quantity @loc.Quantity @Model.UnitName)</span>
+        </span>
+        }
+    </div>
+
+</div>
+@if (Model.CanbePerishable)
+{
+    <script> $("#Div_for_NewExpiredDate").show();</script>
+}
+<script>
+    $("#Country").val('@Model.Country');
+    $("#Price").val('@Model.Price');
+    $("#UnitId").val('@Model.UnitId');
+    $("#lbl_select_pro_unitname").text('@Model.UnitName');
+    $("#lbl_select_minquan_unitname").text('@Model.UnitName');
+    $("#txt_Mini_Quan").val('@(min_quan)');
+</script>

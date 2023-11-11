@@ -1,0 +1,68 @@
+﻿
+
+@************************************** Created By Mabia Mishu (Date:28.09.2016)  ***************************************@
+@model FactoryManagement.ModelView.Configuration.SiteListModelView
+
+@if (Model.IsResidential)
+{
+        <div class="editor-label"><label for="UnitNumber">Building Number</label></div>
+        <div class="editor-field">
+            <input input type="text" onkeypress="return isNumber(event)" onkeyup="isvalueNull(this.value)" class="k-textbox"
+                   name="BuildingNumber" id="BuildingNumber" maxlength="2" style="width:70%!important;" />
+            <span class="field-validation-valid text-danger" data-valmsg-for="BuildingNumber" data-valmsg-replace="true"></span>
+        </div>
+}
+else
+{
+        <div class="editor-label"><label for="UnitNumber">Unit Number</label></div>
+        <div class="editor-field">
+            <input input type="text" onkeypress="return isNumber(event)" onkeyup="isvalueNull(this.value)" class="k-textbox"
+                   name="UnitNumber" id="UnitNumber" maxlength="2" style="width:70%!important;" />
+            <span class="field-validation-valid text-danger" data-valmsg-for="UnitNumber" data-valmsg-replace="true"></span>
+        </div>
+}
+
+<script>
+    var validation = $("#DivForUnitCreate").kendoValidator({
+            rules: {
+                BuildingNumber: function (input) {
+                    if (input.is("[name=BuildingNumber]") && input.val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
+                UnitNumber: function (input) {
+                    if (input.is("[name=UnitNumber]") && input.val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
+                maxUnit: function (input) {
+                    if (input.is("[name=UnitNumber]") && parseInt($("#UnitNumber").val()) > 20) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            },
+            messages: {
+                BuildingNumber: "Please enter building number",
+                UnitNumber : "Please enter unit number",
+                maxUnit: "Building number cannot be more than 20"
+            }
+        }).data("kendoValidator");
+
+    $("#btnSiteUnitCreate").click(function () {
+        if (validation.validate()) {
+            if ('@Model.IsResidential' == "False") {
+                location.href = '@Url.Action("DefineUnitOfSite", "Configuration")?SiteId=' + @Model.SiteId + '&UnitNo=' + $("#UnitNumber").val() + '&isResi=' + '@(Model.IsResidential)';
+            } else {
+             location.href = '@Url.Action("DefineUnitOfSite", "Configuration")?SiteId=' + @Model.SiteId + '&UnitNo=' + $("#BuildingNumber").val() + '&isResi='+'@(Model.IsResidential)';
+            }
+        }
+    });
+    
+    
+</script>

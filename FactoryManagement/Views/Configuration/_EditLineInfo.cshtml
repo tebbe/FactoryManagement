@@ -1,0 +1,154 @@
+﻿@************************************** Created By Jerin Jahan (Date:12.07.2016)  ***************************************@
+
+@model FactoryManagement.ModelView.Configuration.LineInfoModelView
+
+@using (Html.BeginForm())
+{
+    @Html.HiddenFor(m => m.LineId)
+
+   
+        <div class="editor-label"><label for="LineName">Line Name</label></div>
+        <div class="editor-field">
+            <input type="text" style="width:100%!important" class="k-textbox" data-val-required="Please enter Line name" data-val-remote="Line name already exists...!!!"
+                   data-val-remote-additionalfields="*.LineName,*.LineId,*.DeptId" data-val-remote-type="Post"
+                   data-val-remote-url="/RemoteValidation/LineNameExist" value="@Model.LineName" name="LineName" id="LineName" />
+            <span class="field-validation-valid text-danger" data-valmsg-for="LineName" data-valmsg-replace="true"></span>
+        </div>
+        <div class="editor-label"><label for="LineAcronym">Line Acronym</label></div>
+        <div class="editor-field">
+            <input type="text" style="width:100%!important" class="k-textbox" data-val-required="Please enter unit line acronym" data-val-remote="Line acronym name already exists...!!!"
+                   data-val-remote-additionalfields="*.LineAcronym,*.LineId,*.DeptId" data-val-remote-type="Post"
+                   data-val-remote-url="/RemoteValidation/LineAcronymExist" value="@Model.LineAcronym" name="LineAcronym" id="LineAcronym" />
+            <span class="field-validation-valid text-danger" data-valmsg-for="LineAcronym" data-valmsg-replace="true"></span>
+        </div>
+}
+
+<script>
+
+    var validation = $("#Div_Line_Edit").kendoValidator({
+        rules: {
+            remoteName: function (input) {
+                var remoteAttr = input.attr("data-val-remote-url");
+                if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                    return true;
+                }
+                var isInvalid;
+                var data = {};
+                var LineName = $.trim($("#LineName").val());
+                var LineId = '@Model.LineId';
+                var deptId = '@Model.DeptId';
+                if (input.attr('name') === "LineName") {
+                    data = { LineId: LineId, LineName: LineName, DeptId: deptId };
+                }
+                $.ajax({
+                    url: remoteAttr,
+                    mode: "abort",
+                    port: "validate" + input.attr('name'),
+                    dataType: "json",
+                    type: input.attr("data-val-remote-type"),
+                    data: data,
+                    async: false,
+                    success: function (response) {
+                        isInvalid = response;
+                        if (isInvalid == true) {
+                            isInvalid = true;
+                        }
+                        else {
+                            isInvalid = false;
+                        }
+                    }
+                });
+                return isInvalid;
+            },
+            remoteAcronym: function (input) {
+                var remoteAttr = input.attr("data-val-remote-url");
+                if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                    return true;
+                }
+                var isInvalid;
+                var data = {};
+                var LineAcronym = $.trim($("#LineAcronym").val());
+                var LineId = '@Model.LineId';
+                var deptId = '@Model.DeptId';
+                if (input.attr('name') === "LineAcronym") {
+                    data = { LineId: LineId, LineAcronym: LineAcronym, DeptId: deptId };
+                }
+                $.ajax({
+                    url: remoteAttr,
+                    mode: "abort",
+                    port: "validate" + input.attr('name'),
+                    dataType: "json",
+                    type: input.attr("data-val-remote-type"),
+                    data: data,
+                    async: false,
+                    success: function (response) {
+                        isInvalid = response;
+                        if (isInvalid == true) {
+                            isInvalid = true;
+                        }
+                        else {
+                            isInvalid = false;
+                        }
+                    }
+                });
+                return isInvalid;
+            },
+            lineName: function (input) {
+                if (input.is("[name=LineName]") && $("#LineName").val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            lineAcronym: function (input) {
+                if (input.is("[name=LineAcronym]") && $("#LineAcronym").val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        },
+        messages: {
+            remoteName: function (input) { return input.data('val-remote'); },
+            remoteAcronym: function (input) { return input.data('val-remote'); },
+            lineName: "*",
+            lineAcronym: "*",
+        }
+    }).data("kendoValidator");
+
+    $("#btn_line_up").click(function () {
+        if (validation.validate()) {
+            notification.show({ message: "Line info updating...", showTime: startTime() }, "upload-progress");
+
+            var senddata = { LineId: '@(Model.LineId)',
+                LineName: $("#LineName").val(), LineAcronym: $("#LineAcronym").val(),
+                DeptName:DeptName,SiteName:SiteName, CreatedBy: userId };
+
+            $.ajax({
+                url: '@Url.Action("UpdateLineInfo", "Configuration")',
+                type: 'Post',
+                data: senddata,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({autoHideAfter: 5000});
+                    if(data === "Success"){
+                        notification.show({message: "Line info has been successfully updated.", showTime: startTime()}, "upload-success");
+                        $("#divFor_Line_Info").empty();
+                        $("#divFor_Line_Info").append('<div class="loading_partial"></div>');
+                        $("#divFor_Line_Info").load('@Url.Action("_ShowAllLineInfoByDept", "Configuration")?deptId=' +@Model.DeptId);
+                    }else{
+                        notification.show({message: "Line info update was unsuccessful.", showTime: startTime()}, "upload-error");
+                    }
+                    $("#btn_line_up").closest(".k-window-content").data("kendoWindow").close();
+                }
+            });
+        }
+    });
+
+    $("#btn_line_up_Cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>
+
+
+

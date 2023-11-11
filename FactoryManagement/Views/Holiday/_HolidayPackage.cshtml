@@ -1,0 +1,82 @@
+﻿@using FactoryManagement.Helpers
+@{
+    int count = 0;
+    int roleid = Convert.ToInt32(Request.Cookies["CookieAdminInfo"].Values["roleid"].ToString());
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    long loginusrid = Convert.ToInt64(Request.Cookies["CookieAdminInfo"].Values["userid"].ToString());
+}
+<table class="table table-bordered table-condensed table-hover table-responsive table-striped" id="tbl_manu_indent_list">
+    <tr>
+        <th width="4%">#</th>
+        <th width="15%">Name</th>
+        <th width="18%">Created By</th>
+        <th width="10%">Created Date</th>
+        <th width="18%">Updated By</th>
+        <th width="10%">Updated Date</th>
+        <th width="20%"></th>
+    </tr>
+    @foreach (var item in ViewBag.list as IEnumerable<FactoryManagement.Models.View_HolidayPackage>)
+    {
+        count++;
+        <tr>
+            <th scope="row">@count.</th>
+            <td><span class="txtHoliPckName" data-id="@item.HolidayPackId" style="color:#357ebd;cursor:pointer;">@item.HolidayPackName</span></td>
+            <td>
+                @if (item.CreatedBy > 0)
+                {
+                    if (roleid == 1 || roleid == 4)
+                    {
+                        <a href="@Html.EncodedParam("DisplayEmployeeDetails","HumanResource",new { UserId=item.CreatedBy,isDisplay=true},null)">
+                            <img src="~/Images/UserPicture/thumb/@item.CreatedUserPic" class="img-circle" /> @item.CreatedUserName
+                        </a>
+                    }
+                    else
+                    {
+                        <img src="~/Images/UserPicture/thumb/@item.CreatedUserPic" class="img-circle" /><span>@item.CreatedUserPic</span>
+                    }
+                }
+                else
+                {
+                    <img src="~/Images/UserPicture/thumb/@item.CreatedUserPic" class="img-circle" /><span>@item.CreatedUserPic</span>
+                }
+            </td>
+            <td>@item.CreatedDateFormate</td>
+            <td>
+                @if (item.UpdatedBy != null)
+                {
+                    if (item.UpdatedBy > 0)
+                    {
+                        if (roleid == 1 || roleid == 4)
+                        {
+                            <a href="@Html.EncodedParam("DisplayEmployeeDetails","HumanResource",new { UserId=item.CreatedBy,isDisplay=true},null)">
+                                <img src="~/Images/UserPicture/thumb/@item.UpdateUserPic" class="img-circle" /> @item.UpdateUsername
+                            </a>
+                        }
+                        else
+                        {
+                            <img src="~/Images/UserPicture/thumb/@item.UpdateUserPic" class="img-circle" /><span>@item.UpdateUsername</span>
+                        }
+                    }
+                    else
+                    {
+                        <img src="~/Images/UserPicture/thumb/@item.UpdateUserPic" class="img-circle" /><span>@item.UpdateUsername</span>
+                    }
+
+                }
+                else
+                {
+                    <span>@item.UpdateUsername</span>
+                }
+                </td>
+            <td>@item.UpdatedDateFormate</td>
+            <td>            
+                <span data-toggle="tooltip" title="Edit Holiday Package" class="btn green btn_holy_pck_edit" data-id="@item.HolidayPackId"><i class="fa fa-pencil"></i></span>
+                <span data-toggle="tooltip" title="Delete Holiday Package" class="btn btn-danger btn_holy_pck_delete" data-id="@item.HolidayPackId" data-name="@item.HolidayPackName"><i class="fa fa-trash"></i></span>
+                <span data-toggle="tooltip" title="Copy Holiday Package" class="btn green btn_holy_pck_copy" data-id="@item.HolidayPackId" data-name="@item.HolidayPackName"><i class="fa fa-copy"></i></span>
+            </td>
+        </tr>
+    }
+</table>
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+</script>

@@ -1,0 +1,16 @@
+﻿
+/************************* FOR LOADING PAGE **********************************************************/
+
+.loading_partial {background: url('../../Content/Icon/pageloading.gif') no-repeat center center;height: 30em;margin-top: -10px;}
+.loading_half {background: url('../../Content/Icon/loading2.gif') no-repeat center center;height: 600px;margin-top: -10px;}
+.win_loading_half {background: url('../../Content/Icon/loading2.gif') no-repeat center center;height: 20em;margin-top: -10px;}
+.partial_loading_half {background: url('../../Content/Icon/loading2.gif') no-repeat center center;height: 10em;margin-top: -10px;}
+.loading_15 {background: url('../../Content/Icon/loading2.gif') no-repeat center center;height: 15em;margin-top: -10px;}
+.loading_30{background: url('../../Content/Icon/loading2.gif') no-repeat center center;height: 30em;margin-top: -10px;}
+.tiny_loading {background: url('../../Content/Icon/loading2.gif') no-repeat center center;height: 8em;margin-top: -10px;}
+.loading_45{background: url('../../Content/Icon/pageloading.gif') no-repeat center center;height: 50em;}
+.loading_50{background: url('../../Content/Icon/pageloading.gif') no-repeat center center;height: 50em;}
+.loading-xs {
+    background: url('../../Content/Icon/loading2.gif') no-repeat center center;
+    height: 4em;
+}

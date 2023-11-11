@@ -1,0 +1,377 @@
+﻿@model FactoryManagement.ModelView.CRM.ClientListModelView
+@Html.HiddenFor(m => m.ClientId)
+@Html.HiddenFor(m => m.IsBuyer)
+@Html.HiddenFor(m => m.IsSupplier)
+@Html.HiddenFor(m => m.IsOutSourcer)
+@Html.HiddenFor(m => m.IsLogistic)
+<div id="DivForBasicInfoEdit" class="form-horizontal form-widget">
+    <div class="form-group">
+        @Html.LabelFor(model => model.ClientType, "Client Type", htmlAttributes: new { @class = "control-label col-md-3 col-sm-3" })
+        <div class="col-md-7 col-sm-4" style="padding-top:5px;">
+            @Html.EditorFor(model => model.IsBuyer) Buyer
+            @Html.EditorFor(model => model.IsSupplier) Supplier
+            @Html.EditorFor(model => model.IsOutSourcer) Outsourcer
+            @Html.EditorFor(model => model.IsLogistic) Logistic
+            <br />
+            @Html.ValidationMessageFor(model => model.IsBuyer, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-3 col-sm-3" })
+        <div class="col-md-7 col-sm-4">
+            @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.ClientCode, htmlAttributes: new { @class = "control-label col-md-3 col-sm-3" })
+        <div class="col-md-7 col-sm-4">
+            @Html.EditorFor(model => model.ClientCode, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.ClientCode, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.Address, htmlAttributes: new { @class = "control-label col-md-3 col-sm-3" })
+        <div class="col-md-7 col-sm-4">
+            @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.Address, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.AddressLine1, htmlAttributes: new { @class = "control-label col-md-3 col-sm-3" })
+        <div class="col-md-7 col-sm-4">
+            @Html.EditorFor(model => model.AddressLine1, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.AddressLine1, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.Country, htmlAttributes: new { @class = "control-label col-md-3 col-sm-3" })
+        <div class="col-md-7 col-sm-4">
+            @(Html.Kendo().DropDownListFor(model => model.Country)
+            .Name("clientCountry")
+         .OptionLabel("--Select One Country--")
+         .Events(e => e.Change("onChangeOfClientCountry"))
+         .BindTo(ViewBag.CountryId)
+         .HtmlAttributes(new { style = "width:100%" })
+            )
+            @Html.ValidationMessageFor(model => model.Country, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group" id="DivForClientEditDivision">
+        @Html.LabelFor(model => model.DivisionId, htmlAttributes: new { @class = "control-label col-md-3 col-sm-3" })
+        <div class="col-md-7 col-sm-4">
+            @(Html.Kendo().DropDownListFor(model => model.DivisionId)
+                  .Name("clientDivisionId")
+                  .OptionLabel("--Select One Division--")
+                  .BindTo(ViewBag.DivisionList)
+                  .HtmlAttributes(new { style = "width:100%" })
+            )
+            @Html.ValidationMessageFor(model => model.DivisionId, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group" id="DivForClientEditState">
+        @Html.LabelFor(model => model.State, htmlAttributes: new { @class = "control-label col-md-3 col-sm-3" })
+        <div class="col-md-7 col-sm-4">
+            @Html.EditorFor(model => model.State, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.State, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.City, htmlAttributes: new { @class = "control-label col-md-3 col-sm-3" })
+        <div class="col-md-7 col-sm-4">
+            @Html.EditorFor(model => model.City, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.City, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.PostalCode, htmlAttributes: new { @class = "control-label col-md-3 col-sm-3" })
+        <div class="col-md-7 col-sm-4">
+            @Html.EditorFor(model => model.PostalCode, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.PostalCode, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.Email, htmlAttributes: new { @class = "control-label col-md-3 col-sm-3" })
+        <div class="col-md-7 col-sm-4">
+            @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.Website, htmlAttributes: new { @class = "control-label col-md-3 col-sm-3" })
+        <div class="col-md-7 col-sm-4">
+            @Html.EditorFor(model => model.Website, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.Website, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.Fax, htmlAttributes: new { @class = "control-label col-md-3 col-sm-3" })
+        <div class="col-md-7 col-sm-4">
+            @Html.EditorFor(model => model.Fax, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            @Html.ValidationMessageFor(model => model.Fax, "", new { @class = "text-danger" })
+        </div>
+    </div>
+</div>
+<script id="temp_win_site_edit" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">Are you sure, you want to change logistic type ? Vehicle list will be deleted </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_editUnit_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_editUnit_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    var preLogistic = false, isDeleteVechicle = false, islogiClick = false,logUserCId = loginUserId;;  
+    $(document).ready(function () {
+        var country = '@Model.Country';
+        if (country === "BD") {
+            $("#DivForClientEditDivision").show();
+            $("#DivForClientEditState").hide();
+        }
+        else {
+            $("#DivForClientEditState").show();
+            $("#DivForClientEditDivision").hide();
+        }
+        if('@(Model.IsLogistic)' === 'True'){
+            preLogistic = true;
+            islogiClick = true;
+        }
+    });
+    $('input:checkbox[name="IsBuyer"]').change(function () {
+        if ($(this).is(":checked")) {
+            $('#IsBuyer').val('true');
+        } else {
+            $('#IsBuyer').val('false');
+        }
+    });
+    $('input:checkbox[name="IsSupplier"]').change(function () {
+        if ($(this).is(":checked")) {
+            $('#IsSupplier').val('true');
+        } else {
+            $('#IsSupplier').val('false');
+        }
+    });
+    $('input:checkbox[name="IsOutSourcer"]').change(function () {
+        if ($(this).is(":checked")) {
+            $('#IsOutSourcer').val('true');
+        } else {
+            $('#IsOutSourcer').val('false');
+        }
+    });
+    $('input:checkbox[name="IsLogistic"]').change(function () {
+        if ($(this).is(":checked")) {
+            $('#IsLogistic').val('true');
+            islogiClick = true;
+        } else {
+            $('#IsLogistic').val('false');
+            islogiClick = false;
+        }
+    });
+
+    function confirmation() {
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        var template = kendo.template($("#temp_win_site_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+
+        kendoWindow.find("#btn_editUnit_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            notification.hide();
+            notification.setOptions({ autoHideAfter: 5000 });
+        }).end();
+        kendoWindow.find("#btn_editUnit_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            updateData();
+            isDeleteVechicle = true;
+        }).end();
+    };
+
+
+
+    var validation = $("#DivForBasicInfoEdit").kendoValidator({
+        rules: {
+            custom: function (input) {
+                var errormessage;
+                var remoteAttr = input.attr("data-val-remote-url");
+                if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                    return true;
+                }
+                var isInvalid;
+                var data = {};
+                var ClientId = $("#ClientId").val();
+                var Name = input.val();
+                data = { ClientId:ClientId, Name: Name };
+                $.ajax({
+                    url: remoteAttr,
+                    mode: "abort",
+                    port: "validate" + input.attr('name'),
+                    dataType: "json",
+                    type: input.attr("data-val-remote-type"),
+                    data: data,
+                    async: false,
+                    success: function (response) {
+                        isInvalid = response;
+                        if (isInvalid === true) {
+                            isInvalid = true;
+                        }
+                        else {
+                            isInvalid = false;
+                        }
+                    }
+                });
+                return isInvalid;
+            },
+            Address: function (input) {
+                if (input.is("[name=Address]") && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Country: function (input) {
+                if (input.is("[name=clientCountry]") && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            Division: function (input) {
+                if (input.is("[name=clientDivisionId]") && $("#clientCountry").val() == "BD" && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            City: function (input) {
+                if (input.is("[name=City]") && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            ClientType: function (input) {
+                if (input.is("[name=IsBuyer]")) {
+                    if ($("#IsBuyer").val() === "True" || $("#IsSupplier").val() === 'True' || $("#IsOutSourcer").val() === 'True' || $("#IsLogistic").val() === 'True') {
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                return true;
+            },
+            State: function (input) {
+                if (input.is("[name=State]") && $("#clientCountry").val() != "BD" && input.val() === "") {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        },
+        messages: {
+            custom: function (input) {
+                return "Client Name Already Exist!";
+            },
+            Country: "Please select country",
+            Division: "Please select division",
+            City: "Please enter city",
+            ClientType : "Please enter one type",
+            State: "Please enter state"
+        }
+    }).data("kendoValidator");
+
+
+//**************************************Client update info************************
+    $("#btnClientUpdate").click(function () {
+        if (validation.validate()) {
+            if (preLogistic) {
+                $.ajax({
+                    url: '@Url.Action("CheckAnyVehicleExsits", "CRMClient")',
+                    type: 'Post',
+                    data: { ClientId: CliId },
+                    success: function (data) {
+                        if (data && islogiClick == false) {
+                            confirmation();
+                        } else {
+                            updateData();
+                        } 
+                        $("#div_Edit_panel").data("kendoWindow").close();
+                        $("#div_ryt_panel").empty();
+                        $("#div_ryt_panel").append('<div class="loading_partial"></div>');
+                        $("#div_ryt_panel").load('@Url.Action("_ClientBasicInfoDisplay", "CRMClient")?Id=' + CliId + '&isDisplay=' + isDisplay);
+                        $("#div_ryt_panel").show();
+                       
+                        }
+                    });
+                } else { 
+                    updateData();
+                }
+                $("#div_Edit_panel").data("kendoWindow").close();
+                $("#div_ryt_panel").empty();
+                $("#div_ryt_panel").append('<div class="loading_partial"></div>');
+                $("#div_ryt_panel").load('@Url.Action("_ClientBasicInfoDisplay", "CRMClient")?Id=' + CliId + '&isDisplay=' + isDisplay);
+                $("#div_ryt_panel").show();
+            
+        }
+    });
+    function updateData() {
+        notification.show({ message: "Client basic inforamtion updating...", showTime: startTime() }, "upload-progress");
+        var sendData = {
+            ClientId: $("#ClientId").val(),
+            Name: $("#Name").val(),
+            ClientCode: $("#ClientCode").val(),
+            IsBuyer: $("#IsBuyer").val(),
+            IsSupplier: $("#IsSupplier").val(),
+            IsOutSourcer: $("#IsOutSourcer").val(),
+            IsLogistic: $("#IsLogistic").val(),
+            Address: $("#Address").val(),
+            AddressLine1: $("#AddressLine1").val(),
+            Country: $("#clientCountry").val(),
+            DivisionId: $("#clientDivisionId").val(),
+            State: $("#State").val(),
+            City: $("#City").val(),
+            PostalCode: $("#PostalCode").val(),
+            Email: $("#Email").val(),
+            Website: $("#Website").val(),
+            Fax: $("#Fax").val(),
+            CreatedBy: logUserCId
+        };
+        $.ajax({
+            url: '@Url.Action("EditBasicInfoUpdate", "CRMClient")',
+            type: 'Post',
+            data: sendData,
+            success: function (nId) {
+                notification.hide();
+                notification.setOptions({ autoHideAfter: 5000 });
+                if (nId !== '') {
+                    notification.show({ message: "Client basic information has been successfully updated.", showTime: startTime()}, "upload-success");
+                    if (isDeleteVechicle) {
+                        $("#div_Vehicle").hide();
+                        $("#divForVehicleList").empty();
+                    }
+                    if (!preLogistic && islogiClick) {
+                        $("#div_Vehicle").show();
+                    }
+                    if (preLogistic && !islogiClick) {
+                        $("#div_Vehicle").hide();
+                    }
+                }
+                else {
+                    notification.show({ message: "Client basic information update was unsuccessful.", showTime: startTime()}, "upload-error");
+                }
+            },
+            error: function () {
+                notification.hide();
+                notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occured!", showTime: startTime() }, "upload-warning");
+            }
+        });
+    }
+</script>

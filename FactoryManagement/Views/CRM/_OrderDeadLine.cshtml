@@ -1,0 +1,85 @@
+﻿@******************* Created By Jerin Jahan (Date: 24.11.2016) *************************@
+@{
+    int offset = Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["localTime"]);
+    DateTime now = DateTime.UtcNow.AddMinutes(offset);
+}
+<style>
+    .k-edit-form-container .editor-label {
+        width: 30% !important;
+    }
+</style>
+<div class="k-edit-form-container" style="margin-bottom:4%;margin-top:2%;">
+    <div class="editor-label"><label for="OrderDeadLine">Deadline</label> </div>
+    <div class="editor-field" id="order_DeadLine">
+        @(Html.Kendo().DatePicker()
+            .Name("DeadLine")
+            .Min(now)
+            .Format("MMMM dd yyyy")
+            .HtmlAttributes(new { @style = "width:100%", required = "required" })
+        )
+        <span class="field-validation-valid text-danger" data-valmsg-for="DeadLine" data-valmsg-replace="true"></span>
+    </div>
+    <div class="k-edit-buttons k-state-default">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_SaveOrderDead"><span class="k-icon k-update"></span>Save</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_OrderDeadCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+<script>
+    $("#btn_OrderDeadCancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    var validation = $("#order_DeadLine").kendoValidator({
+        rules: {
+            requiredDate: function (e) {
+                if ($.trim($(e).val()) == "" || $.trim($(e).val()) == null) {
+                    return false;
+                }
+                return true;
+            },
+            dateValidation: function (e) {
+                var currentDate = Date.parse($(e).val());
+                if (!currentDate) {
+                    return false;
+                }
+                return true;
+            }
+        },
+        messages: {
+            requiredDate: "Date Line is required",
+            dateValidation: "Invalid date"
+        }
+        }).data("kendoValidator");
+
+    $("#btn_SaveOrderDead").click(function () {
+        if (validation.validate()) {
+            var sendData = { BusinessOrderId: orderId, ApprovedBy: userId, OrderStatus: 3, OrderDeadLine: $("#DeadLine").val() };
+            notification.show({ message: "Business order is finalizing.....", showTime: startTime() }, "upload-progress");
+            $.ajax({
+                url: '@Url.Action("BusinessOrderStatusChange", "CRM")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    if (data == "Error") {
+                        notification.show({ message: "Business order finalizing was unsuccessful.", showTime: startTime() }, "upload-error");
+                    } else {
+                        notification.show({ message: "Business order has been successfully finalized.", showTime: startTime() }, "upload-success");
+                        $("#div_order_Name_Status").empty();
+                        $("#div_order_Name_Status").append('<div class="tiny_loading"></div>');
+                        $("#div_order_Name_Status").show();
+                        $("#div_order_Name_Status").load('@Url.Action("_OrderNameSatatusDetails", "CRM")?BusinessOrderId=' + orderId);
+                        $("#div_Main_Manual_Spec").hide();
+                        $("#div_Main_Manual_Spec").empty();
+                        $("#win_ForDeadLine").data("kendoWindow").close();
+                    }
+                },
+                error: function (error) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 2000 });
+                    notification.show({ message: "Business order finalizing unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+            });
+        }
+    });
+</script>

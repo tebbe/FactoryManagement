@@ -1,0 +1,78 @@
+﻿
+
+
+@************************ Created By Jerin Jahan(Date: 08.11.2016) ************************@
+
+@model FactoryManagement.Models.RoleNameList
+
+<div class="k-edit-form-container col-xs-10" style="margin-bottom:4%;width:94%!important;" id="Div_For_Add_Role">
+    @using (Html.BeginForm())
+    {
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        @Html.HiddenFor(m => m.Id)
+        @Html.HiddenFor(m => m.CreatedBy)
+        <div class="col-xs-12" style="float:left;">
+            <div class="editor-label"><label for="RoleName">Role Name</label></div>
+            <div class="editor-field">
+                @Html.EditorFor(model => model.RoleName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                @Html.ValidationMessageFor(model => model.RoleName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="k-edit-buttons k-state-default col-xs-11">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_Role_Save">
+                <span class="k-icon k-update"></span>Save
+            </button>
+            <button type="reset" class="k-button k-button-icontext k-grid-cancel" id="btn_Role_Cancel">
+                <span class="k-icon k-cancel"></span>Cancel
+            </button>
+        </div>
+    }
+</div>
+<script>
+    $("#btn_Role_Cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+        $("#win_role_create").empty();
+    });
+    $("#btn_Role_Save").click(function () {
+        var validation = $("#Div_For_Add_Role").kendoValidator({
+            rules: {
+                role_name: function (input) {
+                    if (input.is("[name=RoleName]") && $("#RoleName").val() === '') 
+                        return false;
+                     else 
+                        return true;
+                }
+            },
+            messages: {
+                role_name: "Please type role name"
+            }
+        }).data("kendoValidator");
+
+        if (validation.validate()) {
+            notification.show({ message: "Adding new role...", showTime: startTime() }, "upload-progress");
+
+            $.ajax({
+                url: '@Url.Action("SaveAccGroup", "Accounting")',
+                type: 'Post',
+                data: senddata,
+                success: function (data) {
+                    $("#btn_AccGrp_Save").closest(".k-window-content").data("kendoWindow").close();
+
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 2000 });
+
+                    if (data === "Error") {
+                        notification.show({ message: "New account group addition unsuccessful", showTime: startTime() }, "upload-error");
+                    } else {
+                        notification.show({ message: "New account group successfully created", showTime: startTime() }, "upload-success");
+
+                        $("#Div_Acc_Group").empty();
+                        $("#Div_Acc_Group").append('<div class="loading_partial"></div>');
+                        $("#Div_Acc_Group").show();
+                        $("#Div_Acc_Group").load('@Url.Action("_ShowAllAcc_Group", "Accounting")');
+                    }
+                }
+            });
+        }
+    });
+</script>

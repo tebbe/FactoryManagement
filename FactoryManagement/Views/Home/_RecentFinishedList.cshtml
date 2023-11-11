@@ -1,0 +1,42 @@
+﻿
+@********************* Created By Jerin Jahan (Date: 07.05.2017) ****************************@
+@model IEnumerable<FactoryManagement.Models.View_Finished_Product_List>
+@{
+    int count = 1;
+    var db = new FactoryManagement.Models.FactoryManagementEntities();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    int seven = 1;
+    int all = 1;
+}
+@if (Model.Count() > 0)
+{
+    <table class="table bootstrap-datatable datatable small-font dataTable no-footer" id="DataTables_Table_0" role="grid">
+        <thead>
+            <tr role="row">
+                <th width="5%">#</th>
+                <th width="15%">Name </th>
+                <th width="20%">LOT</th>
+                <th width="17%">Bag</th>
+                <th width="17%">KG</th>
+                <th width="17%">Remark</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var list in Model)
+            {
+                <tr>
+                    <td>@count.</td>
+                    <td><a href="#">@list.Count_Name</a></td>
+                    <td>@list.Lot </td>
+                    <td>@list.Bag</td>
+                    <td>@list.Bag @list.UnitName</td>
+                    <td>@list.Remark</td>
+                </tr>
+                count++;
+            }
+        </tbody>
+    </table>
+}
+else{
+    <h4>There is no record to display....</h4>
+}

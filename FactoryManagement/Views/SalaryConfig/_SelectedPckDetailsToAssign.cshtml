@@ -1,0 +1,159 @@
+﻿
+
+
+@************************************** Created By Jerin Jahan (Date:23.08.2016)  ***************************************@
+
+@model FactoryManagement.ModelView.SalaryConfig.SalayPackageConfig
+@{
+    var count = 1;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    double total = 0;
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+
+<h4>@*<span style="float:right;cursor:pointer;" id="btn_Acc_Add"><i class="fa fa-plus"></i></span>*@</h4>
+<div class="form-group">
+    @Html.LabelFor(model => model.PackageName, "Package Name", htmlAttributes: new { @class = "control-label col-md-2 col-sm-3" })
+    <div class="col-md-9 col-sm-8">
+        @Html.DisplayFor(model => model.PackageName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+    </div>
+</div>
+<div class="form-group">
+    <div class="col-md-offset-2 col-md-9 col-sm-offset-3 col-sm-8" style="padding-top:7px;">
+        @foreach (var list in ViewBag.allAccName as IEnumerable<FactoryManagement.ModelView.SalaryConfig.SalaryAccAddModelView>)
+        {
+            double BaseSalary = ViewBag.baseAmount;
+            double amount;
+            string MonthName = "";
+            string Eventname = "";
+            <p>
+                @count . @list.Name
+                @if (list.AccPayType == 1)
+                {
+                    var monthList = db.Salary_Acc_Pay_MonthList.Where(m => m.Salary_Pck_Acc_Id == list.Id).Select(m => m.MonthName).ToList();
+                    foreach (var m in monthList)
+                    {
+                        MonthName += m + ",";
+                    }
+                }
+                else if (list.AccPayType == 1)
+                {
+                    Eventname = db.HolidayLists.Where(m => m.Id == list.HolidayId).Select(m => m.HolidayName).FirstOrDefault();
+                }
+                
+                @if (list.AccountType == 2)
+                {
+                    amount = BaseSalary * Convert.ToDouble(list.Percentage) / 100;
+                    if (list.AccPayType == 1)
+                    {
+                        <span style="margin-left:10px;margin-right:10px;">
+                            @list.Percentage% of @currency @BaseSalary
+                            (@currency @amount; @MonthName.Remove(MonthName.Length - 1) )
+                        </span>
+                    }
+                    else if (list.AccPayType == 1)
+                    {
+                        <span style="margin-left:10px;margin-right:10px;">
+                            @list.Percentage% of @currency @BaseSalary
+                            (@amount  @currency; Eventname)
+                        </span>
+                    }
+                    else
+                    {
+                        <span style="margin-left:10px;margin-right:10px;">
+                            @list.Percentage% of @currency @BaseSalary 
+                            (@amount  @currency)
+                        </span>
+                    }
+                }
+                else
+                {
+                    amount = Convert.ToDouble(list.Amount);
+                    if (list.AccPayType == 1)
+                    {
+                        <span style="margin-left:10px;margin-right:10px;">
+                            @currency @list.Amount (@MonthName.Remove(MonthName.Length - 1))
+                        </span>
+                    }
+                    else if (list.AccPayType == 1)
+                    {
+                        <span style="margin-left:10px;margin-right:10px;">
+                            @currency @list.Amount; Eventname
+                        </span>
+                    }
+                    else
+                    {
+                        <span style="margin-left:10px;margin-right:10px;">@list.Amount @currency</span>
+                    }
+
+
+                }
+                <span id="btn_Edit_selected_Pck" style="display:none;">
+                    <span class="k-icon k-i-pencil btn_pack_Acc_Edit" data-id="@list.Id" data-packageid="@list.PackageId"></span>
+                    <span class="k-icon k-i-close btn_pack_Acc_Delete" data-id="@list.Id" data-packageid="@list.PackageId"></span>
+                </span>
+                
+            </p>
+                count++;
+                if (list.AccPayType == 3)
+                {
+                    amount = 12 * amount;
+                }
+                else
+                {
+                    int monthCount = db.Salary_Acc_Pay_MonthList.Where(m => m.Salary_Pck_Acc_Id == list.Id).Count();
+                    amount = monthCount * amount;
+                }
+
+
+                if (list.IsAddition)
+                {
+                    total = total + Convert.ToDouble(amount);
+                }
+                else
+                {
+                    total = total - Convert.ToDouble(amount);
+                }
+
+        }
+    </div>
+</div>
+<div class="form-group">
+    <div class="col-md-offset-2 col-md-9 col-sm-offset-3 col-sm-8" style="padding-top:7px;">
+        Total = @currency @total (Annual)
+    </div>
+</div>
+<div class="form-group">
+    <div class="col-md-offset-9 col-md-3 col-sm-offset-9 col-sm-3">
+        <input type="button" value="Cancel" class="btn default" id="btn_Calcel_Selected_Pck" />
+    </div>
+</div>
+
+
+<div style="display:none;" id="Div_Salay_Acc_Add"></div>
+
+<script>
+    $(document).ready(function () {
+        userId = @Request.Cookies["CookieAdminInfo"].Values["userid"].ToString();
+        if ('@(Model.HasBaseSalary)' === 'True') {
+            HasBaseSalary = 1;
+        }
+        if('@(ViewBag.HasAddedAccount)' === 'True'){
+            $("#Div_Already_Add_Acc").load('@Url.Action("AddedAccountWithPackList", "SalaryConfig")?PackageId=' + '@(Model.PackageId)');
+            $("#Div_Already_Add_Acc").show();
+        }
+    });
+    $("#btn_Acc_Add").click(function () {
+        $("#Div_Salay_Acc_Add").load('@Url.Action("SalaryPackageAccAdd", "SalaryConfig")?HasBaseSalary=' + HasBaseSalary + '&PackageId=' + '@(Model.PackageId)');
+        $("#Div_Salay_Acc_Add").show();
+    });
+    $("#btn_Calcel_Selected_Pck").click(function(){
+        $("#div_Pck_list").show();
+        $("#div_Pck_Info").hide();
+        isPckSelect = false;
+        PackageId = "";
+        pckName = "";
+        btnDisable = false;
+        $("#btnPckAssign").attr('disabled',true);
+    });
+</script>

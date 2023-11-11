@@ -1,0 +1,289 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style id="stndz-style"></style>
+    <title>Fixed left-sidebar and header</title>
+    <link rel="icon" href="/img/favicon.png" type="image/png">
+    <link rel="author" href="/" title="Limpid">
+    <link rel="author" href="http://annevankesteren.nl/" title="Anne van Kesteren">
+    <link rel="help" href="/lab/css/fixed/theory" title="Theory of fixed positioning">
+    <style type="text/css">
+        body {
+            margin: 0;
+            padding: 100px 0 0 150px;
+        }
+        div#header {
+            position: absolute;
+            top: 0;
+            left:0;
+            width: 100%;
+            height: 46px;
+            background:#2b3643;
+            color:#fff;
+        }
+        div#left-sidebar {
+            position: absolute;
+            top: 46px;
+            left: 0;
+            width: 150px;
+            height: 100%;
+        }
+        div#footer{
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background: #2b3643;
+            color: #fff;
+            text-align: right;
+            z-index:2;
+        }
+        @media screen {
+            body > div#header {
+                position: fixed;
+            }
+
+            body > div#left-sidebar {
+                position: fixed;
+            }
+             body > div#footer {
+                position: relative;
+            }
+        }
+        * html body {
+            overflow: hidden;
+        }
+        * html div#content {
+            height: 100%;
+            overflow: auto;
+        }
+    </style>
+    <style>
+        body{
+         font:80%/1.3 Arial,sans-serif;
+        }
+        h1{
+         margin:0;
+         padding:1em;
+         font-size:1.5em;
+         font-weight:bold;
+        }
+        h1 span{
+         font-size:.667em;
+        }
+        h2{
+         margin:0;
+         padding:1em 1.25em;
+         font-size:1.2em;
+         font-weight:bold;
+        }
+        h3{
+         margin:0;
+         padding:1em 1.5em;
+         font-size:1em;
+         font-weight:bold;
+        }
+        pre{
+         margin:.5em 1.5em;
+         padding:.3em;
+         color:#000;
+         background:#fff;
+        }
+        pre,pre code,pre var{
+         font:1em/1 "courier new",monospace;
+        }
+        pre var{
+         font-style:oblique;
+        }
+        pre code.markup.comment{
+         font-style:oblique;
+         color:green;
+        }
+        pre code.markup.doctype{
+         font-style:oblique;
+         color:teal;
+        }
+        pre code.markup.element-name{
+         font-weight: bold;
+         color:purple;
+        }
+        pre code.markup.attribute-name{
+         font-weight: bold;
+         color:black;
+        }
+        pre code.markup.attribute-value{
+         font-weight:normal;
+         color:blue;
+        }
+        p{
+         margin:0;
+         padding:.5em 1.5em;
+        }
+        div#left-sidebar{
+         background:#435468;
+         color:black;
+        }
+        div#right-sidebar{
+         background:green;
+         color:black;
+        }
+        
+    </style>
+</head>
+<body>
+    <div id="header">
+        <p>
+            Content can be placed here…
+        </p>
+    </div>
+    <div id="left-sidebar">
+        <p>
+            Content can be placed here…
+        </p>
+    </div>
+    <div id="content">
+        <h1>Fixed left-sidebar and header <span>(part of <a href="http://annevankesteren.nl/archives/2004/07/fixed-positioning">fixed positioning</a>)</span></h1>
+        <h2>Code</h2>
+        <pre><code class="markup comment">&lt;!-- IE in quirks mode --&gt;</code>
+        <code class="markup doctype">&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN"&gt;</code>
+        &lt;<code class="markup element-name">title</code>&gt;Fixed left-sidebar and header&lt;/<code class="markup element-name">title</code>&gt;
+        &lt;<code class="markup element-name">style</code> <code class="markup attribute-name">type</code>=<code class="markup attribute-value">"text/css"</code>&gt;
+         body{
+          margin:0;
+          padding:<var>header-<a href="/lab/css/fixed/theory#length">&lt;length&gt;</a></var> 0 0 <var>left-sidebar-<a href="/lab/css/fixed/theory#length">&lt;length&gt;</a></var>;
+         }
+         div#header{
+          position:absolute;
+          top:0;
+          left:<var>left-sidebar-<a href="/lab/css/fixed/theory#length">&lt;length&gt;</a></var>;
+          width:500%;
+          height:<var>header-<a href="/lab/css/fixed/theory#length">&lt;length&gt;</a></var>;
+         }
+         div#sidebar{
+          position:absolute;
+          top:0;
+          left:0;
+          width:<var>left-sidebar-<a href="/lab/css/fixed/theory#length">&lt;length&gt;</a></var>;
+          height:100%;
+         }
+         @media screen{
+          body&gt;div#header{
+           position:fixed;
+          }
+          body&gt;div#left-sidebar{
+           position:fixed;
+          }
+         }
+         * html body{
+          overflow:hidden;
+         } 
+         * html div#content{
+          height:100%;
+          overflow:auto;
+         }
+        &lt;/<code class="markup element-name">style</code>&gt;
+        &lt;<code class="markup element-name">div</code> <code class="markup attribute-name">id</code>=<code class="markup attribute-value">"header"</code>&gt; header &lt;/<code class="markup element-name">div</code>&gt;
+        &lt;<code class="markup element-name">div</code> <code class="markup attribute-name">id</code>=<code class="markup attribute-value">"left-sidebar"</code>&gt; left-sidebar &lt;/<code class="markup element-name">div</code>&gt;
+        &lt;<code class="markup element-name">div</code> <code class="markup attribute-name">id</code>=<code class="markup attribute-value">"content"</code>&gt; content &lt;/<code class="markup element-name">div</code>&gt;</pre>
+
+
+        <h1>Fixed left-sidebar and header <span>(part of <a href="http://annevankesteren.nl/archives/2004/07/fixed-positioning">fixed positioning</a>)</span></h1>
+        <h2>Code</h2>
+        <pre><code class="markup comment">&lt;!-- IE in quirks mode --&gt;</code>
+        <code class="markup doctype">&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN"&gt;</code>
+        &lt;<code class="markup element-name">title</code>&gt;Fixed left-sidebar and header&lt;/<code class="markup element-name">title</code>&gt;
+        &lt;<code class="markup element-name">style</code> <code class="markup attribute-name">type</code>=<code class="markup attribute-value">"text/css"</code>&gt;
+         body{
+          margin:0;
+          padding:<var>header-<a href="/lab/css/fixed/theory#length">&lt;length&gt;</a></var> 0 0 <var>left-sidebar-<a href="/lab/css/fixed/theory#length">&lt;length&gt;</a></var>;
+         }
+         div#header{
+          position:absolute;
+          top:0;
+          left:<var>left-sidebar-<a href="/lab/css/fixed/theory#length">&lt;length&gt;</a></var>;
+          width:500%;
+          height:<var>header-<a href="/lab/css/fixed/theory#length">&lt;length&gt;</a></var>;
+         }
+         div#sidebar{
+          position:absolute;
+          top:0;
+          left:0;
+          width:<var>left-sidebar-<a href="/lab/css/fixed/theory#length">&lt;length&gt;</a></var>;
+          height:100%;
+         }
+         @media screen{
+          body&gt;div#header{
+           position:fixed;
+          }
+          body&gt;div#left-sidebar{
+           position:fixed;
+          }
+         }
+         * html body{
+          overflow:hidden;
+         } 
+         * html div#content{
+          height:100%;
+          overflow:auto;
+         }
+        &lt;/<code class="markup element-name">style</code>&gt;
+        &lt;<code class="markup element-name">div</code> <code class="markup attribute-name">id</code>=<code class="markup attribute-value">"header"</code>&gt; header &lt;/<code class="markup element-name">div</code>&gt;
+        &lt;<code class="markup element-name">div</code> <code class="markup attribute-name">id</code>=<code class="markup attribute-value">"left-sidebar"</code>&gt; left-sidebar &lt;/<code class="markup element-name">div</code>&gt;
+        &lt;<code class="markup element-name">div</code> <code class="markup attribute-name">id</code>=<code class="markup attribute-value">"content"</code>&gt; content &lt;/<code class="markup element-name">div</code>&gt;</pre>
+
+
+        <h1>Fixed left-sidebar and header <span>(part of <a href="http://annevankesteren.nl/archives/2004/07/fixed-positioning">fixed positioning</a>)</span></h1>
+        <h2>Code</h2>
+        <pre><code class="markup comment">&lt;!-- IE in quirks mode --&gt;</code>
+        <code class="markup doctype">&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN"&gt;</code>
+        &lt;<code class="markup element-name">title</code>&gt;Fixed left-sidebar and header&lt;/<code class="markup element-name">title</code>&gt;
+        &lt;<code class="markup element-name">style</code> <code class="markup attribute-name">type</code>=<code class="markup attribute-value">"text/css"</code>&gt;
+         body{
+          margin:0;
+          padding:<var>header-<a href="/lab/css/fixed/theory#length">&lt;length&gt;</a></var> 0 0 <var>left-sidebar-<a href="/lab/css/fixed/theory#length">&lt;length&gt;</a></var>;
+         }
+         div#header{
+          position:absolute;
+          top:0;
+          left:<var>left-sidebar-<a href="/lab/css/fixed/theory#length">&lt;length&gt;</a></var>;
+          width:500%;
+          height:<var>header-<a href="/lab/css/fixed/theory#length">&lt;length&gt;</a></var>;
+         }
+         div#sidebar{
+          position:absolute;
+          top:0;
+          left:0;
+          width:<var>left-sidebar-<a href="/lab/css/fixed/theory#length">&lt;length&gt;</a></var>;
+          height:100%;
+         }
+         @media screen{
+          body&gt;div#header{
+           position:fixed;
+          }
+          body&gt;div#left-sidebar{
+           position:fixed;
+          }
+         }
+         * html body{
+          overflow:hidden;
+         } 
+         * html div#content{
+          height:100%;
+          overflow:auto;
+         }
+        &lt;/<code class="markup element-name">style</code>&gt;
+        &lt;<code class="markup element-name">div</code> <code class="markup attribute-name">id</code>=<code class="markup attribute-value">"header"</code>&gt; header &lt;/<code class="markup element-name">div</code>&gt;
+        &lt;<code class="markup element-name">div</code> <code class="markup attribute-name">id</code>=<code class="markup attribute-value">"left-sidebar"</code>&gt; left-sidebar &lt;/<code class="markup element-name">div</code>&gt;
+        &lt;<code class="markup element-name">div</code> <code class="markup attribute-name">id</code>=<code class="markup attribute-value">"content"</code>&gt; content &lt;/<code class="markup element-name">div</code>&gt;</pre>
+
+</div>
+    <div class="page-footer" id="footer">
+        <div class="page-footer-inner">
+            2017 © Powered By. <a href="http://zssofttech.com/" title="ZS-Soft Tech" target="_blank">ZS-Soft Tech!</a>
+        </div>
+        <div class="scroll-to-top" style="display: block;">
+            <i class="icon-arrow-up"></i>
+        </div>
+    </div>
+</body>
+</html>

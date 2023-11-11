@@ -1,0 +1,47 @@
+﻿
+
+
+
+@******************************** Created By Mabia (Date:29.08.2016) *********************************@
+
+@{
+    var count = 1;
+}
+
+<tr>
+    <th>#</th>
+    <th>Name</th>
+    <th>Created By</th>
+    <th>Created Date</th>
+    <th>Status</th>
+    <th></th>
+</tr>
+
+@foreach (var item in ViewBag.AcquisitionOrderList as IEnumerable<FactoryManagement.ModelView.Acquisition.AcquisitionViewModel>)
+{
+    <tr>
+        <th scope="row">@count</th>
+        <td>@Html.DisplayFor(modelItem => item.Name)</td>
+        <td>
+            <img class="user-photo" src="~/Images/UserPicture/thumb/@item.PictureName" />
+            <span>@Html.DisplayFor(modelItem => item.UserName)</span>
+        </td>
+        <td>@Convert.ToDateTime(item.CreatedDate).ToString("MMM dd yyyy")</td>
+        <td>@Html.DisplayFor(modelItem => item.Status)</td>
+        <td>
+            <span data-id="@item.AcquisitionOrderId" style="cursor:pointer;" class="btnAcqOrderEdit"><span class="fa fa-pencil-square-o"></span></span>
+            @if (item.AcquisitionStatus == 0)
+            {
+                <input type="button" value="Approve" data-id="@item.AcquisitionOrderId" class="k-button k-state-default btnapproveAcqOrder" />
+                <input type="button" value="Reject" data-id="@item.AcquisitionOrderId" class="k-button k-state-default btnrejectAcqOrder" />
+            }
+            <a href="/Inventory/AcquisitionOrderDetails?AcqOrderId=@item.AcquisitionOrderId">
+                <input type="button" value="Order Details" data-id="@item.AcquisitionOrderId" class="k-button k-state-default btnDetailsAcqOrder" />
+            </a>
+            <span data-id="@item.AcquisitionOrderId" style="cursor:pointer;" class="btnAcqOrderDelete"><span class="fa fa-trash"></span></span>
+        </td>
+
+    </tr>
+            count++;
+}
+

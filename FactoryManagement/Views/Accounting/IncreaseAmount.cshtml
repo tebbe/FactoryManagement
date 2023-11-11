@@ -1,0 +1,55 @@
+﻿
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="div_increaseAmount">
+    <div class="editor-label"><label for="AmountType">Amount  Type</label></div>
+    <div class="editor-field">
+        <div>
+            <input data-val="true" data-val-required="Please Select One Type" id="cash" name="AmountType" type="radio" value="1" class="k-valid"> Cach
+            <input data-val="true" data-val-required="Please Select One Type" id="cheque" name="AmountType" type="radio" value="2" class="k valid"> Cheque
+        </div>
+        <div>
+            @*@Html.ValidationMessageFor(model => model.Acc_Type, "", new { @class = "text-danger" })*@
+        </div>
+    </div>
+    <div id="div_for_cash_type" style="display:none">
+        <div class="loading_half"></div>
+    </div>
+    <div id="div_for_cheque_type" style="display:none;">
+        <div class="loading_half"></div>
+    </div>
+
+
+</div>
+<script>
+    $('input:radio[name="AmountType"]').change(function () {
+        str = this.value;
+        $("#AmountType").val(str);
+        if (str === "1") {
+            $("#div_for_cheque_type").hide();
+            $("#div_for_cash_type").empty();
+            $("#div_for_cash_type").load('@Url.Action("CashType", "Accounting")');
+            $("#div_for_cash_type").show();
+
+        } else {
+            $("#div_for_cash_type").hide();
+            $("#div_for_cheque_type").empty();
+            $("#div_for_cheque_type").load('@Url.Action("ChequeType", "Accounting")');
+            $("#div_for_cheque_type").show();
+        }
+    });
+    @*$("#cash").click(function (e) {
+        e.preventDefault();
+        $("#div_for_cheque_type").hide();
+        $("#div_for_cash_type").empty();
+        $("#div_for_cash_type").load('@Url.Action("CashType", "Accounting")');
+        $("#div_for_cash_type").show();
+       
+    });
+    $("#cheque").click(function (e) {
+        e.preventDefault();
+        $("#div_for_cash_type").hide();
+        $("#div_for_cheque_type").empty();
+        $("#div_for_cheque_type").load('@Url.Action("ChequeType", "Accounting")');
+        $("#div_for_cheque_type").show();
+    });*@
+</script>

@@ -1,0 +1,53 @@
+﻿
+
+@************************* Created By Jerin Jahan (Date : 14.06.2017) ***************************************@
+@using FactoryManagement.Helpers
+@model IEnumerable<FactoryManagement.Models.View_Import_History_Details>
+@{
+    var count = 0;
+}
+@if (Model.Count() > 0)
+{
+    <table class="table table-hover table-bordered table-striped table-condensed" id="tbl_import_history_LC">
+        <tr>
+            <th>#</th>
+            <th>L/C</th>
+            <th>Product Name</th>
+            <th>Last Import Date</th>
+            <th>Imported By</th>
+        </tr>
+        @foreach (var list in Model)
+        {
+            count++;
+            <tr>
+                <th>@count.</th>
+                <td><a data-lc="@list.L_C" class="ShowLCDetails" style="text-decoration:none">@list.L_C</a></td>
+                <td><a href="@Html.EncodedParam("StoreProductDetails", "StoreProduct",new { id = list.InventoryId },null)">@list.ProductName</a></td>
+                <td>@list.LastImpDateName</td>
+                <td>
+                    @if (list.InsertedBy > 0)
+                    {
+                        <a href="@Html.EncodedParam("DisplayEmployeeDetails","HumanResource",new { UserId=list.InsertedBy,isDisplay=true},null)">
+                            <img class="img-circle" src="/Images/UserPicture/thumb/@list.InsertedUserPic"> @list.InsertedByUserName
+                        </a>
+                    }
+                    else
+                    {
+                        <img class="img-circle" src="/Images/UserPicture/thumb/@list.InsertedUserPic">
+                        <span>@list.InsertedByUserName</span>
+                    }
+                </td>
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <h4>There is no record to display</h4>
+}
+<script>
+    totalCount = '@(ViewBag.Count)';
+    showCount = '@count';
+</script>
+
+

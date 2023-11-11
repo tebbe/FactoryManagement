@@ -1,0 +1,46 @@
+﻿
+
+
+
+@******************************** Created By JERIN JAHAN (Date:09.26.2016) *********************************@
+@model  IEnumerable<FactoryManagement.Models.View_Busi_Details_ForClient>
+@{
+    var count = 1;
+}
+
+<table class="table table-bordered" id="tbl_Sup_Ord">
+    <tbody>
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Created By</th>
+            <th>Created Date</th>
+            <th>Status</th>
+            @*<th></th>*@
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <th scope="row">@count.</th>
+                <td><a href="/CRM/BusiOrderDetailsForSup?id=@item.BusinessOrderId">@item.OrderName</a></td>
+                <td>
+                    @if (item.CreatedBy == 1)
+                    {
+                        <img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" /><span> Super Admin</span>
+                    }
+                    else
+                    {
+                        FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+                        var user = db.View_UserLists.Where(m => m.UserType == 1 && m.UserId == item.CreatedBy).FirstOrDefault();
+                        <img src="~/Images/UserPicture/thumb/@user.Picture" class="user-photo" />
+                        <span><a href="/HumanResource/DisplayEmployeeDetails?UserId=@item.CreatedBy&userType=1">@user.UserName</a></span>
+                    }
+                </td>
+                <td>@Convert.ToDateTime(item.CreatedDate).ToString("MMM dd yyyy")</td>
+                <td>@item.OrderAprvStatus</td>
+                @*<td></td>*@
+            </tr>count++;
+        }
+    </tbody>
+</table>

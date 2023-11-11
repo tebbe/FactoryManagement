@@ -1,0 +1,13 @@
+﻿
+
+@************************************** Created By Jerin Jahan (Date:17.12.2016)  ***************************************@
+
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="div_Salary_Paid_trans_details">
+    <div id="div_Salary_tran_left"><div class="win_loading_half"></div></div>
+</div>
+<script>
+    var id = '@(ViewBag.id)';
+    $("#div_Salary_tran_left").load('@Url.Action("_LoanTranDetails", "HumanResource")?id=' + id);
+</script>
+

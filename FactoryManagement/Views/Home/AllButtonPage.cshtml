@@ -1,0 +1,153 @@
+﻿@********************************************* Created By Jerin Jahan Date(13.11.2016) ****************************************************@
+@{
+    ViewBag.Title = "Equipment Dashboard";
+    Layout = "~/Views/Shared/_LayoutPagedashboard.cshtml";
+    DateTime today = DateTime.Today.AddDays(-7);
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    var u_list = db.Site_Unit_Lists.Where(m => m.UnitStatus == 1).ToList();
+    var AllList = db.View_Dispacth_Item_Details.Where(m => m.DispatchedDate > today).ToList();
+    int u_count = 0;
+}
+
+
+<div id="Win_Ord_Info"></div>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-home"></i>
+            <a href="/Home/Dashboard">Dashboard</a>
+        </li>
+    </ul>
+</div>
+<h3 class="page-title">Dashboard <small>reports & statistics</small></h3>
+<div class="portlet box blue">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-gift"></i>Font Awesome Styled Buttons
+        </div>
+        <div class="tools">
+            <a href="javascript:;" class="collapse" data-original-title="" title="">
+            </a>
+            <a href="#portlet-config" data-toggle="modal" class="config" data-original-title="" title="">
+            </a>
+            <a href="javascript:;" class="reload" data-original-title="" title="">
+            </a>
+            <a href="javascript:;" class="remove" data-original-title="" title="">
+            </a>
+        </div>
+    </div>
+    <div class="portlet-body">
+        <a href="javascript:;" class="icon-btn">
+            <i class="fa fa-group"></i>
+            <div>
+                Users
+            </div>
+            <span class="badge badge-danger">
+                2
+            </span>
+        </a>
+        <a href="javascript:;" class="icon-btn">
+            <i class="fa fa-barcode"></i>
+            <div>
+                Products
+            </div>
+            <span class="badge badge-success">
+                4
+            </span>
+        </a>
+        <a href="javascript:;" class="icon-btn">
+            <i class="fa fa-bar-chart-o"></i>
+            <div>
+                Reports
+            </div>
+        </a>
+        <a href="javascript:;" class="icon-btn">
+            <i class="fa fa-sitemap"></i>
+            <div>
+                Categories
+            </div>
+        </a>
+        <a href="javascript:;" class="icon-btn">
+            <i class="fa fa-calendar"></i>
+            <div>
+                Calendar
+            </div>
+            <span class="badge badge-success">
+                4
+            </span>
+        </a>
+        <a href="javascript:;" class="icon-btn">
+            <i class="fa fa-envelope"></i>
+            <div>
+                Inbox
+            </div>
+            <span class="badge badge-info">
+                12
+            </span>
+        </a>
+        <a href="javascript:;" class="icon-btn">
+            <i class="fa fa-bullhorn"></i>
+            <div>
+                Notification
+            </div>
+            <span class="badge badge-danger">
+                3
+            </span>
+        </a>
+        <a href="javascript:;" class="icon-btn">
+            <i class="fa fa-map-marker"></i>
+            <div>
+                Locations
+            </div>
+        </a>
+        <a href="javascript:;" class="icon-btn">
+            <i class="fa fa-money"><i></i></i>
+            <div>
+                Finance
+            </div>
+        </a>
+        <a href="javascript:;" class="icon-btn">
+            <i class="fa fa-plane"></i>
+            <div>
+                Projects
+            </div>
+            <span class="badge badge-info">
+                21
+            </span>
+        </a>
+        <a href="javascript:;" class="icon-btn">
+            <i class="fa fa-thumbs-up"></i>
+            <div>
+                Feedback
+            </div>
+            <span class="badge badge-info">
+                2
+            </span>
+        </a>
+        <a href="javascript:;" class="icon-btn">
+            <i class="fa fa-cloud"></i>
+            <div>
+                Servers
+            </div>
+            <span class="badge badge-danger">
+                2
+            </span>
+        </a>
+        <a href="javascript:;" class="icon-btn">
+            <i class="fa fa-globe"></i>
+            <div>
+                Regions
+            </div>
+        </a>
+        <a href="javascript:;" class="icon-btn">
+            <i class="fa fa-heart-o"></i>
+            <div>
+                Popularity
+            </div>
+            <span class="badge badge-info">
+                221
+            </span>
+        </a>
+    </div>
+</div>

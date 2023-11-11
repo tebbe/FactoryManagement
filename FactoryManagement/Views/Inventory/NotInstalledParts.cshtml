@@ -1,0 +1,43 @@
+﻿
+
+
+@******************************  Created By Jerin Jahan Date(24.11.2016) ****************************************** *@
+@model IEnumerable<FactoryManagement.ModelView.Inventory.SparePartsListModelView>
+@{
+    var count = 0;
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading"><h2>Available Spare Parts</h2></div>
+    <div class="panel-body">
+        <div class="col-sm-offset-1 col-sm-11">
+            <table class="table table-condensed" id="tbl_notIstalled_machine">
+                @foreach (var list in Model)
+                {
+                    count++;
+                    <tr>
+                        <td width="5%">@count . </td>
+                        <td width="50%">
+                            <span>@list.PartsName Qantity</span><span style="color:#808080;"> (@Convert.ToDouble(list.NotInsQuan) @list.Unitname)</span>
+                            @if (list.TypeName != "")
+                            {
+                                <span style="color:#808080;"> (@list.TypeName)</span>
+                            }
+                        </td>
+                        <td width="10%">
+                            @*<span class="addedParts notInstalled" data-partsid="@list.PartsId" data-id="@list.Id" data-partsname="@list.PartsName"><i class="fa fa-cog"></i></span>*@
+                            <span class="btnBackToStore" data-partsid="@list.PartsId"
+                                  data-id="@list.Id" data-partsname="@list.PartsName"
+                                  data-locid="@list.InvenLocId" data-unitname="@list.Unitname">
+                                <i class="fa fa-mail-forward"></i>
+                            </span>
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    $(".panel-body").css({ "height": panel_height });
+</script>

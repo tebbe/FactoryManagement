@@ -1,0 +1,17 @@
+﻿
+@************************************** Created By Jerin Jahan (Date:17.12.2016)  ***************************************@
+
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="div_Salary_Paid_trans_details">
+    <div id="div_Salary_pay_option_left"><div class="win_loading_half"></div></div>
+
+    <div class="k-edit-buttons k-state-default col-xs-11">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_Payment_Save">
+            <span class="k-icon k-update"></span>OK
+        </button>
+    </div>
+</div>
+<script>
+    var id = '@(ViewBag.id)';
+    $("#div_Salary_pay_option_left").load('@Url.Action("_TranDetails", "HumanResource")?id='+id);
+</script>

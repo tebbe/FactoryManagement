@@ -1,0 +1,16 @@
+﻿
+
+
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;">
+    <div id="divForSpecFileEdit"></div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#divForSpecFileEdit").empty();
+        $("#divForSpecFileEdit").append('<div class="win_loading_half"></div>');
+        $("#divForSpecFileEdit").show();
+        $("#divForSpecFileEdit").load('@Url.Action("SpecificationFileUploadEdit", "CRM")?FileId=' + '@ViewBag.FileId');
+    });
+</script>

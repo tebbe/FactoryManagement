@@ -1,0 +1,74 @@
+﻿
+
+
+@********************************************* Created By Jerin Jahan (04.10.2016) *******************************@
+
+@model IEnumerable<FactoryManagement.Models.View_All_Approved_AcquisitionList>
+
+@{
+    int ItemCount = 1;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int busId = ViewBag.busId;
+
+}
+<h4>All Assigned Item List(Not Accept)</h4><hr />
+<table class="table table-bordered" id="tbl_ready_Foruse">
+    <tbody>
+        <tr style="border:1px solid #ddd!important;">
+            <th width="5%">#</th>
+            <th width="20%">Product Name</th>
+            <th width="15%">Location</th>
+            <th width="20%">Assigned By</th>
+            <th width="20%">Assigned Date</th>
+            <th width="10%">Status</th>
+            <th width="10%">Quantity</th>
+        </tr>
+        @foreach (var item in Model)
+        {
+           string location = "";
+           var bus = db.BusiReceivedItemAssignLists.Find(item.AcquisitionOrderId);
+           if (bus.StoreId > 0)
+           {
+               location = db.StoreLists.Where(m => m.Id == bus.StoreId).Select(m => m.StoreName).FirstOrDefault();
+           }
+           else if (bus.WareId > 0)
+           {
+               location = db.WarehouseLists.Where(m => m.Id == bus.WareId).Select(m => m.WarehouseName).FirstOrDefault();
+           }
+           else
+           {
+               location = db.LineInfoes.Where(m => m.LineId == bus.LineId).Select(m => m.LineAcronym).FirstOrDefault();
+           }
+            <tr class="tbl_tr">
+                <th scope="row">@ItemCount.</th>
+                <td>@item.ProductName</td>
+                <td>@location</td>
+                <td>
+                    @if (item.CreatedBy == 1)
+                    {
+                        <img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" />
+                        @Request.Cookies["CookieAdminInfo"].Values["username"].ToString()
+                    }
+                    else
+                    {
+                        var user = db.View_UserLists.Where(m => m.UserType == 1 && m.UserId == item.CreatedBy).FirstOrDefault();
+                        <img src="~/Images/UserPicture/thumb/@user.Picture" class="user-photo" />
+                        <span>@user.UserName</span>
+                    }
+                </td>
+                <td>
+                    @Convert.ToDateTime(item.UpdatedDate).ToString("MMMM dd,yyyy")
+                </td>
+                <td>
+                    <span class="fa fa-close"> Not Accept</span>
+                </td>
+                <td>
+                    <span id="rcvd_@item.AcquisitionId">@item.Quantity</span>
+                    <span>@item.UnitName</span>
+                    <span class="fa fa-check btn_Accpt_item" data-id="@item.AcquisitionOrderId"></span>
+                </td>
+            </tr>
+            ItemCount++;
+        }
+    </tbody>
+</table>

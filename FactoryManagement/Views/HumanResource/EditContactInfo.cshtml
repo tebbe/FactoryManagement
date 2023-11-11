@@ -1,0 +1,130 @@
+﻿
+
+
+@model FactoryManagement.ModelView.HR.UserInformationModelView
+@Html.HiddenFor(m => m.UserId)
+@Html.HiddenFor(m => m.UserName)
+
+<div class="editor-label"><label>Email Address</label></div>
+<div class="editor-field">
+    @Html.EditorFor(model => model.EmailAddress, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+    @Html.ValidationMessageFor(model => model.EmailAddress, "", new { @class = "text-danger" })
+</div>
+<div class="editor-label"><label>Mobile No</label></div>
+<div class="editor-field">
+    @Html.EditorFor(model => model.MobileNo, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+    @Html.ValidationMessageFor(model => model.MobileNo, "", new { @class = "text-danger" })
+</div>
+<div class="editor-label"><label>Phone</label></div>
+<div class="editor-field">
+    @Html.EditorFor(model => model.Phone, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+    @Html.ValidationMessageFor(model => model.Phone, "", new { @class = "text-danger" })
+</div>
+
+<script>
+    var UserId;
+    $(document).ready(function () {
+        //Phone function
+        telInput1 = $("#Phone");
+        telInput1.intlTelInput({
+            geoIpLookup: function (callback) {
+                $.get("http://ipinfo.io", function () { }, "jsonp").always(function (resp) {
+                    var countryCode = (resp && resp.country) ? resp.country : "";
+                    callback("BD");
+                });
+            },
+            initialCountry: "auto",
+            utilsScript: "../Scripts/intl-tel-input-master/build/js/utils.js"
+        });
+        var reset = function () {
+            telInput1.removeClass("error");
+        };
+        telInput1.on("keyup change", reset);
+        //mobile
+        telInput = $("#MobileNo");
+        telInput.intlTelInput({
+            geoIpLookup: function (callback) {
+                $.get("http://ipinfo.io", function () { }, "jsonp").always(function (resp) {
+                    var countryCode = (resp && resp.country) ? resp.country : "";
+                    callback("BD");
+                });
+            },
+            initialCountry: "auto",
+            utilsScript: "../Scripts/intl-tel-input-master/build/js/utils.js"
+        });
+        var reset = function () {
+            telInput.removeClass("error");
+        };
+        telInput.on("keyup change", reset);
+    });
+
+    var validation = $("#show_contact_info").kendoValidator({
+        rules: {
+            MobileNo: function (input) {
+                if (input.is("[name=MobileNo]")) {
+                    if (telInput.intlTelInput("isValidNumber")) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+                return true;
+            },
+            Phone: function (input) {
+                if (input.is("[name=Phone]")) {
+                    if (telInput1.intlTelInput("isValidNumber")) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+                return true;
+            },
+        },
+        messages: {
+            MobileNo: "Please enter valid contact number",
+            Phone: "Please enter valid contact number",
+        }
+    }).data("kendoValidator");
+    $("#btn_ContactInfoEdit").click(function () {
+        var MobileNo = $("#MobileNo").intlTelInput("getNumber");
+        var Phone = $("#Phone").intlTelInput("getNumber");
+        if (validation.validate()) {
+            notification.show({ message: "Contact informatin updating...", showTime: startTime() }, "upload-progress");
+            var sendData = {
+                UserId: $("#UserId").val(),
+                EmailAddress: $("#EmailAddress").val(),
+                MobileNo: MobileNo,
+                Phone: Phone,
+                UserName: $("#UserName").val(),
+                CreatedBy: userId
+            };
+            $.ajax({
+                url: '@Url.Action("ContactInformationUpdate", "HumanResource")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === 'Error') {
+                        notification.show({ message: "Contact information of user '" + sendData.UserName + "' update unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                    else {
+                        notification.show({ message: "Contact information of user '" + sendData.UserName + "' has been successfully updated.", showTime: startTime() }, "upload-success");
+                    }
+                    $("#div_user_contactInfo_edit").data("kendoWindow").close();
+                    $("#div_ryt_panel").load('@Url.Action("_ShowEmpInfo", "HumanResource")?UserId=' + '@Model.UserId' + '&isDisplay=false');
+                },
+                error: function (err) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+    $("#btn_CancelContactInfo").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>
+
+

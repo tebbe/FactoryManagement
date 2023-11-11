@@ -1,0 +1,117 @@
+﻿
+@******************************** Created By Jerin Jahan (Date: 02.01.2017) ******************************************************@
+@model FactoryManagement.Models.View_Manual_Indent
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    double total_rcv_qty = 0;
+    if (db.ManualIndentReceiveTransactions.Where(m => m.VoucherId == Model.VoucherId && m.IndentId == Model.IndentId).Any())
+    {
+        total_rcv_qty = db.ManualIndentReceiveTransactions.Where(m => m.VoucherId == Model.VoucherId && m.IndentId == Model.IndentId).Sum(m => m.Quantity);
+    }
+    double remaing_qty = Model.Quantity - total_rcv_qty;
+}
+@using (Html.BeginForm())
+{
+    @Html.HiddenFor(m => m.IndentId)
+    <div class="k-edit-form-container col-md-10 col-sm-10 col-xs-10" id="Div_Indent_Rcv" style="margin-bottom:4%;">
+        <div class="editor-label"><label for="DeptName">Product Name</label></div>
+        <div class="editor-field" style="padding-top:6px!important;">@Model.ProName</div>
+
+        <div class="editor-label"><label for="DeptAcronym">Quantity</label></div>
+        <div class="editor-field">
+            <span style="width:100%;">
+                <input class="k-textbox"
+                       placeholder="Enter Qty" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Enter Qty' " 
+                       id="txtRcvQty" name="txtRcvQty" type="number" value="" aria-invalid="true" style="width:50%!important">
+                <span>Out of @remaing_qty @Model.UnitName</span>
+            </span>
+            <span class="field-validation-valid text-danger" data-valmsg-for="txtRcvQty" data-valmsg-replace="true"></span>
+        </div>
+       
+        <div class="col-sm-11 col-xs-11">
+            <div class="k-edit-buttons k-state-default">
+                <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_Indent_Rcv"><span class="k-icon k-update"></span>Save</button>
+                <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_Indent_Rcv_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+            </div>
+        </div>
+    </div>
+}
+
+<script>
+    $("#btn_Indent_Rcv").click(function () {
+        var validation = $("#Div_Indent_Rcv").kendoValidator({
+            rules: {
+                unitId: function (input) {
+                    if (input.is("[name=txtRcvQty]") && input.val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
+                qun: function (input) {
+                    if (input.is("[name=txtRcvQty]") && input.val() > 0) {
+                        var type_qty = input.val();
+                        var max_qty = @remaing_qty;
+                        if(parseFloat(type_qty).toFixed(2) == parseFloat(max_qty).toFixed(2) || type_qty < max_qty){
+                            return true;
+                        }
+                        else{
+                            return false;
+                        }
+                    }
+                    else {
+                        return true;
+                    }
+                },
+                less: function (input) {
+                    if (input.is("[name=txtRcvQty]") && input.val() < 1) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            },
+            messages: {
+                unitId: "Please enter quantity",
+                qun:"Quantity can not be greater than @remaing_qty ",
+                less:"Quantity can not be less than 1",
+            }
+        }).data("kendoValidator");
+        if (validation.validate()) {
+            notification.show({ message: "Data is saving...", showTime: startTime() }, "upload-progress");
+            var senddata = {
+                VoucherId:'@(Model.VoucherId)',
+                IndentId: '@(Model.IndentId)',
+                Quantity: $("#txtRcvQty").val(),
+                InsertedBy: userId
+            };
+            $.ajax({
+                url: '@Url.Action("RcvManualIndentQty", "Acquisition")',
+                type: 'Post',
+                data: senddata,
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    $("#btn_Indent_Rcv").closest(".k-window-content").data("kendoWindow").close();
+                    if (data !== "Error") {
+                        notification.show({ message: "Indent item quantity has been successfully received.", showTime: startTime() }, "upload-success");
+                        $("#Div_Manual_Indent").empty();
+                        $("#Div_Manual_Indent").append('<div class="win_loading_half"></div>');
+                        $("#Div_Manual_Indent").load('@Url.Action("_AllManualIndent", "Acquisition")?v=edit&status='+data+'&id='+@Model.VoucherId);
+                } else {
+                    notification.show({ message: "Indent item quantity receive was unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+
+            },
+            error: function (err) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+            }
+
+        });
+    }
+    });
+
+    $("#btn_Indent_Rcv_cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

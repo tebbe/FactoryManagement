@@ -1,0 +1,67 @@
+﻿
+
+@************************************** Created By Jerin Jahan (Date:29.01.2017)  ***************************************@
+@model IEnumerable<FactoryManagement.Models.View_Inven_Item_Loc_Details>
+@using FactoryManagement.Helpers;
+@{
+    ViewBag.Title = "Name of the Goods";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    int count = 0;
+}
+<style>
+    table th{text-align:center;vertical-align:central!important;}
+    table tr th{vertical-align:middle!important;}
+    table tr td{text-align:center;}
+    h4{margin-bottom:0px!important;}
+</style>
+<center><h4>@ViewBag.catname</h4>
+<p>@ViewBag.storename</p></center>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">Product Type List</span>
+                </div>
+                <span class="green bold" data-toggle="tooltip" data-container="body" title="" style="float:right;cursor:pointer;font-size:16px!important;" data-original-title="Print This Page">
+                    <a href="@Html.EncodedParam("AllGoodsListPrint", "Report", new { id = ViewBag.id, storeid = ViewBag.storeid, catname = ViewBag.catname }, null)" target="_blank">
+                        <small style="color:#3C8DBC"> <i class="fa fa-print"></i> Print </small>
+                    </a>
+                </span>
+            </div>
+            <div class="portlet-body">
+                <div id="divForAll_Pro_type">
+                    @if (Model.Count() > 0)
+                    {
+                        <table class="table table-hover table-bordered table-condensed table-striped tableForProductTypeList">
+                            <tbody>
+                                <tr>
+                                    <th width="10%">SL. NO</th>
+                                    <th width="70%">NAME OF THE GOODS</th>
+                                    <th width="10%">CLOSING BALANCE</th>
+                                    <th width="10%">LOCATION</th>
+                                </tr>
+                                @foreach (var item in Model)
+                                {
+                                    //char c = item.ProductName.FirstOrDefault();
+                                    count++;
+                                    <tr>
+                                        <td style="text-transform:uppercase;">@count. </td>
+                                        <td style="text-align:left;">@item.ProductName</td>
+                                        <td>@item.Quantity</td>
+                                        <td>@item.Description</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p>There is no record to display...</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

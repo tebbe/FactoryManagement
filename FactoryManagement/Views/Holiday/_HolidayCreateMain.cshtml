@@ -1,0 +1,29 @@
+﻿
+
+@************************************** Created By Jerin Jahan (Date:03.01.2017)  ***************************************@
+
+@model FactoryManagement.ModelView.HR.HolidayListModelView
+
+
+<div class="k-edit-form-container col-md-10 col-sm-10 col-xs-10" id="holiday_add_update_Main" style="margin-bottom:4%;">
+    <div id="DivForHolidayCreate"></div>
+   
+</div>
+<script>
+    $(document).ready(function () {
+      
+        $("#DivForHolidayCreate").empty();
+        $("#DivForHolidayCreate").append('<div class="partial_loading_half"></div>');
+        $("#DivForHolidayCreate").load('@Url.Action("_HolidayCreate", "Holiday")?id=' + '@(ViewBag.id)');
+    });
+
+    $("#DivForHolidayCreate").on("click","#btn_Holiday_Refresh",function () {
+        $("#DivForHolidayCreate").empty();
+        $("#DivForHolidayCreate").append('<div class="partial_loading_half"></div>');
+        $("#DivForHolidayCreate").load('@Url.Action("_HolidayCreate", "Holiday")?id=' + '@(ViewBag.id)');
+    });
+
+    $("#DivForHolidayCreate").on("click","#btn_Holiday_Cancel",function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

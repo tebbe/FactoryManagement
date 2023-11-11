@@ -1,0 +1,83 @@
+﻿@****************************** Created By Jerin Jahan Date(21.11.2016) *************************************@
+@model IEnumerable<FactoryManagement.Models.StockItemList>
+@{
+    int count = 1;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<style>
+    #tbl_stock_list th, #tbl_stock_list td{border:none!important;}
+</style>
+<table class="table" id="tbl_stock_list">
+    <tr>
+        <th width="3%">#</th>
+        <th width="20%">Name</th>
+        <th width="10%">Quantity</th>
+        <th width="10%">Status</th>
+        <th width="15%">Store Date</th>
+        <th width="10%">Stored By</th>
+        <th width="15%">Dispatched Date</th>
+        <th width="10%">Dispatched By</th>
+    </tr>
+    @foreach (var item in Model)
+    {
+        var specDetails = new FactoryManagement.ModelView.CRM.BusiOrder_ManualSpecModelView();
+        if (item.Busi_Spec_Id > 0)
+        {
+            specDetails = (from m in db.BusiOrder_ManualSpec
+                        join u in db.UnitLists on m.UnitId equals u.UnitId
+                        where m.Id == item.Busi_Spec_Id                       
+                        select new FactoryManagement.ModelView.CRM.BusiOrder_ManualSpecModelView
+                        {
+                            Id = m.Id,
+                            BusOrdId = m.BusOrdId,
+                            Spec_lbl = m.Spec_lbl,
+                            Quantity = m.Quantity,
+                            UnitId = m.UnitId,
+                            UnitName = u.UnitName,
+                            Spec_Description = m.Spec_Description,
+                            CreatedBy = m.CreatedBy,
+                            CreatedDate = m.CreatedDate,
+                            ProStatus = m.ProStatus,
+                            IsStoreIntoStock = m.IsStoreIntoStock
+                        }).FirstOrDefault();
+        } 
+        <tr>
+            <td>@count .</td>
+            <td>@specDetails.Spec_lbl</td>
+            <td>@specDetails.Quantity @specDetails.UnitName</td>
+            <td>
+                @if (item.Status == 0) { 
+                    <span>Not yet dispatched</span>
+                }
+                else
+                {
+                    <span>Dispatched</span>
+                }
+            </td>
+            <td>@Convert.ToDateTime(item.StoreDate).ToString("MMM dd, yyyy hh:mm:tt")</td>
+            <td>@item.StoreBy</td>
+            <td>
+                @if (item.DispatchedDate == null)
+                {
+                    <span>Not yet dispatched</span>
+                }
+                else
+                {
+                    @Convert.ToDateTime(item.DispatchedDate).ToString("MMM dd, yyyy hh:mm:tt")
+                }
+            </td>
+            <td>
+                @if (item.DispatchedBy == null)
+                {
+                    <span>Not yet dispatched</span>
+                }
+                else
+                {
+                    @Convert.ToDateTime(item.DispatchedDate).ToString("MMM dd, yyyy hh:mm:tt")
+                }
+            </td>
+        </tr>
+        count++;
+    }
+</table>
+

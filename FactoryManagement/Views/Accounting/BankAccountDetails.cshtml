@@ -1,0 +1,338 @@
+﻿@model FactoryManagement.ModelView.Accounting.Bank_BranchListModelView
+@using FactoryManagement.Helpers
+@{
+    ViewBag.Title = "BankAccountDetails";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<link href="~/Scripts/intl-tel-input-master/build/css/intlTelInput.css" rel="stylesheet" />
+<h3 class="page-title">
+    Branch Information
+</h3>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-calculator"></i>
+            <span> Finance</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list" aria-hidden="true"></i>
+            <span>Bank</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list" aria-hidden="true"></i>
+            <a href="/Accounting/AllBankList">Bank List</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list" aria-hidden="true"></i>    
+            <a href="@Html.EncodedParam("BankBranchDetails", "Accounting", new { BankId = Model.BankId, forDisplay = Model.ForDisplay }, null)">Branches List</a>      
+             <i class="fa fa-angle-right"></i>
+        </li>
+        <li>         
+            <a href="@Html.EncodedParam("BankAccountDetails", "Accounting", new { Id = Model.BranchId, forDisplay = Model.ForDisplay }, null)">Account List</a>   
+              
+        </li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col-md-12 col-sm-12">
+
+        <div class=" portlet light bordered">
+            <div class="caption font-green ">
+                <i class="fa fa-info-circle font-green"></i>
+                <span class="caption-subject bold uppercase">Branch Details</span>
+            </div>
+            <hr />
+            <div id="DivForBankInfoDisplay">
+                <div class="loading_half"></div>
+                @if (Model.BranchId > 0)
+                {
+                    <script>
+                        $("#DivForBankInfoDisplay").load('@Url.Action("_ShowBankInfo", "Accounting")?Id=' + '@(Model.BranchId)' + "&forDisplay=" + '@(Model.ForDisplay)');
+                    </script>
+                }
+            </div>
+        </div>
+
+    </div>
+
+ <div class="col-md-12" id="DivForAccountInfo">     
+        <p><span class="btn green" data-toggle="tooltip" data-original-title="Add New Account" id="ShowPopUpAddAccount"><i class="fa fa-plus"></i>Add Account</span></p> 
+        <div id="DivForAccount" style="display:none;">
+            <div class="loading_half"></div>
+        </div>
+        @if (db.BankAccountLists.Where(m => m.BranchId == Model.BranchId).Any())
+        {
+            <script>
+                $("#DivForAccount").load('@Url.Action("AccountList", "Accounting")?Id=' + '@(Model.BranchId)' + "&forDisplay=" + '@Model.ForDisplay');
+                $("#DivForAccount").show();
+            </script>
+        }
+    </div>
+
+</div>
+
+
+<div id="div_for_edit_branch_info"></div>
+<div id="dialog"></div>
+<div id="dialog1"></div>
+<script src="~/Scripts/intl-tel-input-master/build/js/intlTelInput.min.js"></script>
+<script id="temp_win_site_edit" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">#=message#</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_editUnit_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_editUnit_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    var accountId;
+    $(document).ready(function () {
+        $("#liForAccounting").addClass('active');
+        $("#liForBankList").addClass('sublistActive');
+        $("#top_header_link").append('<span>Accounce</span><span><i class="fa fa-angle-right fa-2x"></i></span>' +
+            '<span><a href="/Accounting/AllBankList"> Bank Lists </a></span><span><i class="fa fa-angle-right fa-2x"></i></span>' +
+           '<span> Bank Branches </span><span><i class="fa fa-angle-right fa-2x"></i></span>' +
+           '<span class= "current"> Bank Accounts </span>' +
+           '<span id="btn_page_back"><i class="fa fa-reply"> Back</i></span>');
+
+        if ('@(Model.ForDisplay)' == 1) {
+            $("#ShowPopUpAddAccount").hide();
+        }
+
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+    $(document).on("click", "#btn_page_back", function (e) {
+        e.preventDefault();
+        window.history.back();
+    });
+
+    $("#DivForAccountInfo").on("click", "#ShowPopUpAddAccount", function (e) {
+        e.preventDefault();
+        var BranchId = '@Model.BranchId';
+        $("#dialog").empty();
+        $("#dialog1").empty();
+        $("#dialog").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '70%',
+            height: '60%',
+            title: ' Add Account'
+        });
+        $("#dialog").html('<div class="win_loading_half"></div>');
+        var add_Account = $("#dialog").data("kendoWindow");
+        add_Account.refresh({ url: "/Accounting/_AddNewAccountPopUp?BranchId=" + BranchId });
+        add_Account.center().center().open();
+    });
+
+    $("#DivForAccount").on("click", ".accountDetailsEdit", function (e) {
+        e.preventDefault();
+        var accountId = $(this).data('accountid');
+        $("#dialog").empty();
+        $("#dialog1").empty();
+        $("#dialog1").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '70%',
+            height: '60%',
+            title: 'Edit Account Details',
+        });
+        $("#dialog1").html('<div class="win_loading_half"></div>');
+        var add_Account = $("#dialog1").data("kendoWindow");
+        add_Account.refresh({ url: "/Accounting/_AddNewAccountPopUp?BranchId=" + '@Model.BranchId' + '&BankAccountId=' + accountId });
+        add_Account.center().center().open();
+    });
+    $("#DivForBankInfoDisplay").on("click", "#editBankInfo", function (e) {
+        e.preventDefault();
+        var BranchId = '@Model.BranchId';
+        $("#div_for_edit_branch_info").empty();
+        $("#div_for_edit_branch_info").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '70%',
+            position: { top: '20%' },
+            height: '65%',
+            title: ' Edit Branch Information'
+        });
+        $("#div_for_edit_branch_info").html('<div class="win_loading_half"></div>');
+        var edit_branch_info = $("#div_for_edit_branch_info").data("kendoWindow");
+        edit_branch_info.refresh({ url: "/Accounting/_EditBranchInformation?BranchId=" + BranchId });
+        edit_branch_info.center().open();
+    });
+
+    function onChangeOfBankCountry() {
+        var country = $("#Country").val();
+        var division = $("#DivisonId").val();
+        var state = $("#State").val();
+        if (country == "BD") {
+            $("#DivForDivision").show();
+            $("#DivForState").hide();
+            $("#State").val('');
+            $("#DivisonId").val(division);
+        }
+        else {
+            $("#DivForState").show();
+            $("#DivForDivision").hide();
+            $("#State").val(state);
+            $("#DivisonId").val('');
+        }
+        $('input[id="btnEditBank"]').prop('disabled', false);
+    };
+    function onOpen() {
+        kendoConsole.log("event: open");
+    }
+
+    $(document).on("click", "#btnUserDetailsCancel", function (e) {
+        e.preventDefault();
+        $("#dialog").data("kendoWindow").close();
+        $("#dialog").empty();
+    });
+    //$("#DivForAccount").on("click", ".accountDetailsDisplay", function (e) {
+    //    e.preventDefault();
+    //    var accountId = $(this).data('accountid');
+    //    $("#dialog").empty();
+    //    $("#dialog").kendoWindow({
+    //        actions: ["Close"],
+    //        draggable: false,
+    //        modal: true,
+    //        visible: false,
+    //        title: 'Display Account Details',
+    //    });
+    //    $("#dialog").html('<div class="win_loading_half"></div>');
+    //    var account_history = $("#dialog").data("kendoWindow");
+    //    account_history.refresh({ url: "/Accounting/DisplayAccountHistory?BankAccountId=" + accountId });
+    //    account_history.center().maximize().open();
+    //});
+    $("#DivForAccount").on("click", ".accountDetailsDisplay", function (e) {
+        e.preventDefault();
+        var accountId = $(this).data('accountid');
+        location.href = '@Url.Action("BankAccountHistory", "Accounting")?q=' + getDataEncrypted("BankAccountId=" + accountId);
+
+    });
+    function onChangeDivision() {
+        $('input[id="btnEditBank"]').prop('disabled', false);
+    }
+    function onkeyupevent() {
+        $('input[id="btnEditBank"]').prop('disabled', false);
+    }
+
+    function onChangeOfCountry() {
+        var country = $("#Country").val();
+        if (country == "BD") {
+            $("#DivForDivision").show();
+            $("#DivForState").hide();
+        }
+        else {
+            $("#DivForState").show();
+            $("#DivForDivision").hide();
+        }
+    };
+    $("#DivForAccount").on("click", ".deleteAccount", function (e) {
+        e.preventDefault();
+        accountId = $(this).data('id');
+        $.ajax({
+            url: '@Url.Action("CheckAccountExist", "Accounting")',
+            type: 'Post',
+            data: { BankAccountId: accountId },
+            success: function (data) {
+                if (data == false) {
+                    accountdeleteconfirmation();
+                } else {
+                    updateData();
+                }
+
+            }
+        });
+    });
+    function accountdeleteconfirmation() {
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        message = "Are you sure you want to delete this account?";
+        var template = kendo.template($("#temp_win_site_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+
+        kendoWindow.find("#btn_editUnit_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+
+        kendoWindow.find("#btn_editUnit_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            deleteAccountList();
+        }).end();
+    }
+    function updateData() {
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        message = "Sorry, you can't delete this account";
+        var template = kendo.template($("#temp_win_site_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+
+        kendoWindow.find("#btn_editUnit_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_editUnit_ok").hide();
+    }
+    function deleteAccountList() {
+        var url = "/Accounting/DeleteAccount";
+        $.post(url, { BankAccountId: accountId, CreatedBy: userId }, function (data) {
+            notification.hide();
+            notification.setOptions({ autoHideAfter: 2000 });
+            if (data === "Error") {
+                notification.show({
+                    message: "Deletion unsuccessful", showTime: startTime()
+                }, "upload-error");
+            }
+            else {
+                if (data == true) {
+                    $("#DivForAccount").load('@Url.Action("AccountList", "Accounting")?Id=' + '@(Model.BranchId)' + "&forDisplay=" + '@Model.ForDisplay');
+                } else {
+                    $("#DivForAccount").hide();
+                }
+                notification.show({ message: "Account successfully deleted", showTime: startTime() }, "upload-success");
+            }
+        })
+    };
+    function onAdditionalData() {
+        return {
+            text: $("#Bank").val(),
+        };
+    }
+    function BankSelect(e) {
+        var DataItem = this.dataItem(e.item.index());
+        $("#BankId").val(DataItem.BankId);
+        $("#div_for_selected_bank").append('<div id="DynDivbank">' +
+             '<input id="txtContactType-' + count + '" name="txtContactType-' + count + '" style="width: 100%;" />' +
+             '<span class="field-validation-valid text-danger" data-valmsg-for="txtContactType-' + count + '" data-valmsg-replace="true"style="display: none;"></span>' +
+           '</div>');
+        return;
+    }
+    //function onBankNameChange(e) {
+    //    e.preventDefault();
+    //    var DataItem = this.dataItem(e.item.index());
+    //    alert(DataItem.BankId);
+    //}
+
+</script>
+
+
+

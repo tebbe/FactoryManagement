@@ -1,0 +1,73 @@
+﻿
+
+
+@************************************** Created By Jerin Jahan (Date:29.01.2017)  ***************************************@
+@using FactoryManagement.Helpers;
+@{
+    ViewBag.Title = "All Product Type List";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    int count = 0;
+    int storeid = ViewBag.storeid;
+}
+
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-gears"></i>
+            <span>Configuration</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Inventory/ProductTypeList">  Product Type List</a>
+        </li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">Product Type List</span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div id="divForAll_Pro_type">
+                    @if (((IEnumerable<dynamic>)ViewBag.list).Count() > 0)
+                    {
+                        <table class="table table-hover table-bordered table-condensed table-striped tableForProductTypeList">
+                            <tbody>
+                                <tr>
+                                    <th width="90%">Name</th>
+                                    <th width="10%"></th>
+                                </tr>
+                                @foreach (var item in ViewBag.list as IEnumerable<FactoryManagement.ModelView.Inventory.Product.ProductTypeViewModel>)
+                                {
+                                    count++;
+                                    <tr>
+                                        <td><span>@Html.DisplayFor(modelItem => item.ProductTypeName)</span></td>
+                                        <td>
+                                            <a href="@Html.EncodedParam("AllGoodsList", "StoreProduct", new { id = item.ProductTypeId, storeid = storeid, catname=item.ProductTypeName }, null)" target="_blank">
+                                                <span class="btn blue" data-toggle="tooltip" title="Show all goods"><i class="fa fa-list-ul"></i></span>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p>There is no record to display...</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,123 @@
+﻿@******************************** Created By Mabia Mishu (Date:28.09.2016) *********************************@
+@model FactoryManagement.Models.View_SiteLists
+@{
+   
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<div class="portlet light portlet-fit bordered">
+    
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-info-circle font-green"></i>
+            <span class="caption-subject font-green bold uppercase">Site Information</span>
+        </div>
+    </div>
+    <div class="portlet-body">
+        <div class="form-horizontal">
+            <div class="form-body">
+                <dl class="dl-horizontal">
+                    <dt>Site Name</dt>
+                    <dd>
+                        <span>@Html.DisplayFor(model => model.SiteName)</span>
+                        <span class="label label-success hover-pointer" data-toggle="tooltip" title="Edit Site information" id="btnForSiteEdit" style="margin-left:2%"><i class="fa fa-pencil"></i></span>
+                    </dd>
+                    @if (Model.SiteAcronym != null)
+                    {
+                        <dt>Site Acronym</dt>
+                        <dd>@Html.DisplayFor(model => model.SiteAcronym)</dd>
+                    }
+                    <dt>Address</dt>
+                    @if (Model.AddressLine1 != null)
+                    {
+                        <dd>@Model.Address, @Model.AddressLine1, @Model.Area, @Model.City - @Model.PostalCode, @Model.CountryName.</dd>
+                    }
+                    else
+                    {
+                        <dd>@Model.Address, @Model.Area, @Model.City - @Model.PostalCode, @Model.CountryName.</dd>
+                    }
+                    <dt>Site Status</dt>
+                    <dd>@Html.DisplayFor(model => model.SiteStatus)</dd>
+
+                    <dt>Created By</dt>
+                    <dd>
+                        @if (Model.CreatedBy == 0)
+                        {
+                            <span>Super Admin</span>
+                        }
+                        else
+                        {
+                            var user = db.View_UserLists.Where(m => m.UserId == Model.CreatedBy).FirstOrDefault();
+                            <span>@user.UserName</span>
+                        }
+                    </dd>
+                    <dt>Created Date</dt>
+                    <dd>@Convert.ToDateTime(Model.CreatedDate).ToString("MMMM dd,yyyy")</dd>
+
+                    @if (Model.IsComposite == true)
+                    {
+                        <dt>No. Of Unit</dt>
+                        <dd><span id="Span_UnitCount">@Convert.ToInt16(Model.UnitNumber)</span></dd>
+                    }
+                    else
+                    {
+                        if (db.DepartmentLists.Where(m => m.SiteId == Model.Id).Any())
+                        {
+                            int dept_Count = db.DepartmentLists.Where(m => m.SiteId == Model.Id).Count();
+                            <dt>No. Of Dept</dt>
+                            <dd><span id="Span_DeptCount">@dept_Count</span></dd>
+                        }
+                        else
+                        {
+                            <dt>No. Of Dept</dt>
+                            <dd><span id="Span_DeptCount">0</span></dd>
+                        }
+                        <dt id="lblForAdd" style="display:none">Add Dept</dt>
+                    }
+                    <dd id="inputForAdd" style="display:none">
+                        <div>
+                            <input input type="text" onkeypress="return isNumber(event)" onkeyup="isvalueNull(this.value)" class="k-textbox text-box single-line k-invalid"
+                                   name="UnitNumber" id="UnitNumber" maxlength="2" style="width:10%!important;height: 1.7em!important;" />
+                            <span id="btnForAddUnit"><i class="fa fa-check fa-2"></i></span>
+                            <span id="btnForCancleUnit"><i class="fa fa-times fa-2"></i></span>
+                        </div>
+                        <span class="field-validation-valid text-danger" data-valmsg-for="UnitNumber" data-valmsg-replace="true"></span>
+                    </dd>
+                </dl>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="div_for_add_btn">
+    @if (Model.IsComposite == true)
+    {
+        <p><span class="btn green" data-toggle="tooltip" title="Add New Unit" id="btn_Add_Unit"><i class="fa fa-plus"></i> Add New Unit</span></p>
+    }
+    else
+    {
+        if (ViewBag.isResi == true)
+        {
+            <p><span class="btn green" id="linkForDeptCreate" data-toggle="tooltip" title="Add New Building" data-placement="top" style="margin-top:15px"><i class="fa fa-plus"></i> Add New Building</span></p>
+        }
+        else
+        {
+            <p><span class="btn green" data-toggle="tooltip" title="Add New Department" id="btn_dept_add_into_site"><i class="fa fa-plus"></i> Add New Dept.</span></p>
+        }
+    }
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+        site = '@(Model.SiteName)';
+        SiteName = '@(Model.SiteName)';
+        isResidential = '@(Model.IsResidential)';
+        if (canDisplay == 'True') {
+            $("#btnForSiteEdit").hide();
+            $("#btnForDefineUnit").hide();
+        }
+    });
+</script>

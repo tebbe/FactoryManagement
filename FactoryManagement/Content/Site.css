@@ -1,0 +1,303 @@
+﻿/*body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+}*/
+
+/*.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}*/
+input,
+select,
+textarea {
+    max-width: 100%;
+}
+
+.buttonClass {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-right: 10px;
+            width: 14.666666666666664% !important;
+        }
+
+        
+.k-animation-container {
+            margin-left: 0px;
+            padding-left: 0px;
+            padding-right: 0px;
+            padding-bottom: 0px;
+            display: block;
+            height: auto;
+            overflow: visible;
+        }
+
+        
+.loadingPage {background: url('../../Content/Icon/preloader.gif') no-repeat center center;}
+
+        
+#loading {
+            background: url('../../Content/Icon/preloader.gif') no-repeat center center;
+            opacity: 0.4;
+            height: 400px;
+            margin-top: -155px;
+        }
+        
+#divForSearch {
+            text-align: left;
+            border: 1px solid buttonshadow;
+            border-radius: 3px;
+            position: absolute;
+            z-index: 1000;
+            padding: 2px;
+            font-family: "Segoe UI", "Microsoft Sans Serif", Arial, Geneva, sans-serif;
+            font-size: 13.008px;
+            background-color: rgb(255, 255, 255);
+            width: 48.5% !important;
+        } 
+.bold-text {font-weight: bold; color: #2a6496;}       
+.k-icon {cursor: pointer !important; }
+.td_btn span {cursor: pointer;}
+@media (min-width: 992px){
+    body {
+    padding-top: 40px;
+    padding-bottom: 20px;
+    }
+}
+.k-edit-label, .k-edit-form-container .editor-label{width:20%!important;padding-right:0px!important;}
+.k-edit-field, .k-edit-form-container .editor-field{width:50%!important;margin-left:15px;float:left;}
+.k-edit-field, .k-edit-form-container .editor-field .k-textbox{width:100%!important;}
+.k-edit-field, .k-edit-form-container .editor-field .k-dropdown{width:100% !important;}
+
+@media only screen and (max-width: 450px) {
+   .table tr td { font-size: 1em!important; }
+   .table tr td .user-photo{display:none;}
+}
+
+.user-photo {border-radius: 50% !important;width: 35px;height: 32px;}
+.customtreeviewClass {
+        border: 1px solid rgba(20,53,80,0.14);
+        box-shadow: 0 1px 2px 1px rgba(0,0,0,.08), 0 3px 6px rgba(0,0,0,.08);
+        height:600px!important;
+    }
+.tvCustomClass{
+        margin: 2em;
+        overflow:scroll;
+        overflow-y: auto;
+        min-height:500px!important;
+        max-height:500px!important;
+    }
+.tvCustomClass::-webkit-scrollbar {width: 5px;}   
+.tvCustomClass::-webkit-scrollbar-track {-webkit-box-shadow: inset 0 0 6px rgb(229, 229, 229);border-radius: 10px;}   
+.tvCustomClass::-webkit-scrollbar-thumb { border-radius: 10px;-webkit-box-shadow: inset 0 0 6px rgb(65, 65, 55);}
+
+
+
+
+/**************************************************   Style for Notification   **************************************************/
+.k-notification {border: 0;}
+.k-animation-container{z-index:22222!important;}
+.k-notification-upload-success.k-group { background:rgba(223, 242, 191, 0.79);color: #4F8A10;}
+.k-notification-upload-error.k-group {background:rgba(255, 186, 186, 0.93);color: #D8000C;}
+.k-notification-upload-warning.k-group {color: #9F6000;background-color: #FEEFB3;}
+.k-notification-upload-progress.k-group {background:rgba(98, 98, 98, 0.66);color: #fff;}
+.upload-success, .upload-error, .upload-progress, .upload-warning{width: 300px;margin: 10px 0px;padding:12px;}
+.upload-success i,.upload-error i, .upload-warning i {margin:5px 5px;font-size:2em;vertical-align:middle;}
+.upload-success .time,.upload-error .time, .upload-progress .time, .upload-warning .time {position: absolute;top: 0;right: 0;float:right;font-size:.8em;vertical-align:middle;padding:10px 10px 0px 0px;}
+.upload-progress .imgLoading{margin:10px 22px;border-radius: 50%;height: 20px;}
+.upload-progress .imgProgress{margin: 0px 0px 10px 13px;width: 90%;height: 8px;border-radius:2px}
+
+
+
+
+/*******************************************   FOR KENDO POPUP ********************************************************************/
+
+.k-edit-form-container{width:96%!important;}
+.k-block>.k-header, .k-window-titlebar {
+    height: 2.1em;
+    margin-top: -2em;
+    padding-top: 0.6em;
+    padding-right: 0px;
+    padding-bottom: 0.6em;
+    padding-left: 0px;
+    min-height: 26px!important;
+    background-color: transparent;
+}
+.k-window-title {left: 1em;padding-top: 10px;}
+.k-edit-form-container .k-edit-buttons {border-style: none;width:99%!important;}
+.k-window-titlebar .k-window-actions {right: .8em!important;padding-top: .8em!important;}
+.k-overlay {opacity: 0.85 !important;}
+
+
+/*******************************************   Blur Bakground Body ********************************************************************/
+.blur {
+        filter: blur(5px);
+        -webkit-filter: blur(5px);
+        -moz-filter: blur(5px);
+        -o-filter: blur(5px);
+}
+
+.sublistActive{
+       background:#1b5669!important;
+       border-top-color: transparent;
+       color:white!important;
+}
+.sublistActive a{
+    color:#fff!important;
+}
+.sublistActive a:hover{
+    background:#1b5669!important;
+    color:#777777!important;
+}
+
+.sublistActive .fa{
+    color:#fff!important;
+}
+.sublistActive .fa:hover{
+    color:#777777!important;
+}
+
+.info {
+        border-radius: 91%;
+        height: 15px;
+        width: 15px;
+    }
+
+.Cus_tooltip{
+        padding-left: 0px;
+        padding-top: 2px;
+        width: 1% !important;
+        float: left;
+    }
+
+
+.bold-text {
+        font-weight: bold;
+        color: #2a6496;
+    }
+
+
+
+/**********************  FOR TREEVIEW ****************/
+.demo-section.k-content {
+    box-shadow: 0 1px 2px 1px rgba(0,0,0,.08), 0 3px 6px rgba(0,0,0,.08);
+}
+    
+.demo-section:not(.wide), #exampleWrap .box:not(.wide) {
+        max-width: 600px;
+    }
+    
+.demo-section {
+    margin: 0 auto 4.5em;
+    padding: 3em;
+    border: 1px solid rgba(20,53,80,0.14);
+}
+    
+.fa{
+        cursor:pointer!important;
+    }
+
+
+
+/*******************************   For Autocomple Search ***************************************************/
+.autocomplete-wrapper label { display: block; margin-bottom: .75em; color: #3f4e5e; font-size: 1.25em; }
+.autocomplete-wrapper .text-field { padding: 0 15px; width: 100%; height: 35px; border: 1px solid #CBD3DD; font-size: 1.125em; }
+.autocomplete-wrapper ::-webkit-input-placeholder { color: #CBD3DD; font-style: italic; font-size: 18px; }
+.autocomplete-wrapper :-moz-placeholder { color: #CBD3DD; font-style: italic; font-size: 18px; }
+.autocomplete-wrapper ::-moz-placeholder { color: #CBD3DD; font-style: italic; font-size: 18px; }
+.autocomplete-wrapper :-ms-input-placeholder { color: #CBD3DD; font-style: italic; font-size: 18px; }
+.autocomplete-suggestions { overflow: auto; border: 1px solid #CBD3DD; background: #FFF; }
+.autocomplete-suggestion { overflow: hidden; padding: 5px 15px; white-space: nowrap; }
+.autocomplete-selected { background: #F0F0F0; }
+.autocomplete-suggestions strong { color: #029cca; font-weight: normal; }
+.ui-menu .ui-menu-item{padding:5px 15px!important;}
+  
+.upload-error img {
+            float: right;
+            margin-top: -45px;
+            margin-right: -20px;
+        }
+        
+.upload-success img {
+            float: right;
+            margin-top: -45px;
+            margin-right: -20px;
+        }
+        
+.upload-warning img {
+            float: right;
+            margin-top: -45px;
+            margin-right: -20px;
+        }       
+/*.row { margin-right: -2em!important;}*/       
+.font-size-11px {font-size: 11px !important;}           
+.btn-success {color: #ffffff!important;background-color: #468611!important;border-color: #6e7d4b!important;}
+
+
+
+
+/******************************************************************* ASSIGN SALARY PACKAGE WITH USER *****************************/
+@media only screen and (max-width : 940px),
+only screen and (max-device-width : 940px){
+	.galleryItem {width: 21%;}
+}
+ 
+@media only screen and (max-width : 720px),
+only screen and (max-device-width : 720px){
+	.galleryItem {width: 29.33333%;}
+}
+ 
+@media only screen and (max-width : 530px),
+only screen and (max-device-width : 530px){
+	.galleryItem {width: 46%;}
+}
+ 
+@media only screen and (max-width : 320px),
+only screen and (max-device-width : 320px){
+	.galleryItem {width: 96%;}
+	.galleryItem img {width: 96%;}
+	.galleryItem h3 {font-size: 18px;}
+	.galleryItem p{font-size: 18px;}
+}
+
+
+
+/************************************* Table Button Color ******************************************/
+#list_view_icon, #grid_view_icon {
+        width: 38px;
+        height: 38px;
+        line-height: 38px;
+        text-align: center;
+        font-size: 18px;
+        display: inline-block;
+        background: #f8f8f8;
+        border-radius: 3px;
+        margin-left: 5px;
+        cursor: pointer;
+    }        
+#grid_view_icon:hover, .custom.info2 .single:hover .btn {
+            background-color: #018bc8;
+            color: #ffffff !important;
+        }
+
+.btn_Class{
+    width: 38px;
+    height: 38px;
+    line-height: 38px;
+    text-align: center;
+    font-size: 18px;
+    display: inline-block;
+    border-radius: 3px;
+    margin-left: 5px;
+    cursor: pointer;
+    color: #FFF;
+}
+.btn_add{background: #79c447;}
+.btn_add:hover{background: #2d682e;}
+.btn_edit{background: #fabb3d;}
+.btn_delete{background: #ff5454;}
+.btn_info{background: #20a8d8;}
+.btn_assign{background: #5f5f5f;}
+.btn_others{background:navy;}
+.btn_add:hover {background-color: #018bc8;color: #ffffff !important;}
+
+

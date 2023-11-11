@@ -1,0 +1,46 @@
+﻿@model IEnumerable<FactoryManagement.Models.View_Dispacth_Item_Details>
+    @{
+        int count = 0;
+}
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-top:1%;">
+    
+    <div class="col-sm-11 col-xs-11">
+        <table class="table table-bordered table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>
+                        SL
+                    </th>
+                    <th>
+                        Machine
+                    </th>
+                    <th>Parts name</th>
+                    <th>Quantity</th>
+                    <th>Unit</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var data in Model) {
+                    count++;
+                    <tr>
+                        <td>@count</td>
+                        <td>@data.MachineName</td>
+                        <td>@data.ProductName</td>
+                        <td>@data.Quantity @data.UnitName</td>
+                        <td>@data.Site_Unit_Name</td>
+                    </tr>
+                       
+                }
+                <tr>
+                    <td colspan="3">
+                        Total
+                    </td>
+                    <td style="font-weight:bold">
+                        @Model.Sum(x=>x.Quantity) @Model.FirstOrDefault().UnitName
+                    </td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

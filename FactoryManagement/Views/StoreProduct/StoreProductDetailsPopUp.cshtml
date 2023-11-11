@@ -1,0 +1,142 @@
+﻿
+
+
+
+@model FactoryManagement.Models.View_ProList_WithLC
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    
+    var locationList = (from m in db.Inventory_Item_Location
+                        where m.InventoryId == Model.InventoryId
+                        group m by new
+                        {
+                            m.StoreId,
+                            m.WarehouseId
+                        } into i
+                        select new
+                        {
+                            InventoryId = i.FirstOrDefault().InventoryId,
+                            LocationId = i.FirstOrDefault().LocationId,
+                            StoreId = i.FirstOrDefault().StoreId,
+                            WareId = i.FirstOrDefault().WarehouseId,
+                            StoreName = (i.FirstOrDefault().StoreId > 0) ? db.StoreLists.Where(sm => sm.Id == i.FirstOrDefault().StoreId).Select(sm => sm.StoreName).FirstOrDefault() : "",
+                            WareName = (i.FirstOrDefault().WarehouseId > 0) ? db.WarehouseLists.Where(sm => sm.Id == i.FirstOrDefault().WarehouseId).Select(sm => sm.WarehouseName).FirstOrDefault() : "",
+                            Quantity = i.Sum(x => x.Quantity)
+                        }).ToList();
+    var Quan = locationList.Where(x => x.InventoryId == Model.InventoryId).Select(x => x.Quantity).Sum();
+}
+
+
+@if (Model != null) { 
+<div class="portlet light bordered">
+    <div class="portlet-title">
+        <div class="caption font-green">
+            <i class="fa fa-list-ul font-green"></i>
+            <span class="caption-subject green bold uppercase">
+                @Model.ProductName
+            </span>
+            <div class="availability">
+                <label>Availability:</label>
+                @if (Model.Quantity > 0)
+                {<span class="available">in stock </span>}
+            </div>
+        </div>
+    </div>
+    <div class="portlet-body form">
+        <div class="row">
+            @if (db.Inventory_Image_Lists.Where(m => m.InventoryId == Model.InventoryId).Any())
+            {
+                <div class="col-md-6 col-sm-6 col-xs-12" id="section_demo"></div>
+                <script>
+                    $("#section_demo").append('<div class="loading_half"></div>');
+                    $("#section_demo").load('@Url.Action("_ProductImages", "StoreProduct")?id='+@Model.InventoryId);
+                </script>
+            }
+            else
+            {
+                <div class="product-image-wrapper col-md-3 col-sm-4 col-xs-12" style="padding:20px!important;">
+                    <div class="single-products">
+                        <div class="productinfo text-center thumbnail" id="find">
+                            <img class="img-responsive" src="/Images/Inventory/Store/no_img.jpg" alt="Product" style="height:150px;width:150px">
+                        </div>
+                    </div>
+                </div>
+            }
+            <div class="col-md-6 col-sm-6 col-xs-12" style="padding-left:30px!important;">
+                <h4 style="font-weight: 600;color: #696b79;font-size: 17px;">Item Details</h4>
+                <p>Material : @Model.ProductType</p>
+                @if (Model.CanbeReplaceable || Model.CanbePerishable || Model.CanbeTopup)
+                {
+                    if (Model.CanbeReplaceable)
+                    {
+                        <p>Type : Replaceable</p>
+                    }
+                    if (Model.CanbePerishable)
+                    {
+                        <p>Type : Perishable</p>
+                    }
+                    if (Model.CanbeTopup)
+                    {
+                        <p>Type : Top-up</p>
+                    }
+                }
+                <p>Country of Origin : @Model.CountryName</p>
+                @if (Model.BrandName != null)
+                { <p>Brand Name : @Model.BrandName</p>}
+                @if (Model.Model != null)
+                { <p>Model Name : @Model.Model</p>}
+
+                @if (Model.Description != null)
+                { <p>Description : @ViewBag.getCurrency  @Model.Description</p>}
+                <p style="color:#0074b8!important;font-weight:600;">Quantity : @Quan @Model.UnitName</p>
+                @if (Model.CanbePerishable)
+                {
+                    var list = (from m in db.StoreItemLists
+                                where m.InventoryId == Model.InventoryId
+                                select new
+                                {
+                                    Expired = m.ExpiredDate
+                                }).GroupBy(g => g.Expired).ToList();
+                    <p>
+                        Item Expired Date:
+                        <div class="col-lg-9 col-md-9 col-sm-8 col-xs-8" style="padding-top:7px;">
+                            @foreach (var date in list)
+                            {
+                                DateTime ex_date = Convert.ToDateTime(date.Key);
+                                int count = db.StoreItemLists.Where(m => m.ExpiredDate == ex_date).Count();
+                                if (count > 0)
+                                {
+                                    <span class="col-md-9 col-sm-9 col-xs-9" style="padding-left:0px!important;">
+                                        <span>@count @Model.UnitName</span>
+                                        <span style="font-size:12px;color:#808080;margin-left:10px;"> Expired Date : @Convert.ToDateTime(ex_date).ToString("MMM dd,yyyy")</span>
+                                    </span>
+
+                                }
+                            }
+                        </div>
+                    </p>
+                }
+
+                <h4 style="color:#526cd0;margin-top:2em;font-size: 15px;font-weight:600;">Item Location</h4>
+                @foreach (var multi in locationList)
+                {
+                    <p style="">
+                        @if (multi.StoreId > 0)
+                        {
+                            <span>@multi.StoreName :</span>
+                        }
+                        else
+                        {
+                            <span>@multi.WareName :</span>
+                        }
+                        <span style="font-size:12px;color:#808080;">Quantity @multi.Quantity @Model.UnitName </span>
+                    </p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+}
+else {
+    <span>No record found</span>
+}

@@ -1,0 +1,59 @@
+﻿
+
+
+@using FactoryManagement.Helpers
+@{
+    var count = 1;
+}
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:2%;margin-top:2%;">
+    <table class="table table-bordered table-condensed table-striped table-hover tableForBrandList">
+        <tbody>
+            <tr>
+                <th class="col-xs-4">
+                    <span style="margin-right:1em;">#</span>
+                    <span>Name</span>
+                </th>
+                <th class="col-xs-4">Created By</th>
+                <th class="col-xs-2">Created Date</th>
+            </tr>
+
+            @foreach (var item in ViewBag.AllParentBrandList as IEnumerable<FactoryManagement.ModelView.Inventory.Product.BrandListViewModel>)
+            {
+                <tr id="tr_@item.BrandId">
+                    <td>
+                        <span style="margin-right:1em;">@count .</span>
+                        <span id="spanForName_@item.BrandId">
+                            @if (item.HasChild == "True")
+                            {
+                                <span class="btn_expandForBrand" id="newtrForAp_@item.BrandId"
+                                      data-id="@item.BrandId"
+                                      data-isclick="0">
+                                    <i class="fa fa-plus-square-o fa-2"></i>
+                                </span>
+                            }
+                            @Html.DisplayFor(modelItem => item.BrandName)
+                        </span>
+                    </td>
+                    <td>
+
+                        @if (item.CreatedBy > 0)
+                        {
+                            <img src="~/Images/UserPicture/thumb/@item.Picture" class="img-circle" />
+                            @Html.EncodedActionLink(item.UserName, "DisplayEmployeeDetails", "HumanResource", new { UserId = item.CreatedBy, isDisplay = true }, null)
+
+                        }
+                        else
+                        {
+                            <img src="~/Images/UserPicture/thumb/admin.jpg" class="img-circle" />
+                            <span>Super admin</span>
+                        }
+                    </td>
+                    <td>@Html.DisplayFor(modelItem => item.CreatedDateName)</td>
+                 
+                </tr>
+                        count++;
+            }
+
+        </tbody>
+    </table>
+</div>

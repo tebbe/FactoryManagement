@@ -1,0 +1,207 @@
+﻿
+
+
+
+@************************************** Created By Jerin Jahan (Date:05.11.2016)  ***************************************@
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" >
+    <div class="col-sm-12" style="float:left;" id="div_PaySalary_All"><div class="loading_partial"></div></div>
+    <script>
+        if ('@(ViewBag.PayType)' === 'Due') {
+            var sendData = { userIds: allChkUserId, userType: allUserType };
+            $("#div_PaySalary_All").load('@Url.Action("_ShowAllUserForDuePay", "HumanResource")', sendData);
+        } else {
+            var sendData = { userIds: allChkUserId, userType: allUserType };
+            $("#div_PaySalary_All").load('@Url.Action("_ShowAllUserForSalaryPay", "HumanResource")', sendData);
+        }
+        
+    </script>    
+    <div class="k-edit-buttons k-state-default col-xs-11">
+        <button type="reset" class="k-button k-button-icontext k-primary k-grid-update" id="btn_All_PayCancle">
+            <span class="k-icon k-update"></span> OK
+        </button>
+    </div>
+</div>
+<script>
+    var windowHeight = $(window).height() - $(".navbar-fixed-top").height() - $(".navbar-fixed-top").height();
+    $("#div_Salary_pay_option").css('min-height', windowHeight);
+    $("#btn_All_PayCancle").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#div_PaySalary_All").on("change", ".txt_AllUser_Pay", function (e) {
+        if (parseFloat($(this).val()) > parseFloat($(this).data('maxamnt'))) {
+            alert('Amount can not greater than total amount.');
+            $(this).val($(this).data('maxamnt'));
+        }
+    });
+
+    //****************************** All User Salary Pay ******************************************************
+    $("#div_PaySalary_All").on("click", ".paySalary", function (e) {
+        var validation = $("#div_PaySalary_All").kendoValidator({
+            rules: {
+                option: function (input) {
+                    if (input.attr('name') === "AccPayTyp" && $("#SalaryPayType").val() === '0') {
+                        return false;
+                    }
+                    return true;
+                },
+                Internal: function (input) {
+                    if (input.attr('name') === 'InernalAccId' && $("#Cash").is(":checked") && $("#InernalAccId").val() === '') {
+                        return false;
+                    }
+                    return true;
+                },
+                BankName: function (input) {
+                    if (input.attr('name') === 'BankId' && $("#Check").is(":checked") && $("#BankId").val() === '') {
+                        return false;
+                    }
+                    return true;
+                },
+                BankAccId: function (input) {
+                    if (input.attr('name') === 'BankAccId' && $("#Check").is(":checked") && $("#BankAccId").val() === '') {
+                        return false;
+                    }
+                    return true;
+                },
+                BankAccSlipNo: function (input) {
+                    if (input.attr('name') === 'BankAccSlipNo' && $("#Check").is(":checked") && $("#BankAccSlipNo").val() === '') {
+                        return false;
+                    }
+                    return true;
+                },
+            },
+            messages: {
+                option: "Please select one",
+                Internal: "Please select one",
+                BankName: "Please select one",
+                BankAccId: "Please select one",
+                BankAccSlipNo: "Please enter slip number"
+            }
+        }).data("kendoValidator");
+        if (validation.validate()) {
+            var Id = $(this).data('userid');
+            var Type = $(this).data('usertype');
+            var sendData = {
+                EmpSalaryPayId: $(this).data('pckid'),
+                UserId: $(this).data('userid'),
+                UserType: $(this).data('usertype'),
+                PayType: $("#SalaryPayType").val(),
+                Amount: $("#Amount_" + Id + Type).val(),
+                InernalAccId: internal_AccId,
+                BankId: bankId,
+                BankAccId: banlAccId,
+                BankAccSlipNo: $("#BankAccSlipNo").val(),
+                InsertBy: userId,
+                username: $(this).data('username'),
+                currency: Currency
+            };
+
+            $.ajax({
+                url: '@Url.Action("SaveSingleUserSalary", "HumanResource")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    if (data !== "Error") {
+                        if (data) {
+                            $('#Amount_' + sendData.UserId + sendData.UserType).hide();
+                            $('#PaidSalary_' + sendData.UserId + sendData.UserType).show();
+                        } else {
+                            alert('not payment');
+                        }
+                    }
+                },
+                error: function (xhr) {
+                    alert('error');
+                }
+            });
+        }
+    });
+
+
+
+    //****************************** All User Due Pay ******************************************************
+    $("#div_PaySalary_All").on("click", ".DueSalary", function (e) {
+        var Id = $(this).data('userid');
+        var Type = $(this).data('usertype');
+        var type_amnt = $("#Amount_" + Id + Type).val();
+        var validation = $("#div_PaySalary_All").kendoValidator({
+            rules: {
+                option: function (input) {
+                    if (input.attr('name') === "AccPayTyp" && $("#SalaryPayType").val() === '0') {
+                        return false;
+                    }
+                    return true;
+                },
+                Internal: function (input) {
+                    if (input.attr('name') === 'InernalAccId' && $("#Cash").is(":checked") && $("#InernalAccId").val() === '') {
+                        return false;
+                    }
+                    return true;
+                },
+                BankName: function (input) {
+                    if (input.attr('name') === 'BankId' && $("#Check").is(":checked") && $("#BankId").val() === '') {
+                        return false;
+                    }
+                    return true;
+                },
+                BankAccId: function (input) {
+                    if (input.attr('name') === 'BankAccId' && $("#Check").is(":checked") && $("#BankAccId").val() === '') {
+                        return false;
+                    }
+                    return true;
+                },
+                BankAccSlipNo: function (input) {
+                    if (input.attr('name') === 'BankAccSlipNo' && $("#Check").is(":checked") && $("#BankAccSlipNo").val() === '') {
+                        return false;
+                    }
+                    return true;
+                },
+            },
+            messages: {
+                option: "Please select one",
+                Internal: "Please select one",
+                BankName: "Please select one",
+                BankAccId: "Please select one",
+                BankAccSlipNo: "Please enter slip number"
+            }
+        }).data("kendoValidator");
+        if (validation.validate()) {
+            if (parseFloat(type_amnt) > parseFloat(highest_amnt)) {
+                alert('Your selected account highest amount for per transaction is =' + highest_amnt + ' ' + Currency+'.Payment value can not be greater than ' + highest_amnt + ' ' + Currency+'.');
+            }
+            else {
+                var sendData = {
+                    UserId: Id,
+                    UserType: Type,
+                    PayType: $("#SalaryPayType").val(),
+                    Amount: type_amnt,
+                    InernalAccId: internal_AccId,
+                    BankId: bankId,
+                    BankAccId: banlAccId,
+                    BankAccSlipNo: $("#BankAccSlipNo").val(),
+                    InsertBy: userId,
+                    username: $(this).data('username'),
+                    currency: Currency
+                };
+                $.ajax({
+                    url: '@Url.Action("PayAllUserDue", "HumanResource")',
+                    type: 'Post',
+                    data: sendData,
+                    success: function (data) {
+                        if (data === "Success") {
+                            $('#Amount_' + sendData.UserId + sendData.UserType).hide();
+                            $('#DueSalary_' + sendData.UserId + sendData.UserType).hide();
+                            $('#PaidDue_' + sendData.UserId + sendData.UserType).show();
+                        } else {
+                            alert(data);
+                        }
+                    },
+                    error: function (xhr) {
+                        alert('error');
+                    }
+                });
+            }
+            
+        }
+    });
+</script>

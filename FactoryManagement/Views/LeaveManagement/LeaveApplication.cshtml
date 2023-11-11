@@ -1,0 +1,218 @@
+﻿
+
+@************************************** Created By Jerin Jahan (Date:12.01.2017)  ***************************************@
+
+@model FactoryManagement.Models.Leave_Application_List
+@{
+    ViewBag.Title = "LeaveApplication";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-users fa-fwt"></i>
+            <span>Human Resource</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list" aria-hidden="true"></i>
+            <a href="/LeaveManagement/LeaveManagement">Leave Management</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list" aria-hidden="true"></i>
+            <span>Leave Application</span>
+            
+        </li>
+    </ul>
+</div>
+@*<div class="note note-success"><p id="h4title">Give Leave Manualy</p></div>*@
+<div class="row">
+    <div class="col-md-12 col-xs-12" style="margin-top:10px;">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-plus-circle font-green" aria-hidden="true"></i>
+                    <span class="caption-subject font-green bold uppercase">Leave Application</span>
+                </div>
+                
+            </div>
+            <div class="portlet-body">
+                <div class="row">
+                    @using (Html.BeginForm())
+                    {
+                        <div class="form-horizontal" id="div_Leave_App">
+                            <input id="DateValidation" name="DateValidation" type="hidden">
+                            <div class="form-horizontal  col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.ApplicationUserId, "Employee Name", htmlAttributes: new { @class = "control-label col-lg-2 col-md-2 col-sm-3 col-xs-12" })
+                                    <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" id="div_Pro_AutoCom">
+                                        @(Html.Kendo().AutoComplete()
+                    .Name("ApplicationUser")
+                    .DataTextField("UserName")
+                    .Filter("contains")
+                    .MinLength(3)
+                    .HtmlAttributes(new { style = "width:100%" })
+                    .Events(e => e.Select("UserNameSelect"))
+                    .DataSource(source =>
+                      {
+                          source.Read(read =>
+                          {
+                              read.Action("EmployeeeNameSearching", "LeaveManagement").Data("onAdditionalData");
+                          })
+                          .ServerFiltering(true);
+                      })
+                                        )
+                                        <span class="field-validation-valid text-danger" data-valmsg-for="ApplicationUser" data-valmsg-replace="true"></span>
+                                    </div>
+                                    <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7" style="display:none;padding-top:7px;" id="div_pro_select">
+                                        <label id="lbl_Pro_Name"></label>
+                                        <span class="k-icon k-i-close" id="btnCloseForProduct" data-id="1"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-offset-2 col-md-6 col-sm-offset-3 col-sm-7 col-xs-7" style="font-weight:bold;">
+                                        @Html.CheckBox("ChkMultiple", new { @onchange = "onChkMultiple(this);" }) Muiltiple days
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.ApplicationUserId, "Start Date", htmlAttributes: new { @class = "control-label col-lg-2 col-md-2 col-sm-3 col-xs-12" })
+                                    <div class="col-lg-3 col-md-3 col-sm-4 col-xs-7">
+                                        @(Html.Kendo().DatePicker().Name("StartDate").Min(DateTime.Now).HtmlAttributes(new { style = "width: 100%" }))
+                                        <span class="field-validation-valid text-danger" data-valmsg-for="StartDate" data-valmsg-replace="true"></span>
+                                        <span class="field-validation-valid text-danger" data-valmsg-for="DateValidation" data-valmsg-replace="true"></span>
+                                    </div>
+                                    <div id="div_For_Mutiple_Days" style="display:none;">
+                                        <label class="control-label col-lg-1 col-md-1 col-sm-3 col-xs-12">To</label>
+                                        <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7">
+                                            @(Html.Kendo().DatePicker().Name("EndDates").Min(DateTime.Now).HtmlAttributes(new { style = "width: 70%" }))
+                                            <span class="field-validation-valid text-danger" data-valmsg-for="EndDates" data-valmsg-replace="true"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.Reason, htmlAttributes: new { @class = "control-label col-lg-2 col-md-2 col-sm-3 col-xs-12" })
+                                    <div class="col-lg-4 col-md-4 col-sm-5 col-xs-7">
+                                        <textarea class="form-control k-textbox" cols="65" id="Reason" name="Description" rows="5"></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-offset-2 col-md-10 col-sm-offset-3 col-sm-9 col-xs-12">
+                                        <input type="button" value="Approve" class="btn green" id="btn_leave_App_Save" />
+                                        <input type="button" value="Refresh" class="btn yellow" id="btn_leave_App_Refresh" />
+                                        <input type="button" value="Cancel" class="btn red" id="btn_leave_App_Cancel" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    var App_userId = 0;
+    $(document).ready(function () {
+        $("#liForHR").addClass('active');
+        $("#liForLeaveList").addClass('sublistActive');
+        $("#StartDate").val("");
+        $("#EndDates").val("");
+    });
+    
+    function onAdditionalData() {
+        return { prefix: $("#ApplicationUser").val() };
+    }
+    function UserNameSelect(e) {
+        var dataItem = this.dataItem(e.item.index());
+        App_userId = dataItem.UserId
+    }
+    function onChkMultiple(cb) {
+        if (cb.checked === false) {
+            $("#div_For_Mutiple_Days").hide();
+            $("#EndDates").val('');
+        } else {
+            $("#div_For_Mutiple_Days").show();
+        }
+    }
+
+    $('#btn_leave_App_Cancel').click(function () {
+        window.history.back();
+    });
+    $('#btn_leave_App_Refresh').click(function () {
+        location.reload();
+    });
+    $("#btn_leave_App_Save").click(function () {
+        var validatable = $("#div_Leave_App").kendoValidator({
+            rules: {
+                app_user_name: function (input) {
+                    if (input.is("[name=ApplicationUser]") && parseInt(App_userId) < 1 ) {
+                        return false;
+                    }
+                    return true;
+                },
+                dateValidate: function (input) {
+                    if (input.is("[name=DateValidation]") && $("#ChkMultiple").is(':checked')) {
+                        var StartDate = $("#StartDate").val();
+                        var EndDate = $("#EndDate").val();
+                        if (new Date(StartDate) > new Date(EndDate)) {
+                            return false;
+                        }
+                        else {
+                            return true;
+                        }
+                    }
+                    return true;
+                },
+                endDate: function (input) {
+                    if (input.is("[name=EndDates]") && $("#ChkMultiple").is(':checked') && $("#EndDates").val() === '') {
+                        return false;
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                app_user_name: "Please select employee",
+                dateValidate: "Start date can not be greater than end date",
+                endDate:"Please enter end date"
+            }
+        }).data("kendoValidator");
+        if (validatable.validate()) {
+            notification.show({ message: "Date is saving...", showTime: startTime() }, "upload-progress");
+            var sendData = {
+                ApplicationUserId: App_userId,
+                StartDate: $("#StartDate").val(),
+                EndDate: $("#ChkMultiple").is(':checked') ? $("#EndDates").val() : $("#StartDate").val(),
+                ApproveStatus: 1,
+                ApprovedBy: userId,
+                Reason: $("#Reason").val(),
+                userId: userId
+            };
+            $.ajax({
+                url: '@Url.Action("LeaveAppSave", "LeaveManagement")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({autoHideAfter: 5000});
+                    if (data != null) {
+                        if (data === 'Success') {
+                            notification.show({ message: "Leave approve has been successfully saved.", showTime: startTime() }, "upload-success");
+                            location.reload();
+                        }
+                        else {
+                            notification.show({ message: "Leave approve was unsuccessful.", showTime: startTime() }, "upload-error");
+                        }
+                    }
+                },
+                error: function (error) {
+                    notification.hide();notification.setOptions({autoHideAfter: 5000});
+                    notification.show({ message: "Unsuccessful", showTime: startTime() }, "upload-error");
+                }
+            });
+        }
+    });
+</script>
+

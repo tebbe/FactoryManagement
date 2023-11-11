@@ -1,0 +1,225 @@
+﻿@* *************************************** Created By Kaikubad on 31/01/2017 *********************************** *@
+@{ var count = 1; bool hasPreviousPrimary = false; var primaryBankId = 0;}
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;" id="Div_for_add_edit_Bank_Account">
+    <button type="button" class="btn btn-success" id="addNewBankAc" style="margin-bottom:10px"><i class="fa fa-plus"></i> Add New A/C</button><br>
+    @if (ViewBag.BankAcList.Count == 0)
+    {
+
+        <label class="control-label">No Bank Account assigned yet</label>
+
+
+    }
+    else
+    {
+
+        <h3 style="margin-top:0px!important;">All Bank Information</h3><hr />
+        <table class="table table-condensed">
+            <tr>
+                <th>#</th>
+                <th>Bank Name</th>
+                <th>Branch name</th>
+                <th>A/C No</th>
+                <th>Action</th>
+            </tr>
+
+            @foreach (var list in ViewBag.BankAcList)
+            {
+
+                <tr>
+                    <td>@count .</td>
+                    <td>
+                        @list.BankName
+                        @if (list.IsPrimary == true)
+                        {
+                            hasPreviousPrimary = true;
+                            primaryBankId = list.BankId;
+                            <span> (Primary)</span>
+                        }
+
+                    </td>
+                    <td>@list.BranchName</td>
+                    <td>
+                        @list.AccountNumber
+                    </td>
+
+                    <td>
+                        <span class="btn btn-success edit_Bank_Ac" data-id="@list.BankId" data-name="@list.BankName"><i class="fa fa-pencil"></i></span>
+                        <span class="btn btn-danger remove_Bank_Ac" data-id="@list.BankId" data-name="@list.BankName"><i class="fa fa-trash"></i></span>
+                    </td>
+                </tr>
+                        count++;
+            }
+        </table>
+        <hr />
+    }
+</div>
+<div id="win_add_bank_ac"></div>
+
+<script>
+    var bankId = 0; var hasPreviousPrimary = '@hasPreviousPrimary'; var primaryBankId=@primaryBankId;
+    @* *************************************** Edit Bank Account *********************************** *@
+    $("#Div_for_add_edit_Bank_Account").on("click", ".edit_Bank_Ac", function (e) {
+        e.preventDefault();
+        var id = $(this).data('id');
+        bankId = id;
+        $("#win_add_bank_ac").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            position: { top: '20%' },
+            title: 'Bank Account Information'
+        });
+        $("#win_add_bank_ac").html('<div class="win_loading_half"></div>');
+        var win_add_bank_ac = $("#win_add_bank_ac").data("kendoWindow");
+        win_add_bank_ac.refresh({ url: "/HumanResource/AddNewBankAc" });
+        win_add_bank_ac.center().open();
+    });
+    @* *************************************** Delete Bank Account *********************************** *@
+    $("#Div_for_add_edit_Bank_Account").on("click", ".remove_Bank_Ac", function (e) {
+        e.preventDefault();
+        var id = $(this).data('id');
+        var name = $(this).data('name');
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        msg = "Are you sure want to delete this bank account information ?";
+        var template = kendo.template($("#temp_confirmation_dialog").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+
+        kendoWindow.find("#btn_confirm_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_confirm_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            DeleteBankInfo(id, name);
+        }).end();
+    })
+    function DeleteBankInfo(id, name) {
+        notification.show({ message: "Bank information  is deleting...", showTime: startTime() }, "upload-progress");
+        var sendData = {
+            BankId: id,
+            UserId: EmpId,
+            BankName: name,
+
+        }
+        $.ajax({
+            url: '@Url.Action("DeleteBankingInformation", "HumanResource")',
+            type: 'Post',
+            data: sendData,
+            success: function (data) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                if (data == "Success") {
+                    notification.show({ message: "Bank information '" + name + "' has been successfully deleted.", showTime: startTime() }, "upload-success");
+                    var data = { userId: EmpId };
+                    $("#tab4BankAcList").empty();
+                    $("#tab4BankAcList").append('<div class="loading_half"></div>')
+                    $("#tab4BankAcList").load('@Url.Action("_UserBankAcDetails", "HumanResource")', data);
+                } else {
+                    notification.show({ message: "Bank Information '" + name + "' deletion was unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+            },
+            error: function (err) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+            }
+        });
+    }
+    @* *************************************** Add Bank Account *********************************** *@
+    function checkValidation(remotevalidationUserId) {
+        var validation = $("#div_for_bankAc_Validation").kendoValidator({
+            rules: {
+                remote: function (input) {
+                    var errormessage;
+                    var remoteAttr = input.attr("data-val-remote-url");
+                    if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                        return true;
+                    }
+                    var isInvalid;
+                    var data = {};
+                    var UserId = remotevalidationUserId;
+                    var bankName = $.trim($("#BankName").val());
+                    var branchname=$("#BranchName").val();
+                    var accountNumber=$("#AccountNumber").val();
+                    data = { UserId: UserId, bankName: bankName,branchname:branchname,accountNumber:accountNumber };
+                    $.ajax({
+                        url: remoteAttr,
+                        mode: "abort",
+                        port: "validate" + input.attr('name'),
+                        dataType: "json",
+                        type: input.attr("data-val-remote-type"),
+                        data: data,
+                        async: false,
+                        success: function (response) {
+                            isInvalid = response;
+                            if (isInvalid === true) {
+                                isInvalid = true;
+                            }
+                            else {
+                                isInvalid = false;
+                            }
+                        }
+                    });
+                    return isInvalid;
+                },
+                BankName: function (input) {
+                    if (input.is("[name=BankName]") && $("#BankName").val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
+                BranchName: function (input) {
+                    if (input.is("[name=BranchName]") && $("#BranchName").val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
+                AccountNumber: function (input) {
+                    if (input.is("[name=AccountNumber]") && $("#AccountNumber").val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            },
+            messages: {
+                remote: function (input) { return input.data('val-remote'); },
+                BankName: "Please enter a bank name",
+                BranchName: "Please enter a branch name",
+                AccountNumber: "Please enter a bank account number"
+            }
+        }).data("kendoValidator");
+
+        return validation.validate();
+    }
+  
+    $("#addNewBankAc").click(function () {
+        bankId=0;
+        $("#win_add_bank_ac").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            position: { top: '20%' },
+            title: 'Bank Account Information'
+        });
+        $("#win_add_bank_ac").html('<div class="win_loading_half"></div>');
+        var win_add_bank_ac = $("#win_add_bank_ac").data("kendoWindow");
+        win_add_bank_ac.refresh({ url: "/HumanResource/AddNewBankAc" });
+        win_add_bank_ac.center().open();
+    });
+    $("#Div_For_bankac_add").on("click", "#bankac_add_edit_refresh", function (e) {
+        alert('fdjg');
+        var sdata = { UserId: EmpId, BankId: $("#BankId").val() }
+        $("#Div_For_bankac_add_Edit").empty();
+        $("#Div_For_bankac_add_Edit").load('@Url.Action("AddNewBankAc", "HumanResource")');
+    });  
+</script>

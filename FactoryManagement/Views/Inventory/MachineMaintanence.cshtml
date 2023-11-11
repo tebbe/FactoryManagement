@@ -1,0 +1,325 @@
+﻿@**************************** Created By Jerin Jahan(Date:17.08.2016) **********************************************@
+
+@model FactoryManagement.ModelView.Inventory.MachineTypeModelView
+
+@{
+    ViewBag.Title = "MachineMaintanence";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-building"></i>
+            <a href="/Home/EquipDash"> Equipment</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-gear"></i>
+            <a href="/Inventory/MachineMaintanence"> Machine Maintenance</a>
+        </li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">Machine Maintenance</span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <table class="table table-bordered table-striped table-condensed" style="margin-bottom:0px!important;border-bottom:none!important;">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <span class="col-sm-9" style="padding-left:0px!important;">
+                                    <span class="autocomplete-wrapper">
+                                        <input class="text-field" id="textForSearch" name="country" placeholder="Type Machine Acronym (e.g. TCM1 RCM2)" type="text" autocomplete="off">
+                                        <span class="k-icon k-i-search" style="margin-top:-25px;margin-right:10px;float:right;">&nbsp;</span>
+                                    </span>
+                                </span>
+                                <span class="col-sm-3">
+                                    @(Html.Kendo().DropDownList().Name("MachineTypeId")
+                                    .OptionLabel("All")
+                                    .BindTo(ViewBag.MachineTypeId as SelectList)
+                                    .Events(e => e.Change("onMachineTypeChange"))
+                                    .HtmlAttributes(new { style = "width:100%" })
+                                    )
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div id="Div_All_Machi_Main" style="display:none;"><div class="loading_partial"></div></div>
+                @if (db.MachinePartsLists.Any())
+                {
+                    <script>
+                        $("#Div_All_Machi_Main").show();
+                        $("#Div_All_Machi_Main").load('@Url.Action("_MachineMaintanence", "Inventory")?machineId=' + '@(ViewBag.MachineId)');
+                    </script>
+                }
+                <div id="loading" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="win_part_date_change"></div>
+<div id="win_part_rep"></div>
+<script id="temp_win_rep_parts" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">#=message#</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_rep_parts_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_rep_parts_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script id="temp_win_rep_alert" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">#=message2#</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_rep_alert_ok"><span class="k-icon k-update"></span>OK</button>
+        </div>
+    </div>
+</script>
+<script>
+    var showCount = 0, totalCount = 0, page = 0, inCallback = false, machineTypeId = "", machineId = '@(ViewBag.MachineId)';
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $('#liForInventory > ul > #liEquipments').addClass('open');
+        $('#liForInventory > ul > #liEquipments >ul:first').show();
+        $("#liForMachinMaintenance").addClass('sublistActive');
+    });
+    @******************************** OnScroll Bind Table Data *************************@
+    $(window).scroll(function () {
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/Inventory/GetMoreMachineMain',
+            data: { page: page },
+            success: function (data) {
+                var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        var date = new Date(data[i].CreatedDateName);
+                        var getdate = (monthNames[date.getMonth()]) + " " + date.getDate() + "," + date.getFullYear();
+                        $("#tblForAddedPart").append('<tr>' +
+                            '<th>' + showCount + ' .</th>' +
+                            '<td id="partname-' + data[i].Id + '">' + data[i].ProductName + '</td>' +
+                            '<td><a href="/Inventory/MachineDetails?q=' + getDataEncrypted("machineId=" + data[i].MachineId) + '">' + data[i].MachineAcronym + '</a></td>' +
+                                    '<td><span id="spanForDesRepDate-' + data[i].Id + '" class="spanForRep" data-id="' + data[i].Id + '">' + data[i].ReplaceDateName + '</span></td>' +
+                            '<td><span id="spanForDesDateLft-' + data[i].Id + '" data-id="' + data[i].Id + '">' + data[i].Left_Day + '</span></td>' +
+                     '<td>' +
+                         '<span data-toggle="tooltip" title="Edit" class="btn green btnReplaceChange" data-id="' + data[i].Id + '" data-machinname="' + data[i].MachineAcronym + '" id="btnReplaceChange-' + data[i].Id + '" style="margin-right:4px;"><i class="fa fa-pencil"></i></span>' +
+                          '<span data-toggle="tooltip" title="Replace this Parts" class="btn blue btn_replace" data-id="' + data[i].MachineId + '"  data-invenid="' + data[i].PartsId + '" ' +
+                               'data-machinname="' + data[i].MachineAcronym + '" id="btnReplaceChange-' + data[i].Id + '" data-partsname="' + data[i].ProductName + '">' +
+                              '<i class="fa fa-retweet"></i>' +
+                          '</span>' +
+                     '</td>' +
+                            '</tr>');
+                        $('[data-toggle="tooltip"]').tooltip();
+                    }
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+    //************************* Machine Type Name ***********************************
+    function onMachineTypeChange() {
+        $("#textForSearch").val('');
+        $("#Div_All_Machi_Main").empty(); showCount = 0, totalCount = 0, page = 0;
+        $("#Div_All_Machi_Main").append('<div class="loading_partial"></div>');
+        if (this.value() === '') {
+            machineTypeId = '';
+            var passData = { machineId: '@(ViewBag.MachineId)' };
+            $("#Div_All_Machi_Main").load('@Url.Action("_MachineMaintanence", "Inventory")');
+        } else {
+            machineTypeId = this.value();
+            var passData = { machineId: '@(ViewBag.MachineId)', machineTypeId: machineTypeId };
+            $("#Div_All_Machi_Main").load('@Url.Action("_MachineMaintanence", "Inventory")', passData);
+        }
+    }
+    $("#Div_All_Machi_Main").on("click", ".btnReplaceChange", function () {
+        var id = $(this).data('id');
+        var partsname = $(this).data('partsname');
+
+        $("#win_part_date_change").empty();
+        $("#win_part_date_change").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '40%',
+            title: partsname + ' Replace',
+            close: onWindowClose
+        });
+        $("#win_part_date_change").html('<div class="win_loading_half"></div>');
+        var win_part_date_change = $("#win_part_date_change").data("kendoWindow");
+        win_part_date_change.refresh({ url: "/Inventory/_PartsRepDateChange?id=" + id});
+        win_part_date_change.center().open();
+        document.documentElement.style.overflow = 'hidden'; 
+        document.body.scroll = "no"; 
+    });
+</script>
+<script>
+    var content = "";
+    $("#textForSearch").autocomplete({
+        minLength: 0,
+        source: function (request, response) {
+            content = $.trim(request.term);
+            $.ajax({
+                url: '@Url.Action("SearchMachineName", "Inventory")',
+                type: "POST",
+                dataType: "json",
+                data: { prefix: content },
+                success: function (data) {
+                    response($.map(data, function (item) {
+                        return { label: item.MachineAcronym, value: item.MachineAcronym, id: item.MachinId };
+                    }))
+                }
+            })
+        },
+        minLength: 1,
+        select: function (event, ui) {
+            var machineId = ui.item.id;
+            showCount = 0, totalCount = 0, page = 0;
+            $("#Div_All_Machi_Main").empty();
+            $("#Div_All_Machi_Main").append('<div class="loading_partial"></div>');
+            var sendData = { machineId: machineId };
+            $("#Div_All_Machi_Main").load('@Url.Action("_MachineMaintanence", "Inventory")', sendData);
+        },
+    })
+ .keyup(function () {
+     if ($.trim($("#textForSearch").val()) == "") {
+         showCount = 0, totalCount = 0, page = 0;
+         $("#Div_All_Machi_Main").empty();
+         $("#Div_All_Machi_Main").append('<div class="loading_partial"></div>');
+         var sendData = { machineTypeId: machineTypeId };
+         $("#Div_All_Machi_Main").load('@Url.Action("_MachineMaintanence", "Inventory")', sendData);
+     }
+ })
+ .autocomplete("instance")._renderItem = function (ul, item) {
+     var term = $.trim(this.term);
+     var re = new RegExp("(" + term + ")", "gi"),
+                cls = "bold-text",
+                template = "<span class='" + cls + "'>$1</span>",
+                label = item.label.replace(re, template),
+                $li = $("<li/>").appendTo(ul);
+     $("<span>").html(label).appendTo($li);
+     return $li;
+ };
+</script>
+<script>
+    //*******************************  RETURN ITEM ACCEPT BUTTON *****************************************
+    $("#Div_All_Machi_Main").on("click", ".btn_replace", function (e) {
+        e.preventDefault();
+        var uid = $(this).data('uid');
+        var id = $(this).data("id");
+        var machinname = $(this).data("machinname");
+        var invenId = $(this).data("invenid");
+        var partsname = $(this).data("partsname");
+
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose
+        });
+        message = "Are you sure you want to replace this spare parts?";
+        var template = kendo.template($("#temp_win_rep_parts").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';
+        document.body.scroll = "no";
+
+        kendoWindow.find("#btn_rep_parts_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_rep_parts_ok").click(function () {
+            document.documentElement.style.overflow = 'hidden';
+            document.body.scroll = "no";
+            $.ajax({
+                url: '@Url.Action("FindIsPartsIsAvailable", "Inventory")',
+                type: 'Post',
+                data: { machinId: id, invenId: invenId },
+                success: function (response) {
+                    if (!response) {
+                        var kendoWindowAlert = $("<div/>").kendoWindow({
+                            actions: ["Close"],
+                            title: "Alert",
+                            resizable: false,
+                            width: "30%",
+                            modal: true,
+                            close: onWindowClose
+                        });
+                        message2 = "No " + partsname + " was available for " + machinname + " to replace.";
+                        var template = kendo.template($("#temp_win_rep_alert").html());
+                        kendoWindowAlert.data("kendoWindow").content(template).center().open();
+                        document.documentElement.style.overflow = 'hidden';
+                        document.body.scroll = "no";
+
+                        kendoWindowAlert.find("#btn_rep_alert_ok").click(function () {
+                            kendoWindowAlert.data("kendoWindow").close();
+                        }).end();
+                        kendoWindow.data("kendoWindow").close();
+                    } else {
+                        $("#win_part_rep").empty();
+                        $("#win_part_rep").kendoWindow({
+                            actions: ["Close"],
+                            draggable: false,
+                            modal: true,
+                            visible: false,
+                            width: '70%',
+                            height: '40%',
+                            title: partsname + ' Replace',
+                            close: onWindowClose
+                        });
+                        document.documentElement.style.overflow = 'hidden';
+                        document.body.scroll = "no";
+
+                        $("#win_part_rep").html('<div class="win_loading_half"></div>');
+                        var win_part_rep = $("#win_part_rep").data("kendoWindow");
+                        win_part_rep.refresh({ url: "/Inventory/_SetReplaceSpareparts?machinId=" + id + "&invenId=" + invenId + "&machinname=" + machinname + '&id=' + uid });
+                        win_part_rep.center().open();
+
+                    }
+                    kendoWindow.data("kendoWindow").close();
+                },
+                error: function () {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 50000 });
+                    notification.show({ message: "Error occured!", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }).end();
+    });
+</script>

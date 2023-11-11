@@ -1,0 +1,55 @@
+﻿@********************* Created By Jerin Jahan (Date: 13-11-2016) ****************************@
+@using FactoryManagement.Helpers
+@model IEnumerable<FactoryManagement.Models.View_All_Loan_History>
+@{
+    int count = 1;
+    int supCount = 1;
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+<style>
+    .amountClick {
+        cursor: pointer;
+        color: #5b9bd1;
+    }
+</style>
+<table class="table bootstrap-datatable datatable small-font dataTable no-footer" id="DataTables_Table_0" role="grid">
+    <thead>
+        <tr role="row">
+            <th>#</th>          
+            <th>User Name</th>       
+            <th>Loan Amount</th>
+            <th>Status</th>
+            <th>Paid Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var list in Model)
+        {
+            var per = 0;
+            <tr role="row">
+                <td>@count.</td>              
+                <td>
+                    <a href="@Html.EncodedParam("DisplayEmployeeDetails","HumanResource",new { UserId=list.UserId,isDisplay=true},null)">@list.UserName</a>
+                </td>
+          
+               <td data-id="@list.LoanId" class="amountClick">
+                  @currency  @list.Amount
+               </td>
+                <td>
+                    @if (list.PaidStatus == 0)
+                    {
+                        <span>Due</span>
+                    }
+                    else
+                    {
+                        <span>Paid</span>
+                    }
+                </td>
+                <td>
+                    @list.LoanPaidDateFormate
+                </td>
+            </tr>
+                count++;
+        }
+    </tbody>
+</table>

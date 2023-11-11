@@ -1,0 +1,91 @@
+﻿@model IEnumerable<FactoryManagement.Models.View_All_Salary_Pay_His>
+@using FactoryManagement.Helpers
+
+@{
+
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    var count = 0;
+}
+@if (Model.Count() > 0)
+{
+    <h4>Salary pay history</h4>
+
+    <table class="table table-bordered" id="tbl_for_salaryBank">
+        <tr>
+            <th>#</th>
+            <th>Payment Type</th>
+            <th>User name</th>
+            <th>Amount</th>
+            <th>Paid by</th>
+            <th>Paid Date</th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            count++;
+            <tr>
+                <th>@count.</th>
+                <td>
+                    @if (item.PayType == 1)
+                    {
+                        <span style="color:#428bca;cursor:pointer;" class="payType" data-id="@item.Id">Cash</span>
+
+                    }
+                    else if (item.PayType == 2)
+                    {
+                        <span style="color:#428bca;cursor:pointer;" class="payType" data-id="@item.Id">Cheque</span>
+                    }
+                    else
+                    {
+                        <span style="color:#428bca;cursor:pointer;" class="payType" data-id="@item.Id">Account</span>
+                    }
+                </td>
+                <td>
+                    @if (item.UserId > 0)
+                    {
+                        <img class="user-photo" src="/Images/UserPicture/thumb/@item.Picture">
+                        <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = item.UserId,isDisplay = true }, null)">@item.UserName</a>
+                    }
+                    else
+                    {
+                        <img class="user-photo" src="/Images/UserPicture/thumb/@item.Picture">
+                        <span>@item.UserName</span>
+                    }
+                </td>
+                <td>@currency @item.Amount</td>
+                <td>
+                    @if (item.InsertBy > 0)
+                    {
+                        <img class="user-photo" src="/Images/UserPicture/thumb/@item.InsertUserPic">
+                        <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new {UserId=item.InsertBy,isDisplay=true },null)">@item.InsertUser</a>
+                    }
+                    else
+                    {
+                        <img class="user-photo" src="/Images/UserPicture/thumb/@item.InsertUserPic">
+                        <span>@item.InsertUser</span>
+                    }
+                </td>
+                <td>@item.InsertedDateFormate</td>
+            </tr>
+
+        }
+    </table>
+}
+else
+{
+    <h4>There is no record to show.</h4>
+}
+@*<style>
+        .table td {
+            border: none !important;
+        }
+    </style>*@
+<script>
+    @*totalCount = '@(ViewBag.Count)';
+    showCount = '@count';*@
+    totalCountSalary = '@(ViewBag.Count)';
+    showCountSalary = '@count';
+</script>
+
+

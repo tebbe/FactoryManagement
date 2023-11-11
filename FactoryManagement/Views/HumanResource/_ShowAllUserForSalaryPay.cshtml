@@ -1,0 +1,187 @@
+﻿
+
+@******************************** Created By Jerin Jahan (Date:05.11.2016) *********************************@
+
+@model IEnumerable<FactoryManagement.ModelView.HR.UserInformationModelView>
+
+@{
+    //decimal total = 0;
+    var count = 1;
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<div class="col-sm-12">
+    <div class="col-sm-6">
+        <input type="hidden" id="SalaryPayType" value="0" />
+        <div style="float:left;width:100%;">
+            <div class="editor-label" style="margin-left:2em!important;width:30%!important;">
+                <label for="PackageName">Payment Dispatch By</label>
+            </div>
+            <div class="editor-field" style="padding-top:5px;">
+                <div style="width:100%;">
+                    <input id="Cash" name="AccPayTyp" type="radio" value="Cash" class="k-valid"> Cash
+                    <input id="Check" name="AccPayTyp" type="radio" value="Check" class="k-valid"> Check
+                    <input id="Account" name="AccPayTyp" type="radio" value="Account" class="k-valid"> Account
+                </div>
+                <span class="field-validation-valid text-danger" data-valmsg-for="AccPayTyp" data-valmsg-replace="true"></span>
+            </div>
+        </div>
+        <div id="Div_for_Cash" style="display:none;float:left;width:100%;"></div>
+        <div id="Div_for_Check" style="display:none;width:100%;"></div>
+        <div id="div_for_Account" style="display:none;">
+            <div class="editor-label" style="margin-left:2em!important;width:30%!important;">
+                <label for="PackageName">Payment In </label>
+            </div>
+            <div class="editor-field">
+                <input id="AccCash" name="AccPayType" type="radio" value="Cash" class="k-valid"> Cash
+                <input id="AccCheck" name="AccPayType" type="radio" value="Check" class="k-valid"> Check
+                <span class="field-validation-valid text-danger" data-valmsg-for="AccPayType" data-valmsg-replace="true"></span>
+            </div>
+        </div>
+        <div style="float:left;width:100%;display:none;" id="div_Bank_acc_Slip">
+            <div class="editor-label" style="margin-left:2em!important;width:30%!important;">
+                <label for="BankAccSlipNo">Bank A/C Slip No.</label>
+            </div>
+            <div class="editor-field" style="padding-top:5px;">
+                <input class="form-control k-textbox text-box single-line" id="BankAccSlipNo" name="BankAccSlipNo" type="text" value="">
+                <span class="field-validation-valid text-danger" data-valmsg-for="BankAccSlipNo" data-valmsg-replace="true"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<table class="table table-bordered" id="tbl_salary_usr">
+    <tbody>
+        <tr>
+            <th width="3%">#</th>
+            <th width="20%">Name</th>
+            <th width="10%">User Type</th>
+            <th width="10%">Designation</th>
+            <th width="30%">Amount</th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            if (db.EmpSalaryPaymentDetails.Where(m => m.UserId == item.UserId && m.UserType == item.UserType && m.Status == 0
+                && (m.MonthId == DateTime.Now.Month || m.MonthId == (DateTime.Now.Month) - 1)).Any())
+            {
+                var amntDetails = db.EmpSalaryPaymentDetails
+                           .Where(m => m.UserId == item.UserId && m.UserType == item.UserType && m.Status == 0 && 
+                               ((m.MonthId == DateTime.Now.Month) || m.MonthId == (DateTime.Now.Month - 1)) && m.Year == DateTime.Now.Year)
+                           .FirstOrDefault();
+                decimal remain_amnt = Convert.ToDecimal(amntDetails.TotalAmount) - Convert.ToDecimal(amntDetails.PaidAmount);
+
+                <tr>
+                    <th>
+                        <span data-userid="@item.UserId"
+                              data-pckid="@item.SalaryPackageId"
+                              data-usertype="@item.UserType" id="count_@count">@count.</span>
+                        </th>
+
+                        <td>
+                            <img class="user-photo" src="~/Images/UserPicture/thumb/@item.Picture" /> @item.UserName
+                        </td>
+
+                        <td>@item.UserTypeName</td>
+                        <td>@item.Designation</td>
+                        <td>
+                            <input class="k-textbox text-box single-line k-invalid txt_AllUser_Pay"
+                                   type="number" min="1" max="@remain_amnt"
+                                   data-val-required="*"
+                                   data-userid="@item.UserId" data-usertype="@item.UserType"
+                                   data-maxamnt="@remain_amnt" 
+                                   id="Amount_@item.UserId@item.UserType"
+                                   name="Amount_@item.UserId@item.UserType" value="@remain_amnt"
+                                   onkeypress="return isNumber(event, this.value)">
+                            <span class="field-validation-valid text-danger" data-valmsg-for="Amount_@item.UserId@item.UserType" data-valmsg-replace="true"></span>
+                            <span class="fa fa-pencil-square-o paySalary"
+                                  data-userid="@item.UserId" data-usertype="@item.UserType"
+                                  data-maxamnt="@remain_amnt" data-username="@item.UserName"
+                                  data-pckid="@amntDetails.Id"
+                                  style="color:#428bca;font-weight:bold;">
+                                Pay
+                            </span>
+                            <span class="fa fa-check-square-o"
+                                  data-userid="@item.UserId" data-usertype="@item.UserType"
+                                  data-maxamnt="@remain_amnt" data-username="@item.UserName"
+                                  data-pckid="@amntDetails.Id" id="PaidSalary_@item.UserId@item.UserType"
+                                  style="color:#006400;font-weight:bold;display:none;">
+                                Paid
+                            </span>
+                        </td>
+                    </tr>
+                count++;
+            }
+
+        }
+    </tbody>
+</table>
+<script>
+    $("#Cash").click(function () {
+        if ($(this).is(":checked")) {
+            $("#SalaryPayType").val(1);
+            $("#div_for_Account").hide();
+            $("#Div_for_Check").hide();
+            $("#Div_for_Check").empty();
+            $("#Div_for_Cash").empty();
+            $("#Div_for_Cash").append('<div class="editor-label" style="margin-left:2em!important;width:30%!important;">' +
+            '<label for="InernalAccId">Account Name</label></div>' +
+            '<div class="editor-field">' +
+            '<input id="InernalAccId" name="InernalAccId" style="width: 100%;" />' +
+            '<span class="field-validation-valid text-danger" data-valmsg-for="InernalAccId" data-valmsg-replace="true"></span>' +
+            '</div>');
+
+            $("#InernalAccId").kendoDropDownList({
+                dataTextField: "AccountName",
+                dataValueField: "AccId",
+                optionLabel: "--Select One--",
+                change: onInternalAccChange,
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "@Url.Action("AllAccountList", "HumanResource")?userId=" + userId, type: "GET"
+                        }
+                    }
+                }
+            });
+            $("#Div_for_Cash").show();
+        }
+    });
+    $("#Check").click(function () {
+        if ($(this).is(":checked")) {
+            $("#SalaryPayType").val(2);
+            $("#div_for_Account").hide();
+            $("#Div_for_Cash").hide();
+            $("#Div_for_Check").empty();
+            $("#Div_for_Check").append('<div style="width:100%;">' +
+                                       '<div class="editor-label" style="margin-left:2em!important;width:30%!important;">' +
+                                       '<label for="PackageName">Bank</label></div>' +
+                                       '<div class="editor-field">' +
+                                       '<input id="BankId" name="BankId" style="width: 100%;" />' +
+                                       '<span class="field-validation-valid text-danger" data-valmsg-for="BankId" data-valmsg-replace="true">' +
+                                       '</span></div>' +
+                                       '<div id="Div_For_Bank_Acc" style="float:left;width:100%;"></div>');
+            $("#BankId").kendoDropDownList({
+                dataTextField: "BankName",
+                dataValueField: "BankId",
+                change: onBankNameChange,
+                optionLabel: "--Select One--",
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "@Url.Action("AllBankList", "HumanResource")", type: "GET"
+                        }
+                    }
+                }
+            });
+            $("#Div_for_Check").show();
+        }
+    });
+    $("#Account").click(function () {
+        if ($(this).is(":checked")) {
+            $("#SalaryPayType").val(3);
+            $("#div_for_Account").show();
+            $("#Div_for_Cash").hide(); $("#Div_for_Check").empty();
+        }
+    });
+
+</script>

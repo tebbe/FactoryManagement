@@ -1,0 +1,447 @@
+﻿@**************************** Jerin Jahan (Created Date: 08.11.2016) **************************************@
+@using FactoryManagement.Helpers
+@{
+    ViewBag.Title = "LoanManagement";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<h3 class="page-title">Loan/Advance Payment <small>List</small></h3>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-calculator"></i>
+            <span> Finance</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list" aria-hidden="true"></i>
+            <a href="/HumanResource/LoanManagement">Loan/Advance</a>
+        </li>
+    </ul>
+</div>
+
+<div class="row">
+    <div class="col-xs-12" style="margin-bottom:10px!important;">
+        <span class="btn blue" id="btn_All_Loan_History" data-toggle="tooltip" data-original-title="Loan Transaction History"><i class="fa fa-history"></i> History</span>
+    </div>
+    <div class="col-xs-12">
+        <div class="portlet box green">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list"></i><span id="headr_title" style="margin-top: 0px!important">Showing List of All Advance Payee </span>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <table class="table table-bordered" style="margin-bottom:0px!important;margin-top:10px!important;border-bottom:none!important;">
+                    <tr>
+                        <td>
+                            <span class="col-sm-9" style="padding-left:0px!important;">
+                                <span class="autocomplete-wrapper">
+                                    <input class="text-field" id="autocom_User" name="country" placeholder="Start typing user name" type="text" autocomplete="off">
+                                    <span class="k-icon k-i-search" style="margin-top:-25px;margin-right:10px;float:right;">&nbsp;</span>
+                                </span>
+                            </span>
+                            <span class="col-sm-3">
+                                @(Html.Kendo().DropDownList().Name("SiteId")
+                            .OptionLabel("All")
+                            .BindTo(ViewBag.AllSiteList as SelectList)
+                            .Events(e => e.Change("onSitenameChange"))
+                            .HtmlAttributes(new { style = "width:100%" })
+                                )
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+                <div id="Div_All_Usr" style="display:none;"><div class="loading_partial"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (db.View_UserLists.Where(m => m.Status == 1).Any())
+{
+    <script>
+        $("#Div_All_Usr").show();
+        $("#Div_All_Usr").load("_UserListForLoan", "HumanResource");
+    </script>
+}
+<div id="WinForGiveLoan"></div>
+<div id="WinForLoanInfo"></div>
+
+@(Html.Kendo().Window()
+       .Name("WinForGiveLoanss")
+       .Visible(false)
+       .Modal(true)
+       .Draggable(true)
+)
+<script id="temp_win_For_Alert" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px;">
+            #=data# 
+        </p>
+        <div style="text-align: right">
+            <input type="button" value="OK" class="k-button k-state-default" id="temp_win_Ok" />
+        </div>
+    </div>
+</script>
+<script>
+    var internal_AccId = 0, bankId = 0, branchId = 0, banlAccId = 0
+    var totalCount = 0, inCallback = false, page = 0, showCount = 20;
+    var totalChkAmnt = 0, allChkId = [];
+    var selectedUserId = 0, selectedUserType = 0;
+    var SeletecUserCount = 0, username = '';
+    var allChkUserId = [], allUserType = [];
+    var highest_amnt = 0;
+</script>
+<script>
+    $(document).ready(function () {
+        $("#liForAccounting").addClass('active');
+        $("#liForHRLoan").addClass('sublistActive');
+    });
+    function isNumberForDecimal(e, v) {
+        e = (e) ? e : window.event;
+        var charCode = (e.which) ? e.which : e.keyCode;
+        var str = v.toString();
+        var c = String.fromCharCode(e.which);
+        if (charCode == 46) {
+            if (str.indexOf('.') != -1) {
+                return false;
+            }
+            if (v.length > 21) {
+                return false;
+            }
+        }
+        else {
+            if (str.indexOf('.') != -1) {
+                if ((charCode < 48 || charCode > 57) || v.split('.')[1].length > 1) {
+                    return false;
+                }
+            }
+            else {
+                if ((charCode < 48 || charCode > 57) || v.length > 17) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    };
+    function isNumber(e, v) {
+        e = (e) ? e : window.event;
+        var charCode = (e.which) ? e.which : e.keyCode;
+        var afterDot = v.substr(v.indexOf(".") + 1);
+        if (charCode > 31 && (charCode < 46 || charCode > 57 || charCode == 47)) {
+            return false;
+        }
+        if (v.indexOf('.') > -1 && charCode == 46) {
+            return false;
+        }
+        if (v.indexOf('.') > -1 && afterDot.length == 2) {
+            return false;
+        }
+        return true;
+    }
+
+    @********************************  OnScroll Bind Table Data   *************************@
+    $(window).scroll(function () {
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    //$("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/HumanResource/GetUsrForLoan',
+            data: { page: page },
+            success: function (data) {
+                var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                if (data != '') {
+                    var s_cnt = parseInt(showCount);
+                    for (var i = 0; i < data.length; i++) {
+                        var date = new Date(data[i].JoinDateName);
+                        var getdate = (monthNames[date.getMonth()]) + " " + date.getDate() + "," + date.getFullYear();
+                        s_cnt++;
+                        $("table#tbl_salary_usr > tbody").append(
+                            '<tr><th scope="row">' +
+                            '<span data-userid="' + data[i].UserId + '"' +
+                            'data-usertype="' + data[i].UserType + '" ' +
+                            'data-pckid="' + data[i].SalaryPackageId + '" id="count_' + s_cnt + '">' + s_cnt + '. </th>' +
+                            '<td><img src="/Images/UserPicture/thumb/' + data[i].Picture + '" class="user-photo"> ' +
+                            '<a href="/HumanResource/DisplayEmployeeDetails?q='+getDataEncrypted("UserId=" + data[i].UserId + "?isDisplay=True")+'">'+ data[i].UserName + '</a>' +
+                            '</td>' +
+                            '<td width="5%">  ' + data[i].UserTypeName + '</td>' +
+                            '<td width="2%">' + data[i].Designation + '</td>' +
+                            '<td width="2%">' + getdate + '</td>' +
+                            '<td>'+
+                             ((data[i].HasLoanRecord) ? '<a href="javascript:;">' +
+                             '<span class="btn blue loanDetails" data-id="' + s_cnt + '" style="margin-right:5px!important;"><i class="fa fa-info-circle"></i> Loan Deatils</span></a>' : '') +
+                             '<span class="btn green GiveLoan" data-id="' + s_cnt + '"><i class="fa fa-pencil-square-o"></i> Give Loan</span>' +
+                             ((data[i].HasDueLoan) ? '<a href="javascript:;">' +
+                             '<span class="btn green ReceiveLoan" data-id="' + s_cnt + '" style="margin-right:5px!important;"><i class="fa fa-pencil-square-o"></i> Receive Loan</span></a>' : '') +
+                            '</td>' +
+                            '</tr>');
+
+                        showCount++;
+                    }
+                    showCount = (page + 1) * 20;
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                //$("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+    //*******************************  Sitename Change Function ****************************
+    function onSitenameChange() {
+        if (this.value() === '') {
+            $("#Div_All_Usr").empty();
+            $("#Div_All_Usr").append('<div class="loading_partial"></div>');
+            $("#Div_All_Usr").load("_UserListForLoan", "HumanResource");
+        } else {
+            $("#Div_All_Usr").empty();
+            $("#Div_All_Usr").append('<div class="loading_partial"></div>');
+            $("#Div_All_Usr").load('@Url.Action("_UserListForLoan", "HumanResource")?siteId=' + this.value());
+        }
+    }
+
+    //************************ Autocomplete  Search ***************************************
+
+    $(function () {
+        $("#autocom_User").autocomplete({
+            minLength: 2,
+            source: function (request, response) {
+                content = $.trim(request.term);
+                $.ajax({
+                    url: '@Url.Action("SearchUserForLoan", "HumanResource")',
+                    type: "POST",
+                    dataType: "json",
+                    data: { prefix: content },
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return {
+                                label: item.UserName + '(Site name: ' + item.SiteIdName + ' EmpID: ' + item.EmpId + ' )',
+                                value: item.UserName,
+                                id: item.UserId
+                            };
+                        }))
+                    }
+                })
+            },
+            minLength: 2,
+            select: function (event, ui) {
+                isloadFirstTime = true;
+                var selectTextId = ui.item.id;
+                $("#Div_All_Usr").empty();
+                $("#Div_All_Usr").append('<div class="loading_partial"></div>');
+                $("#Div_All_Usr").load('@Url.Action("_UserListForSalary", "HumanResource")?userId=' + selectTextId);
+            },
+        })
+       .keyup(function () {
+           if ($.trim($("#autocom_User").val()) == "") {
+               showCount = 20; page = 0;
+               $("#Div_All_Usr").empty();
+               $("#Div_All_Usr").append('<div class="loading_partial"></div>');
+               $("#Div_All_Usr").load('@Url.Action("_UserListForSalary", "HumanResource")');
+           }
+       })
+    .autocomplete("instance")._renderItem = function (ul, item) {
+        var term = $.trim(this.term);
+        var re = new RegExp("(" + term + ")", "gi"),
+                   cls = "bold-text",
+                   template = "<span class='" + cls + "'>$1</span>",
+                   label = item.label.replace(re, template),
+                   $li = $("<li/>").appendTo(ul);
+
+        $("<span>").html(label).appendTo($li);
+
+        return $li;
+    };
+    });
+
+    //********************************* Internal Account Change Function *******************
+    function onInternalAccChange(e) {
+        var dataItem = this.dataItem(e.item);
+        if (this.value() === '') {
+            internal_AccId = 0;
+            highest_amnt = 0;
+        } else {
+            internal_AccId = this.value();
+            highest_amnt = dataItem.HightestAmnt;
+        }
+    }
+
+    //************************************ Bank  Name Change Function *******************
+    function onBankNameChange() {
+        if (this.value() === "") {
+            bankId = 0;
+            $("#Div_For_Bank_Branch").hide();
+            $("#Div_For_Bank_Branch").empty();
+        } else {
+            bankId = this.value();
+            $("#Div_For_Bank_Branch").empty();
+            $("#Div_For_Bank_Branch").show();
+            $("#Div_For_Bank_Branch").append('<div class="editor-label" style="margin-left:2em!important;width:30%!important;">' +
+                '<label for="PackageName">Branch Name</label></div>' +
+                '<div class="editor-field">' +
+                '<input id="BranchId" name="BranchId" style="width: 100%;" />' +
+                '<span class="field-validation-valid text-danger" data-valmsg-for="BranchId" data-valmsg-replace="true"></span></div>' +
+                '<div id="Div_For_Bank_Acc" style="float:left;width:100%;"></div>');
+
+            $("#BranchId").kendoDropDownList({
+                dataTextField: "BranchName",
+                dataValueField: "BranchId",
+                optionLabel: "--Select One--",
+                change: onBranchNameChange,
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "@Url.Action("AllBankBranch", "HumanResource")?id=" + bankId, type: "GET"
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+
+    //************************************* Bank Branch Name Change Function *******************
+    function onBranchNameChange() {
+        if (this.value() === "") {
+            branchId = 0;
+            $("#Div_For_Bank_Acc").hide();
+            $("#Div_For_Bank_Acc").empty();
+        } else {
+            branchId = this.value();
+            $("#Div_For_Bank_Acc").empty();
+            $("#Div_For_Bank_Acc").show();
+            $("#Div_For_Bank_Acc").append('<div class="editor-label" style="margin-left:2em!important;width:30%!important;">' +
+                '<label for="PackageName">Account Name (Bank)</label></div>' +
+                '<div class="editor-field">' +
+                '<input id="BankAccId" name="BankAccId" style="width: 100%;" />' +
+                '<span class="field-validation-valid text-danger" data-valmsg-for="BankAccId" data-valmsg-replace="true"></span></div>');
+
+            $("#BankAccId").kendoDropDownList({
+                dataTextField: "AccountName",
+                dataValueField: "BankAccountId",
+                optionLabel: "--Select One--",
+                change: onBankAccChange,
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "@Url.Action("AllBankAcc", "HumanResource")?id=" + bankId, type: "GET"
+                    }
+                }
+            }
+            });
+    }
+    }
+
+    
+    //************************* Account Name Change Function ***********************************
+    function onBankAccChange(e) {
+        var dataItem = this.dataItem(e.item);
+        if (this.value() === "") {
+            banlAccId = 0;
+            $("#div_Bank_acc_Slip").hide();
+            highest_amnt = 0;
+        } else {
+            banlAccId = this.value();
+            $("#div_Bank_acc_Slip").show();
+            highest_amnt = dataItem.HightestAmnt;
+        }
+    };
+
+
+    //***************************** Deduct Amount From Salary Check Function *******************
+    function DeductAmnt(val) {
+        if (val.checked === true) {
+            $("#Div_Deduct_Amnt").show();
+            $("#Div_Load_DeadLine").hide();
+        } else {
+            $("#Div_Deduct_Amnt").hide();
+            $("#Div_Load_DeadLine").show();
+        }
+    }
+</script>
+<script>
+    //************************ Show User All Loan Details ************************
+    $("#Div_All_Usr").on("click", ".loanDetails", function (e) {
+        e.preventDefault();
+        var count = $(this).data('id');
+        $("#WinForLoanInfo").empty();
+        var usrid = $("#count_" + count).data('userid');
+        SeletecUserCount = count;
+        $("#WinForLoanInfo").kendoWindow({
+            actions: ["Close"],
+            draggable: true,
+            modal: true,
+            visible: false,
+            pinned: false,
+            position: { top: 100, left: 100 },
+            title: 'All Loan Details',
+            content: "/HumanResource/_UserLoanDetails?userId=" + usrid
+        });
+        $("#WinForLoanInfo").data("kendoWindow").maximize().open();
+    });
+    //************************ PAY SINGLE USER LOAN ******************************
+    $("#Div_All_Usr").on("click", ".GiveLoan", function (e) {
+        e.preventDefault();
+        var count = $(this).data('id');
+        $("#WinForGiveLoan").empty();
+        var usrid = $("#count_" + count).data('userid');
+        var usrtype = $("#count_" + count).data('usertype');
+        var pckId = $("#count_" + count).data('pckid');
+        var payType = 'Give';
+        SeletecUserCount = count;
+        $("#WinForGiveLoan").kendoWindow({
+            actions: ["Close"],
+            draggable: true,
+            modal: true,
+            visible: false,
+            pinned: false,
+            position: { top: 100, left: 100 },
+            title: 'Pay Loan / Advance',
+            content: "/HumanResource/_GiveUserLoan?userId=" + usrid + "&userType=" + usrtype + "&packId=" + pckId + "&payType=" + payType
+        });
+        $("#WinForGiveLoan").data("kendoWindow").maximize().open();
+    });
+    
+    //************************ Receive Loan Amount *******************************
+    $("#Div_All_Usr").on("click", ".ReceiveLoan", function (e) {
+        e.preventDefault();
+        var count = $(this).data('id');
+        $("#WinForGiveLoan").empty();
+        var usrid = $("#count_" + count).data('userid');
+        var usrtype = $("#count_" + count).data('usertype');
+        var pckId = $("#count_" + count).data('pckid');
+        var payType = 'Receive';
+        SeletecUserCount = count;
+        $("#WinForGiveLoan").kendoWindow({
+            actions: ["Close"],
+            draggable: true,
+            modal: true,
+            visible: false,
+            pinned: false,
+            position: { top: 100, left: 100 },
+            title: 'Receive Loan / Advance',
+            content: "/HumanResource/_GiveUserLoan?userId=" + usrid + "&userType=" + usrtype + "&packId=" + pckId + "&payType=" + payType
+        });
+        $("#WinForGiveLoan").data("kendoWindow").maximize().open();
+    });
+
+    //************************ Loan History **************************************
+    $("#btn_All_Loan_History").click(function () {
+        location.href = '@Url.Action("AllLoanHis", "HumanResource")';
+    });
+</script>

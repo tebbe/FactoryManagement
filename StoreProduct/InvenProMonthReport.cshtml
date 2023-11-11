@@ -1,0 +1,155 @@
+﻿@************************************** Created By Jerin Jahan (Date:27.04.2017)  ***************************************@
+@model IEnumerable<FactoryManagement.Models.InventoryList>
+@{
+    ViewBag.Title = "Monthly Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var u_list = db.Site_Unit_Lists.Where(m => m.UnitStatus == 1).ToList();
+    DateTime now = DateTime.Now;
+    DateTime startDate = ViewBag.startDate;
+    var endDate = startDate.AddMonths(1).AddDays(-1);
+    int current_mon_id = startDate.Month;
+    int year = startDate.Year;
+
+    var AllList = db.View_Dispacth_Item_Details.Where(m => m.DispatchedDate > startDate).ToList();
+    var list = (from bs in AllList
+                group bs by bs.InventoryId into g
+                orderby g.Sum(x => x.Quantity)
+                select new FactoryManagement.ModelView.Inventory.Store.View_Dispacth_Item_DetailsModelView
+                {
+                    Id = g.FirstOrDefault().Id,
+                    InventoryId = g.FirstOrDefault().InventoryId,
+                    Quantity = g.FirstOrDefault().Quantity,
+                    ReturnQuantity = g.FirstOrDefault().ReturnQuantity,
+                    OrderId = g.FirstOrDefault().OrderId,
+                    MachineId = g.FirstOrDefault().MachineId,
+                    Site_Unit_Id = g.FirstOrDefault().Site_Unit_Id,
+                    DeptId = g.FirstOrDefault().DeptId,
+                    LineId = g.FirstOrDefault().LineId,
+                    Total_Quantity = g.Sum(x => x.Quantity),
+                    Total_Return = g.Sum(x => x.ReturnQuantity.Value),
+                    Total_UsedQuan = g.Sum(x => x.UsedQuan.Value)
+                }).OrderByDescending(o => o.DispatchedDate).ToList();
+}
+<div class="col-xs-12">
+    <center>
+        <h2>Monthly Report</h2>
+        <p>@startDate.ToString("dd") - @endDate.ToString("dd") @startDate.ToString("MMMM yyyy")</p>
+    </center>
+</div>
+
+<div class="col-xs-12">
+    <center>
+        <span style="float:right;font-size:16px;">
+            <p style="text-align:right;">Date: @now.ToString("MMM dd yyyy hh:mm tt")</p>
+            <p style="text-align:right;">Genegrated By: @Request.Cookies["CookieAdminInfo"].Values["fulname"].ToString()</p>
+            <p style="text-align:right;">Employee ID: @Request.Cookies["CookieAdminInfo"].Values["empid"].ToString()</p>
+        </span>
+    </center>
+</div>
+
+@foreach (var item in Model)
+{
+    double total_issue = 0;
+    double receive_quan = 0;
+    var opening_blc = db.Inventory_Monthly_Stock.Where(m => m.InventoryId == item.InventoryId && m.MonthId == current_mon_id && m.Year == year).FirstOrDefault();
+    var imp_quan = (from bs in db.View_Import_History_Details
+                    where bs.InsertedDate > startDate && bs.InventoryId == item.InventoryId
+                    group bs by bs.InventoryId into g
+                    select new
+                    {
+                        Total_Quantity = g.Sum(x => x.Quantity)
+                    }).FirstOrDefault();
+
+    if (imp_quan != null)
+    {
+        receive_quan = imp_quan.Total_Quantity;
+    }
+
+    <center><h3>@item.ProductName Statement</h3></center>
+    <table class="table table-bordered">
+        <tr style="border:2px solid black;">
+            <th width="8%" rowspan="2">Month</th>
+            <th width="10%" rowspan="2">Opening (Pcs)</th>
+            <th width="10%" rowspan="2">Received (Pcs)</th>
+            <th width="20%" colspan="@u_list.Count()">Issue (Pcs)</th>
+            <th width="22%" colspan="@u_list.Count()">Rejected pcs during the time of running in Mcs.</th>
+            <th width="10%" rowspan="2">Closing (Pcs)</th>
+            <th width="20%" colspan="@u_list.Count()">Rejected pcs shown in MRR</th>
+        </tr>
+        <tr style="border-bottom:2px solid black;border-right:2px solid black;">
+            @foreach (var u in u_list)
+            {
+                <td>@u.UnitAcryonm</td>
+            }
+            @foreach (var u in u_list)
+            {
+                <td>@u.UnitAcryonm</td>
+            }
+            @foreach (var u in u_list)
+            {
+                <td>@u.UnitAcryonm</td>
+            }
+        </tr>
+        <tr style="border:2px solid black;">
+            <td>@startDate.ToString("MMM-yy")</td>
+            <td>@((opening_blc == null) ? 0 : opening_blc.Quantity)</td>
+            <td>@receive_quan</td>
+            @foreach (var u in u_list)
+            {
+                var u_dis_list = (from bs in db.View_Dispacth_Item_Details
+                                  where bs.DispatchedDate > startDate && bs.InventoryId == item.InventoryId
+                                  && bs.Site_Unit_Id == u.UnitId
+                                  group bs by new { bs.Site_Unit_Id } into g
+                                  select new
+                                  {
+                                      Quantity = g.Sum(x => x.Quantity)
+                                  }).FirstOrDefault();
+                string str_quan = "";
+                if (u_dis_list != null)
+                {
+                    str_quan = (u_dis_list.Quantity > 0) ? u_dis_list.Quantity.ToString() : "";
+                    total_issue = total_issue + Convert.ToDouble(u_dis_list.Quantity);
+                }
+                <td>@str_quan</td>
+            }
+            @foreach (var u in u_list)
+            {
+                var u_dis_list = (from bs in db.Inventory_Pro_Waste_List
+                                  where bs.InsertedDate > startDate && bs.InventoryId == item.InventoryId && bs.Type == 1
+                                  && bs.LocationId == u.UnitId
+                                  group bs by new { bs.LocationId } into g
+                                  select new
+                                  {
+                                      Quantity = g.Sum(x => x.Quantity)
+                                  }).FirstOrDefault();
+                string str_quan = "";
+                if (u_dis_list != null)
+                {
+                    str_quan = (u_dis_list.Quantity > 0) ? u_dis_list.Quantity.ToString() : "";
+                    total_issue = total_issue + Convert.ToDouble(u_dis_list.Quantity);
+                }
+                <td>@str_quan</td>
+            }
+            <td>@((Convert.ToDouble((opening_blc == null) ? 0 : opening_blc.Quantity) + Convert.ToDouble(receive_quan)) - Convert.ToDouble(total_issue))</td>
+           @foreach (var u in u_list)
+           {
+               var u_dis_list = (from bs in db.Inventory_Pro_Waste_List
+                                 where bs.InsertedDate > startDate && bs.InventoryId == item.InventoryId && bs.Type == 2
+                                 && bs.LocationId == u.UnitId
+                                 group bs by new { bs.LocationId } into g
+                                 select new
+                                 {
+                                     Quantity = g.Sum(x => x.Quantity)
+                                 }).FirstOrDefault();
+               string str_quan = "";
+               if (u_dis_list != null)
+               {
+                   str_quan = (u_dis_list.Quantity > 0) ? u_dis_list.Quantity.ToString() : "";
+                   total_issue = total_issue + Convert.ToDouble(u_dis_list.Quantity);
+               }
+            <td>@str_quan</td>
+           }
+        </tr>
+    </table>
+}

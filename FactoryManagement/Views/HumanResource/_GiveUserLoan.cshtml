@@ -1,0 +1,47 @@
+﻿
+
+
+@************************************** Created By Jerin Jahan (Date:30.10.2016)  ***************************************@
+<input type="hidden" id="SalaryPayType" value="0" />
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="div_Loan_pay_option">
+    <div class="col-sm-6" style="float:left;" id="div_Loan_pay_option_left"><div class="loading_half"></div></div>
+    <script>
+        if ('@(ViewBag.PayType)' === 'Give') {
+            var sendData = { userId: '@(ViewBag.userId)', userType: '@(ViewBag.userType)' };
+            $("#div_Loan_pay_option_left").load('@Url.Action("LoanGiveOption", "HumanResource")', sendData);
+        } else {
+            var sendData = { userId: '@(ViewBag.userId)' };
+            $("#div_Loan_pay_option_left").load('@Url.Action("_ReceiveLoan", "HumanResource")', sendData);
+        }
+    </script>
+    <div class="col-sm-5" id="div_selected_UsrInfo" style="float:left;border-left:1px solid #ddd;"><div class="loading_half"></div></div>
+    <script>
+        var sendData = { userId: '@(ViewBag.userId)', userType: '@(ViewBag.userType)', PayType: '@(ViewBag.PayType)' };
+        $("#div_selected_UsrInfo").load('@Url.Action("ShowSlctdUsrDetails", "HumanResource")', sendData);
+    </script>
+    <div class="k-edit-buttons k-state-default col-xs-11">
+        @if (ViewBag.PayType == "Give") {
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_LoanGive_Save">
+                <span class="k-icon k-update"></span>Pay
+            </button>
+        }
+        else
+        {
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_LoanReciv_Save">
+                <span class="k-icon k-update"></span>Receive
+            </button>
+        }      
+        <button type="reset" class="k-button k-button-icontext k-grid-cancel" id="btn_LoanGive_Cancle">
+            <span class="k-icon k-cancel"></span>Cancel
+        </button>
+    </div>
+</div>
+<script>
+    selectedUserId = '@(ViewBag.userId)'; selectedUserType = '@(ViewBag.userType)';
+    var windowHeight = $(window).height() - $(".navbar-fixed-top").height()- $(".navbar-fixed-top").height();
+    $("#div_Salary_pay_option").css('min-height', windowHeight);
+
+    $("#btn_LoanGive_Cancle").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

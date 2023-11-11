@@ -1,0 +1,710 @@
+﻿@model FactoryManagement.ModelView.Voucher.VoucherModelView
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var voucherProduct = db.Voucher_Service_List.Where(m => m.VoucherId == Model.VoucherId).ToList();
+    var voucherOtherService = db.Voucher_Other_Costs_List.Where(m => m.VoucherId == Model.VoucherId).ToList();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    int precount = 0;
+    int preOtherCount = 0;
+}
+<style>
+    .txt_service_amount, txt_Other_service_amount {
+        text-align: right;
+    }
+</style>
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="Div_For_Voucher_Edit">
+    <div class="editor-label"><label for="VoucherTypeId">Type</label></div>
+    <div class="editor-field">
+        @(Html.Kendo().DropDownListFor(model => model.VoucherTypeId)
+                      .OptionLabel("--Select One Type--")
+                      .BindTo(ViewBag.VoucherType)
+                      .HtmlAttributes(new { style = "width:100%" })
+        )
+        @Html.ValidationMessageFor(model => model.VoucherTypeId, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="VoucherTitle">Title</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.VoucherTitle, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        @Html.ValidationMessageFor(model => model.VoucherTitle, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label for="Number">Voucher no</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.Number, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        @Html.ValidationMessageFor(model => model.Number, "", new { @class = "text-danger" })
+    </div>
+    @if (Model.IsAccountSelected == true)
+    {
+        foreach (var item in voucherProduct as IEnumerable<FactoryManagement.Models.Voucher_Service_List>)
+            {
+        <div class="editor-label"><label>Service Name</label></div>
+    <div class="editor-field">
+        <input class="form-control k-textbox txt_service_name" type="text"
+               data-id="@item.VoucherServiceId"
+               data-ispre="1"
+               @*value="@(ViewBag.name)"*@
+               value="@item.Name" readonly id="txtServName">
+    </div>
+    <div class="editor-label"><label>Amount</label></div>
+    <div class="editor-field">
+        <input class="form-control k-textbox"
+               id="txtAmnt" name="txtAmnt" type="text"
+               min="1" value="@item.Amount" data-class="Amount"
+               placeholder="Amount"
+               data-ispre="1"
+               data-val-regex="Invalid. Use only two digits after decimal point"
+               data-val-regex-pattern="\d+(\.\d{1,2})?"
+               data-val-length="Invalid number"
+               data-val-length-max="15"
+               data-val-required="Please enter amount">
+        <span class="field-validation-valid text-danger" data-valmsg-for="txtAmnt" data-valmsg-replace="true"></span>
+    </div>
+        }
+    }
+    else
+    {
+        <div id="div_for_location">
+            <div class="editor-label"><label for="Number">Place</label></div>
+            <div class="editor-field">
+                @(Html.Kendo().DropDownList().Name("LocationId")
+                  .OptionLabel("--Select One--")
+                  .DataTextField("Name")
+                  .DataValueField("IdWithChar")
+                  .DataSource(source =>
+                  {
+                      source.Read(read =>
+                      {
+                          read.Action("AllSiteListRevenue", "Accounting");
+                      });
+                  })
+            //.Events(e => e.Change("onCatagoryChange"))
+                  .HtmlAttributes(new { style = "width: 100%" })
+                )
+                <span class="field-validation-valid text-danger" data-valmsg-for="LocationId" data-valmsg-replace="true"></span>
+            </div>
+            <script>
+                var id = 0;
+                if ('@Model.SiteId' > 0) {
+                    id = '@Model.SiteId' + '-s';
+                }
+                else if ('@Model.UnitId' > 0) {
+                    id = '@Model.UnitId' + '-u';
+                }
+                else if ('@Model.DeptId' > 0) {
+                    id = '@Model.DeptId' + '-d';
+                } else if ('@Model.WareId' > 0) {
+                    id = '@Model.WareId' + '-w';
+                }
+                else if ('@Model.LineId' > 0) {
+                    id = '@Model.LineId' + '-l';
+                } else if ('@Model.StoreId' > 0) {
+                    id = '@Model.StoreId' + '-st';
+                }
+                var locationId = $("#LocationId").data("kendoDropDownList");
+                locationId.value(id);
+            </script>
+        </div>
+        <div class="editor-label"><label></label></div>
+        <div class="editor-field" style="width:70%!important;">
+            <p style="font-weight:bold;">All Cost Description</p>
+            <table class="table table-condensed" id="tbl_all_voucherProduct_list">
+                <tr>
+                    <th width="5%">SL</th>
+                    <th width="55%">Cost Description</th>
+                    <th width="25%" style="text-align:right;">Amount</th>
+                    <th width="15%"></th>
+                </tr>
+                @foreach (var item in voucherProduct as IEnumerable<FactoryManagement.Models.Voucher_Service_List>)
+            {
+                precount++;
+                if (precount == voucherProduct.Count())
+                {
+            <tr id="edit_tr-@precount">
+                <td><label>@precount. </label></td>
+                <td>
+                    <input class="form-control k-textbox txt_service_name"
+                           id="txt_service_name-@precount"
+                           name="txt_service_name-@precount" type="text"
+                           data-ispre="1"
+                           data-id="@item.VoucherServiceId"
+                           value="@item.Name" data-class="VoucherProduct" data-val-required="Please enter product name">
+                    <span class="field-validation-valid text-danger" data-valmsg-for="txt_service_name-@precount" data-valmsg-replace="true" style="display: none;"></span>
+                </td>
+                <td style="text-align:right;">
+                    <input class="form-control k-textbox txt_service_amount" id="txt_service_amount-@precount"
+                           name="txt_service_amount-@precount" type="text"
+                           value="@item.Amount" data-class="Amount"
+                           onkeyup="sumEdit();"
+                           data-ispre="1" data-id="@item.VoucherServiceId"
+                           placeholder="Amount" min="1"
+                           data-val-regex="Invalid. Use two digits after decimal point."
+                           data-val-regex-pattern="\d+(\.\d{1,2})?"
+                           data-val-length="Invalid number"
+                           data-val-length-max="13"
+                           data-val-required="Please enter amount">
+                    <span class="field-validation-valid text-danger" data-valmsg-for="txt_service_amount-@precount" data-valmsg-replace="true" style="display: none;"></span>
+                </td>
+                <td id="DivForDynBtn-@precount">
+                    <span class="k-icon k-i-plus btn_Add_service"></span>
+                    @if (precount > 1)
+                            {
+                            <span class="k-icon k-i-close btn_remv_service"></span>
+                            }
+                </td>
+            </tr>
+                }
+                else
+                {
+            <tr id="edit_tr-@precount">
+                <td><div><label>@precount</label></div></td>
+                <td>
+                    <input class="form-control k-textbox txt_service_name"
+                           id="txt_service_name-@precount"
+                           name="txt_service_name-@precount" type="text"
+                           data-ispre="1"
+                           data-id="@item.VoucherServiceId"
+                           value="@item.Name" data-class="VoucherProduct" data-val-required="Please enter product name">
+                    <span class="field-validation-valid text-danger" data-valmsg-for="txt_service_name-@precount" data-valmsg-replace="true" style="display: none;"></span>
+                </td>
+                <td>
+                    <input class="form-control k-textbox txt_service_amount" id="txt_service_amount-@precount"
+                           name="txt_service_amount-@precount" type="text"
+                           value="@item.Amount" data-class="Amount"
+                           data-ispre="1"
+                           onkeyup="sumEdit();"
+                           data-id="@item.VoucherServiceId"
+                           placeholder="Amount"
+                           min="1"
+                           data-val-regex="Invalid. Use two digits after decimal point."
+                           data-val-regex-pattern="\d+(\.\d{1,2})?"
+                           data-val-length="Invalid number"
+                           data-val-length-max="13"
+                           data-val-required="Please enter amount">
+                    <span class="field-validation-valid text-danger" data-valmsg-for="txt_service_amount-@precount" data-valmsg-replace="true" style="display: none;"></span>
+                </td>
+                <td>
+                    <span id="DivForDynBtn-@precount" style="display:none;">
+                        <span class="k-icon k-i-plus btn_Add_service"></span>
+                        @if (precount > 1)
+                                {
+                                <span class="k-icon k-i-close btn_remv_service"></span>
+                                }
+                    </span>
+                </td>
+            </tr>
+                }
+            }
+                <tr>
+                    <th colspan="3" style="text-align:right;">Total <span id="lblServiceTotal">@Model.ServiceTotal</span></th>
+                    <th><span id="btn_Define_Others" style="cursor:pointer;"><i class="fa fa-pencil"></i> Add Other Cost</span></th>
+                </tr>
+            </table>
+            @if (voucherOtherService.Count > 0)
+        {
+        <p style="font-weight:bold;" id="lblOtherCostTitle">All Other Cost Description</p>
+        <table class="table table-condensed" id="tbl_all_voucherOtherService_list">
+            <tr>
+                <th width="5%">SL</th>
+                <th width="55%">Cost Description</th>
+                <th width="25%" style="text-align:right;">Amount</th>
+                <th width="15%"></th>
+            </tr>
+            @foreach (var cost in voucherOtherService as IEnumerable<FactoryManagement.Models.Voucher_Other_Costs_List>)
+                {
+                    preOtherCount++;
+                    if (preOtherCount == voucherOtherService.Count())
+                    {
+                <tr id="edit_trforOtherService-@preOtherCount">
+                    <td><div><label>@preOtherCount. </label></div></td>
+                    <td>
+                        <input class="txt_Other_service_name"
+                               id="txt_Other_service_name-@preOtherCount"
+                               name="txt_Other_service_name-@preOtherCount" type="text"
+                               data-isotherpre="1"
+                               data-id="@cost.OtherCostId"
+                               value="@cost.ServiceId" data-class="Service" data-val-required="Please enter service name">
+
+                        <span class="field-validation-valid text-danger" data-valmsg-for="txt_Other_service_name-@preOtherCount" data-valmsg-replace="true" style="display: none;"></span>
+                    </td>
+                    <td>
+                        <input class="form-control k-textbox txt_Other_service_amount " id="txt_Other_service_amount-@preOtherCount"
+                               name="txt_Other_service_amount-@preOtherCount" type="text"
+                               value="@cost.Amount" data-class="OtherAmount"
+                               onkeyup="sumEditTwo();"
+                               data-id="@cost.OtherCostId" data-isotherpre="1"
+                               data-isvat="0" data-percentage="0"
+                               placeholder="Amount"
+                               min="1"
+                               data-val-length="Invalid number."
+                               data-val-length-max="13"
+                               data-val-regex="Invalid. Use two digits after decimal point."
+                               data-val-regex-pattern="\d+(\.\d{1,2})?"
+                               data-val-required="Please enter amount">
+                        <span class="field-validation-valid text-danger" data-valmsg-for="txt_Other_service_amount-@preOtherCount" data-valmsg-replace="true" style="display: none;"></span>
+                    </td>
+                    <td id="DivForDynBtnForOther-@preOtherCount">
+                        <span class="k-icon k-i-plus btn_Add_Other_service"></span>
+                        <span class="k-icon k-i-close btn_remv_Other_service"></span>
+                    </td>
+                </tr>
+                    }
+                    else
+                    {
+                <tr id="edit_trforOtherService-@preOtherCount">
+                    <td><div><label>@preOtherCount. </label></div></td>
+                    <td>
+                        <input class="txt_Other_service_name"
+                               id="txt_Other_service_name-@preOtherCount"
+                               name="txt_Other_service_name-@preOtherCount" type="text"
+                               data-isotherpre="1"
+                               data-id="@cost.OtherCostId"
+                               value="@cost.ServiceId" data-class="Service" data-val-required="Please enter service name">
+
+                        <span class="field-validation-valid text-danger" data-valmsg-for="txt_Other_service_name-@preOtherCount" data-valmsg-replace="true" style="display: none;"></span>
+                    </td>
+                    <td>
+                        <input class="form-control k-textbox txt_Other_service_amount " id="txt_Other_service_amount-@preOtherCount"
+                               name="txt_Other_service_amount-@preOtherCount" type="text"
+                               value="@cost.Amount" data-class="OtherAmount"
+                               onkeyup="sumEditTwo();"
+                               data-id="@cost.OtherCostId" data-isotherpre="1"
+                               data-isvat="0" data-percentage="0"
+                               placeholder="Amount" min="1"
+                               data-val-length="Invalid number."
+                               data-val-length-max="13"
+                               data-val-regex="Invalid. Use two digits after decimal point."
+                               data-val-regex-pattern="\d+(\.\d{1,2})?"
+                               data-val-required="Please enter amount">
+                        <span class="field-validation-valid text-danger" data-valmsg-for="txt_Other_service_amount-@preOtherCount" data-valmsg-replace="true" style="display: none;"></span>
+                    </td>
+                    <td id="DivForDynBtnForOther-@preOtherCount" style="display:none;">
+                        <span class="k-icon k-i-plus btn_Add_Other_service"></span>
+                        <span class="k-icon k-i-close btn_remv_Other_service"></span>
+                    </td>
+                </tr>
+                    }
+                <script>
+                        $("#txt_Other_service_name-" + '@(preOtherCount)').kendoDropDownList({
+                            dataTextField: "ExtraServiceName",
+                            dataValueField: "Id",
+                            optionLabel: "--Select One--",
+                            change: onChangeForEdit,
+                            dataSource: {
+                                transport: {
+                                    read: {
+                                        url: "@Url.Action("GetVoucherOtherCost", "Voucher")?id=" + IsVatSelected, type: "GET"
+                                    }
+                                }
+                            }
+                        });
+                        var url = "/Voucher/CheckIdForVatAmount";
+                        $.post(url, { Id: '@(cost.ServiceId)' }, function (data) {
+                            if (data === false) {
+                                IsVatSelected = 0;
+                            }
+                            else {
+                                IsVatSelected = data.Id;
+                                $("#txt_Other_service_amount-" + '@(preOtherCount)').data("isvat", 1);
+                                $("#txt_Other_service_amount-" + '@(preOtherCount)').data("percentage", data.Percentage);
+
+                                $("#txt_Other_service_amount-" + '@(preOtherCount)').attr("data-isvat", 1);
+                                $("#txt_Other_service_amount-" + '@(preOtherCount)').attr("data-percentage", data.Percentage);
+                            }
+                        });
+                </script>
+                }
+            <tr>
+                <th colspan="3" style="text-align:right;">Sub Total <span id="lblSubTotal">@Model.TotalAmount</span></th>
+            </tr>
+        </table>
+        <script>
+                $("#btn_Define_Others").hide();
+        </script>
+        }
+        else
+        {
+        <table class="table table-condensed" id="tbl_all_voucherOtherService_list" style="display:none;">
+            <tr>
+                <th width="5%">SL</th>
+                <th width="55%">Cost Description</th>
+                <th width="25%" style="text-align:right;">Amount</th>
+                <th width="15%"></th>
+            </tr>
+        </table>
+
+        }
+        </div>
+
+    }
+
+</div>     
+<div class="k-edit-buttons k-state-default">
+    <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_editVoucher"><span class="k-icon k-update"></span>Update</button>
+    <button type="button" class="k-button k-button-icontext k-grid-update" id="btn_Edit_Vouc_Refresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+    <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_editVoucherCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+</div>
+
+
+<script>
+    var count = 1, Othercount=0;
+    //var newAddcount = 1, newOthercount = 0,
+    var newAddcount = '@(precount)', newOthercount = '@(preOtherCount)';
+    var ServiceName = [], serviceAmount = [], ServiceId = [], t = '@voucherProduct.Count', OtherServiceTotal, IsVat = true;
+    $(document).ready(function () {
+        OtherServiceTotal = '@Model.OtherServiceTotal';
+    });
+
+    //*************************** Dynamically Added Service *************************
+    $("#tbl_all_voucherProduct_list").on("click", ".btn_Add_service", function () {
+        var serviceValidation = $("#tbl_all_voucherProduct_list").kendoValidator().data("kendoValidator");
+        if (serviceValidation.validate()) {
+            $("#DivForDynBtn-" + newAddcount).hide();
+            var preCount = newAddcount;
+            newAddcount++;
+            $("#edit_tr-" + preCount).after('<tr id="edit_tr-' + newAddcount + '">' +
+                        '<td><div><label>' + newAddcount + '</label></div></td>' +
+                        '<td>' +
+                            '<input class="form-control k-textbox txt_service_name"' +
+                           ' id="txt_service_name-' + newAddcount + '"' +
+                            'name="txt_service_name-' + newAddcount + '" data-ispre="0"  type="text"' +
+                            'value="" data-class="VoucherProduct" data-val-required="Please enter product name">' +
+                         '<span class="field-validation-valid text-danger" data-valmsg-for="txt_service_name-' + newAddcount + '" data-valmsg-replace="true" style="display: none;"></span>' +
+                        '</td>' +
+                        '<td>' +
+                         '<input class="form-control k-textbox txt_service_amount" id="txt_service_amount-' + newAddcount + '"placeholder="Amount"' +
+                                'name="txt_service_amount-' + newAddcount + '" type="text"' +
+                                 'onkeyup="sumEdit();"' +
+                                 'data-val-length="Invalid number"' +
+                                ' data-val-length-max="13"' +
+                                'value=""  data-ispre="0" ' +
+                                'min="1" data-val-regex="Invalid. Use two digits after decimal point" data-val-regex-pattern="\\d+(\\.\\d{1,2})?"' +
+                                'data-val-required="Please enter amount">' +
+                         '<span class="field-validation-valid text-danger" data-valmsg-for="txt_service_amount-' + newAddcount + '" data-valmsg-replace="true" style="display: none;"></span>' +
+                        '</td>' +
+
+                        '<td id="DivForDynBtn-' + newAddcount + '">' +
+                                '<span class="k-icon k-i-plus btn_Add_service"></span>' +
+                                '<span class="k-icon k-i-close btn_remv_service"></span>' +
+                        '</td>' +
+                        '</tr>');
+        }
+    });
+
+    //*************************** Dynamically Added Service Remove *************************
+
+    $("#tbl_all_voucherProduct_list").on("click", ".btn_remv_service", function () {
+        $("#edit_tr-" + newAddcount).remove();
+        newAddcount--;
+        $("#DivForDynBtn-" + newAddcount).show();
+        sumEdit();
+    });
+    //********************* Dynamically added Other Service *****************************
+    $("#tbl_all_voucherOtherService_list").on("click", ".btn_Add_Other_service", function () {
+        var serviceValidation = $("#tbl_all_voucherOtherService_list").kendoValidator().data("kendoValidator");
+        if (serviceValidation.validate()) {
+            $("#DivForDynBtnForOther-" + newOthercount).hide();
+            var preId = newOthercount;
+            newOthercount++;
+            $("#edit_trforOtherService-" + preId).after('<tr id="edit_trforOtherService-' + newOthercount + '">' +
+                        '<td><div><label>' + newOthercount + '</label></div></td>' +
+                        '<td>' +
+                            '<input class="txt_Other_service_name"' +
+                           ' id="txt_Other_service_name-' + newOthercount + '"' +
+                            'name="txt_Other_service_name-' + newOthercount + '"data-isvat="0" data-percentage="0" data-isotherpre="0" data-count="' + newOthercount + '" type="text"' +
+                            'value="" data-class="Service" data-val-required="Please enter service name">' +
+                         '<span class="field-validation-valid text-danger" data-valmsg-for="txt_Other_service_name-' + newOthercount + '" data-valmsg-replace="true" style="display: none;"></span>' +
+                        '</td>' +
+                        '<td>' +
+                         '<input class="form-control k-textbox txt_Other_service_amount" id="txt_Other_service_amount-' + newOthercount + '"' +
+                                'name="txt_Other_service_amount-' + newOthercount + '" type="text"' +
+                                'value=""   data-isotherpre="0" ' +
+                                'onkeyup="sumEditTwo();"' +
+                                'data-val-length="Invalid number."' +
+                                'data-val-length-max="13"' +
+                                'min="1" data-val-regex="Invalid. Use two digits after decimal point." data-val-regex-pattern="\\d+(\\.\\d{1,2})?"' +
+                                'data-val-required="Please enter amount">' +
+                         '<span class="field-validation-valid text-danger" data-valmsg-for="txt_Other_service_amount-' + newOthercount + '" data-valmsg-replace="true" style="display: none;"></span>' +
+                        '</td>' +
+
+                        '<td id="DivForDynBtnForOther-' + newOthercount + '">' +
+                                '<span class="k-icon k-i-plus btn_Add_Other_service"></span>' +
+                                '<span class="k-icon k-i-close btn_remv_Other_service"></span>' +
+                        '</td>' +
+                        '</tr>');
+            $("#txt_Other_service_name-" + newOthercount).kendoDropDownList({
+                dataTextField: "ExtraServiceName",
+                dataValueField: "Id",
+                optionLabel: "--Select One--",
+                change: onChangeForEdit,
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "@Url.Action("GetVoucherOtherCost", "Voucher")?id=" + IsVatAlreadySelectedEdit, type: "GET"
+                        }
+                    }
+                }
+            });
+        }
+    });
+    //********************* Dynamically added Other Service Remove *****************************
+    $("#tbl_all_voucherOtherService_list").on("click", ".btn_remv_Other_service", function () {
+        $("#edit_trforOtherService-" + newOthercount).remove();
+        newOthercount--;
+        if (newOthercount === 0) {
+            $("#btn_Define_Others").show();
+            $("#tbl_all_voucherOtherService_list").hide();
+            $("#divforSubTotal").hide();
+            IsVatAlreadySelectedEdit = 0;
+        } else {
+            $("#DivForDynBtnForOther-" + newOthercount).show();
+        }
+        sumEditTwo();
+    });
+    $("#btn_Define_Others").click(function () {
+        var serviceValidate = $("#Div_For_Voucher_Edit").kendoValidator().data("kendoValidator");
+        if (serviceValidate.validate()) {
+            $("#btn_Define_Others").hide();
+            newOthercount++;
+            $("#tbl_all_voucherOtherService_list").empty();
+            $("#tbl_all_voucherOtherService_list").show();
+            $("#tbl_all_voucherOtherService_list").append('<tr><th width="5%">SL</th><th width="55%">Cost Description</th>' +
+                            '<th width="25%" style="text-align:right;">Amount</th><th width="15%"></th></tr>' +
+                            '<tr id="edit_trforOtherService-' + newOthercount + '">' +
+                              '<td><div><label>' + newOthercount + '</label></div></td>' +
+                              '<td>' +
+                                  '<input class="txt_Other_service_name"' +
+                                 ' id="txt_Other_service_name-' + newOthercount + '"' +
+                                 'name="txt_Other_service_name-' + newOthercount + '" data-isvat="0" data-percentage="0" ' +
+                                 'data-isotherpre="0" data-count="' + newOthercount + '"  type="text"' +
+                                  'value="" data-class="Service" data-val-required="Please enter service name">' +
+                               '<span class="field-validation-valid text-danger" data-valmsg-for="txt_Other_service_name-' + newOthercount + '" data-valmsg-replace="true" style="display: none;"></span>' +
+                              '</td>' +
+                              '<td>' +
+                               '<input class="form-control k-textbox txt_Other_service_amount" id="txt_Other_service_amount-' + newOthercount + '"' +
+                                      'name="txt_Other_service_amount-' + newOthercount + '" type="text"' +
+                                      'value=""  data-isotherpre="0" data-isvat="0" data-percentage="0" ' +
+                                      'onkeyup="sumEditTwo();" min="1" data-val-regex="Invalid. Use two digits after decimal point" data-val-regex-pattern="\\d+(\\.\\d{1,2})?"' +
+                                      'placeholder="Amount"' +
+                                      'data-val-length="Invalid number."' +
+                                      ' data-val-length-max="13"' +
+                                      'data-val-required="Please enter amount">' +
+                               '<span class="field-validation-valid text-danger" data-valmsg-for="txt_Other_service_amount-' + newOthercount + '" data-valmsg-replace="true" style="display: none;"></span>' +
+                              '</td>' +
+
+                              '<td id="DivForDynBtnForOther-' + newOthercount + '">' +
+                                      '<span class="k-icon k-i-plus btn_Add_Other_service"></span>' +
+                                      '<span class="k-icon k-i-close btn_remv_Other_service"></span>' +
+                              '</td>' +
+                              '</tr>' +
+                              '<tr><th colspan="3" style="text-align:right;">Sub Total <span id="lblSubTotal"></span></th></tr>');
+            $("#txt_Other_service_name-" + newOthercount).kendoDropDownList({
+                dataTextField: "ExtraServiceName",
+                dataValueField: "Id",
+                optionLabel: "--Select One--",
+                change: onChangeForEdit,
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "@Url.Action("GetVoucherOtherCost", "Voucher")?id=" + IsVatAlreadySelectedEdit, type: "GET"
+                        }
+                    }
+                }
+            });
+            $("#tbl_all_voucherOtherService_list").show();
+            sumEditTwo();
+        }
+    });
+</script>
+<script>
+    $("#btn_Edit_Vouc_Refresh").click(function () {
+        IsVatSelected = 0;
+        $("#div_for_vou_info").empty();
+        $("#div_for_vou_info").append('<div class="loading_partial"></div>');
+        $("#div_for_vou_info").load('@Url.Action("EditVoucher", "Voucher")?VoucherId=' + '@Model.VoucherId');
+    });
+    $("#btn_editVoucherCancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+        $("#div_for_vou_info").empty();
+    });
+</script>
+<script>
+    // ************************** update ****************************************
+
+    @*$("#btn_editVoucher").click(function () {
+        var validation = $("#Div_For_Voucher_Edit").kendoValidator().data("kendoValidator");
+        if (validation.validate()) {
+            var allPreServiceName = [], allPreServiceAmnt = [], allNewServiceName = [], allNewServiceAmnt = [];
+            var AllServiceId = [], newEntry = 0;
+            var allOtherPreServiceName = [], allOtherPreServiceAmnt = [], allOtherNewServiceName = [], allOtherNewServiceAmnt = [];
+            var AllOtherServiceId = [], newOtherEntry = 0;
+            $('.txt_service_name').each(function (i) {
+                AllServiceId.push($(this).data("id"));
+                if ($(this).data("ispre") === 1) {
+                    allPreServiceName.push($(this).val());
+                } else {
+                    allNewServiceName.push($(this).val());
+                    newEntry = 1;
+                }
+            });
+            $('.txt_service_amount').each(function (i) {
+                if ($(this).data("ispre") === 1) {
+                    allPreServiceAmnt.push($(this).val());
+                } else {
+                    allNewServiceAmnt.push($(this).val());
+                    newEntry = 1;
+                }
+            });
+            $('input.txt_Other_service_name').each(function (i) {
+                AllOtherServiceId.push($(this).data("id"));
+                if ($(this).data("isotherpre") === 1) {
+                    allOtherPreServiceName.push($(this).val());
+                } else {
+                    allOtherNewServiceName.push($(this).val());
+                    newOtherEntry = 1;
+                }
+            });
+            $('.txt_Other_service_amount').each(function (i) {
+                if ($(this).data("isotherpre") === 1) {
+                    allOtherPreServiceAmnt.push($(this).val());
+                } else {
+                    allOtherNewServiceAmnt.push($(this).val());
+                    newOtherEntry = 1;
+                }
+            });
+            if (newOthercount > 0) {
+                sendData = {
+                    VoucherId: '@Model.VoucherId',
+                    VoucherTypeId: $("#VoucherTypeId").val(),
+                    VoucherTitle: $("#VoucherTitle").val(),
+                    Number: $("#Number").val(),
+                    TotalAmount: $("#lblSubTotal").text(),
+                    LocationId : $ ("#LocationId").val(),
+                    AllServiceId: AllServiceId,
+                    newEntry: newEntry,
+                    allPreServiceName: allPreServiceName,
+                    allNewServiceName: allNewServiceName,
+                    allPreServiceAmnt: allPreServiceAmnt,
+                    allNewServiceAmnt: allNewServiceAmnt,
+                    allOtherPreServiceName: allOtherPreServiceName,
+                    allOtherNewServiceName: allOtherNewServiceName,
+                    allOtherPreServiceAmnt: allOtherPreServiceAmnt,
+                    allOtherNewServiceAmnt: allOtherNewServiceAmnt,
+                    AllOtherServiceId: AllOtherServiceId,
+                    newOtherEntry: newOtherEntry,
+                    CreatedBy: userId
+                };
+
+            } else {
+                sendData = {
+                    VoucherId: '@Model.VoucherId',
+                    VoucherTypeId: $("#VoucherTypeId").val(),
+                    VoucherTitle: $("#VoucherTitle").val(),
+                    Number: $("#Number").val(),
+                    LocationId: $("#LocationId").val(),
+                    TotalAmount: $("#lblServiceTotal").val(),
+                    AllServiceId: AllServiceId,
+                    newEntry: newEntry,
+                    allPreServiceName: allPreServiceName,
+                    allNewServiceName: allNewServiceName,
+                    allPreServiceAmnt: allPreServiceAmnt,
+                    allNewServiceAmnt: allNewServiceAmnt,
+                    allOtherPreServiceName: allOtherPreServiceName,
+                    allOtherNewServiceName: allOtherNewServiceName,
+                    allOtherPreServiceAmnt: allOtherPreServiceAmnt,
+                    allOtherNewServiceAmnt: allOtherNewServiceAmnt,
+                    AllOtherServiceId: AllOtherServiceId,
+                    newOtherEntry: newOtherEntry,
+                    CreatedBy: userId
+                };
+                if ('@Model.IsAccountSelected' == "True") {
+                    sendData.TotalAmount = $("#txtAmnt").val();
+                };
+            }
+            notification.show({ message: "Voucher information saving...", showTime: startTime() }, "upload-progress");
+            $.ajax({
+                url: '@Url.Action("UpdateVoucher", "Voucher")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    if (data === 'Error') {
+                        notification.show({ message: "Voucher '" + sendData.VoucherTitle + "' update was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                    else {
+                        notification.hide();
+                        notification.setOptions({ autoHideAfter: 2000 });
+                        notification.show({ message: "Voucher '"+ sendData.VoucherTitle +"' has been successfully updated", showTime: startTime() }, "upload-success");
+                    }
+                    $("#btn_editVoucher").closest(".k-window-content").data("kendoWindow").close();
+                    $("#Div_All_Voucher").load('@Url.Action("_VoucherList", "Voucher")');
+                }
+            });
+        }
+    });*@
+    $("#btn_editVoucher").click(function () {
+        var validation = $("#Div_For_Voucher_Edit").kendoValidator().data("kendoValidator");
+        if (validation.validate()) {
+            notification.show({ message: "Voucher information saving...", showTime: startTime() }, "upload-progress");
+            var OtherSevice = [], AllVoucherProduct = [];
+            var sendData = {
+                VoucherId: '@Model.VoucherId',
+                VoucherTypeId: $("#VoucherTypeId").val(),
+                VoucherTitle: $("#VoucherTitle").val(),
+                LocationId: $("#LocationId").val(),
+                Number: $("#Number").val(),
+                AllVoucherProduct: AllVoucherProduct,
+                AllOtherSevice: OtherSevice,
+                CreatedBy: userId
+            };
+            if ('@(Model.IsAccountSelected)' === 'True') {
+                if ('@Model.BankAccId' > 0) {
+                    sendData.BankAccId = '@Model.BankAccId';
+                } else {
+                    sendData.InternalAccId = '@Model.InternalAccId';
+                }
+                AllVoucherProduct.push($("#txtServName").val() + "|" + $("#txtAmnt").val());
+                sendData.TotalAmount = $("#txtAmnt").val();
+                sendData.IsAccountSelected = true;
+            } else {
+                if (parseInt(newAddcount) > 1) {
+                    for (var i = 1; i <= parseInt(newAddcount) ; i++) {
+                        AllVoucherProduct.push($("#txt_service_name-" + i).val() + "|" + $("#txt_service_amount-" + i).val());
+                    }
+                }
+                else {
+                    AllVoucherProduct.push($("#txt_service_name-" + newAddcount).val() + "|" + $("#txt_service_amount-" + newAddcount).val());
+                }
+                for (var i = 1; i <= parseInt(newOthercount) ; i++) {
+                    OtherSevice.push($("#txt_Other_service_name-" + i).val() + "|" + $("#txt_Other_service_amount-" + i).val());
+                }
+                sendData.IsAccountSelected = false;
+                sendData.AllVoucherProduct = AllVoucherProduct;
+                sendData.AllOtherSevice = OtherSevice;
+                if (parseInt(newOthercount) > 0) {
+                    sendData.TotalAmount = $("#lblSubTotal").text();
+                } else {
+                    sendData.TotalAmount = $("#lblServiceTotal").text();
+                }
+            }
+            $.ajax({
+                url: '@Url.Action("UpdateVoucher", "Voucher")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === 'Error') {
+                        notification.show({ message: "Voucher '" + sendData.VoucherTitle + "' update was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                    else {
+                        notification.show({ message: "Voucher '" + sendData.VoucherTitle + "' has been successfully updated", showTime: startTime() }, "upload-success");
+                    }
+                    $("#btn_editVoucher").closest(".k-window-content").data("kendoWindow").close();
+                    $("#Div_All_Voucher").load('@Url.Action("_VoucherList", "Voucher")');
+                },
+                error: function (err) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+</script>

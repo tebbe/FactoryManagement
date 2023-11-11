@@ -1,0 +1,84 @@
+﻿@model IEnumerable<FactoryManagement.Models.View_Voucher_Transaction>
+@using FactoryManagement.Helpers
+@{
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    var count = 0;
+}
+
+@if (Model.Count() > 0)
+{
+     <table class="table table-bordered" id="tbl_trans_internal_account">
+        <tr style="width:50%;">
+            <th>#</th>
+            <th>Transaction Name</th>
+            <th>Amount</th>
+            <th>Voucher Type</th>
+            <th>Approved By</th>
+            <th>Approved Date</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+        @foreach (var list in Model)
+        {
+            count++;
+            <tr>
+                <th>@count.</th>
+                <td><span style="color:#428bca;cursor:pointer;" class="accTranName" data-id="@list.Id" data-name="@list.TranName">@list.TranName</span></td>
+                <td>@currency @list.Amout</td>
+                <td>@list.VoucherTypeName</td>
+                <td>
+                    @if (list.ApprovedBy != null)
+                    {
+                        if (list.ApprovedBy > 0)
+                        {
+                            <img class="user-photo" src="/Images/UserPicture/thumb/@list.ApprovedUserPic">
+                            <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = list.ApprovedBy, isDisplay = true }, null)">@list.ApprovedUserName</a>
+                         
+                        }
+                        else
+                        {
+                            <img class="user-photo" src="/Images/UserPicture/thumb/@list.ApprovedUserPic">
+                            <span>@list.ApprovedUserName</span>
+                        }
+                    }
+                    else
+                    {
+                        <span>Not approved yet</span>
+                    }
+                </td>
+                <td>@list.ApproveFormate</td>
+                <td style="font-weight:bold;">
+                    @if (list.ApproveStatus == 0)
+                    { <span class="text-warning">Not approved yet</span>}
+                    else if (list.ApproveStatus == 1)
+                    { <span class="text-info">Approved but not received yet</span>}
+                    else if (list.ApproveStatus == 2)
+                    { <span class="text-success">Received</span>}
+                    else
+                    {<span class="text-danger">Rejected</span> }
+                </td>
+                <td style="font-weight:bold;">
+                    @if (list.ApproveStatus == 1)
+                    {
+                        <span class="btn green btn_tran_receive"
+                              data-toggle="tooltip" data-original-title="Receive Transaction"
+                              data-vouchertype="@list.VoucherTypeId"
+                              data-amount="@list.Amout"
+                              data-accid="@list.InternalAccId"
+                              data-id="@list.Id"
+                              data-name="@list.TranName"><i class="fa fa-check"></i></span>
+                    }
+                </td>
+            </tr>
+        }
+    </table>
+}
+else 
+{
+    <h4>There is no record to display</h4>
+}
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+    totalCount = '@(ViewBag.Count)';
+    showCount = '@count';
+</script>

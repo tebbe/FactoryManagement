@@ -1,0 +1,254 @@
+﻿@************************************** Created By Mabia Mishu (Date:08.09.2016)  ***************************************@
+
+
+@{
+    ViewBag.Title = "All Brand List";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-gears"></i>
+            <span>Configuration</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Inventory/AllBrandList">All Brand List</a>
+        </li>
+    </ul>
+</div>
+<p><span data-toggle="tooltip" title="Add New Brand" class="btn green" id="btn_brand_create"><i class="fa fa-plus"></i> Add New Brand</span></p>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">Brand List</span>
+                </div>
+
+            </div>
+            <div class="portlet-body">
+                <div id="divForAll_Brand"><div class="loading_partial"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="win_create_new_brand"></div>
+<div id="win_brand_child_add"></div>
+<div id="win_edit_brand"></div>
+
+<script id="temp_win_site_edit" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px"> Are you sure want to delete this brand? </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_editSite_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_editSite_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $('#liForInvenConfig').addClass('open');
+        $('#liForInvenConfig .sub-menu').show();
+        $("#liForBrandList").addClass('sublistActive');
+        $("#divForAll_Brand").load('@Url.Action("_ShowAllBrandList", "Inventory")');
+    });
+
+    $("#divForAll_Brand").on("click", ".btn_expandForBrand", function (e) {
+        e.preventDefault();
+        var typeId = $(this).data("id");
+        $(this).find('i').toggleClass('fa-plus-square-o fa-2 fa-minus-square-o fa-2');
+        if ($(this).data("isclick") == "0") {
+            $(this).data("isclick", "1");
+            $(this).attr("dataisclick", "1");
+            $.ajax({
+                url: '@Url.Action("GetAllBrandForList", "Inventory")',
+                type: 'Post',
+                data: { ParentId: typeId },
+                success: function (data) {
+                    if (data) {
+                        $(".trforchild_" + typeId).empty();
+                        $(".trforchild_" + typeId).show();
+                        var crntSpan = $("#spanForName_" + typeId);
+                        var getPadValue = parseInt(crntSpan.css('padding-left'));
+                        for (var i in data) {
+                            $('<tr id="tr_' + data[i].BrandId + '" class="trforchild_' + typeId + '" data-brandid="' + data[i].BrandId + '" data-brandchild="' + data[i].HasChild + '">' +
+                                '<td><span id="spanForName_' + data[i].BrandId + '">' +
+                                ((data[i].HasChild == 'True') ? '<span class="btn_expandForBrand" id="newtrForAp_' + data[i].BrandId + '" data-id="' + data[i].BrandId +
+                                '" data-isclick="0" style="margin-right:.5em;">' +
+                                '<i class="fa fa-plus-square-o fa-2"></i></span>' : '') + data[i].BrandName +
+                                '</span></td>' +
+                                '<td>' +
+                                ((data[i].CreatedBy > 0) ? '<img class="img-circle" src="/Images/UserPicture/thumb/' + data[i].Picture + '"><a href="/HumanResource/DisplayEmployeeDetails?UserId=' + data[i].CreatedBy + '&isDisplay=true">' + ' ' + data[i].UserName + '</a>' : '<span>Super admin</span> <span>Super admin</span>') +
+                                '</td>' +
+                                '<td>' + data[i].CreatedDateName + '</td>' +
+                                '<td>' +
+                                    '<span data-toggle="tooltip" title="Update Infprmation" class="btn green btn_brand_Edit" data-id="' + data[i].BrandId + '"><i class="fa fa-pencil"></i></span> ' + ' ' +
+                                ((data[i].HasChild == 'False') ? '<span data-toggle="tooltip" title="Delete Information" class="btn btn-danger btn_brand_Delete" data-id="' + data[i].BrandId + '" data-name="' + data[i].ParentName + '"><i class="fa fa-trash"></i></span>' : '') + ' ' +
+                                '<span data-toggle="tooltip" title="Add Sub Brand" class="btn blue btn_brand_child_add" data-id="' + data[i].BrandId + '" data-name="' + data[i].BrandName + '"><i class="fa fa-plus-circle fa-2"></i></span>' +
+                                '</td></tr>').insertAfter("#tr_" + typeId);
+
+                            $("#spanForName_" + data[i].BrandId).css("padding-left", (getPadValue + 8) + "%");
+
+                        }
+                    }
+                    $('[data-toggle="tooltip"]').tooltip();
+                }
+            });
+        }
+        else {
+            $(this).data("isclick", "0");
+            $(this).attr("dataisclick", "0");
+            $(".trforchild_" + typeId).each(function () {
+                var id = $(this).data("brandid");
+                var haschild = $(this).data("brandchild");
+                if (haschild == "True") {
+                    childremove(id);
+                }
+            });
+            $(".trforchild_" + typeId).remove();
+        }
+    });
+    function childremove(id) {
+        $(".trforchild_" + id).each(function () {
+            var nextChild = $(this).data("brandid");
+            var haschild = $(this).data("brandchild");
+            if (haschild == "True") {
+                childremove(nextChild);
+            }
+        });
+        $(".trforchild_" + id).remove();
+    }
+
+    $("#btn_brand_create").click(function () {
+        $("#win_create_new_brand").empty();
+        $("#win_create_new_brand").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '25%',
+            title: 'Create New Brand',
+            close: onWindowClose
+        });
+        $("#win_create_new_brand").html('<div class="tiny_loading"></div>');
+        var win_create_new_brand = $("#win_create_new_brand").data("kendoWindow");
+        win_create_new_brand.refresh({ url: "/Inventory/BrandCreate" });
+        win_create_new_brand.center().open();
+
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+
+    $("#divForAll_Brand").on("click", ".btn_brand_child_add", function (e) {
+        e.preventDefault();
+        var parent = $(this).data("id");
+        var typeName = $(this).data("name");
+        $("#win_brand_child_add").empty();
+        $("#win_brand_child_add").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '25%',
+            title: 'Create Brand Child',
+            close: onWindowClose
+        });
+        $("#win_brand_child_add").html('<div class="tiny_loading"></div>');
+        var win_brand_child_add = $("#win_brand_child_add").data("kendoWindow");
+        win_brand_child_add.refresh({ url: "/Inventory/BrandCreate?ParentId=" + parent + '&ParentName=' + typeName });
+        win_brand_child_add.center().open();
+
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+    $("#divForAll_Brand").on("click", ".btn_brand_Edit", function (e) {
+        e.preventDefault();
+        var typeId = $(this).data("id");
+        $("#win_edit_brand").empty();
+        $("#win_edit_brand").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '25%',
+            title: 'Update Brand Information',
+            close: onWindowClose
+        });
+        $("#win_edit_brand").html('<div class="tiny_loading"></div>');
+        var win_edit_brand = $("#win_edit_brand").data("kendoWindow");
+        win_edit_brand.refresh({ url: "/Inventory/BrandCreate?BrandId=" + typeId });
+        win_edit_brand.center().open();
+
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+
+
+    function deleteBrand(typeId, parentName) {
+        notification.show({ message: "Deleting brand", showTime: startTime() }, "upload-progress");
+
+        $.ajax({
+            url: '@Url.Action("BrandDestroy", "Inventory")',
+            type: 'Post',
+            data: { BrandId: typeId, UserId: userId, ParentName: parentName },
+            success: function (data) {
+
+                notification.hide();
+                notification.setOptions({ autoHideAfter: 5000 });
+
+                if (data === "Success") {
+                    notification.show({ message: "Brand successfully deleted", showTime: startTime() }, "upload-success");
+                    $("#divForAll_Brand").empty();
+                    $("#divForAll_Brand").append('<div class="loading_partial"></div>');
+                    $("#divForAll_Brand").load('@Url.Action("_ShowAllBrandList", "Inventory")');
+
+                    document.documentElement.style.overflow = 'auto';  
+                    document.body.scroll = "yes";
+                }
+                else {
+                    var msg = (data === "Error") ? "Brand delete attempt unsuccessful" : "Brand delete attempt unsuccessful, " + data;
+                    notification.show({ message: "Brand delete attempt unsuccessful, " + data, showTime: startTime() }, "upload-error");
+                }
+            }
+        });
+    }
+
+    $("#divForAll_Brand").on("click", ".btn_brand_Delete", function () {
+
+        var typeId = $(this).data("id");
+        var parentName = $(this).data("name");
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose
+        });
+        var template = kendo.template($("#temp_win_site_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        kendoWindow.find("#btn_editSite_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_editSite_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+            document.body.scroll = "no"; // ie only
+            deleteBrand(typeId, parentName);
+            
+        }).end();
+    });
+</script>

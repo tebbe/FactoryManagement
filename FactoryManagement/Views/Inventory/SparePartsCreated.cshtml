@@ -1,0 +1,172 @@
+﻿
+
+
+@************************************** Created By Jerin Jahan (Date:26.07.2016)  ***************************************@
+@model FactoryManagement.ModelView.Inventory.SparePartsListModelView
+@{
+    ViewBag.Title = "Parts Create";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+
+<h2>@ViewBag.Title</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.HiddenFor(m => m.CreatedBy)
+    <div class="form-horizontal col-md-12 col-sm-12 col-xs-12">
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        @Html.HiddenFor(m => m.PartsId)
+        <div class="form-group">
+            @Html.LabelFor(model => model.PartsName, htmlAttributes: new { @class = "control-label col-md-2 col-sm-3" })
+            <div class="col-md-3 col-sm-4">
+                @Html.EditorFor(model => model.PartsName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                @Html.ValidationMessageFor(model => model.PartsName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.Type, htmlAttributes: new { @class = "control-label col-md-2 col-sm-3" })
+            <div class="col-md-3 col-sm-4">
+                @(Html.Kendo().DropDownListFor(m => m.Type)
+                       .DataTextField("Text")
+                       .DataValueField("Value")
+                       .OptionLabel("--Select One Type--")
+                       .HtmlAttributes(new { style = "width:100%" })
+                       .Events(e=> e.Change("onChangeType"))
+                       .BindTo(new List<SelectListItem>() {
+                          new SelectListItem() {
+                              Text = "Replaceable",
+                              Value = "1"
+                          },
+                          new SelectListItem() {
+                              Text = "Perishable",
+                              Value = "2"
+                          },
+                      })
+                )
+                @Html.ValidationMessageFor(model => model.Type, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group" id="DivForExpire">
+            @Html.LabelFor(model => model.ExpireDate,"Replace Date", htmlAttributes: new { @class = "control-label col-md-2 col-sm-3" })
+            <div class="col-md-3 col-sm-4">
+                @Html.EditorFor(model => model.ExpireDate, new { htmlAttributes = new { @class = "form-control k-textbox", onkeypress = "return isNumber(event,this.value)" } })
+                @Html.ValidationMessageFor(model => model.ExpireDate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-2 col-sm-3" })
+            <div class="col-md-3 col-sm-4">
+                <textarea class="form-control k-textbox valid k-valid" cols="65" id="Description" name="Description" rows="5"></textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10 col-sm-offset-3 col-sm-9">
+                @if (Model.PartsId > 1)
+                {
+                    <input type="submit" value="Update" class="k-button k-state-default" id="btnPartsCreate" />
+                }
+                else
+                {
+                    <input type="submit" value="Create" class="k-button k-state-default" id="btnPartsCreate" />
+                }
+                
+                <input type="reset" value="Refresh" class="k-button k-state-default" id="btnPartsRefresh" />
+                <input type="button" value="Cancel" class="k-button k-state-default" id="btnPartsCreateCancel" />
+            </div>
+        </div>
+    </div>
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script>
+        $(document).ready(function(){
+            $("#liForInventory").addClass('active');
+            if(@(Model.PartsId) > 0 && '@(Model.Type)' === '1'){
+                $("#DivForExpire").show();
+            }else{
+                $("#DivForExpire").hide();
+            }
+            var userId = @Request.Cookies["CookieAdminInfo"].Values["userid"].ToString();
+            $("#CreatedBy").val(userId);
+        });
+        var v = $("form").kendoValidator({
+            rules: {
+                remote: function (input) {
+                    var errormessage;
+                    var remoteAttr = input.attr("data-val-remote-url");
+                    if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                        return true;
+                    }
+                    var isInvalid;
+                    var data = {};
+                    var PartsId = $("#PartsId").val();
+                    var PartsName = $("#PartsName").val();
+                    if (input.attr('name') === "PartsName") {
+                        data = { PartsId: PartsId, PartsName: PartsName };
+                    }
+                    $.ajax({
+                        url: remoteAttr,
+                        mode: "abort",
+                        port: "validate" + input.attr('name'),
+                        dataType: "json",
+                        type: input.attr("data-val-remote-type"),
+                        data: data,
+                        async: false,
+                        success: function (response) {
+                            isInvalid = response;
+                            if (isInvalid === true) {
+                                isInvalid = true;
+                            }
+                            else {
+                                isInvalid = false;
+                            }
+                        }
+                    });
+                    return isInvalid;
+                },
+                replace: function (input) {
+                    if (input.attr('name') === "ExpireDate" && $("#Type").val() === '1' && $("#ExpireDate").val() === "") {
+                        return false;
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                remote: function (input) {
+                    return input.data('val-remote');
+                },
+                replace:"Please enter replace date"
+            }
+        });
+        function isNumber(e,v) {
+            e = (e) ? e : window.event;
+            var charCode = (e.which) ? e.which : e.keyCode;
+            if (charCode < 48 || charCode > 57) {
+                return false;
+            }else{
+                if(charCode == 48 && v === ''){
+                    return false;
+                }
+                return true;
+            }
+
+        }
+        function onChangeType(e){
+            var dataItem = this.dataItem(e.item);
+            if(dataItem.Value === '1'){
+                $("#DivForExpire").show();
+            }
+            else{
+                $("#DivForExpire").hide();
+                $("#ExpireDate").val('');
+            }
+        }
+        $("#btnPartsCreate").click(function () {
+
+        });
+        $("#btnPartsCreateCancel").click(function () {
+            location.href = '@Url.Action("AllPartsList", "Inventory")';
+        });
+</script>
+}

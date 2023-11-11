@@ -1,0 +1,58 @@
+﻿
+
+@using FactoryManagement.Helpers
+@********************* Created By Jerin Jahan (Date: 07.05.2017) ****************************@
+@model IEnumerable<FactoryManagement.Models.View_Import_Item_Details>
+@{
+    int count = 1;
+    var db = new FactoryManagement.Models.FactoryManagementEntities();
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    int seven = 1;
+    int all = 1;
+    var dummyString = "/StoreProduct/ImportHistoryList";
+    var decodeString = System.Net.WebUtility.HtmlEncode(dummyString);
+}
+@if (Model.Count() > 0)
+{
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr role="row">
+                <th width="5%">#</th>
+                <th width="10%">L/C</th>
+                <th width="20%">Quantity</th>
+                <th width="20%">Item Name</th>
+                <th width="20%">Inserted By</th>
+                <th width="25%">InsertDate</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var list in Model)
+            {
+                string unitname = db.View_Import_History_Details.Where(m => m.ImportId == list.ImportId).Select(m => m.UnitName).FirstOrDefault();
+                <tr>
+                    <td>@count.</td>
+                    <td><a href="#">@list.L_C</a></td>
+                    <td>@list.Quantity @unitname</td>
+                    <td>@list.ProductName</td>
+                    <td>
+                        @if (list.InsertedBy > 0)
+                        {
+                            @Html.EncodedActionLink(list.InsertedByUserName, "DisplayEmployeeDetails", "HumanResource", new { UserId = list.InsertedBy, isDisplay = true }, null)
+                        }
+                        else
+                        {
+                            <span>@list.InsertedByUserName</span>
+                        }
+                    </td>
+                    <td>@Convert.ToDateTime(list.InsertedDate).ToString("MMM dd, yyyy hh:mm:tt")</td>
+                </tr>
+                        count++;
+            }
+
+        </tbody>
+    </table>
+
+}
+else{
+    <h4>There is no record to display....</h4>
+}

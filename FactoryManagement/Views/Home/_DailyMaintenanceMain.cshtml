@@ -1,0 +1,45 @@
+﻿
+@{
+    var id = (ViewBag.machineId > 0)? ViewBag.machineId:null;
+}
+<div class="panel with-nav-tabs panel-default" id="wastePanel">
+    <div class="panel-heading">
+        <ul class="nav nav-tabs">
+            <li class="active" id="liForAllMain"><a href="#tabAllMain" data-toggle="tab">All</a></li>
+            <li class="liForReplace" id="liForReplace"><a href="#tab_Replace" data-toggle="tab">Replace</a></li>
+            <li class="liForQc" id="liForQC"><a href="#tab_QC" data-toggle="tab">QC</a></li>
+        </ul>
+    </div>
+    <div class="panel-body" style="border:none!important;" id="div_for_panel_body">
+        <div class="tab-content">
+            <div class="tab-pane fade in active" id="tabAllMain"></div>
+            <div class="tab-pane fade" id="tab_Replace"></div>
+            <div class="tab-pane fade" id="tab_QC"></div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $("#tabAllMain").append('<div class="partial_loading_half"></div>');
+        var passdata={machineId:'@(id)'};
+        $("#tabAllMain").load('@Url.Action("_DailyMaintenance", "Home")',passdata);
+    });
+    $("#liForAllMain").click(function () {
+        $("#tabAllMain").empty();
+        $("#tabAllMain").append('<div class="partial_loading_half"></div>');
+        var passdata = { machineId: '@(id)' };
+        $("#tabAllMain").load('@Url.Action("_DailyMaintenance", "Home")');
+    });
+    $("#liForReplace").click(function () {
+        $("#tab_Replace").empty();
+        $("#tab_Replace").append('<div class="partial_loading_half"></div>');
+        var passdata = { type:1,machineId: '@(id)' };
+        $("#tab_Replace").load('@Url.Action("_DailyMaintenance",  "Home")', passdata);
+    });
+    $("#liForQC").click(function () {
+        $("#tab_QC").empty();
+        $("#tab_QC").append('<div class="partial_loading_half"></div>');
+        var passdata = { type: 2, machineId: '@(id)' };
+        $("#tab_QC").load('@Url.Action("_DailyMaintenance",  "Home")', passdata);
+    });
+</script>

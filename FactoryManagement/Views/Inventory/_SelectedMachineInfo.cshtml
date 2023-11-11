@@ -1,0 +1,44 @@
+﻿
+
+@*************** Created By Jerin Jahan (Date: 26.12.2016) *********************************@
+@model FactoryManagement.ModelView.Inventory.MachineTypeModelView
+<div class="form-group">
+    @Html.LabelFor(model => model.MachineTypeName, "Machine Type", htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+    <div class="col-md-5 col-sm-6" style="padding-top:10px!important;">
+        @Model.MachineTypeName
+    </div>
+</div>
+@if (Model.ModelName != null)
+{
+    <div class="form-group">
+        @Html.LabelFor(model => model.ModelName, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+        <div class="col-md-5 col-sm-6" style="padding-top:10px!important;">
+            @Model.ModelName
+        </div>
+    </div>
+}
+
+<div class="form-group">
+    @Html.LabelFor(model => model.BrandId, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+    <div class="col-md-5 col-sm-6" style="padding-top:10px!important;">
+        @Model.BrandName
+    </div>
+</div>
+<div class="form-group">
+    @Html.LabelFor(model => model.CountryOfOrigin, htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+    <div class="col-md-5 col-sm-6" style="padding-top:10px!important;">
+        @Model.CountryName
+    </div>
+</div>
+<div class="form-group">
+    @Html.LabelFor(model => model.Mgf, "Mgf. Year", htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+    <div class="col-md-5 col-sm-6" style="padding-top:10px!important;">
+        @Model.Mgf
+    </div>
+</div>
+<script>
+    $("#Acroynm").val('@Model.Acroynm');
+    $("#ModelName").val('@Model.ModelName');
+    $("#BrandId").val('@Model.BrandId');
+    $("#CountryOfOrigin").val('@Model.CountryOfOrigin');
+</script>

@@ -1,0 +1,136 @@
+﻿
+@******************** Created By Jerin Jahan(Date:09.12.2016) **************************@
+
+<div class="col-sm-12" style="padding-left:0px!important;padding-right:0px!important;">
+    <div class="panel with-nav-tabs panel-default">
+        <div class="panel-heading">
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#tab1Pck" data-toggle="tab">Salary Package</a></li>
+                <li id="liUserSalaryPaid"><a href="#tab2PaidSalary" data-toggle="tab">All Paid Salary List</a></li>
+                <li id="liUserSalaryDue"><a href="#tab3DueSalary" data-toggle="tab">All Due Salary List</a></li>
+                @*<li id="liUserLoanList"><a href="#tab4LoanList" data-toggle="tab">Loan</a></li>*@
+                @*<li id="liBankAcList"><a href="#tab4BankAcList" data-toggle="tab">Bank Account</a></li>*@
+            </ul>
+        </div>
+        <div class="panel-body" style="border:none!important;">
+            <div class="tab-content">
+                <div class="tab-pane fade in active" id="tab1Pck"><div class="win_loading_half"></div></div>
+                <div class="tab-pane fade" id="tab2PaidSalary"><div class="loading_half"></div></div>
+                <div class="tab-pane fade" id="tab3DueSalary"><div class="loading_half"></div></div>
+                <div class="tab-pane fade" id="tab4LoanList"><div class="loading_half"></div></div>
+                <div class="tab-pane fade" id="tab4BankAcList"><div class="loading_half"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var salaryPackview, assignedsalaryPackageId, empUserType;
+    $(document).ready(function () {
+        empUserType = '@(ViewBag.UserType)';
+        if ('@(ViewBag.PackageId)' == '') {
+            $("#tab1Pck").load('@Url.Action("SalaryPackRefresh", "HumanResource")?reason=assign');
+        } else {
+            assignedsalaryPackageId = '@(ViewBag.PackageId)';
+            var sendData = { UserId: '@(ViewBag.UserId)', UserType: '@(ViewBag.UserType)', PackageId: '@(ViewBag.PackageId)', option: 'partail' };
+            $("#tab1Pck").load('@Url.Action("ShowSalaryPackageDetails", "HumanResource")', sendData);
+        }
+    });
+
+    $("#liUserSalaryPaid").click(function () {
+        var sendData = { UserId: '@(ViewBag.UserId)', UserType: '@(ViewBag.UserType)', PackageId: '@(ViewBag.PackageId)', Status: 1 };
+        $("#tab2PaidSalary").load('@Url.Action("_UserSalary", "HumanResource")', sendData);
+    });
+    $("#liUserSalaryDue").click(function () {
+        var sendData = { UserId: '@(ViewBag.UserId)', UserType: '@(ViewBag.UserType)', PackageId: '@(ViewBag.PackageId)', Status: 0 };
+        $("#tab3DueSalary").load('@Url.Action("_UserSalary", "HumanResource")', sendData);
+    });
+    $("#liUserLoanList").click(function () {
+        var sendData = { userId: '@(ViewBag.UserId)', view: "partial" };
+        $("#tab4LoanList").load('@Url.Action("_UserLoanDetails", "HumanResource")', sendData);
+    });
+
+    $("#liBankAcList").click(function () {
+        var sendData = { userId: '@(ViewBag.UserId)' };
+        $("#tab4BankAcList").load('@Url.Action("_UserBankAcDetails", "HumanResource")', sendData);
+    });
+    
+
+    function btn_salary_pck_save() {
+        var sendData = { AllUserId: EmpId, PackageId: $("#Salary_PackageId").val(), pckName: $("#Salary_PackageId").data("kendoDropDownList").text(), CreatedBy: userId };
+        $.ajax({
+            url: '@Url.Action("SavePackageIdWithUser", "SalaryConfig")',
+            type: 'Post',
+            data: sendData,
+            success: function (data) {
+                notification.hide();
+                notification.setOptions({ autoHideAfter: 5000 });
+                if (data === "Error") {
+                    notification.show({ message: "Salary Package '" + sendData.pckName + "' assign was unsuccessful", showTime: startTime() }, "upload-error");
+                } else {
+                    notification.show({ message: "Salary Package '" + sendData.pckName + "' has been successfully asigned", showTime: startTime() }, "upload-success");
+                    var Data = { UserId: EmpId, UserType: empUserType, PackageId: sendData.PackageId, option: 'partail' };
+                    assignedsalaryPackageId = sendData.PackageId;
+                    $("#tab1Pck").empty();
+                    $("#tab1Pck").append('<div class="partial_loading_half"></div>');
+                    $("#tab1Pck").load('@Url.Action("ShowSalaryPackageDetails", "HumanResource")', Data);
+                }
+            }, error: function (err) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+            }
+        });
+    }
+    function btn_salary_pack_Change() {
+        var sendData = { empId: EmpId, PackageId: $("#Salary_PackageId").val(), packageName: $("#Salary_PackageId").data("kendoDropDownList").text(), previousPack: initialSalaryPack, userId: userId };
+        $.ajax({
+            url: '@Url.Action("UserSalaryPackUpdate", "HumanResource")',
+            type: 'Post',
+            data: sendData,
+            success: function (data) {
+                notification.hide();
+                notification.setOptions({ autoHideAfter: 5000 });
+                if (data === "Error") {
+                    notification.show({ message: "Salary Package '" + sendData.packageName + "' chnage was unsuccessful", showTime: startTime() }, "upload-error");
+                } else {
+                    notification.show({ message: "Salary Package '" + sendData.packageName + "' has been successfully changed.", showTime: startTime() }, "upload-success");
+                    var Data = { UserId: EmpId, UserType: empUserType, PackageId: sendData.PackageId, option: 'partail' };
+                    $("#btn_salary_pack_Change").closest(".k-window-content").data("kendoWindow").close();
+                    $("#tab1Pck").empty();
+                    $("#tab1Pck").append('<div class="partial_loading_half"></div>');
+                    $("#tab1Pck").load('@Url.Action("ShowSalaryPackageDetails", "HumanResource")', Data);
+                    assignedsalaryPackageId = Data.PackageId;
+                }
+            }, error: function (err) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+            }
+        });
+    }
+    function salaryPackageChange() {
+        var selectedId = $("#Salary_PackageId").val();
+        if (selectedId != 0 && selectedId != null && selectedId != '') {
+            if (salaryPackview == "win") {
+                var sendData = { UserId: '@(ViewBag.UserId)', UserType: '@(ViewBag.UserType)', PackageId: selectedId, option: 'win' };
+                $("#Selected_Salary_Pack_details").empty();
+                $("#Selected_Salary_Pack_details").append('<div class="win_loading_half"></div>')
+                $("#Selected_Salary_Pack_details").load('@Url.Action("ShowSalaryPackageDetails", "HumanResource")', sendData);
+                if (selectedId == assignedsalaryPackageId) {
+                    $("#btn_salary_pack_Change").attr('disabled', true);
+                } else {
+                    $("#btn_salary_pack_Change").attr('disabled', false);
+                }
+            }
+            else {
+                $("#btn_salary_pck_save").attr('disabled', false);
+                var sendData = { UserId: '@(ViewBag.UserId)', UserType: '@(ViewBag.UserType)', PackageId: selectedId, option: 'assign' };
+                $("#Selected_Salary_Pack_details").empty();
+                $("#Selected_Salary_Pack_details").append('<div class="partial_loading_half"></div>')
+                $("#Selected_Salary_Pack_details").load('@Url.Action("ShowSalaryPackageDetails", "HumanResource")', sendData);
+            }
+        } else {
+            $("#Selected_Salary_Pack_details").empty();
+            $("#btn_salary_pack_Change").attr('disabled', true);
+            $("#btn_salary_pck_save").attr('disabled', true);
+        }
+    }
+</script>

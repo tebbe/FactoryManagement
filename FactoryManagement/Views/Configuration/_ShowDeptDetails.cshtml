@@ -1,0 +1,52 @@
+﻿@******************************** Created By Mabia Mishu (Date:21.09.2016) *********************************@
+
+@model FactoryManagement.ModelView.Configuration.DepartmentListModelView
+<dl class="dl-horizontal">
+    <dt>Department Name</dt>
+    <dd>
+        <span>@Html.DisplayFor(model => model.DeptName)</span>
+        <span class="label label-success hover-pointer" id="btnForDeptEdit" data-toggle="tooltip" title="Edit Department" style="margin-left:2%;margin-top:-1em;"><i class="fa fa-pencil"></i></span>
+    </dd>
+    <dt>Department Acronym</dt>
+    <dd>@Html.DisplayFor(model => model.DeptAcronym)</dd>
+    <dt>Department Status</dt>
+    <dd>
+        @if (Model.Status == 1)
+        {<span>Active</span> }
+        else
+        {<span>Inactive</span>}
+    </dd>
+    <dt>Created Date</dt>
+    <dd>@Convert.ToDateTime(Model.CreatedDate).ToString("MMMM dd,yyyy")</dd>
+    <dt id="lblForLineNo">No. Of Line</dt>
+    <dd>
+        @if (Model.NumberOfLine > 0)
+        {@Html.DisplayFor(model => model.NumberOfLine)}
+        <span id="btnForDefineLine" class="toolTipForDefineLine">
+            <i class="fa fa-plus-circle fa-2"></i>
+            <span class="tooltiptext tooltip-right">Define line information</span>
+        </span>
+    </dd>
+    <dt id="lblForAdd" style="display:none">Add Line</dt>
+    <dd id="inputForAdd" style="display:none">
+        <div>
+            <input input type="text" onkeypress="return isNumber(event)" onkeyup="isvalueNull(this.value)" class="k-textbox text-box single-line k-invalid"
+                   name="LineNumber" id="LineNumber" maxlength="2" style="width:10%!important;height: 1.7em!important;" />
+            <span id="btnForAddLine"><i class="fa fa-check fa-2"></i></span>
+            <span id="btnForCancleLine"><i class="fa fa-times fa-2"></i></span>
+        </div>
+        <span class="field-validation-valid text-danger" data-valmsg-for="LineNumber" data-valmsg-replace="true"></span>
+    </dd>
+</dl>
+<script>
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+        DeptName = '';
+        DeptName = '@(Model.DeptName)'; Deptstatus=@Model.Status;       
+        if (displayInfo=='True') {
+            $("#btnForDeptEdit").hide();
+            $("#btnForDefineLine").hide();
+            if ('@Model.NumberOfLine' == 0) {$("#lblForLineNo").hide();}
+        }
+    });
+</script>

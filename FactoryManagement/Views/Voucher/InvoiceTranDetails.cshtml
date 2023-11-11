@@ -1,0 +1,92 @@
+﻿
+
+
+@************************************** Created By Jerin Jahan (Date: 04.02.2017)  ***************************************@
+
+@model FactoryManagement.Models.View_Voucher_Transaction
+@{
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+<style>
+    #DivForInvoiceTranDetails {width: 90%!important;}
+    #DivForInvoiceTranDetails dt {width: 44%!important;}
+    #DivForInvoiceTranDetails dd {margin-left: 48%!important;margin-top:9px!important;}
+</style>
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;">
+    <dl class="dl-horizontal" id="DivForInvoiceTranDetails">
+       
+        <dt>Transaction Name</dt>
+        <dd><span>@Model.TranName </span></dd>
+
+        <dt>Voucher Name</dt>
+        <dd><span>@Model.VoucherTitle </span></dd>
+        <dt>Voucher Type</dt>
+        <dd><span>@Model.VoucherTypeName </span></dd>
+
+        <dt>Amount</dt>
+        <dd><span>@currency @Model.Amout </span></dd>
+
+        <dt>Created By</dt>
+        <dd>
+            <span><img src="~/Images/UserPicture/thumb/@Model.CreatedUserPic" class="user-photo" /></span>
+            <span>@Model.CreatedUserName</span>
+        </dd>
+        <dt>Created Date</dt>
+        <dd>
+            <span>@Model.CreatedDateName</span>
+        </dd>
+
+        <dt>Status</dt>
+        <dd>
+            @if (Model.ApproveStatus == 0)
+            { <span class="text-warning">Not approved yet</span>}
+            else if (Model.ApproveStatus == 1)
+            { <span class="text-info">Approved but not received yet</span>}
+            else if (Model.ApproveStatus == 2)
+            { <span class="text-success">Received</span>}
+            else
+            {<span class="text-danger">Rejected</span> }
+        </dd>
+
+        @if (Model.ApproveStatus == 1)
+        {
+            <dt>Approved By</dt>
+            <dd>
+                <span><img src="~/Images/UserPicture/thumb/@Model.ApprovedUserPic" class="user-photo" /></span>
+                <span>@Model.ApprovedUserName</span>
+            </dd>
+
+            <dt>Approved Date</dt>
+            <dd><span>@Model.ApproveFormate</span></dd>
+        }
+        @if (Model.ApproveStatus == -1)
+        {
+            <dt>Rejected By</dt>
+            <dd><span>@Model.ReceivedUserName</span></dd>
+
+            <dt>Rejected Date</dt>
+            <dd><span>@Model.ReceivedDateName</span></dd>
+        }
+        @if (Model.ApproveStatus == 2)
+        {
+            <dt>Approved By</dt>
+            <dd>
+                <span><img src="~/Images/UserPicture/thumb/@Model.ApprovedUserPic" class="user-photo" /></span>
+                <span>@Model.ApprovedUserName</span>
+            </dd>
+
+            <dt>Approved Date</dt>
+            <dd><span>@Model.ApproveFormate</span></dd>
+            <dt>Received By</dt>
+            <dd>
+                <span><img src="~/Images/UserPicture/thumb/@Model.ReceivedUserPic" class="user-photo" /></span>
+                <span>@Model.ReceivedUserName</span>
+            </dd>
+            <dt>Received Date</dt>
+            <dd><span>@Model.ReceivedDateName</span></dd>
+        }
+    </dl>
+</div>
+
+
+

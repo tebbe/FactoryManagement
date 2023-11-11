@@ -1,0 +1,209 @@
+﻿
+
+@model IEnumerable<FactoryManagement.ModelView.Inventory.Mahinaries.MachineTypeNameModelView>
+@{
+    ViewBag.Title = "MachineTypeAdd";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+
+<div class="page-bar">
+<ul class="page-breadcrumb">
+    <li>
+        <i class="icon-basket"></i>
+        <span>Inventory</span>
+        <i class="fa fa-angle-right"></i>
+    </li>
+    <li>
+        <i class="fa fa-gears"></i>
+        <span>Configuration</span>
+        <i class="fa fa-angle-right"></i>
+    </li>
+    <li>
+        <i class="fa fa-th-list"></i>
+        <a href="/Inventory/MachineTypeAdd">  Machine Type List</a>
+    </li>
+</ul>
+</div>
+<p><span class="btn green" data-toggle="tooltip" title="Add New Machine Type" id="btn_machinetype_create"><i class="fa fa-plus"></i> Add New Machine Type</span></p>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">Machine Type List</span>
+                </div>
+
+            </div>
+            <div class="portlet-body">
+                    <div>
+                        <span class="autocomplete-wrapper">
+                            <input class="text-field" id="textForSearch" name="country" placeholder="Type machine type e.g. Comber" type="text" autocomplete="off">
+                            <span class="k-icon k-i-search" style="margin-top:-25px;margin-right:10px;float:right;">&nbsp;</span>
+                        </span>
+                    </div>
+                <div id="divForAll_Machine_type">
+                    <div class="loading_partial"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="win_for_machine_type_create"></div>
+<div id="win_for_machine_type_edit"></div>
+
+<script id="temp_win_site_edit" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px"> Are you sure want to delete this machine type? </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_editSite_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_editSite_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $('#liForInvenConfig').addClass('open');
+        $('#liForInvenConfig .sub-menu').show();
+        $("#liForMachineList").addClass('sublistActive');
+        $("#divForAll_Machine_type").load('@Url.Action("_ShowAllMachineType", "Inventory")');
+    });
+
+    $("#btn_machinetype_create").click(function () {
+        $("#win_for_machine_type_edit").empty();
+        $("#win_for_machine_type_create").empty();
+        $("#win_for_machine_type_create").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '25%',
+            title: 'Create New Machine Type',
+            close: onWindowClose
+        });
+        $("#win_for_machine_type_create").html('<div class="tiny_loading"></div>');
+        var win_for_machine_type_create = $("#win_for_machine_type_create").data("kendoWindow");
+        win_for_machine_type_create.refresh({ url: "/Inventory/CreateNewMachineType" });
+        win_for_machine_type_create.center().open();
+
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+    $("#textForSearch").autocomplete({
+        minLength: 0,
+        source: function (request, response) {
+            content = $.trim(request.term);
+            $.ajax({
+                url: '@Url.Action("SearchingMachineTypeName", "Inventory")',
+                type: "POST",
+                dataType: "json",
+                data: { prefix: content },
+                success: function (data) {
+                    response($.map(data, function (item) {
+                        return { label: item.MachineTypeName1, value: item.MachineTypeName1, id: item.MachineId };
+                    }))
+                }
+            })
+        },
+        minLength: 1,
+        select: function (event, ui) {
+            isloadFirstTime = true;
+            var selectTextId = ui.item.id;
+            $("#divForAll_Machine_type").load('@Url.Action("_ShowAllMachineType", "Inventory")?MachineId=' + selectTextId);
+        },
+    })
+      .keyup(function () {
+          if ($.trim($("#textForSearch").val()) == "") {
+              showCount = 0, page = 0, total = 0;
+              $("#divForAll_Machine_type").load('@Url.Action("_ShowAllMachineType", "Inventory")');
+          }
+      })
+      .autocomplete("instance")._renderItem = function (ul, item) {
+          var term = $.trim(this.term);
+          var re = new RegExp("(" + term + ")", "gi"),
+              cls = "bold-text",
+              template = "<span class='" + cls + "'>$1</span>",
+              label = item.label.replace(re, template),
+              $li = $("<li/>").appendTo(ul);
+          $("<span>").html(label).appendTo($li);
+          return $li;
+      };
+
+    $("#divForAll_Machine_type").on("click", ".btn_machine_type_Edit", function (e) {
+        e.preventDefault();
+        var typeId = $(this).data("id");
+        $("#win_for_machine_type_create").empty();
+        $("#win_for_machine_type_edit").empty();
+        $("#win_for_machine_type_edit").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '50%',
+            height: '25%',
+            title: 'Update Machine Type Information',
+            close: onWindowClose
+        });
+        $("#win_for_machine_type_edit").html('<div class="tiny_loading"></div>');
+        var win_for_machine_type_edit = $("#win_for_machine_type_edit").data("kendoWindow");
+        win_for_machine_type_edit.refresh({ url: "/Inventory/CreateNewMachineType?MachineId=" + typeId });
+        win_for_machine_type_edit.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+
+    function deleteMachineType(typeId) {
+        notification.show({ message: "Deleting Machine Type", showTime: startTime() }, "upload-progress");
+        $.ajax({
+            url: '@Url.Action("MachineTypeDestroy", "Inventory")',
+            type: 'Post',
+            data: { MachineId: typeId, UserId: userId },
+            success: function (data) {
+                notification.hide();
+                notification.setOptions({ autoHideAfter: 5000 });
+                if (data === "Success") {
+                    notification.show({ message: "Machine type has been successfully deleted.", showTime: startTime() }, "upload-success");
+                    $("#divForAll_Machine_type").empty();
+                    $("#divForAll_Machine_type").append('<div class="loading_partial"></div>');
+                    $("#divForAll_Machine_type").load('@Url.Action("_ShowAllMachineType", "Inventory")');
+
+                    document.documentElement.style.overflow = 'auto';
+                    document.body.scroll = "yes";
+                }
+                else {
+                    var msg = (data === "Error") ? "Machine type delete attempt unsuccessful" : "Machine type delete attempt unsuccessful, " + data;
+                    notification.show({ message: "Machine type delete attempt unsuccessful, " + data, showTime: startTime() }, "upload-error");
+                }
+            }
+        });
+    }
+
+    $("#divForAll_Machine_type").on("click", ".btn_machine_type_Delete", function (e) {
+        var typeId = $(this).data("id");
+        var kendoWindow = $("<div />").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close: onWindowClose
+        });
+        var template = kendo.template($("#temp_win_site_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        kendoWindow.find("#btn_editSite_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_editSite_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+            document.body.scroll = "no"; // ie only
+            deleteMachineType(typeId);
+
+        }).end();
+    });
+
+</script>
+
+

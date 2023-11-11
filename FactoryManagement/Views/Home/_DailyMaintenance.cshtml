@@ -1,0 +1,45 @@
+﻿
+
+
+@using FactoryManagement.Helpers
+@********************* Created By Jerin Jahan (Date: 20.06.2017) ****************************@
+@model IEnumerable<FactoryManagement.Models.View_Maintenance_Log>
+@{
+    int count = 0;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+@if (Model.Count() > 0)
+{
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr role="row">
+                <th width="5%">#</th>
+                <th width="15%">Name</th>
+                <th width="20%">Parts Name</th>
+                <th width="25%">Type</th>
+                <th width="30%">Operation</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var list in Model)
+            {
+                count++;
+                <tr>
+                    <td>@count.</td>
+                    <td><a href="@Html.EncodedParam("MachineDetails", "Inventory", new { machineId = list.MachineId }, null)" target="_blank">@list.MachineAcronym</a></td>
+                    <td><span>@list.PartsName</span></td>
+                    <td>@if (list.Type == 1) { <span>Replaced Date Changed</span>}else{<span>Parts Replaced</span>}</td>
+                    <td>@list.Msg</td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+}
+else
+{
+    <h4>There is no record to display</h4>
+}
+
+

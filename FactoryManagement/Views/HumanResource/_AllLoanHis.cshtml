@@ -1,0 +1,75 @@
+﻿@using FactoryManagement.Helpers
+@{
+    var count = 0;
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+    decimal total = 0;
+}
+<style>
+    .tranDetails {
+        cursor: pointer;
+        color: #428bca;
+    }
+</style>
+<table class="table table-bordered table-condensed" id="tbl_AllPaid_His">
+    <tbody>
+        <tr>
+            <th width="4%">#</th>
+            <th width="9%">Transaction</th>
+            <th width="16%">Employee Name</th>
+            <th width="8%">Designation</th>
+            <th width="10%">Loan Amount</th>
+            <th width="10%">Return Amount</th>
+            <th width="8%">Status</th>
+            <th width="13%">Paid By</th>
+            <th width="10%">Paid Date</th>
+            <th width="13%"></th>
+        </tr>
+        @foreach (var item in ViewBag.UserList as IEnumerable<FactoryManagement.Models.View_All_Loan_History>)
+        {
+            count++;
+            <tr>
+                <th>@count .</th>
+                <td>
+                    <span class="tranDetails" data-id="@item.LoanId">@item.LoanId</span>
+                </td>
+                <td>
+                    <img class="user-photo" src="~/Images/UserPicture/thumb/@item.Picture" />
+                    <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = item.UserId, isDisplay = true }, null)">@Html.DisplayFor(modelItem => item.UserName)</a>
+                </td>
+                <td>@item.DesignationName</td>
+                <td>@currency @item.Amount</td>
+                <td>@currency @Convert.ToDecimal(item.PaidAmount)</td>
+                <td>
+                    @if (item.PaidStatus == 0)
+                    {
+                        <span>Due</span>
+                    }
+                    else
+                    {
+                        <span>Paid</span>
+                    }
+                </td>
+                <td>
+                    <img class="user-photo" src="~/Images/UserPicture/thumb/@item.LoanPaidUserPic" />
+                    <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = item.UserId, isDisplay = true }, null)">@Html.DisplayFor(modelItem => item.LoanPaidUser)</a>
+                </td>
+                <td>@item.LoanPaidDateFormate</td>
+                <td>
+                    @****Add Tooltip*@
+                    <span class="btn green editTran" data-toggle="tooltip" data-original-title="Loan Transaction Edit" data-userid="@item.UserId" data-id="@item.LoanId"><i class="fa fa-pencil"></i></span>
+                    <span class="btn yellow revertTran" data-toggle="tooltip" data-original-title="Revert Transaction" data-userid="@item.UserId" data-id="@item.LoanId"><i class="fa fa-mail-forward"></i></span>
+                </td>
+            </tr>
+            total = total + Convert.ToDecimal(item.Amount);
+        }
+    </tbody>
+</table>
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+    totalCount = '@(ViewBag.TotalUser)';
+    showCount = '@count';
+    total_amount = '@(total)';
+    $("#show_total").text(Currency +' @(total)');
+</script>
+
+

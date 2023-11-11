@@ -1,0 +1,71 @@
+﻿@model FactoryManagement.ModelView.CRM.ClientListModelView
+<div class="k-edit-form-container" >
+    <div id="ClientContactEditViewLoad"></div>
+    <div class="k-edit-buttons k-state-default">
+        @if (Model.CientContactId > 0)
+        {
+          <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnUpdateNewContact"><span class="k-icon k-update"></span>Update</button>
+        }      
+        <button type="button" class="k-button k-button-icontext k-grid-refresh" id="btnRefreshNewContactWindow"><span class="k-icon k-i-refresh"></span>Refresh</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnCancelNewContactWindow"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+<br/>
+<script>
+    var clientContactId = '@Model.CientContactId';
+    $(document).ready(function () {
+        $("#ClientContactEditViewLoad").load('@Url.Action("ClientContactEditView", "CRMClient")?ClientContactId=' + clientContactId);
+
+    });
+    $("#btnRefreshNewContactWindow").click(function () {
+        $("#clientContactEditPopUp").empty();
+        $("#UpdateNewVehicelPopUp").append('<div class="loading_half"></div>');
+        $("#clientContactEditPopUp").load('@Url.Action("ClientNewContactEditLoad", "CRMClient")?ClientContactId=' + clientContactId);
+    });
+
+    $("#btnCancelNewContactWindow").click( function () {
+        $("#clientContactEditPopUp").data("kendoWindow").close();
+        $("#div_ryt_panel").load('@Url.Action("_ClientContactInfoDisplay", "CRMClient")?Id=' + CliId + '&isDisplay=' + isDisplay);
+    });
+//*********************client new contact add and update *************************************
+    $("#btnUpdateNewContact").click(function () {
+        if (validation.validate()) {
+            var sendData = {
+                CientContactId: $("#CientContactId").val(),
+                ClientId: $("#ClientId").val(),
+                Contact: $("#Contact").intlTelInput("getNumber"),
+                ContactTypeId: $("#ContactTypeId").val(),
+                Comments: $("#Comments").val(),
+                CreatedBy: userId,
+            };
+            $.ajax({
+                url: '@Url.Action("AddClientContact", "CRMClient")',
+                type: 'Post',
+                data: sendData,
+                success: function (nId) {
+                    notification.hide();
+                    notification.setOptions({autoHideAfter: 2000});
+                    if (nId != '') {                        
+                        if ('@Model.CientContactId' > 0) {
+                            notification.show({
+                                message: "contact information successfully updated", showTime: startTime()}, "upload-success");
+                        } else {
+                            notification.show({
+                                message: "contact information successfully added", showTime: startTime()}, "upload-success");
+                        }
+                        $("#divForContactNumber").load('@Url.Action("_ClientContactInfoDisplay", "CRMClient")?Id=' + nId);
+                    }
+                    else {
+                        notification.show({message: "Update unsuccessful", showTime: startTime()}, "upload-error");
+                        
+                    }
+                    $("#clientContactEditPopUp").empty();
+                    $("#clientContactEditPopUp").data("kendoWindow").close();
+                    $("#div_ryt_panel").empty();
+                    $("#div_ryt_panel").append('<div class="loading_half"></div>');                                      
+                    $("#div_ryt_panel").load('@Url.Action("_ClientContactInfoDisplay", "CRMClient")?Id=' + CliId + '&isDisplay=' + isDisplay);
+                }
+            });
+        }
+    });
+</script>

@@ -1,0 +1,16 @@
+﻿
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;">
+    <div id="Div_For_Edit_Client_info"><div class="loading_half"></div></div>
+    <div class="k-edit-buttons k-state-default">
+        <div class="col-md-offset-3 col-md-8 col-sm-offset-3 col-sm-6">          
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnClientUpdate"><span class="k-icon k-update"></span>Update</button>
+            <button type="reset" class="k-button k-button-icontext k-grid-update" id="btnInfoEditResfresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnCancelBasicInfo"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {  
+        $("#Div_For_Edit_Client_info").load('@Url.Action("_EditClientBasicInfo", "CRMClient")?Id=' + @(ViewBag.id) + '&isDisplay=' + '@(ViewBag.isDisplay)');
+    });
+</script>

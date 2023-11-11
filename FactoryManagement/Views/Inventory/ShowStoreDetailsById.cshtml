@@ -1,0 +1,74 @@
+﻿@*************************************************CREATED BY KAIKUBAD 08-08-2017******************************************@
+@model FactoryManagement.ModelView.Inventory.Store.StoreListsModelView
+           @{
+ FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+
+<div class="form-horizontal" id="Div_Add_Store">
+    <div class="form-body">
+        <div class="form-group">
+            @Html.LabelFor(model => model.StoreName, "Store Name", htmlAttributes: new { @class = "control-label col-md-2 col-sm-3" })
+            <div class="col-md-3 col-sm-4" style="margin-top:10px">
+                @Html.DisplayFor(model => model.StoreName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                
+            </div>
+           
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.StoreAcroynm, "Store Acroynm", htmlAttributes: new { @class = "control-label col-md-2 col-sm-3" })
+            <div class="col-md-3 col-sm-4" style="margin-top:10px">
+                @Html.DisplayFor(model => model.StoreAcroynm, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+
+            </div>
+            
+        </div>
+        <div class="form-group">
+            @Html.Label("Select User", htmlAttributes: new { @class = "control-label col-md-2 col-sm-3" })
+            <div class="col-md-3 col-sm-4" style="margin-top:10px">
+                @foreach (var user in ViewBag.displayUser)
+                {
+                    <p>@user.Text</p>
+                }
+            </div>
+        </div>
+        <div class="col-md-10 col-sm-offset-2 col-sm-9" id="Div_Selected_User_List" style="padding-left:0px!important;">
+            @if (Model.Id > 0 && Model.AllAssignUserId != "")
+            {
+
+                var allUserList = (from m in db.AssignStoreWithUsers
+                                   join v in db.View_UserLists on m.UserId equals v.UserId
+                                   where m.StoreId == Model.Id
+                                   select new
+                                   {
+                                       UserId = v.UserId,
+                                       Username = v.UserName
+                                   }).ToList();
+                foreach (var u in allUserList)
+                {
+                    <div class="col-sm-3 selectedDiv" id="div_user_@u.UserId" data-id="@u.UserId" style="padding-left:0px!important;">
+                        <table class="table tblDyn" id="tbl_User_@u.UserId">
+                            <tr><th><span>@u.Username</span></th></tr>
+                            <tr><td><span>Assigned Units </span></td></tr>
+                            <tr id="trAssignUnit_@u.UserId">
+                                <td>
+                                    @{
+                    var AllUId = db.UserItemDispatchLocs.Where(m => m.UserId == u.UserId && m.StoreId == Model.Id).Select(m => m.UnitId).ToList();
+                    var allUnitlist = db.Site_Unit_Lists.Where(m => AllUId.Contains(m.UnitId)).ToList();
+                                    }
+                                   <span>
+                                       @foreach (var unit in allUnitlist)
+                                       {
+                                        <p>@unit.UnitName</p>
+                                       }
+                                   </span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                }
+            }
+        </div>
+    </div>
+</div>
+

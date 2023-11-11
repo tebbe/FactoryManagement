@@ -1,0 +1,84 @@
+﻿
+
+@model FactoryManagement.Models.View_Dispacth_Item_Details
+@Html.HiddenFor(m => m.Id)
+@{
+    double max_quan = Convert.ToDouble(Model.Quantity) - Convert.ToDouble(Model.UsedQuan) - Convert.ToDouble(Model.ReturnQuantity);
+}
+<div class="editor-label"><label>Quantity</label></div>
+<div class="editor-field">
+    <div style="width:60%;float:left;padding-right:15px;">
+        <input class="k-textbox"
+               type="number" data-val-required="Please enter quantity"
+               id="txt_change_Quan" name="txt_change_Quan" value="">
+    </div>
+    <span style="font-weight:bold;"> Out of @max_quan @Model.UnitName</span>
+    <span class="field-validation-valid text-danger" data-valmsg-for="txt_change_Quan" data-valmsg-replace="true"></span>
+</div>
+<script>
+    $("#btn_InsertQuan_Save").click(function () {
+        var validation = $("#div_RouteItem_Insert_partial").kendoValidator({
+            rules: {
+                option: function (input) {
+                    if (input.attr('name') === "ReasonId" && $("#ReasonId").val() === '0') {
+                        return false;
+                    }
+                    return true;
+                },
+                min_quan: function (input) {
+                    if (input.attr('name') === "txt_change_Quan") {
+                        var value = parseFloat($("#txt_change_Quan").val());
+                        if (value < 1) {
+                            return false;
+                        }
+                    }
+                    return true;
+                },
+                max_quan: function (input) {
+                    if (input.attr('name') === "txt_change_Quan") {
+                        var value = parseFloat($("#txt_change_Quan").val());
+                        var max_quan = '@(max_quan)';
+                        max_quan = parseFloat(max_quan);
+                        if (value > max_quan) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                option: "Please select one",
+                min_quan: "Quantity can not be less than 1",
+                max_quan: "Quantity can not be greated than "+'@(max_quan)'+" "+'@(Model.UnitName)'
+            }
+        }).data("kendoValidator");
+
+        if (validation.validate()) {
+            notification.show({ message: "Dispatch item quantity is updating...", showTime: startTime() }, "upload-progress");
+            var sendData = {
+                Id: '@(Model.Id)', ReturnReasonId: $("#ReasonId").val(),
+                ReturnQuantity: $("#txt_change_Quan").val(), ReturnBy: userId,
+                proname: '@(Model.ProductName)', voucher: '@(Model.VoucherName)'
+            };
+            $.ajax({
+                url: '@Url.Action("DisItemReturnQuan", "StoreProduct")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === "Success") {
+                        $("#btn_EditQuan_Save").closest(".k-window-content").data("kendoWindow").close();
+                        notification.show({ message: "Dispatch item quantity has been successfully edited.", showTime: startTime() }, "upload-success");
+                        location.reload();
+                    } else {
+                        notification.show({ message: "Dispatch item quantity edit was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                },
+                error: function (xhr) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occured.", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+</script>

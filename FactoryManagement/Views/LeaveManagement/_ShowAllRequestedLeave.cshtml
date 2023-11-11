@@ -1,0 +1,225 @@
+﻿@using FactoryManagement.Helpers
+@{
+    var count = 0;
+    int day = Convert.ToInt32(ViewBag.days);
+}
+@if (Enumerable.Count(ViewBag.list) > 0)
+{
+
+    <table class="table table-bordered table-hover table-striped table-condensed table-responsive" id="tbl_AllUser_Leave">
+        <tbody>
+            <tr>
+                <th width="4%">#</th>
+                <th width="20%">Application User Name</th>
+                <th width="18%">
+                    Requested Leave Day/s <span id="filter_by_Date_ICON" style="float:right;color:dodgerblue;cursor:pointer">
+                        <i class="glyphicon glyphicon-filter">
+                        </i>
+                    </span>
+                </th>
+                <th width="20%">Reason</th>
+                <th width="10%">Applied Date</th>
+                <th width="10%">Status</th>
+                <th width="18%"></th>
+            </tr>
+            @foreach (var item in ViewBag.list as IEnumerable<FactoryManagement.Models.View_Leave_Application>)
+            {
+                count++;
+                string status = (item.ApproveStatus == 0) ? "Not approved yet" : (item.ApproveStatus == 1) ? "Approved" : "Rejected";
+                <tr>
+                    <th>@count .</th>
+                    <td>
+                        <img class="img-circle" src="~/Images/UserPicture/thumb/@item.Picture" />
+                        <a href="@Html.EncodedParam("DisplayEmployeeDetails","HumanResource",new {UserId=item.ApplicationUserId,isDisplay=true },null)">@Html.DisplayFor(modelItem => item.UserName)</a>
+                    </td>
+                    <td>
+                        @if (item.StartDateFormate == item.EndDateFormate)
+                        {
+                            <span>@item.StartDateFormate</span>
+                        }
+                        else
+                        {
+                            <span>@item.StartDateFormate - @item.EndDateFormate</span>
+                        }
+                    </td>
+                    <td>@Html.DisplayFor(modelItem => item.Reason)</td>
+                    <td><span>@item.AppliedDateFormate</span></td>
+                    <td>
+                        @if (item.ApproveStatus == 0)
+                        {
+                            <span class="text-center text-warning">@status</span>
+                        }
+                        else if (item.ApproveStatus == 1)
+                        {
+                            <span class="text-center text-success">@status</span>
+                        }
+                        else
+                        {
+                            <span class="text-center text-danger">@status</span>
+                        }
+                    </td>
+                    <td>
+                        @if (item.ApproveStatus == 0)
+                        {
+                            <span data-toggle="tooltip" title="Edit Application" class="btn green btn_edit_leave" data-id="@item.LeaveId"><i class="fa fa-pencil"></i></span>
+                            <span class="btn green btn_approve_leave" data-toggle="tooltip" title="Approve Application" data-id="@item.LeaveId"><i class="fa fa-check"></i></span>
+                            <span class="btn btn-danger btn_reject_leave" data-toggle="tooltip" title="Reject Application" data-id="@item.LeaveId"><i class="fa fa-remove"></i></span>
+                        }
+                        else if (item.ApproveStatus == 1)
+                        {
+                            <span class="btn blue btn_details_leave" data-toggle="tooltip" title="Application Details" data-id="@item.LeaveId"><i class="fa fa-info"></i></span>
+                        }
+                        else if (item.ApproveStatus == -1)
+                        {
+                            <span class="btn btn-danger btn_reject_app_delete" data-toggle="tooltip" title="Delete Application" data-id="@item.LeaveId"><i class="fa fa-trash"></i></span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    @*<script id="temp_show_dateFilter" type="text/x-kendo-template">
+        <table class="table">
+            <tr>
+                <td class="tdLeft">
+                    From Date
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <input id="fromDate" style="width: 100%" value="@ViewBag.fromDate" onchange="fromDateChange()" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLeft">
+                    To Date
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <input id="toDate" style="width: 100%" value="@ViewBag.toDate" onchange="toDateChange()" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" class="tdLeft">
+                    <button class="btn green" type="button" onclick="filterbyDates()"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
+                    <button class="btn red" id="clearateFilter" onclick="clearFilter()"><i class="fa fa-refresh" aria-hidden="true"></i> Clear</button>
+                </td>
+            </tr>
+        </table>
+    </script>*@
+    @*@(Html.Kendo().Tooltip()
+    .For("#filter_by_Date_ICON")
+    .Filter("i")
+    .ContentTemplateId("temp_show_dateFilter")
+    .Position(TooltipPosition.Bottom)
+    .AutoHide(false)
+ .ShowOn(TooltipShowOnEvent.Click)
+    )*@
+    <script>
+
+        function fromDateChange() {
+            if ($("#fromDate").val() != null && $("#fromDate").val() != '') {
+                $('#toDate').kendoDatePicker({
+                    min: new Date($("#fromDate").val()),
+                    format: "MMMM dd yyyy",
+                    //max: new Date()
+                });
+            } else if ($("#fromDate").val() == null || $("#fromDate").val() == '') {
+                $('#toDate').kendoDatePicker({
+                    format: "MMMM dd yyyy",
+                    max: new Date()
+                });
+            }
+            filterIfBothhasvalue();
+        }
+        function filterIfBothhasvalue() {
+            fromDate = $("#fromDate").val();
+            toDate = $("#toDate").val();
+            if (fromDate != null && fromDate != "" && toDate != null && toDate != "" && new Date(toDate) >= new Date(fromDate)) {
+                filterbyDates();
+            }
+        }
+        function toDateChange() {
+            filterIfBothhasvalue();// $("#fromDate").change();
+        };
+        function filterbyDates() {
+            var param = {
+                siteId: $("#SiteId").val(),
+                FromDate: fromDate,
+                ToDate: toDate,
+            }
+
+            $("#filter_by_Date_ICON_tt_active").remove();
+            $(".k-tooltip-closable").remove();
+
+            if (activeTab == 1) {
+                param.status = null;
+                $("#div_For_Partial").empty().append('<div class="loading_half"></div>');
+                $("#div_For_Partial").load('@Url.Action("_ShowAllRequest", "LeaveManagement")', param);
+            } else if (activeTab == 2) {
+                param.status = 0;
+                $("#div_Pending_List").empty().append('<div class="loading_half"></div>');
+                $("#div_Pending_List").load('@Url.Action("_ShowAllRequest", "LeaveManagement")', param);
+            } else if (activeTab == 3) {
+                param.status = 1;
+                $("#div_Upcoming_Leave").empty().append('<div class="loading_half"></div>');
+                $("#div_Upcoming_Leave").load('@Url.Action("_ShowAllRequest", "LeaveManagement")', param);
+            } else if (activeTab == 4) {
+                param.status = -1;
+                $("#div_Rejected_List").empty().append('<div class="loading_half"></div>');
+                $("#div_Rejected_List").load('@Url.Action("_ShowAllRequest", "LeaveManagement")', param);
+            }
+
+        }
+        $("#filter_by_Date_ICON").click(function () {
+            $("#fromDate").kendoDatePicker({
+                max: new Date(),
+                format: "MMMM dd yyyy"
+            })
+            if ('@ViewBag.fromDate' != null && '@ViewBag.fromDate' != "" && '@ViewBag.toDate' != "" && '@ViewBag.toDate' != null) {
+                $("#toDate").kendoDatePicker({
+                    min: new Date('@ViewBag.fromDate'),
+                    format: "MMMM dd yyyy",
+                    // max:new Date()
+                });
+            }
+            else {
+                $("#toDate").kendoDatePicker({
+                    //  max:new Date(),
+                    format: "MMMM dd yyyy"
+                });
+            }
+        });
+        function clearFilter() {
+            var param = {
+                SiteId: $("#SiteId").val(),
+            }
+            $("#filter_by_Date_ICON_tt_active").remove();
+            $(".k-tooltip-closable").remove();
+            if (activeTab == 1) {
+                $("#liForAll").click();
+            } else if (activeTab == 2) {
+                $("#liForPending").click();
+            } else if (activeTab == 3) {
+                $("#liForUpcoming").click();
+            } else if (activeTab == 4) {
+                $("#liForRejected").click();
+            }
+        };
+
+    </script>
+    <script>
+        $("#filter_options").show();
+        showCount = '@(count)';
+        totalCount = '@(ViewBag.totalCount)';
+        $('[data-toggle="tooltip"]').tooltip();
+    </script>
+}
+else
+{
+    <h4>There is no record to display.</h4>
+    <script>
+        $("#filter_options").hide();
+    </script>
+}

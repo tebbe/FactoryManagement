@@ -1,0 +1,845 @@
+﻿@**************************** Created By Jerin Jahan (Date:13.01.2017) ******************************************@
+@{
+    ViewBag.Title = "Leave Management";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+<link href="~/Content/Date Range Picker/daterangepicker.css" rel="stylesheet" />
+<script src="~/Scripts/bootstrap.min.js"></script>
+<script src="~/Content/Date Range Picker/moment.js"></script>
+<script src="~/Content/Date Range Picker/daterangepicker.js"></script>
+
+<style>
+    a[rel="popover"] {
+        display: inline-block;
+        margin: 20px;
+    }
+</style>
+<style>
+    .dropdown-submenu {
+        position: relative;
+    }
+
+        .dropdown-submenu .dropdown-menu {
+            top: 0;
+            left: 100%;
+            margin-top: -1px;
+        }
+</style>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="fa fa-users fa-fwt"></i>
+            <span>Human Resource</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list" aria-hidden="true"></i>
+            <a href="/LeaveManagement/LeaveManagement">Leave Management</a>
+        </li>
+    </ul>
+</div>
+<div class="note note-success"><p id="h4title">Showing All Requested leave Application</p></div>
+<p><a href="/LeaveManagement/LeaveApplication" data-toggle="tooltip" title="Give Leave Manually"><span class="btn green"><i class="fa fa-plus"></i> Give Leave(Manually)</span></a></p>
+<div class="row">
+    <div class="col-md-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green" aria-hidden="true"></i>
+                    <span class="caption-subject font-green bold uppercase">Leave Applications</span>
+                </div>
+                <div class="actions" id="day_buttons">
+                    <div class="btn-group btn-group-devided" data-toggle="buttons">
+
+                        <div id="reportrange" class="pull-right" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
+                            @*<i class="glyphicon glyphicon-calendar fa fa-calendar"></i>&nbsp;*@
+                            <span></span> <b class="caret"></b>
+                        </div>
+                    </div>                    
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="panel with-nav-tabs panel-default">
+                            <div class="panel-heading">
+                                <ul class="nav nav-tabs">
+                                    <li class="active" id="liForAll"><a href="#tab1liForAll" data-toggle="tab">All</a></li>
+                                    <li id="liForPending"><a href="#tab2liForPending" data-toggle="tab">Pending</a></li>
+                                    <li id="liForUpcoming"><a href="#tab3UpcomingList" data-toggle="tab">Upcoming Approve User Leave List</a></li>
+                                    <li id="liForRejected"><a href="#tab4RejectedList" data-toggle="tab">All Rejected Application</a></li>
+                                </ul>
+                            </div>
+                            <div class="panel-body" style="border:none!important;" id="div_for_panel_body">
+                                <table class="table table-bordered" style="margin-bottom:0px!important;margin-top:10px!important;border-bottom:none!important;" id="filter_options">
+                                    <tr>
+                                        <td>
+                                            <span class="col-sm-9" style="padding-left:0px!important;">
+                                                <span class="autocomplete-wrapper">
+                                                    <input class="text-field" id="textForSearch" name="country" placeholder="Type employee name or designation" type="text" autocomplete="off">
+                                                    <span class="k-icon k-i-search" style="margin-top:-25px;margin-right:10px;float:right;">&nbsp;</span>
+                                                </span>
+                                            </span>
+                                            <span class="col-sm-3">
+                                                @(Html.Kendo().DropDownList().Name("SiteId")
+                    .OptionLabel("All")
+                    .BindTo(ViewBag.AllSiteList as SelectList)
+                    .Events(e => e.Change("onSitenameChange"))
+                    .HtmlAttributes(new { style = "width:100%" })
+                                                )
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <div class="tab-content">
+                                    <div class="tab-pane fade in active" id="tab1liForAll">
+                                        <div id="div_For_Partial"></div>
+                                    </div>
+                                    <div id="tab2liForPending" class="tab-pane fade">
+
+                                        <div id="div_Pending_List"></div>
+                                    </div>
+                                    <div id="tab3UpcomingList">
+                                        <div id="div_Upcoming_Leave"></div>
+                                    </div>
+                                    <div id="tab4RejectedList">
+                                        <div id="div_Rejected_List"></div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="popover-content" class="hide">
+    <form class="form-inline" role="form">
+        <div class="form-group">
+            <input class="headerSearch search-query" id="str" name="str" type="text" placeholder="Search..." />
+            <span class="glyphicon glyphicon-search" style="margin:3px 8px 0 -20px;"></span>
+            <input class="btn btn-primary btn-xs" id="phSearchButton" type="submit" value="Search" />
+            <input class="btn btn-primary btn-xs" id="searchButton" type="submit" value="Dictionary" />
+        </div>
+    </form>
+</div>
+
+
+
+<div id="win_leave_edit"></div>
+<div id="win_leave_details"></div>
+<div id="win_reject_reason"></div>
+<script id="temp_win_alert" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">#=message#</p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_temp_alert_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_temp_alert_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script id="temp_show_dateFilter" type="text/x-kendo-template">
+    <table class="table">
+        <tr>
+            <td class="tdLeft">
+                From Date
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input id="fromDate" style="width: 100%" value="@ViewBag.fromDate" onchange="fromDateChange()" />
+            </td>
+        </tr>
+        <tr>
+            <td class="tdLeft">
+                To Date
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input id="toDate" style="width: 100%" value="@ViewBag.toDate" onchange="toDateChange()" />
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" class="tdLeft">
+                <button class="btn green" type="button" onclick="filterbyDates()"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
+                <button class="btn red" id="clearateFilter" onclick="clearFilter()"><i class="fa fa-refresh" aria-hidden="true"></i> Clear</button>
+            </td>
+        </tr>
+    </table>
+</script>
+@(Html.Kendo().Tooltip()
+    .For("#customFilter")
+    .Filter("button")
+    .ContentTemplateId("temp_show_dateFilter")
+    .Position(TooltipPosition.Bottom)
+    .AutoHide(false)
+ .ShowOn(TooltipShowOnEvent.Click)
+)
+<script>
+    var start = moment();
+    var end = moment().subtract(1, 'days');
+
+
+    $(document).ready(function () {
+        $('#reportrange').daterangepicker({
+            startDate: start,
+            endDate: end,
+            ranges: {
+                'All': [moment(), moment().subtract(1, 'days')],
+                'Today': [moment(), moment()],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            }
+        }, cb);
+
+        cb(start, end);
+        start = moment(); end = moment();
+      
+    });   
+    function cb(start, end) {
+        if (start == null && end == null) {
+            $('#reportrange span').html("All");
+            return;
+        }
+        else if ((!start._isValid && !end._isValid)) {
+            $('#reportrange span').html("All");
+            return;
+        }else if(start._d>end._d){
+            $('#reportrange span').html("All");
+            return;
+        }
+        $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+    }
+
+</script>
+<script>
+    var url = "";
+    var showCount = 0, totalCount = 0, inCallback = false,activeTab=1,fromDate,toDate,siteId;
+    var page = 0;
+    var content = '';
+    var start, end;
+    var isUpcoming = false;
+    $(document).ready(function () {
+        $("[data-toggle=popover]").popover({
+            html: true,
+            content: function () {
+                return $('#popover-content').html();
+            }
+        });
+
+        $('.ranges').on("click","li",function () {
+            var day = $(this).data("range-key");
+            if (day == "All") {
+                btn_All();
+            } else {
+                if (day == "Today") {
+                    btn_today();
+                } else if (day == "Last 7 Days") {
+                    btn_last_seven();
+                } else if (day == "Last 30 Days") {
+                    btn_last_thirty();
+                }
+            }
+        });
+        $(".applyBtn").click(function () {
+            alert(start+"_"+end);
+        });
+        $("#liForHR").addClass('active');
+        $("#liForLeaveList").addClass('sublistActive');
+        $("#div_For_Partial").empty();
+        $("#tabl_header").text('All Requested Leave Application');
+        $("#div_For_Partial").append('<div class="loading_partial"></div>');
+        $("#div_For_Partial").load('@Url.Action("_ShowAllRequest", "LeaveManagement")');
+        url = '@Url.Action("_ShowAllRequest", "LeaveManagement")';
+
+    });
+
+    function clearDivsandFilter() {
+        $("#div_Pending_List").empty();
+        $("#div_For_Partial").empty();
+        $("#div_Upcoming_Leave").empty();
+        $("#div_Rejected_List").empty();
+        //$("#SiteId").data("kendoDropdownlist").value('');
+        $("#filter_by_Date_ICON_tt_active").remove();
+        $(".k-tooltip-closable").remove();
+        $("#textForSearch").val('');
+    }
+    $("#liForAll").click(function () {
+        clearDivsandFilter();
+        activeTab = 1;
+        $(".actions").find(".active").removeClass("active");
+        $("#btn_All").addClass("active");
+        howCount = 0, totalCount = 0, page = 0, inCallback = false, isUpcoming = false;
+        $("#SiteId").data("kendoDropDownList").value('');
+        $("#h4title").text("Showing All Leave Application");
+        $("#div_For_Partial").append('<div class="loading_half"></div>');
+        $("#div_For_Partial").load('@Url.Action("_ShowAllRequest", "LeaveManagement")');
+    });
+    $("#liForPending").click(function () {
+        clearDivsandFilter();
+        activeTab = 2;
+        $(".actions").find(".active").removeClass("active");
+        $("#btn_All").addClass("active");
+        howCount = 0, totalCount = 0, page = 0, inCallback = false, isUpcoming = false;
+        $("#SiteId").data("kendoDropDownList").value('');
+        $("#h4title").text("Showing Pending Leave Application");
+        $("#div_Pending_List").append('<div class="loading_half"></div>');
+        $("#div_Pending_List").load('@Url.Action("_ShowAllRequest", "LeaveManagement")?status=0');
+    });
+    $("#liForUpcoming").click(function () {
+        clearDivsandFilter();
+        activeTab = 3;
+        $(".actions").find(".active").removeClass("active");
+        $("#btn_All").addClass("active");
+        howCount = 0, totalCount = 0, page = 0, inCallback = false, isUpcoming = false;
+        $("#SiteId").data("kendoDropDownList").value('');
+        $("#h4title").text("Showing Upcomming Approved Leave Application");
+        $("#div_Upcoming_Leave").append('<div class="loading_half"></div>');
+        $("#div_Upcoming_Leave").load('@Url.Action("_ShowAllRequest", "LeaveManagement")?status=1');
+    });
+    $("#liForRejected").click(function () {
+        clearDivsandFilter();
+        activeTab = 4;
+        $(".actions").find(".active").removeClass("active");
+        $("#btn_All").addClass("active");
+        howCount = 0, totalCount = 0, page = 0, inCallback = false, isUpcoming = false;
+        $("#SiteId").data("kendoDropDownList").value('');
+        $("#h4title").text("Showing Rejected Leave Application");
+        $("#div_Rejected_List").append('<div class="loading_half"></div>');
+        $("#div_Rejected_List").load('@Url.Action("_ShowAllRequest", "LeaveManagement")?status=-1');
+    });
+    function onSitenameChange() {
+        siteId = this.value();
+        if (this.value() === '') {
+            if (activeTab == 1) {
+                $("#liForAll").click();
+            } else if (activeTab == 2) {
+                $("#liForPending").click();
+            } else if (activeTab == 3) {
+                $("#liForUpcoming").click();
+            } else if (activeTab == 4) {
+                $("#liForRejected").click();
+            }
+        } else {
+            if (activeTab == 1) {
+                var param = {
+                    siteId:siteId
+                }
+                clearDivsandFilter();
+                $("#h4title").text("Showing " + $(".btn-group-devided").find('.active').text().trim() + " Leave Application of Site : " + this.text());
+                $("#div_For_Partial").append('<div class="loading_half"></div>');
+                $("#div_For_Partial").load('@Url.Action("_ShowAllRequest", "LeaveManagement")',param);
+            } else if (activeTab == 2) {
+                clearDivsandFilter();
+                $("#h4title").text("Showing " + $(".btn-group-devided").find('.active').text().trim() + " Leave Application of Site : " + this.text());
+                $("#div_Pending_List").append('<div class="loading_half"></div>');
+                $("#div_Pending_List").load('@Url.Action("_ShowAllRequest", "LeaveManagement")', param);
+            } else if (activeTab == 3) {
+                clearDivsandFilter();
+                $("#h4title").text("Showing " + $(".btn-group-devided").find('.active').text().trim() + " Leave Application of Site : " + this.text());
+                $("#div_Upcoming_Leave").append('<div class="loading_half"></div>');
+                $("#div_Upcoming_Leave").load('@Url.Action("_ShowAllRequest", "LeaveManagement")', param);
+            } else if (activeTab == 4) {
+                clearDivsandFilter();
+                $("#h4title").text("Showing " + $(".btn-group-devided").find('.active').text().trim() + " Leave Application of Site : " + this.text());
+                $("#div_Rejected_List").append('<div class="loading_half"></div>');
+                $("#div_Rejected_List").load('@Url.Action("_ShowAllRequest", "LeaveManagement")', param);
+            }
+        }
+    }
+    //************************** Show Details Application **********************************************
+    $("#div_Pending_List,#div_For_Partial,#div_Upcoming_Leave,#div_Rejected_List").on("click", ".btn_details_leave", function (e) {
+        e.preventDefault();
+        var id = $(this).data('id');
+        $("#win_leave_details").empty();
+        $("#win_leave_details").kendoWindow({
+            actions: ["Close"],
+            visible: false,
+            modal: true,
+            position: { top: '50%', left: '50%' },
+            title: 'Edit Leave Application',
+            width: "50%",
+            minHeight: 100,
+            close: onWindowClose
+        });
+        $("#win_leave_details").html('<div class="win_loading_half"></div>');
+        var win_leave_details = $("#win_leave_details").data("kendoWindow");
+        win_leave_details.refresh({ url: "/LeaveManagement/_LeaveAppDetails?id=" + id });
+        win_leave_details.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    });
+
+    //************************** Approve Application **********************************************
+    $("#div_Pending_List,#div_For_Partial,#div_Upcoming_Leave,#div_Rejected_List").on("click", ".btn_approve_leave", function (e) {
+        e.preventDefault();
+        var id = $(this).data('id');
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close:onWindowClose
+        });
+        message = "Are you sure you want to approve this request?";
+        var template = kendo.template($("#temp_win_alert").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+
+        kendoWindow.find("#btn_temp_alert_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_temp_alert_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            approveApp(id);
+        }).end();
+    });
+    function approveApp(id) {
+        notification.show({ message: "Application is approving...", showTime: startTime() }, "upload-progress");
+        $.ajax({
+            url: '@Url.Action("LeaveAppApprove", "LeaveManagement")',
+            type: 'Post',
+            data: { id: id, userId: userId },
+            success: function (data) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                if (data === "Error") {
+                    notification.show({ message: "Application rejection was unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+                else {
+                    notification.show({ message: "Application has been successfully rejected.", showTime: startTime() }, "upload-success");
+
+                    $("#div_For_Partial").empty();
+                    $("#div_For_Partial").append('<div class="loading_partial"></div>');
+                    $("#div_For_Partial").load('@Url.Action("_ShowAllRequestedLeave", "LeaveManagement")');
+                }
+            }
+        });
+    }
+
+
+    //************************** Reject Application **********************************************
+    $("#div_Pending_List,#div_For_Partial,#div_Upcoming_Leave,#div_Rejected_List").on("click", ".btn_reject_leave", function (e) {
+        e.preventDefault();
+        var id = $(this).data('id');
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close:onWindowClose
+        });
+        message = "Are you sure you want to reject this request?";
+        var template = kendo.template($("#temp_win_alert").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+
+        kendoWindow.find("#btn_temp_alert_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_temp_alert_ok").click(function () {
+            $("#win_reject_reason").empty();
+            $("#win_reject_reason").kendoWindow({
+                actions: ["Close"],
+                visible: false,
+                modal: true,
+                position: { top: '50%', left: '50%' },
+                title: 'Leave Application Reject Reason',
+                width: "50%",
+                minHeight: 100,
+                close:onWindowClose
+            });
+            $("#win_reject_reason").html('<div class="win_loading_half"></div>');
+            var win_reject_reason = $("#win_reject_reason").data("kendoWindow");
+            win_reject_reason.refresh({ url: "/LeaveManagement/_LeaveRejectReason?id=" + id });
+            win_reject_reason.center().open();
+            document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+            document.body.scroll = "no"; // ie only
+
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+    });
+    function rejectApp(id) {
+        notification.show({ message: "Application is rejecting...", showTime: startTime() }, "upload-progress");
+        $.ajax({
+            url: '@Url.Action("LeaveAppReject", "LeaveManagement")',
+            type: 'Post',
+            data: { id: id, userId: userId },
+            success: function (data) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                if (data === "Error") {
+                    notification.show({ message: "Application rejection was unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+                else {
+                    notification.show({ message: "Application has been successfully rejected.", showTime: startTime() }, "upload-success");
+
+                    $("#div_For_Partial").empty();
+                    $("#div_For_Partial").append('<div class="loading_partial"></div>');
+                    $("#div_For_Partial").load(url);
+                }
+            }
+        });
+    };
+
+    //************************** Delete Application ********************************************
+    //************************** Reject Application **********************************************
+    $("#div_Pending_List, #div_For_Partial, #div_Upcoming_Leave, #div_Rejected_List").on("click", ".btn_reject_app_delete", function (e) {
+        e.preventDefault();
+        var id = $(this).data('id');
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close:onWindowClose
+        });
+        message = "Are you sure you want to delete this rejected request?";
+        var template = kendo.template($("#temp_win_alert").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+
+        kendoWindow.find("#btn_temp_alert_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_temp_alert_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            rejectAppDelete(id);
+        }).end();
+    });
+    function rejectAppDelete(id) {
+        notification.show({ message: "Application is deleting...", showTime: startTime() }, "upload-progress");
+        $.ajax({
+            url: '@Url.Action("LeaveAppDelete", "LeaveManagement")',
+            type: 'Post',
+            data: { id: id, userId: userId },
+            success: function (data) {
+                notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                if (data === "Error") {
+                    notification.show({ message: "Reject application delete was unsuccessful.", showTime: startTime() }, "upload-error");
+                }
+                else {
+                    notification.show({ message: "Reject application has been successfully deleted.", showTime: startTime() }, "upload-success");
+
+                    $("#div_For_Partial").empty();
+                    $("#div_For_Partial").append('<div class="loading_partial"></div>');
+                    $("#div_For_Partial").load(url);
+                }
+            }
+        });
+    };
+
+    //************************** Edit Application **********************************************
+    $("#div_Pending_List,#div_For_Partial,#div_Upcoming_Leave,#div_Rejected_List").on("click", ".btn_edit_leave", function (e) {
+        e.preventDefault();
+        var id = $(this).data('id');
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true,
+            close:onWindowClose
+        });
+        message = "Are you sure you want to edit this application?";
+        var template = kendo.template($("#temp_win_alert").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+
+        kendoWindow.find("#btn_temp_alert_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_temp_alert_ok").click(function () {
+
+            kendoWindow.data("kendoWindow").close();
+            EditApp(id);
+        }).end();
+    });
+    function EditApp(id) {
+        $("#win_leave_edit").empty();
+        $("#win_leave_edit").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            position: { top: '20%' },
+            title: 'Edit Leave Application',
+            close: onWindowClose
+        });
+        $("#win_leave_edit").html('<div class="loading_half"></div>');
+        var win_leave_edit = $("#win_leave_edit").data("kendoWindow");
+        win_leave_edit.refresh({ url: "/LeaveManagement/_LeaveAppEdit?id=" + id });
+        win_leave_edit.center().open();
+        document.documentElement.style.overflow = 'hidden';  // firefox, chrome
+        document.body.scroll = "no"; // ie only
+    }
+    function onAdditionalData() {
+        return { prefix: $("#ApplicationUser").val() };
+    }
+    function UserNameSelect(e) {
+        var dataItem = this.dataItem(e.item.index());
+        App_userId = dataItem.UserId
+    }
+</script>
+<script>
+    //************* Requested ******************************
+    @*$("#btn_All_Requested").click(function () {
+        $("#Div_For_Upcoming_DateFilter").hide();start.value('');end.value('');
+        howCount = 0, totalCount = 0, page = 0, inCallback = false, isUpcoming = false;
+        $("#div_For_Partial").empty();
+        $("#h4title").text('All Requested Leave Application');
+        $("#div_For_Partial").append('<div class="loading_partial"></div>');
+        $("#div_For_Partial").load('@Url.Action("_ShowAllRequest", "LeaveManagement")');
+        url = '@Url.Action("_ShowAllRequest", "LeaveManagement")';
+    });*@
+
+    //************* Today User Leave List ******************************
+    @*$("#btn_All_Today").click(function () {
+        $("#Div_For_Upcoming_DateFilter").hide(); start.value(''); end.value('');
+        showCount = 0, totalCount = 0, page = 0, inCallback = false, isUpcoming = false;
+        $("#div_For_Partial").empty();
+        $("#h4title").text('Employee who are in leave today');
+        $("#div_For_Partial").append('<div class="loading_partial"></div>');
+        $("#div_For_Partial").load('@Url.Action("_ShowAllTodayLeave", "LeaveManagement")');
+        url = '@Url.Action("_ShowAllTodayLeave", "LeaveManagement")';
+    });*@
+
+    //************* Requested ******************************
+    @*$("#btn_All_Pending").click(function () {
+        howCount = 0, totalCount = 0, page = 0, inCallback = false, isUpcoming = false;
+        $("#Div_For_Upcoming_DateFilter").hide(); start.value(''); end.value('');
+        $("#div_For_Partial").empty();
+        $("#h4title").text('Pending Leave Application');
+        $("#div_For_Partial").append('<div class="loading_partial"></div>');
+        $("#div_For_Partial").load('@Url.Action("_ShowAllRequestedLeave", "LeaveManagement")');
+        url = '@Url.Action("_ShowAllRequestedLeave", "LeaveManagement")';
+    });*@
+
+    //************* Rejected ******************************
+    @*$("#btn_All_Rejected").click(function () {
+        showCount = 0, totalCount = 0, page = 0, inCallback = false, isUpcoming = false;
+        $("#Div_For_Upcoming_DateFilter").hide(); start.value(''); end.value('');
+        $("#div_For_Partial").empty();
+        $("#h4title").text('All Rejected Leave Application');
+        $("#div_For_Partial").append('<div class="loading_partial"></div>');
+        $("#div_For_Partial").load('@Url.Action("_ShowAllRejectedLeave", "LeaveManagement")');
+        url = '@Url.Action("_ShowAllRejectedLeave", "LeaveManagement")';
+    });*@
+
+    //************* Upcoming ******************************
+    @*$("#btn_All_Upcoming").click(function () {
+        showCount = 0, totalCount = 0, page = 0, inCallback = false, isUpcoming=true;
+        $("#div_For_Partial").empty();
+        $("#h4title").text('All Upcoming Leave Application');
+        $("#div_For_Partial").append('<div class="loading_partial"></div>');
+        $("#div_For_Partial").load('@Url.Action("_ShowAllUpcomingLeave", "LeaveManagement")');
+        url = '@Url.Action("_ShowAllUpcomingLeave", "LeaveManagement")';
+        $("#Div_For_Upcoming_DateFilter").show();
+        start.value(''); end.value('');
+    });*@
+</script>
+<script>
+    @******************************** OnScroll Bind Table Data *************************@
+    $(window).scroll(function () {
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/LeaveManagement/GetLeaveUserList',
+            data: { page: page },
+            success: function (data) {
+                var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        var date = new Date(data[i].JoinDateName);
+                        var getdate = (monthNames[date.getMonth()]) + " " + date.getDate() + "," + date.getFullYear();
+
+                        $("table#tbl_AllUser_Leave > tbody").append('<tr><th>' + showCount + '.</th>' +
+                            '<td><img class="img-circle" src="/Images/UserPicture/thumb/' + data[i].Picture + '" />' +
+                            '<a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].ApplicationUserId+"?isDisplay=true")+'">' + data[i].UserName + '</a></td>' +
+                            '<td>' + ((data[i].StartDateFormate == data[i].EndDateFormate) ? '<span>' + data[i].StartDateFormate + '</span>' : '<span>' + data[i].StartDateFormate + ' - ' + data[i].EndDateFormate + '</span>') + '</td>' +
+                            '<td>' + ((data[i].Reason == null) ? '' : '<span>' + data[i].Reason + '</span>') + '</td>' +
+                            '<td><span>' + data[i].AppliedDateFormate + '</span></td>' +
+                            '<td>'+((data[i].ApproveStatus == 0)?'<span class="text-center text-warning">Not approved yet</span>':+(data[i].ApproveStatus == 1)?'<span class="text-center text-success">Approved</span>':'<span class="text-center text-danger">Rejected</span>')+'</td>' +
+                            '<td>' + ((data[i].ApproveStatus == 0) ? '<span data-toggle="tooltip" title="Edit Application" class="btn green btn_edit_leave" data-id="' + data[i].LeaveId + '"><i class="fa fa-pencil"></i></span> <span data-toggle="tooltip" title="Approve Application" class="btn green btn_approve_leave" data-id="' + data[i].LeaveId + '"><i class="fa fa-check"></i></span> <span data-toggle="tooltip" title="Reject Application" class="btn btn-danger btn_reject_leave" data-id="' + data[i].LeaveId + '"><i class="fa fa-remove"></i> </span>' : +(data[i].ApproveStatus == 1) ? '<span data-toggle="tooltip" title="Application Details" class="btn blue btn_details_leave" data-id="' + data[i].LeaveId + '"><i class="fa fa-info"> </i></span>' : '<span data-toggle="tooltip" title="Delete Application" class="btn btn-danger btn_reject_app_delete" data-id="' + data[i].LeaveId + '"><i class="fa fa-trash"></i></span>') + '</td>' +
+                            '</tr>');
+                    }
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+                $('[data-toggle="tooltip"]').tooltip();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+    @*$("#textForSearch").autocomplete({
+        minLength: 0,
+        source: function (request, response) {
+            content = $.trim(request.term);
+            $.ajax({
+                url: '@Url.Action("SearchUserList", "HumanResource")',
+                type: "POST",
+                dataType: "json",
+                data: { prefix: content },
+                success: function (data) {
+                    response($.map(data, function (item) {
+                        return { label: item.UserName, value: item.UserName, id: item.UserId };
+                    }))
+                }
+            })
+        },
+        minLength: 1,
+        select: function (event, ui) {
+            isloadFirstTime = true;
+            var selectTextId = ui.item.id;
+            $("#Div_All_Usr").empty();
+            $("#Div_All_Usr").append('<div class="loading_partial"></div>');
+            $("#Div_All_Usr").load('@Url.Action("_AllUserLists", "HumanResource")?userId=' + selectTextId);
+        },
+    })
+ .keyup(function () {
+     if ($.trim($("#textForSearch").val()) == "") {
+         showCount = 20; page = 0;
+         $("#Div_All_Usr").empty();
+         $("#Div_All_Usr").append('<div class="loading_partial"></div>');
+         $("#Div_All_Usr").load('@Url.Action("_AllUserLists", "HumanResource")');
+     }
+ })
+ .autocomplete("instance")._renderItem = function (ul, item) {
+     var term = $.trim(this.term);
+
+     var re = new RegExp("(" + term + ")", "gi"),
+                cls = "bold-text",
+                template = "<span class='" + cls + "'>$1</span>",
+                label = item.label.replace(re, template),
+                $li = $("<li/>").appendTo(ul);
+     $("<span>").html(label).appendTo($li);
+     return $li;
+ };*@
+</script>
+<script>
+    function OnDayChnage() {
+        var selected = $("#Filters").val();
+        if (selected == "" || selected == null) {
+            btn_All();
+        } else if (selected == 1) {
+           btn_today();
+        } else if (selected == 7) {
+            btn_last_seven();
+        } else if(selected==30){
+            btn_last_thirty();
+        } else if (selected == 2) {
+            $("#login").click();
+        }
+        
+    }
+    function btn_All() {
+        if (activeTab == 1) {
+            $("#liForAll").click();
+
+        } else if (activeTab == 2) {
+            $("#liForPending").click();
+
+        } else if (activeTab == 3) {
+            $("#liForUpcoming").click();
+
+        } else if (activeTab == 4) {
+            $("#liForRejected").click();
+        }
+    }
+
+    function btn_today() {
+        if (activeTab == 1) {
+            $("#h4title").text("Showing Today's All Leave Applications");
+            $("#div_For_Partial").empty()
+                .append('<div class="loading_half"></div>')
+                .load('@Url.Action("_ShowAllRequest", "LeaveManagement")?days=1');
+        } else if (activeTab == 2) {
+            $("#h4title").text("Showing Today's Pending Leave Applications.");
+            $("#div_Pending_List").empty()
+                .append('<div class="loading_half"></div>')
+       .load('@Url.Action("_ShowAllRequestedLeave", "LeaveManagement")?days=1');
+        } else if (activeTab == 3) {
+            $("#h4title").text("Showing Today's Approved Leave Applications");
+            $("#div_Upcoming_Leave").empty()
+                .append('<div class="loading_half"></div>')
+      .load('@Url.Action("_ShowAllUpcomingLeave", "LeaveManagement")?days=1');
+        } else if (activeTab == 4) {
+            $("#h4title").text("Showing Today's Rejected Leave Applications.");
+             $("#div_Rejected_List").append('<div class="loading_half"></div>')
+        .load('@Url.Action("_ShowAllRejectedLeave", "LeaveManagement")?days=1');
+        }
+    }
+
+    function btn_last_seven() {
+        if (activeTab == 1) {
+            $("#h4title").text("Showing All Leave Applications of Last 7 day's.");
+            $("#div_For_Partial").empty()
+                .append('<div class="loading_half"></div>')
+                .load('@Url.Action("_ShowAllRequest", "LeaveManagement")?days=7');
+        } else if (activeTab == 2) {
+            $("#h4title").text("Showing Pending Leave Applications of Lasr 7 day's.");
+            $("#div_Pending_List").empty()
+                .append('<div class="loading_half"></div>')
+       .load('@Url.Action("_ShowAllRequestedLeave", "LeaveManagement")?days=7');
+        } else if (activeTab == 3) {
+            $("#h4title").text("Showing Approved Leave Applications of Last 7 day's.");
+            $("#div_Upcoming_Leave").empty()
+                .append('<div class="loading_half"></div>')
+      .load('@Url.Action("_ShowAllUpcomingLeave", "LeaveManagement")?days=7');
+        } else if (activeTab == 4) {
+            $("#h4title").text("Showing Rejected Leave Applications of Last 7 day's.");
+             $("#div_Rejected_List").append('<div class="loading_half"></div>')
+        .load('@Url.Action("_ShowAllRejectedLeave", "LeaveManagement")?days=7');
+        }
+    }
+
+    function btn_last_thirty() {
+        if (activeTab == 1) {
+            $("#h4title").text("Showing All Leave Applications of Last 30 day's.");
+            $("#div_For_Partial").empty()
+                .append('<div class="loading_half"></div>')
+                .load('@Url.Action("_ShowAllRequest", "LeaveManagement")?days=30');
+        } else if (activeTab == 2) {
+            $("#h4title").text("Showing Pending Leave Applications of Last 30 day's.");
+            $("#div_Pending_List").empty()
+                .append('<div class="loading_half"></div>')
+       .load('@Url.Action("_ShowAllRequestedLeave", "LeaveManagement")?days=30');
+        } else if (activeTab == 3) {
+            $("#h4title").text("Showing Approved Leave Applications of Last 30 day's.");
+            $("#div_Upcoming_Leave").empty()
+                .append('<div class="loading_half"></div>')
+      .load('@Url.Action("_ShowAllUpcomingLeave", "LeaveManagement")?days=30');
+        } else if (activeTab == 4) {
+            $("#h4title").text("Showing Rejected Leave Applications of Last 30 day's.");
+             $("#div_Rejected_List").append('<div class="loading_half"></div>')
+        .load('@Url.Action("_ShowAllRejectedLeave", "LeaveManagement")?days=30');
+        }
+    }
+</script>

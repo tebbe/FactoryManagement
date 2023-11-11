@@ -1,0 +1,358 @@
+﻿<div  id="divForNewUserSave">
+     @model FactoryManagement.ModelView.CRM.Client_User_ListsModelView
+     @Html.HiddenFor(m => m.UserId)
+     @Html.HiddenFor(m => m.ClientId) 
+     @Html.HiddenFor(m => m.AllContactList)
+     @Html.HiddenFor(m => m.PictureOriginalName)
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+     <div class="addNewUser">
+             <div class="editor-label"><label for="UserName">User Name</label></div>
+             <div class="editor-field">
+                 @Html.EditorFor(model => model.UserName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                 @Html.ValidationMessageFor(model => model.UserName, "", new { @class = "text-danger" })
+             </div>      
+             <div class="editor-label"><label for="Designation">Designation</label></div>
+             <div class="editor-field">
+                 @Html.EditorFor(model => model.Designation, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                 @Html.ValidationMessageFor(model => model.Designation, "", new { @class = "text-danger" })
+             </div>
+             <div class="editor-label"><label for="Address">Address</label></div>
+             <div class="editor-field">
+                 @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                 @Html.ValidationMessageFor(model => model.Address, "", new { @class = "text-danger" })
+             </div>           
+             <div class="editor-label"><label for="AddressLine1">Address Line1</label></div>
+             <div class="editor-field">
+                 @Html.EditorFor(model => model.AddressLine1, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                 @Html.ValidationMessageFor(model => model.AddressLine1, "", new { @class = "text-danger" })
+             </div>
+             <div class="editor-label"><label for="Country">Country</label></div>
+             <div class="editor-field">
+                 @(Html.Kendo().DropDownListFor(model=>model.Country)
+                      .Name("userCountry")
+                      .OptionLabel("--Select One Country--")
+                      .Events(e => e.Change("onChangeOfUserCountry"))
+                      .BindTo(ViewBag.CountryId)
+                      .HtmlAttributes(new { style = "width:100%" })
+                 )
+                 @Html.ValidationMessageFor(model => model.Country, "", new { @class = "text-danger" })
+             </div>
+             <div id="DivForUserDivision">
+             <div class="editor-label"><label for="DivisionId">Division</label></div>
+             <div class="editor-field">
+                 @(Html.Kendo().DropDownList()
+                      .Name("userDivisionId")
+                      .OptionLabel("--Select One Division--")
+                      .BindTo(ViewBag.DivisionList)
+                      .HtmlAttributes(new { style = "width:100%" })
+                 )
+                 @Html.ValidationMessageFor(model => model.DivisionId, "", new { @class = "text-danger" })
+             </div>
+         </div>
+         <div  id="DivForUserState">
+             <div class="editor-label"><label for="State">State</label></div>
+             <div class="editor-field">
+                 @Html.EditorFor(model => model.State, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                 @Html.ValidationMessageFor(model => model.State, "", new { @class = "text-danger" })
+             </div>
+         </div>       
+             <div class="editor-label"><label for="City">City</label></div>
+             <div class="editor-field">
+                 @Html.EditorFor(model => model.City, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                 @Html.ValidationMessageFor(model => model.City, "", new { @class = "text-danger" })
+             </div>
+             <div class="editor-label"><label for="PostalCode">Postal Code</label></div>
+             <div class="editor-field">
+                 @Html.EditorFor(model => model.PostalCode, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                 @Html.ValidationMessageFor(model => model.PostalCode, "", new { @class = "text-danger" })
+             </div>
+             <div  id="DivForUserContactOne">
+                 <div class="editor-label"><label for="Contact">Contact No 1</label></div>
+                 <div class="editor-field">
+                     <input class="form-control k-textbox text-box single-line k-valid contact" id="userTxtContact-1" name="userTxtContact-1" type="text" value="" data-class="contact">
+                     <span class="field-validation-valid text-danger" data-valmsg-for="userTxtContact-1" data-valmsg-replace="true" style="display: none;">
+
+                     </span>
+                </div>
+                 <div class="editor-label"><label for="Type">Type</label></div>
+                 <div class="editor-field">
+                     <input id="txtContactType-1" name="txtContactType-1" style="width:100%;" />
+                     <span class="field-validation-valid text-danger" data-valmsg-for="txtContactType-1" data-valmsg-replace="true" style="display: none;"></span>
+                 </div>
+             
+                 <div class="editor-label"><label for="Comment">Comments</label></div>
+                 <div class="editor-field">
+                     <div class="col-md-11 col-sm-11 col-xs-11" style="padding-left:0px;width:93%;">
+                         <textarea class="form-control k-textbox text-box single-line k-valid" rows="3" cols="40" name="txtComment-1" id="txtComment-1" value=" "></textarea>
+                     </div>
+                     <div id="DivForDynBtn-1">
+                         <span class="k-icon k-i-plus" style="margin-right: .3rem;" id="btnAdd"></span>
+                     </div>
+                 </div>
+            </div>
+              <div class="editor-label"><label for="Email">Email</label></div>
+             <div class="editor-field">
+                 @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                 @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+             </div>
+             <div class="editor-label"><label for="Fax">Fax</label></div>
+             <div class="editor-field">
+                 @Html.EditorFor(model => model.Fax, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                 @Html.ValidationMessageFor(model => model.Fax, "", new { @class = "text-danger" })
+             </div>
+
+             <div class="editor-label"><label for="PictureName">Upload Picture</label></div>
+             <div class="editor-field">
+                 <div class="col-md-12" id="divForPic" style="padding-left:0px;">
+                     <div class="col-md-4" id="divPic-0" style="padding-left:0px;">
+                         <span id="UserImgClose-0" style="display:none;">
+                             <img src="/Content/Icon/modal_close.png" class="previewImgClose" id="UserImgClose-0" data-count="0" />
+                         </span>
+                         <div id="imgPreview-0" class="imgPreview"></div>
+                         <div id="imgUpload-0" class="image-uploader">
+                             <input type="file" name="files" id="file-0" class="inputfile inputfile-4" data-count="0" style="display:none;" />
+                             <label for="file-0" id="lbl-0" class="lblForPics">
+                                 <span style="font-size: 26px;padding-top:3em;display:block;" id="lbl_Span_plus">+</span>
+                                 <span style="font-size: 15px;font-weight:bold;">Add Photos</span>
+                             </label>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+     </div>
+</div>
+<script>
+    var count =1,id="";   
+    var allMainFile = [];
+    var PictureName;
+    $(document).ready(function () {      
+        $("#liForCRM").addClass('active');
+        $('#liForInventory > ul > li:first').addClass('open');
+        $('#liForInventory > ul > li:first >ul:first').show();
+        $("#liForClientCreate").addClass('sublistActive');
+        id = "userTxtContact-1";
+        uContactdailingCode(id);
+        var data = [ { text: "Land", value: "1" },{ text: "Mobile", value: "2" }];
+        $("#txtContactType-1").kendoDropDownList({
+            dataTextField: "text",
+            dataValueField: "value",
+            dataSource: data,
+            optionLabel:"--Select--"
+        });
+    });
+
+//******************** Contact Validation *********************
+    function uContactdailingCode(id) {
+        telInput = $("#" +id);
+        telInput.intlTelInput({
+            geoIpLookup: function (callback) {
+                $.get("http://ipinfo.io", function () { }, "jsonp").always(function (resp) {
+                    var userCountryCode = (resp && resp.country) ? resp.country : "";
+                    var uCountryList = $("#userCountry").data("kendoDropDownList");
+                    uCountryList.value(userCountryCode);
+                    $("#userCountry").val(userCountryCode);
+                   if (userCountryCode == "BD") {
+                       $("#DivForUserDivision").show();
+                       $("#DivForUserState").hide();
+                    }
+                    else {
+                       $("#DivForUserState").show();
+                        $("#DivForUserDivision").hide();
+                    }
+                   callback(userCountryCode);
+                });
+            },
+            initialCountry: "auto",
+            utilsScript: "../Scripts/intl-tel-input-master/build/js/utils.js"
+        });
+        var reset = function () {
+            telInput.removeClass("error");
+        };
+        telInput.on("keyup change", reset);
+    };
+  
+    $("#divForPic").on('change', '.inputfile-4', function (e) {
+        var fId = $(this).data("count");
+        var countFiles = $("#file-" + fId)[0].files.length;
+        var imgPath = $("#file-" + fId)[0].value;
+        var extn = imgPath.substring(imgPath.lastIndexOf('.') + 1).toLowerCase();
+        var image_holder = $("#imgPreview-" + fId);
+        var files = e.target.files;
+        image_holder.empty();
+        if (extn == "gif" || extn == "png" || extn == "jpg" || extn == "jpeg") {
+            if (typeof (FileReader) != "undefined") {          
+                allMainFile[0] = files[0];
+                for (var i = 0; i < countFiles; i++) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        $("<img />", { "src": e.target.result }).appendTo(image_holder);
+                    }
+                    $("#imgUpload-" + fId).hide();
+                    $("#UserImgClose-" + fId).show();
+                    image_holder.show();
+                    $("#file-" + fId).hide();
+                    $("#lblfile-" + fId).hide();
+                    $("#PictureName").val($("#file-" + fId)[0].files[i]);
+                    reader.readAsDataURL($("#file-" + fId)[0].files[i]);
+                    $("#lbl_Span_plus").text("+");
+                }
+            } else {
+                alert("This browser does not support FileReader.");
+            }
+        } else {
+            alert("Please select only images");
+        }
+    });
+    $("#divForPic").on('click', '.previewImgClose', function (e) {
+        var preImg = $(this).data("count");
+        $("#imgPreview-" + preImg).empty();
+        $("#imgPreview-" + preImg).hide();
+        $("#UserImgClose-" + preImg).hide();
+        $("#imgUpload-" + preImg).show();
+    });
+//******************** Dynamically Add,Remove Contact *********************
+    $("#DivForUserContactOne").on("click", "#btnAdd", function () {
+        var UserContactValidate = $("#DivForUserContactOne").kendoValidator({
+            rules: {
+                Contact: function (input) {
+                    if (input.attr("id") === "userTxtContact-" + count) {
+                        if (telInput.intlTelInput("isValidNumber")) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                    return true;
+                },
+                ContactType: function (input) {
+                    if (input.attr("id") === "txtContactType-"+count && input.val() === "") {
+                        return false;
+                    }
+                    else{
+                        return true;
+                    }
+                }
+            },
+            messages: {
+                Contact: "Please enter valid contact number",
+                ContactType: "Please select contact type"
+            }
+        }).data("kendoValidator");
+        if(UserContactValidate.validate()){
+            var data = [{ text: "Land", value: "1" },{ text: "Mobile", value: "2" }];
+            $("#DivForDynBtn-" +count).empty();
+            $("#DivForDynBtn-"+count).hide();
+            count++;
+            $("#DivForUserContactOne").append('<div  id="DivForUserContact' + count + '" class="classForDaynamicAppend">' +
+             '<div class="form-group">'+
+                 '<div class="editor-label"><label for="Contact">Contact No '+count+'</label></div>'+
+                 '<div class="editor-field">'+
+                     '<input class="form-control k-textbox text-box single-line k-valid contact" id="userTxtContact-' + count + '" name="userTxtContact-' + count + '" type="text" value="" data-class="contact">' +
+                     '<span class="field-validation-valid text-danger" data-valmsg-for="userTxtContact-' + count + '" data-valmsg-replace="true" style="display: none;"></span>' +
+                 '</div>'+
+             '</div>'+
+            
+             '<div class="form-group">'+
+                 '<div class="editor-label"><label for="Type">Type</label></div>'+
+                 '<div class="editor-field">'+
+                     '<input id="txtContactType-'+count+'" name="txtContactType-'+count+'" style="width:100%;" />'+
+                     '<span class="field-validation-valid text-danger" data-valmsg-for="txtContactType-'+count+'" data-valmsg-replace="true" style="display: none;"></span>'+
+                 '</div>'+
+             '</div>'+
+             
+             '<div class="form-group">'+
+                 '<div class="editor-label"><label for="Comment">Comments</label></div>'+
+                 '<div class="editor-field">'+
+                     '<div class="col-md-11 col-sm-11 col-xs-11" style="padding-left:0px;width:91%;">'+
+                         '<textarea class="form-control k-textbox text-box single-line k-valid" rows="3" cols="40" name="txtComment-'+count+'" id="txtComment-'+count+'" value=" "></textarea>'+
+                     '</div>'+
+                     '<div id="DivForDynBtn-'+count+'">'+
+                         '<span class="k-icon k-i-plus" style="margin-right: .3rem;" id="btnAdd"></span>'+
+                         '<span class="k-icon k-i-close" style="margin-right: .3rem;" id="btnRemove"></span>'+
+                     '</div>'+
+                 '</div>'+
+             '</div>'+
+             
+         '</div>');
+            $("#txtContactType-"+count).kendoDropDownList({
+                dataTextField: "text",
+                dataValueField: "value",
+                dataSource: data,
+                optionLabel:"--Select--"
+            });
+            id = "userTxtContact-" + count;
+            uContactdailingCode(id);
+        }
+    });
+    $("#DivForUserContactOne").on('click', '#btnRemove', function () {
+        if (count> 1) {
+            $("#DivForUserContact" + count).remove();        
+            count--;
+        }
+        if (count > 1) {
+            $('#DivForDynBtn-' + count).append('<span class="k-icon k-i-plus" style="margin-right: .3rem;" id="btnAdd">'+
+                '</span><span class="k-icon k-i-close" style="margin-right: .3rem;" id="btnRemove"></span>');
+        } else {
+            $('#DivForDynBtn-' + count).append('<span class="k-icon k-i-plus" style="margin-right: .3rem;" id="btnAdd"></span>');
+        }
+        $('#DivForDynBtn-' + count).show();
+    });
+</script>
+<style>
+    .classForDaynamicAppend{
+         margin-left:12px;
+         margin-right:12px;
+    }
+    .image-uploader {
+        width: 100%;
+        height: 260px;
+        display: block;
+        text-align: center;
+    }
+
+    .imgPreview {
+        background-color: #e8e4d0;
+        margin-bottom: 20px;
+        position: relative;
+        width: 100%;
+        height: 260px;
+        border: 1px solid #808080;
+        display: none;
+        overflow: hidden;
+    }
+
+    .imgPreview img {
+         position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+    .lblForPics {
+        text-align: center;
+        max-width: 100%;
+        width: 100%;
+        height: 260px;
+        vertical-align: middle;
+        border: 1px dashed blue;
+    }
+        .lblForPics span {
+            color: #083bb5 !important;
+        }
+    .previewImgClose {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        float: right;
+        right: -1.8em;
+        bottom: -1.8em;
+        z-index: 9999;
+        margin-top: -3em;
+    }
+</style>

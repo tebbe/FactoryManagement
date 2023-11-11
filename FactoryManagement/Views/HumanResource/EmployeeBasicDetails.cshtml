@@ -1,0 +1,72 @@
+﻿@model FactoryManagement.Models.View_UserLists
+
+<div class="row">
+    <div class="col-xs-8">
+        <div class="form-group">
+            @Html.LabelFor(model => model.UserName, htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.UserName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.Designation, htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.Designation, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.Designation, htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.DesignationName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.Gender, htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                <span>
+                    @if (Model.Gender == 1)
+                    {
+                        <span>Male</span>
+                    }
+                    else
+                    {
+                        <span>Female</span>
+                    }
+                </span>
+                @*@Html.DisplayFor(model => model.UserName, new { htmlAttributes = new { @class = "form-control k-textbox" } })*@
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.EmailAddress, htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.EmailAddress, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.UserTypeName, "User Type", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.UserTypeName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.Phone, htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.Phone, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.SiteName, htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.SiteName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.DeptName,"Department", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.DeptName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-4"></div>
+</div>
+   

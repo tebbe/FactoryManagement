@@ -1,0 +1,155 @@
+﻿
+
+
+
+
+@******************************** Created By Jerin Jahan (Date:31.08.2016) *********************************@
+@model IEnumerable<FactoryManagement.Models.View_All_Approved_AcquisitionList>
+
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var count = 1;
+}
+<style>
+    #tbl_Apvd_Item_List th {
+        border: none !important;
+    }
+    #tbl_Apvd_Item_List td {
+        border: none !important;
+    }
+</style>
+
+<h4>All Approved Acquisition Order List (For Inventory) </h4>
+<div id="Win_Direct_Order"></div>
+<table class="table table-bordered" id="tbl_Apvd_Item_List">
+    <tbody>
+        <tr style="border:1px solid #ddd!important;">
+            <th>#</th>
+            <th>
+                <input id="selectallOrder"
+                       type="checkbox"
+                       style="cursor:pointer;">
+                Product Name
+            </th>
+            <th>Quantity</th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            int quan = Convert.ToInt32(item.Quantity);
+            if (db.BusinessOrderProductLists.Where(m => m.AcquisitionOrderId == item.AcquisitionId).Any())
+            {
+                int order_quan = db.BusinessOrderProductLists
+                           .Where(m => m.AcquisitionOrderId == item.AcquisitionId)
+                           .Select(t => t.Quantity).DefaultIfEmpty().Sum();
+                quan = quan - order_quan;
+            }
+            if (quan > 0)
+            {
+                <tr class="tbl_tr">
+                    <th scope="row">@count</th>
+                    <td>
+                        <input id="chk_@item.AcquisitionId"
+                               name="chk_@item.AcquisitionId"
+                               type="checkbox" value="@item.AcquisitionId"
+                               data-productid="@item.ProductId"
+                               data-quan="@quan"
+                               class="chkForAcquisitionId"
+                               style="cursor:pointer;">
+                        @item.ProductName
+                    </td>
+                    <td>
+                        <span id="span_quantity_@item.AcquisitionId" style="margin-right:5px;">@quan</span><span>@item.UnitName</span>
+                    </td>
+                </tr>
+                count++;
+            }    
+        }
+    </tbody>
+</table>
+
+<div class="form-horizontal col-md-12 col-sm-12 col-xs-12">
+    <div class="form-group">
+        <div class="col-md-offset-9 col-md-3 col-sm-offset-9 col-sm-3" style="padding-right:0px!important;float:right!important;text-align:right;">
+            <input type="button" value="Suppliers" class="k-button k-state-default" id="btn_Direct_Order" />
+            @*<input type="button" value="Select Suppliers" class="k-button k-state-default" id="btn_Ordr_Select" />*@
+            <input type="button" value="Cancel" class="k-button k-state-default" id="btnOrderSelectCancel" />
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $("#selectallOrder").click(function () {
+            $('input:checkbox').not(this).prop('checked', this.checked);
+        });
+        $(".chkForAcquisitionId").click(function () {
+            if ($(".chkForAcquisitionId").length == $(".chkForAcquisitionId:checked").length) {
+                $("#selectallOrder").prop('checked', true);
+            } else {
+                $("#selectallOrder").removeAttr("checked");
+            }
+
+        });
+    });
+    function getCheckEventId() {
+        val = [];
+        quantity = [];
+        selectedId = [];
+        $('.chkForAcquisitionId:checked').each(function (i) {
+            selectedId[i] = $(this).val();
+            quantity[i] = $(this).data("quan");
+        });
+    }
+    $("#btnOrderSelectCancel").click(function () {
+        $('#Div_Load_Appvd_Order').empty();
+        $('#Div_Load_Appvd_Order').append('<div class="loading_half"></div>');
+        $('#Div_Load_Appvd_Order').show();
+        $('#Div_Load_Appvd_Order').load('@Url.Action("AllApprovedOrderList", "CRM")?order=false');
+    });
+    $("#btn_Direct_Order").click(function () {
+        getCheckEventId();
+        if (selectedId.length > 0) {
+            $("#Win_Direct_Order").empty();
+            $("#Win_Direct_Order").kendoWindow({
+                actions: ["Close"],
+                draggable: true,
+                modal: true,
+                visible: false,
+                pinned: false,
+                position: { top: 100, left: 100 },
+                title: 'All Selected Item Lists',
+                content: "/CRM/ShowSelectedItem?Id=" + selectedId + "&Quantity=" + quantity
+            });
+            $("#Win_Direct_Order").data("kendoWindow").maximize().open();
+        } else {
+            alert("You didn't select any order.Please select order.");
+        }
+    });
+    $("#btn_Ordr_Select").click(function () {
+        getCheckEventId();
+        if (selectedId.length > 0) {
+            $('#Div_Load_Appvd_Order').hide();
+            $('#Div_Load_Order_Create').show();
+            $('#Div_Load_Order_Create').load('@Url.Action("BusinessOrderCreate", "CRM")?OrderType=2');
+            $('#Div_Load_Order_Create').show();
+        } else {
+            alert("You didn't select any order.Please select order.");
+        }
+    });
+    $("#tbl_Apvd_Item_List").on("click", ".QuantyUp", function () {
+        var id = $(this).data("id");
+        var quantity = $("#span_quantity_" + id).text();
+        $("#span_quantity_" + id).text(parseInt(quantity) + 1);
+        if ((parseInt(quantity) + 1) == 2) {
+            $("#QuantyDwn_" + id).show();
+        }
+    });
+    $("#tbl_Apvd_Item_List").on("click", ".QuantyDwn", function () {
+        var id = $(this).data("id");
+        var quantity = $("#span_quantity_" + id).text();
+        $("#span_quantity_" + id).text(parseInt(quantity) - 1);
+        if ((parseInt(quantity) - 1) == 1) {
+            $("#QuantyDwn_" + id).hide();
+        }   
+    });
+</script>

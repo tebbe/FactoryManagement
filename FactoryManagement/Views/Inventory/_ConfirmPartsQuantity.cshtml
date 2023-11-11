@@ -1,0 +1,78 @@
+﻿<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-top:1%;">
+    <div class="col-xs-11 col-sm-11">
+        <div class="editor-label">
+            Quantity
+        </div>
+        <div class="editor-field">
+            <input type="text" class="k-textbox" required id="partsQuantity"/>
+
+        </div>
+    </div>
+    <div class="col-sm-11 col-xs-11">
+        <div class="k-edit-buttons k-state-default" style="margin-top:15px">
+            <span>     
+                    <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="save_parts_qauntity"><span class="k-icon k-update"></span>Next</button>
+                <button type="button" class="k-button k-button-icontext k-grid-cancel" id="refresh_parts_qauntity"><span class="k-icon k-i-refresh"></span>Refresh</button>
+                <button type="button" class="k-button k-button-icontext k-grid-cancel" id="cancel_parts_qauntity"><span class="k-icon k-cancel"></span>Cancel</button>
+            </span>
+        </div>
+    </div>
+    </div>
+    <div id="win_replacable_date"></div>
+    <script>
+        var parts_quantity;
+        $("#save_parts_qauntity").click(function () {
+            parts_quantity = $("#partsQuantity").val();
+            $("#win_replacable_date").empty();
+            $("#win_replacable_date").kendoWindow({
+                actions: ["Close"],
+                draggable: false,
+                modal: true,
+                visible: false,
+                width: '50%',
+                height: '35%',
+                title: 'Enter Parts Replacable Date',
+                close: onWindowClose
+            });
+            $("#win_replacable_date").html('<div class="win_loading_half"></div>');
+            var win_brand_list = $("#win_replacable_date").data("kendoWindow");
+            win_brand_list.refresh({ url: "/Inventory/_ReplacableDate?quantity=" + $("#partsQuantity").val() });
+            win_brand_list.center().open();
+            document.documentElement.style.overflow = 'hidden';
+            document.body.scroll = "no";
+        });
+        $("#win_replacable_date").on("click", "#save_parts_date", function () {
+            $(this).closest(".k-window-content").data("kendoWindow").close();
+            $("#tblForAddedPart").show();
+            var dataItems = $("#SpareParts").data("kendoMultiSelect").dataItems();
+            for (var i = dataItems.length-1; i < dataItems.length; i++) {
+                $("#tblForAddedPart").append('<div class="row" style="margin-top:15px;border:1px solid gray" id="Parts_'+dataItems[i].PartsId+'">' +
+                    '<div class="col-xs-12">' +
+                    '<div class="row">'+
+                    '<div class="col-xs-8"><b>Parts Name : ' +dataItems[i].Name +'</b></div>'+
+                    '<div class="col-xs-3"><b>Quantity : ' + $("#partsQuantity").val() + '</b></div>' +
+                    '<div class="col-xs-1"><i class="fa fa-remove remove_parts" style="color:red" data-name="'+dataItems[i].Name+'" data-id="' + dataItems[i].PartsId + '"></i></div>' +
+                    '</div>'+
+                    '<div class="row" style="margin-top:15px"  id="quantity_for_' + dataItems[i].PartsId + '"></div>'
+                    + '</div>' +
+                    '</div>');
+
+                $(".replace_Date").each(function () {                   
+                    $("#quantity_for_" + dataItems[i].PartsId).append(
+                        '<div class="col-xs-6" style="margin-bottom:10px">Replacable day : ' + $(this).val()+' Day </div>' +
+                        '<div class="col-xs-6" style="margin-bottom:10px">Replace Date :' +
+                        moment().add('days', $(this).val()).format("MMM DD,YYYY")
+                        + '</div>');
+                });
+            }
+            $("#save_parts_qauntity").closest(".k-window-content").data("kendoWindow").close();
+        });
+        $("#win_replacable_date").on("click", "#refresh_parts_date", function () {
+            $("#win_replacable_date").empty();
+            $("#win_replacable_date").html('<div class="win_loading_half"></div>');
+            $("#win_replacable_date").load("/Inventory/_ReplacableDate?quantity=" + $("#partsQuantity").val());
+        });
+        $("#win_replacable_date").on("click", "#cancel_parts_date", function () {
+            $(this).closest(".k-window-content").data("kendoWindow").close();
+        });
+    </script>

@@ -1,0 +1,81 @@
+﻿
+
+@model IEnumerable<FactoryManagement.Models.MachineTypeName>
+@{
+    var count = 1;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<table class="table table-bordered" id="tbl_AllUser">
+    <tbody>
+        <tr>
+            <th width="4%">#</th>
+            <th width="15%">Name</th>
+            <th width="20%">Created By</th>
+            <th width="15%">Created Date</th>
+            <th width="10%">Last Updated By</th>
+            <th width="10%">Last Updated Date</th>
+            <th width="10%"></th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <th>@count .</th>
+                <td>@item.MachineTypeName1</td>
+                <td>
+                    @if (item.CreatedBy > 0)
+                    {
+                        var userName = db.View_UserLists.Where(m => m.UserId == item.CreatedBy).FirstOrDefault();
+                        <a href="/HumanResource/DisplayEmployeeDetails?UserId=@item.CreatedBy&userType=1">
+                            <img src="~/Images/UserPicture/thumb/@userName.Picture" class="user-photo" /> @userName.UserName
+                        </a>
+
+                    }
+                    else
+                    {
+                        <img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" />
+                        <span>Super Admin</span>
+                    }
+                </td>
+                <td>@Convert.ToDateTime(item.CreatedDate).ToString("MMM dd,yyyy")</td>
+                <td>
+                    @if (item.UpdatedBy != null)
+                    {
+                        if (item.UpdatedBy > 0)
+                        {
+                            var user = db.View_UserLists.Where(m => m.UserId == item.UpdatedBy).FirstOrDefault();
+                            <a href="/HumanResource/DisplayEmployeeDetails?UserId=@item.CreatedBy&userType=1">
+                                <img src="~/Images/UserPicture/thumb/@user.Picture" class="user-photo" /> @user.UserName
+                            </a>
+
+                        }
+                        else
+                        {
+                            <img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" />
+                            <span>Super Admin</span>
+                        }
+                    }
+                    else
+                    {
+                        <span>Not yet updated</span>
+                    }
+                </td>
+                <td>
+                    @if (item.UpdatedBy != null)
+                    {
+                        @Convert.ToDateTime(item.UpdatedDate).ToString("MMMM dd,yyyy")
+                    }
+                    else
+                    {
+                        <span>Not yet updated</span>
+                    }
+                </td>
+                <td>
+                    <span class="btn green btnMachineEdit" data-id="@item.MachineId"><i class="fa fa-pencil"></i></span>
+                   @*<span class="btn red btnMachineDelete" data-id="@item.MachineId" data-name="@item.MachineTypeName1"><i class="fa fa-trash"></i></span>*@
+                </td>
+            </tr>
+            count++;
+        }
+    </tbody>
+</table>
+

@@ -1,0 +1,115 @@
+﻿@******************************** Created By Mabia Mishu (Date:18.09.2016) *********************************@
+@using FactoryManagement.Helpers
+@model IEnumerable<FactoryManagement.Models.LineInfo>
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var count = 0;
+}
+@if (Model.Count() > 0)
+{
+    <div class="portlet light portlet-fit bordered">
+      
+        <div class="portlet-title">
+            <div class="caption">
+                <i class="fa fa-list-ul font-green"></i>
+                <span class="caption-subject font-green bold uppercase">Line List</span>
+            </div>
+           
+        </div>
+        <div class="portlet-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-condensed" id="tbl_dept_list">
+                    <tr>
+                        <th width="4%">#</th>
+                        <th width="12%">Name</th>
+                        <th width="5%">Acronym</th>
+                        <th width="5%">Status</th>
+                        <th width="20%">Created By</th>
+                        <th width="13%">Created Date</th>
+                        <th width="18%">Last Updated By</th>
+                        <th width="15%">Last Updated Date</th>
+                        <th width="8%"></th>
+                    </tr>
+                    @foreach (var item in Model)
+                    {
+                        count++;
+                        <tr id="divForDisplayLineInfo_@item.LineId">
+
+                            <td>@count .</td>
+                            <td>@item.LineName</td>
+                            <td>@item.LineAcronym</td>
+                            <td>
+                                @if (item.Status == 1)
+                                { <span>Active</span>}
+                                else
+                                { <span>Inactive</span>}
+                            </td>
+                            <td>
+                                @if (item.CreatedBy > 0)
+                                {
+                                    var user = db.View_UserLists.Where(m => m.UserId == item.CreatedBy).FirstOrDefault();
+                                    <img src="~/Images/UserPicture/thumb/@user.Picture" class="img-circle" />
+                                    <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = item.CreatedBy, isDisplay = true }, null)">
+                                        <span>@user.UserName</span>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <img src="~/Images/UserPicture/thumb/admin.jpg" class="img-circle" />
+                                    <span> Super Admin</span>
+                                }
+                            </td>
+                            <td>@Convert.ToDateTime(item.CreatedDate).ToString("MMM dd,yyyy hh:mm tt")</td>
+                            <td>
+                                @if (item.UpdatedBy != null)
+                                {
+                                    if (item.UpdatedBy > 0)
+                                    {
+                                        var user = db.View_UserLists.Where(m => m.UserType == 1 && m.UserId == item.UpdatedBy).FirstOrDefault();
+                                        <img src="~/Images/UserPicture/thumb/@user.Picture" class="img-circle" />
+                                        <a href="@Html.EncodedParam("DisplayEmployeeDetails", "HumanResource", new { UserId = item.UpdatedBy, isDisplay = true }, null)"><span>@user.UserName</span></a>
+                                    }
+                                    else
+                                    {
+                                        <img src="~/Images/UserPicture/thumb/admin.jpg" class="img-circle" />
+                                        <span> Super Admin</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span>Not yet updated</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.UpdatedBy != null)
+                                {
+                                    @Convert.ToDateTime(item.UpdatedDate).ToString("MMM dd,yyyy hh:mm tt")
+                                }
+                                else
+                                {
+                                    <span>Not yet updated</span>
+                                }
+                            </td>
+                            <td>
+                         <span class="btn green btn_Line_Edit" data-count="@count" data-id="@item.LineId"data-toggle="tooltip" title="Edit Line" data-name="@item.LineName" data-acrm="@item.LineAcronym" ><i class="fa fa-pencil"></i></span>
+                         <span class="btn btn-danger btn_Line_Delete" data-toggle="tooltip" title="Delete Line" data-id="@item.LineId" data-status="@item.Status" data-name="@item.LineAcronym"><i class="fa fa-trash"></i></span>
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
+    </div>
+
+}
+<script>
+    var display = false;
+    $(document).ready(function () {
+        display = '@ViewBag.IsDisplay';
+        $('[data-toggle="tooltip"]').tooltip();
+        if (display == 'True') {
+            $(".btn_Line_Edit").hide();
+            $(".btn_Line_Delete").hide();
+        }
+    });
+</script>

@@ -1,0 +1,51 @@
+﻿
+
+
+@************************ Created By Jerin Jahan Date(07.12.2016) *******************************@
+
+
+@model IEnumerable<FactoryManagement.Models.View_Import_History_Details>
+@{
+    int count = 1;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+@if (Model.Count() > 0)
+{
+    <table class="table table-hover table-bordered table-striped table-condensed" id="tbl_Dis_His">
+        <tr>
+            <th width="3%">#</th>
+            <th width="10%">Name</th>
+            <th width="10%">L/C</th>
+            <th width="10%">Quantity</th>
+            <th width="25%">Imported To</th>
+            <th width="20%">Inserted By</th>
+            <th width="22%">Inserted Date</th>
+        </tr>
+        @foreach (var list in Model)
+        {
+            <tr>
+                <th>@count.</th>
+                <td><span style="color:#0094ff;cursor:pointer;" data-id="@list.ImportId" class="show_import_details">@list.VoucherName</span></td>
+                <td>@list.L_C</td>
+                <td>@list.Quantity @list.UnitName</td>
+                <td>
+                    @{
+            var allLoc = db.View_Import_Item_Details.Where(m => m.ImportId == list.ImportId).ToList();
+            foreach (var l in allLoc)
+            {
+                <p style="margin-bottom:0px!important;">@l.AssignLocation (Quantity @l.Quantity @list.UnitName)</p>
+            }
+                    }
+
+                </td>
+                <td><span><img class="img-circle" src="/Images/UserPicture/thumb/@list.InsertedUserPic">@list.InsertedByUserName</span></td>
+                <td>@list.InsertedDateFormat</td>
+            </tr>
+            count++;
+        }
+    </table>
+}
+else
+{
+    <center><label>There is no record to display....</label></center>
+}

@@ -1,0 +1,281 @@
+﻿@************************************** Created By Jerin Jahan (Date:2.11.2016)  ***************************************@
+
+
+
+
+@model IEnumerable<FactoryManagement.ModelView.HR.EmpSalaryPaymentDetailModelView>
+@{
+    var count = 1;
+    var currency = Request.Cookies["CookieAdminInfo"].Values["currencySymbol"].ToString();
+}
+<style>
+    #tbl_selected_user_Due tr {
+        border: none !important;
+    }
+
+    #tbl_selected_user_Due td {
+        border: none !important;
+    }
+</style>
+<h4>All Due Amount List (Month-Wise)</h4>
+
+<input type="hidden" id="DueSelect" name="DueSelect" value="0" />
+
+<div style="float:right;width:100%;">
+    <span class="field-validation-valid text-danger" data-valmsg-for="DueSelect" data-valmsg-replace="true"></span>
+</div>
+<table class="table" id="tbl_selected_user_Due">
+    @foreach (var item in Model)
+    {
+        var dueamnt = Convert.ToDecimal(item.TotalAmount) - Convert.ToDecimal(item.PaidAmount);
+        <tr>
+            <td width="10%"></td>
+            <td width="20%">
+                <span id="DueCount_@item.Id" data-userid="@item.UserId" data-amnt="@dueamnt">@count .</span>
+                <span><input type="checkbox" value="@item.Id" onclick="ChkDue(this.value)" id="chk_@item.Id" /> </span>
+                <span> @item.Month, @item.Year</span>
+            </td>
+            <td width="30%">@dueamnt @currency</td>
+        </tr>
+        count++;
+    }
+</table>
+<hr />
+<div style="float:right;width:100%;text-align:right;">
+    <div id="div_total_selectedAmnt"></div>
+</div>
+<div style="float:right;width:100%;text-align:right;">
+    <span class="field-validation-valid text-danger" data-valmsg-for="Amount" data-valmsg-replace="true"></span>
+</div>
+
+<input type="hidden" id="SalaryPayType" value="0" />
+<div style="float:left;width:100%;">
+    <div class="editor-label" style="margin-left:2em!important;width:30%!important;">
+        <label for="PackageName">Payment Dispatch By</label>
+    </div>
+    <div class="editor-field" style="padding-top:5px;">
+        <div style="width:100%;">
+            <input id="Cash" name="AccPayTyp" type="radio" value="Cash" class="k-valid"> Cash
+            <input id="Check" name="AccPayTyp" type="radio" value="Check" class="k-valid"> Check
+            @*<input id="Account" name="AccPayTyp" type="radio" value="Account" class="k-valid"> Account*@
+        </div>
+        <span class="field-validation-valid text-danger" data-valmsg-for="AccPayTyp" data-valmsg-replace="true"></span>
+    </div>
+</div>
+<div id="Div_for_Cash" style="display:none;float:left;width:100%;"></div>
+<div id="Div_for_Check" style="display:none;width:100%;"></div>
+<div id="div_for_Account" style="display:none;">
+    <div class="editor-label" style="margin-left:2em!important;width:30%!important;">
+        <label for="PackageName">Payment In </label>
+    </div>
+    <div class="editor-field">
+        <input id="AccCash" name="AccPayType" type="radio" value="Cash" class="k-valid"> Cash
+        <input id="AccCheck" name="AccPayType" type="radio" value="Check" class="k-valid"> Check
+        <span class="field-validation-valid text-danger" data-valmsg-for="AccPayType" data-valmsg-replace="true"></span>
+    </div>
+</div>
+<div style="float:left;width:100%;display:none;" id="div_Bank_acc_Slip">
+    <div class="editor-label" style="margin-left:2em!important;width:30%!important;">
+        <label for="BankAccSlipNo">Bank A/C Slip No.</label>
+    </div>
+    <div class="editor-field" style="padding-top:5px;">
+        <input class="form-control k-textbox text-box single-line" id="BankAccSlipNo" name="BankAccSlipNo" type="text" value="">
+        <span class="field-validation-valid text-danger" data-valmsg-for="BankAccSlipNo" data-valmsg-replace="true"></span>
+    </div>
+</div>
+
+<script>
+    $("#Cash").click(function () {
+        if ($(this).is(":checked")) {
+            $("#SalaryPayType").val(1);
+            $("#div_for_Account").hide();
+            $("#Div_for_Check").hide();
+            $("#Div_for_Check").empty();
+            $("#Div_for_Cash").empty();
+            $("#Div_for_Cash").append('<div class="editor-label" style="margin-left:2em!important;width:30%!important;">' +
+            '<label for="InernalAccId">Account Name</label></div>' +
+            '<div class="editor-field">' +
+            '<input id="InernalAccId" name="InernalAccId" style="width: 100%;" />' +
+            '<span class="field-validation-valid text-danger" data-valmsg-for="InernalAccId" data-valmsg-replace="true"></span>' +
+            '</div>');
+
+            $("#InernalAccId").kendoDropDownList({
+                dataTextField: "AccountName",
+                dataValueField: "AccId",
+                optionLabel: "--Select One--",
+                change: onInternalAccChange,
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "@Url.Action("AllAccountList", "HumanResource")?userId=" + userId, type: "GET"
+                        }
+                    }
+                }
+            });
+            $("#Div_for_Cash").show();
+        }
+    });
+    $("#Check").click(function () {
+        if ($(this).is(":checked")) {
+            $("#SalaryPayType").val(2);
+            $("#div_for_Account").hide();
+            $("#Div_for_Cash").hide();
+            $("#Div_for_Check").empty();
+            $("#Div_for_Check").append('<div style="width:100%;">' +
+                                       '<div class="editor-label" style="margin-left:2em!important;width:30%!important;">' +
+                                       '<label for="PackageName">Bank</label></div>' +
+                                       '<div class="editor-field">' +
+                                       '<input id="BankId" name="BankId" style="width: 100%;" />' +
+                                       '<span class="field-validation-valid text-danger" data-valmsg-for="BankId" data-valmsg-replace="true">' +
+                                       '</span></div>' +
+                                       '<div id="Div_For_Bank_Acc" style="float:left;width:100%;"></div>');
+            $("#BankId").kendoDropDownList({
+                dataTextField: "BankName",
+                dataValueField: "BankId",
+                change: onBankNameChange,
+                optionLabel: "--Select One--",
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "@Url.Action("AllBankList", "HumanResource")", type: "GET"
+                        }
+                    }
+                }
+            });
+            $("#Div_for_Check").show();
+        }
+    });
+
+
+    $("#Account").click(function () {
+        if ($(this).is(":checked")) {
+            $("#SalaryPayType").val(3);
+            $("#div_for_Account").show();
+            $("#Div_for_Cash").hide(); $("#Div_for_Check").empty();
+        }
+    });
+    $("#btn_Payment_Cancle").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#btn_Payment_Save").click(function () {
+        var validation = $("#div_Salary_pay_option_left").kendoValidator({
+            rules: {
+                option: function (input) {
+                    if (input.attr('name') === "AccPayTyp" && $("#SalaryPayType").val() === '0') {
+                        return false;
+                    }
+                    return true;
+                },
+                Internal: function (input) {
+                    if (input.attr('name') === 'InernalAccId' && $("#Cash").is(":checked") && $("#InernalAccId").val() === '') {
+                        return false;
+                    }
+                    return true;
+                },
+                BankName: function (input) {
+                    if (input.attr('name') === 'BankId' && $("#Check").is(":checked") && $("#BankId").val() === '') {
+                        return false;
+                    }
+                    return true;
+                },
+                BankAccId: function (input) {
+                    if (input.attr('name') === 'BankAccId' && $("#Check").is(":checked") && $("#BankAccId").val() === '') {
+                        return false;
+                    }
+                    return true;
+                },
+                BankAccSlipNo: function (input) {
+                    if (input.attr('name') === 'BankAccSlipNo' && $("#Check").is(":checked") && $("#BankAccSlipNo").val() === '') {
+                        return false;
+                    }
+                    return true;
+                },
+                DueSelect: function (input) {
+                    if (input.attr('name') === 'DueSelect' && $("#DueSelect").val() === '0') {
+                        return false;
+                    }
+                    return true;
+                }
+            },
+            messages: {
+                option: "Please select one",
+                Internal: "Please select one",
+                BankName: "Please select one",
+                BankAccId: "Please select one",
+                BankAccSlipNo: "Please enter slip number",
+                DueSelect: "Please check at least one"
+            }
+        }).data("kendoValidator");
+        if (validation.validate()) {
+            var sendData = {
+                AllId: allChkId,
+                UserId: selectedUserId,
+                UserType: selectedUserType,
+                PayType: $("#SalaryPayType").val(),
+                Amount: $("#Amount").val(),
+                InernalAccId: internal_AccId,
+                BankId: bankId,
+                BankAccId: banlAccId,
+                BankAccSlipNo: $("#BankAccSlipNo").val(),
+                InsertBy: userId,
+                username: username,
+                currency: Currency};
+            $.ajax({
+                url: '@Url.Action("PaySingleUserDue", "HumanResource")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    if (data === "Success") {
+                        $("#btn_Payment_Save").closest(".k-window-content").data("kendoWindow").close();
+                        $("#WinForSalaryPack").empty();
+                        totalChkAmnt = 0;
+                    } else {
+                        alert(data);
+                    }
+                },
+                error: function (xhr) {
+                    alert('error');
+                }
+            });
+        }
+
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        totalChkAmnt = 0;
+    });
+    function ChkDue(v) {
+        var amnt = $("#DueCount_" + v).data('amnt');
+        if ($("#chk_" + v).is(":checked")) {
+            totalChkAmnt = (parseFloat(totalChkAmnt) + parseFloat(amnt)).toFixed(2);
+            allChkId.push(v);
+
+        } else {
+            allChkId.splice(allChkId.indexOf(v), 1);
+            totalChkAmnt = (parseFloat(totalChkAmnt) - parseFloat(amnt)).toFixed(2);
+        }
+        if (allChkId.length === 0) {
+            $("#div_total_selectedAmnt").empty();
+            $('#Amount_validationMessage').hide();
+            $('#DueSelect').val(0);
+            totalChkAmnt = 0;
+
+        } else {
+            $('#DueSelect').val(1);
+            $("#div_total_selectedAmnt").empty();
+            $('#Amount_validationMessage').hide();
+            $("#div_total_selectedAmnt").append('<span>Total Amount = </span><input class="k-textbox text-box single-line k-invalid txt_quantity" ' +
+                'type="number" min="1" max="' + totalChkAmnt + '" data-val-required="Please enter amount" ' +
+                'id="Amount" name="Amount" value="' + totalChkAmnt + '" >' +
+                '<span>' + Currency + '</span>');
+        }
+    }
+    $("#div_total_selectedAmnt").on("change", "#Amount", function () {
+        var typeValue = $(this).val()
+        if (parseFloat(typeValue) > parseFloat(totalChkAmnt)) {
+            alert('Amount can not greater than ' + totalChkAmnt);
+            $(this).val(totalChkAmnt);
+        }
+    });
+</script>

@@ -1,0 +1,158 @@
+﻿
+
+
+@************************* Created By Jerin Jahan (Date : 24.06.2017) ***************************************@
+@using FactoryManagement.Helpers
+@model IEnumerable<FactoryManagement.Models.View_Dispacth_Item_Details>
+@{
+    var count = 0;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int unitid = ViewBag.uId;
+    var uname = "";
+}
+<style>
+    .autocomplete-wrapper .text-field {font-size: 12px!important;padding: 0 10px!important;height: 25px!important;}
+    .tbl_filter td{border:none!important;}
+</style>
+@if (Model.Count() > 0)
+{
+    <table class="table table-hover table-bordered table-striped table-condensed" id="tbl_inven_vou_lit">
+        <tr>
+            <th>#</th>
+            @*<th>
+                Machine Name
+                <span class="filter_machine_acron" style="width:15px; float:right; color:#0487c4; cursor:pointer">
+                    <i class="fa fa-filter"></i>
+                </span>
+            </th>*@
+            <th>Parts Name
+                <span class="filter_parts" style="width:15px; float:right; color:#0487c4; cursor:pointer">
+                    <i class="fa fa-filter"></i>
+                </span>
+            </th>
+            <th>Quantity</th>
+            @if (ViewBag.v == "all")
+            {
+                <th>Unit Name</th>
+            }
+        </tr>
+        @foreach (var list in Model)
+        {
+            var deptid = db.View_Line_Machine_Info.Where(m => m.MachineId == list.MachineId).Select(m => m.DeptId).FirstOrDefault();
+            unitid = db.DepartmentLists.Where(m => m.DeptId == deptid).Select(m => m.UnitId.Value).FirstOrDefault();
+            if (unitid > 0)
+            {
+                uname = db.Site_Unit_Lists.Where(m => m.UnitId == unitid).Select(m => m.UnitAcryonm).FirstOrDefault();
+                count++;
+                double available_qty = list.Quantity - Convert.ToDouble(list.UsedQuan) - Convert.ToDouble(list.ReturnQuantity);
+                <tr>
+                    <th>@count.</th>
+                    @*<td>@list.MachineName</td>*@
+                    <td>@list.ProductName</td>
+                    <td><span class="porductstomachines" data-proname="@list.ProductName" data-inventoryid="@list.InventoryId" style="cursor:pointer;color:#0487c4">@available_qty @list.UnitName</span></td>
+                    @if (ViewBag.v == "all")
+                    {
+                        <td>@uname</td>
+                    }
+                </tr>
+            }
+        }
+        @*<tr>
+            <td colspan="2">
+                <label>Total</label>
+            </td>          
+            <td>
+                <label style="font-weight:bold">@Model.Sum(x=>x.Quantity) @Model.FirstOrDefault().UnitName</label>
+            </td>
+            <td></td>
+        </tr>*@
+    </table>
+    @(Html.Kendo().Tooltip()
+    .For(".filter_machine_acron")
+    .ContentTemplateId("temp_show_acron_filter")
+    .Position(TooltipPosition.Bottom)
+    .AutoHide(false)
+    .ShowOn(TooltipShowOnEvent.Click)
+    )
+    @(Html.Kendo().Tooltip()
+    .For(".filter_parts")
+    .ContentTemplateId("temp_show_parts_filter")
+    .Position(TooltipPosition.Bottom)
+    .AutoHide(false)
+    .ShowOn(TooltipShowOnEvent.Click)
+    )
+    <script id="temp_show_acron_filter" type="text/x-kendo-template">
+        <br />
+        <table class="table tbl_filter">
+            <tr><td>Show items with value that:</td></tr>
+            <tr><td>Contains</td></tr>
+            <tr><td><input class="text-field" id="txt_filter_machine_name" type="text" value=""></td></tr>
+            <tr>
+                <td colspan="2">
+                    <button type="submit" class="k-button k-primary" style="width:46%!important;margin:.5em 4% 0 0;" onclick="filterByMachineName()">Filter</button>
+                    <button type="reset" class="k-button" style="width:46%!important;margin:.5em 0 0 0;margin-right: 0;" onclick="clearFilter()">Clear</button>
+                </td>
+            </tr>
+        </table>
+    </script>
+    <script id="temp_show_parts_filter" type="text/x-kendo-template">
+        <br />
+        <table class="table tbl_filter">
+            <tr><td>Show items with value that:</td></tr>
+            <tr><td>Contains</td></tr>
+            <tr><td><input class="text-field" id="txt_filter_parts_name" type="text" value=""></td></tr>
+            <tr>
+                <td colspan="2">
+                    <button type="submit" class="k-button k-primary" style="width:46%!important;margin:.5em 4% 0 0;" onclick="filterByPartsName()">Filter</button>
+                    <button type="reset" class="k-button" style="width:46%!important;margin:.5em 0 0 0;margin-right: 0;" onclick="clearFilter()">Clear</button>
+                </td>
+            </tr>
+        </table>
+    </script>
+    <script>
+        function filterByMachineName() {
+            var txt_filter_machine_name = encodeURIComponent($("#txt_filter_machine_name").val());
+            $("#temp_show_acron_filter_tt_active").remove();
+            $("#temp_show_parts_filter_tt_active").remove();
+            $(".k-animation-container").remove();
+            if (tab === 0) {
+                $("#tabAll").empty();
+                $("#tabAll").append('<div class="loading_partial"></div>');
+                $("#h4title").text('All Available Spare Parts Lists');
+                $("#tabAll").load('@Url.Action("_SparePartsDisList", "Inventory")?v=all&machinename=' + txt_filter_machine_name);
+            } else {
+                $("#tab_" + tab).empty();
+                $("#tab_" + tab).append('<div class="partial_loading_half"></div>');
+                $("#h4title").text("Showing " + uname + "'s All Available Spare Parts List");
+                $("#tab_" + tab).load('@Url.Action("_SparePartsDisList", "Inventory")?uid=' + uid + '&machinename=' + txt_filter_machine_name);
+            }
+        }
+        function filterByPartsName() {
+            var txt_filter_parts_name = encodeURIComponent($("#txt_filter_parts_name").val());
+            $("#temp_show_acron_filter_tt_active").remove();
+            $("#temp_show_parts_filter_tt_active").remove();
+            $(".k-animation-container").remove();
+            if (tab === 0) {
+                $("#tabAll").empty();
+                $("#tabAll").append('<div class="loading_partial"></div>');
+                $("#h4title").text('All Available Spare Parts Lists');
+                $("#tabAll").load('@Url.Action("_SparePartsDisList", "Inventory")?v=all&partsname=' + txt_filter_parts_name);
+            } else {
+                $("#tab_" + tab).empty();
+                $("#tab_" + tab).append('<div class="partial_loading_half"></div>');
+                $("#h4title").text("Showing " + uname + "'s All Available Spare Parts List");
+                $("#tab_" + tab).load('@Url.Action("_SparePartsDisList", "Inventory")?uid=' + uid + '&partsname=' + txt_filter_parts_name);
+            }
+        }
+        function clearFilter() {
+            $("#temp_show_acron_filter_tt_active").remove();
+            $("#temp_show_parts_filter_tt_active").remove();
+            $(".k-animation-container").remove();
+            reloadTab();
+        }
+    </script>
+}
+else
+{
+    <h4>There is no record to display</h4>
+}

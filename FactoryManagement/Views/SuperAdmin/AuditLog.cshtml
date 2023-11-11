@@ -1,0 +1,312 @@
+﻿
+
+@******************************** Created By Jerin Jahan (Date:18.07.2016) *********************************@
+@model IEnumerable<FactoryManagement.Models.View_Audit_Information>
+@{
+    ViewBag.Title = "Audit Logs";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    long loginUserId = Convert.ToInt32(Request.Cookies["CookieAdminInfo"].Values["userid"].ToString());
+}
+<style>
+    #tbl_All_Aud_Search{
+        margin-bottom:0px!important;margin-top:10px!important;border-bottom:none!important;display:none;
+    }
+</style>
+
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/StoreProduct/InvenRouteVoucherList"> All Routed History</a>
+        </li>
+    </ul>
+    <span style="float:right;color: #888;font-size: 14px;text-shadow: none;padding-top:7px!important;"><label>Total results =  </label><label id="spn_total"></label></span>
+</div>
+<div class="row">
+    @*<div class="col-sm-12">
+        <span style="float:right;"><label>Total results =  </label><label id="spn_total"></label></span>
+    </div>*@
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">Audit Logs</span>
+                </div>
+                <div class="actions">
+                    <div class="btn-group btn-group-devided" data-toggle="buttons" id="Div_Upper_Portion" style="display:none;">
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm active" id="btn_All" data-toggle="tooltip" title="All History" data-container="body">
+                            <input type="radio" name="options" class="toggle">All
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_today" data-toggle="tooltip" title="Today History" data-container="body">
+                            <span><input type="radio" name="options" class="toggle">Today</span>
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_seven" data-toggle="tooltip" title="Last 7 days History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 7 Days
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_thirty" data-toggle="tooltip" title="Last 30 day History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 30 Days
+                        </label>
+                    </div>
+                   
+                </div>
+            </div>
+            <div>
+                <table class="table table-bordered table-condensed" id="tbl_All_Aud_Search">
+                    @if (ViewBag.IsOwn == false)
+                    {
+                        <tr>
+                            <td width="40%">
+                                <span class="autocomplete-wrapper">
+                                    <input class="text-field" id="textForSearch" name="textForSearch" placeholder="Type user name" type="text" autocomplete="off">
+                                    <span class="k-icon k-i-search" style="margin-top:-25px;margin-right:10px;float:right;">&nbsp;</span>
+                                </span>
+                            </td>
+                            <td width="30%">
+                                @(Html.Kendo().DropDownList().Name("moduleName")
+                                    .OptionLabel("All")
+                                    .BindTo(ViewBag.ModuleName as SelectList)
+                                    .Events(e => e.Change("onModulechange"))
+                                    .HtmlAttributes(new { style = "width:100%" })
+                                )
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        <tr>
+                            <td>
+                                <label>Select Module</label>
+                                @(Html.Kendo().DropDownList().Name("moduleName")
+                                .OptionLabel("All")
+                                .BindTo(ViewBag.ModuleName as SelectList)
+                                .Events(e => e.Change("onModulechange"))
+                                .HtmlAttributes(new { style = "width:20%" })
+                                )
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+            <div class="portlet-body">
+                <div class="table-responsive">
+                    <div id="Div_Partial_load"></div>
+                    @if (db.View_Audit_Information.Any())
+                    {
+                        <script>
+                            $("#Div_Upper_Portion").show();
+                            $("#tbl_All_Aud_Search").show();
+                            $("#Div_Partial_load").append('<div class="win_loading_half"></div>');
+                            $("#Div_Partial_load").show();
+                            $("#Div_Partial_load").load('@Url.Action("_AuditLog", "SuperAdmin")?isOwn=' + '@(ViewBag.IsOwn)' + '&userId=' + '@(loginUserId)');
+                        </script>
+                    }
+                    else
+                    {
+                        <script>
+                            $("#Div_Partial_load").append(' <h3>There is no record to display...</h3>');
+                            $("#Div_Partial_load").show();
+                        </script>
+                    }
+                    <div id="loading" style="display:none"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var up = true;
+    var isOwn = '@(ViewBag.IsOwn)';
+    var showCount = 0, totalCount = 0, inCallback = false, value = '';
+    var page = 0, content = '', listname = '', moduleName = '', eventDoneBy = '';
+    function onModulechange() {
+        showCount = 0, totalCount = 0, page = 0;
+        moduleName = $("#moduleName").val();
+        var passdata = '';
+        if (moduleName == '') {
+            if (eventDoneBy > -1) {
+                passdata = { status: -1, eventDoneBy: eventDoneBy, moduleName: moduleName, isOwn: isOwn, userId: userId };
+            } else {
+                passdata = { status: -1, moduleName: moduleName, isOwn: isOwn, userId: userId };
+            }
+            $("#Div_Partial_load").empty();
+            $("#Div_Partial_load").append('<div class="loading_partial"></div>');
+            $("#Div_Partial_load").load('@Url.Action("_AuditModuleChange", "SuperAdmin")', passdata);
+        }
+        else {
+            if (eventDoneBy > -1) {
+                passdata = { status: -1, eventDoneBy: eventDoneBy, moduleName: moduleName, isOwn: false, userId: userId };
+            } else {
+                passdata = { status: -1, moduleName: moduleName, isOwn: isOwn, userId: userId };
+            }
+            $("#Div_Partial_load").empty();
+            $("#Div_Partial_load").append('<div class="loading_partial"></div>');
+            $("#Div_Partial_load").load('@Url.Action("_AuditModuleChange", "SuperAdmin")', passdata);
+        }
+    };
+
+    $("#btn_today").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        if (eventDoneBy > -1) {
+            passdata = { status: -1, eventDoneBy: eventDoneBy, moduleName: moduleName, isOwn: isOwn, userId: userId, days: 1 };
+        } else {
+            passdata = { status: -1, moduleName: moduleName, isOwn: isOwn, userId: userId, days: 1 };
+        }
+        $("#Div_Partial_load").empty();
+        $("#Div_Partial_load").append('<div class="loading_partial"></div>');
+        $("#Div_Partial_load").load('@Url.Action("_AuditDayWise", "SuperAdmin")', passdata);
+    });
+
+    $("#btn_last_seven").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        if (eventDoneBy > -1) {
+            passdata = { status: -1, eventDoneBy: eventDoneBy, moduleName: moduleName, isOwn: isOwn, userId: userId, days: 7 };
+        } else {
+            passdata = { status: -1, moduleName: moduleName, isOwn: isOwn, userId: userId, days: 7 };
+        }
+        $("#Div_Partial_load").empty();
+        $("#Div_Partial_load").append('<div class="loading_partial"></div>');
+        $("#Div_Partial_load").load('@Url.Action("_AuditDayWise", "SuperAdmin")', passdata);
+    });
+    $("#btn_last_thirty").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        if (eventDoneBy > -1) {
+            passdata = { status: -1, eventDoneBy: eventDoneBy, moduleName: moduleName, isOwn: isOwn, userId: userId, days: 30 };
+        } else {
+            passdata = { status: -1, moduleName: moduleName, isOwn: isOwn, userId: userId, days: 30 };
+        }
+        $("#Div_Partial_load").empty();
+        $("#Div_Partial_load").append('<div class="loading_partial"></div>');
+        $("#Div_Partial_load").load('@Url.Action("_AuditDayWise", "SuperAdmin")', passdata);
+    });
+    $("#btn_All").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        if (eventDoneBy > -1) {
+            passdata = { status: -1, eventDoneBy: eventDoneBy, moduleName: moduleName, isOwn: isOwn, userId: userId, days: 0 };
+        } else {
+            passdata = { status: -1, moduleName: moduleName, isOwn: isOwn, userId: userId, days: 0 };
+        }
+        $("#Div_Partial_load").empty();
+        $("#Div_Partial_load").append('<div class="loading_partial"></div>');
+        $("#Div_Partial_load").load('@Url.Action("_AuditDayWise", "SuperAdmin")', passdata);
+    });
+
+    @******************************** OnScroll Bind Table Data *************************@
+    $(window).scroll(function () {
+        var countBytype, result;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/SuperAdmin/GetAuditLog',
+            data: { page: page },
+            success: function (data) {
+                var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        var date = new Date(data[i].CreatedDateName);
+                        var getdate = (monthNames[date.getMonth()]) + " " + date.getDate() + " " + date.getFullYear();
+
+                        $("table#tbl_Audit_List > tbody").append(
+                            '<tr><th scope="row">' + parseInt(showCount + 1) + '</th>' +
+                            '<td>' + '' + ((data[i].OperationStatus == 1) ? '<i class="fa fa-info-circle" ></i>' +
+                            ' ' : '<i class="fa fa-exclamation-circle" style="color:#ff6a00;"></i> ') + '' +
+                            ' <a href="/SuperAdmin/AuditLogDetails/' + data[i].Id + '">' + data[i].OperationName + '</a> </td>' +
+
+
+                            '<td>' + data[i].ModuleName + '</td>' +
+                            '<td>' + data[i].OpStatusValue + '</td>' +
+                            '<td>' + data[i].OperationTime + '</td>' +
+
+
+                            '<td><img src="/Images/UserPicture/thumb/' + data[i].PictureName + '" class="img-circle" />' +
+                            '<span>' + data[i].UserName + '</span></td>' +
+                            '</tr>'
+                        );
+                        showCount++;
+                    }
+                    showCount = (page + 1) * 50;
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+</script>
+<script>
+    if (isOwn === 'False') {
+        $("#textForSearch").autocomplete({
+            minLength: 0,
+            source: function (request, response) {
+                content = $.trim(request.term);
+                $.ajax({
+                    url: '@Url.Action("SearchUserList", "SuperAdmin")',
+                    type: "POST",
+                    dataType: "json",
+                    data: { prefix: content },
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return { label: item.UserName, value: item.UserName, id: item.UserId };
+                        }))
+                    }
+                })
+            },
+            minLength: 1,
+            select: function (event, ui) {
+                eventDoneBy = ui.item.id;
+                showCount = 0, totalCount = 0, page = 0;
+                $("#Div_Partial_load").empty();
+                $("#Div_Partial_load").append('<div class="loading_partial"></div>');
+                var sendData = { moduleName: moduleName, eventDoneBy: eventDoneBy };
+                $("#Div_Partial_load").load('@Url.Action("_AuditLogForSpecificUser", "SuperAdmin")', sendData);
+            },
+        })
+ .keyup(function () {
+     if ($.trim($("#textForSearch").val()) == "") {
+         showCount = 0, totalCount = 0, page = 0;
+         eventDoneBy = '';
+         $("#Div_Partial_load").empty();
+         $("#Div_Partial_load").append('<div class="loading_partial"></div>');
+         var sendData = { isOwn: isOwn, userId: userId, moduleName: moduleName };
+         $("#Div_Partial_load").load('@Url.Action("_AuditLog", "SuperAdmin")', sendData);
+     }
+ })
+ .autocomplete("instance")._renderItem = function (ul, item) {
+     var term = $.trim(this.term);
+     var re = new RegExp("(" + term + ")", "gi"),
+                cls = "bold-text",
+                template = "<span class='" + cls + "'>$1</span>",
+                label = item.label.replace(re, template),
+                $li = $("<li/>").appendTo(ul);
+     $("<span>").html(label).appendTo($li);
+     return $li;
+ };
+    }
+</script>

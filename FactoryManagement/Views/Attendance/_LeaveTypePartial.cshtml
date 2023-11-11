@@ -1,0 +1,11 @@
+﻿
+<div class="editor-label"><label>Leave Type</label></div>
+<div class="editor-field">
+    @(Html.Kendo().DropDownList().Name("LeaveType")
+    .OptionLabel("--Select One--")
+    .BindTo(ViewBag.LeaveType)
+    .HtmlAttributes(new { style = "width:100%" })
+    )
+    <span class="field-validation-valid text-danger" data-valmsg-for="LeaveType" data-valmsg-replace="true"></span>
+</div>
+

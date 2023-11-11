@@ -1,0 +1,159 @@
+﻿
+
+
+@******************************** Created By Jerin Jahan (Date:27.09.2016) *********************************@
+
+@model FactoryManagement.ModelView.CRM.BusinessOrderListModelView
+
+<h4>@ViewBag.title</h4>
+@using (Html.BeginForm())
+{
+    @Html.HiddenFor(m => m.BusinessOrderId)
+    @Html.HiddenFor(m => m.OrderType)
+
+    <div class="form-horizontal col-md-12 col-sm-12 col-xs-12" id="DivForBusinessOrderCreate">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.OrderName, "Order Name", htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+            <div class="col-md-8 col-sm-8">
+                @Html.EditorFor(model => model.OrderName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                @Html.ValidationMessageFor(model => model.OrderName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        @if (Model.OrderType == 1)
+        {
+            <div class="form-group">
+                @Html.LabelFor(model => model.ClientId, "Client", htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+                <div class="col-md-8 col-sm-8">
+                    @(Html.Kendo().DropDownList().Name("ClientIdEdit")
+                        .OptionLabel("--Select One Type--")
+                        .BindTo(ViewBag.ClientId)
+                        .HtmlAttributes(new { style = "width:100%" })
+                    )
+                    @Html.ValidationMessageFor(model => model.ClientId, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="form-group">
+                @Html.LabelFor(model => model.ClientId, "Client", htmlAttributes: new { @class = "control-label col-md-3 col-sm-4" })
+                <div class="col-md-8 col-sm-8">
+                    @(Html.Kendo().MultiSelect()
+                    .Name("ClientIds")
+                    .HtmlAttributes(new { style = "width:100%" })
+                    //.Events(e => e.Select("onClientSelect").Change("onClientSelectChange"))
+                    .BindTo(ViewBag.ClientId)
+                    .Value(ViewBag.SelectedSup)
+                    .AutoClose(false)
+                    .Placeholder("-- Select One --"))
+
+                    @Html.ValidationMessageFor(model => model.ClientId, "", new { @class = "text-danger" })
+                </div>
+
+            </div>
+        }
+        <div class="form-group">
+            <div class="col-md-offset-3 col-md-8 col-sm-offset-4 col-sm-8">
+                <input type="button" value="Update" class="k-button k-state-default" id="btn_Bus_Ord_Update" />
+                <input type="reset" value="Refresh" class="k-button k-state-default" id="btn_Bus_Ord_Refresh" />
+                <input type="button" value="Cancel" class="k-button k-state-default" id="btn_Bus_Ord_Cancel" />
+            </div>
+        </div>
+    </div>
+}
+<script>
+    var clientId;
+    var prog_msg = "Business order info updating...";
+    var sucess_msg = "Business order info updated successfully.";
+    var err_msg = "Business order info updated unsuccessful.";
+    var validation = $("#DivForBusinessOrderCreate").kendoValidator({
+        rules: {
+            clientId: function (input) {
+                if (input.attr('name') === "ClientIdEdit") {
+                    if(@Model.OrderType === "1" && $("#ClientIdEdit").val() === ''){
+                        return false;
+                    }
+                    if('@(Model.OrderType)' === "2"  && $("#ClientIds").val() === null){
+                        return false;
+                    }
+                    return true;
+                }
+                return true;
+            }
+        },
+        messages: {
+            clientId: "Please select one client"
+        }
+    }).data("kendoValidator");
+
+
+
+    $("#btn_Bus_Ord_Cancel").click(function(){
+        $("#div_order_Edit").empty();
+        $("#div_order_Edit").hide();
+        $("#div_order_deatis").show();
+    });
+    $("#btn_Bus_Ord_Refresh").click(function(){
+        $("#div_order_Edit").empty();
+        $("#div_order_Edit").append('<div class="loading_partial"></div>');
+        $("#div_order_Edit").load('@Url.Action("BusinessOrderEdit", "CRM")?BusinessOrderId='+'@(Model.BusinessOrderId)'+'&OrderType='+'@(Model.OrderType)');
+    });
+
+    $("#btn_Bus_Ord_Update").click(function (e) {
+        var sendData;
+        if (validation.validate()) {
+            var url="";
+            if('@(Model.OrderType)' === "1"){
+                url='@Url.Action("NewBusinessOrderSave", "CRM")';
+                sendData = {
+                    BusinessOrderId: $("#BusinessOrderId").val(),
+                    OrderName: $("#OrderName").val(),
+                    OrderType: $("#OrderType").val(),
+                    ClientId: $("#ClientIdEdit").val(),
+                    CreatedBy: userId
+                };
+            }else{
+                url='@Url.Action("BusinessOrderInfoUpdate", "CRM")';
+                sendData = {
+                    BusinessOrderId: $("#BusinessOrderId").val(),
+                    OrderName: $("#OrderName").val(),
+                    OrderType: $("#OrderType").val(),
+                    AllSupplierId: $("#ClientIds").data("kendoMultiSelect").value().join(","),
+                    //AllAcquisitionOrderId: selectedId,
+                    CreatedBy: userId
+                };
+            }
+            notification.show({ message: prog_msg, showTime: startTime() }, "upload-progress");
+
+            $.ajax({
+                url: url,
+                type: 'Post',
+                data: sendData,
+                success: function (response) {
+                    notification.hide();
+                    notification.setOptions({autoHideAfter: 2000});
+
+                    if (response === 'Success') {
+                        notification.show({ message: err_msg, showTime: startTime() }, "upload-success");
+
+                        var sendData = {BusinessOrderId:'@(Model.BusinessOrderId)',OrderType:'@(Model.OrderType)',IsDisplay:true};
+                        $("#div_order_Edit").empty();
+                        $("#div_order_Edit").hide();
+                        $("#div_order_deatis").empty();
+                        $("#div_order_deatis").show();
+                        $("#div_order_deatis").append('<div class="loading_partial"></div>');
+                        $("#div_order_deatis").load('@Url.Action("BusinessOrderEdit", "CRM")?',sendData);
+                    }
+                    else {
+                        notification.show({ message: sucess_msg, showTime: startTime() }, "upload-error");
+                    }
+                }
+            });
+        }
+    });
+
+
+
+
+</script>

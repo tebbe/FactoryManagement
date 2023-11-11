@@ -1,0 +1,27 @@
+﻿
+
+@{
+    var count = 0;
+}
+<table class="table table-condensed" id="tbl_Istalled_machine">
+    @foreach (var list in ViewBag.allPartsList as IEnumerable<FactoryManagement.ModelView.Inventory.SparePartsListModelView>)
+    {
+        count++;
+        <tr>
+            <td width="10%">@count . </td>
+            <td width="85%">
+                <span>@list.PartsName </span><span style="color:#808080;"> (Qantity : @Convert.ToDouble(list.Quantity) @list.Unitname)</span>
+                @if (list.TypeName != "")
+                {
+                    <span style="color:#808080;"> (@list.TypeName)</span>
+                }
+            </td>
+            <td width="5%">
+                @*<span class="addedParts" data-partsid="@list.PartsId" data-id="@list.Id" data-partsname="@list.PartsName"><i class="fa fa-cog"></i></span>*@
+            </td>
+        </tr>
+    }
+</table>
+<script>
+    $(".panel-body").css({ "height": panel_height });
+</script>

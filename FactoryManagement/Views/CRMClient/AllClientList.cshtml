@@ -1,0 +1,248 @@
+﻿
+@{
+    ViewBag.Title = "AllClientList";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+
+<h3 class="page-title">All Client List</h3>
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>CRMClient</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <span>All Client List</span>
+        </li>
+    </ul>
+</div>
+<p>
+    <a href="/CRMClient/ClientCreate" style="text-decoration: none !important;">
+        <span class="btn green" style="cursor:pointer" id="" data-toggle="tooltip" data-placement="bottom" title="Add New Client"><i class="fa fa-plus"></i> Add New Client</span>
+    </a>
+</p>
+
+<div class="col-md-12 portlet box green">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="fa fa-list-ul"></i>All Client List
+        </div>
+    </div>
+    <div class="col-sm-12 portlet-body">
+        <table class="table table-bordered" style="margin-bottom:0px!important;margin-top:10px!important;border-bottom:none!important;">
+            <tr>
+                <td colspan="6">
+                    <span class="col-sm-9" style="padding-left:0px!important;">
+                        <span class="autocomplete-wrapper">
+                            <input class="text-field" id="autocomplete" name="country" placeholder="Start typing client name" type="text" autocomplete="off">
+                            <span class="k-icon k-i-search" style="margin-top:-25px;margin-right:10px;float:right;">&nbsp;</span>
+                        </span>
+                    </span>
+                    <span class="col-sm-3">
+                        @(Html.Kendo().DropDownList()
+                              .Name("ClientType")
+                              .DataTextField("Text")
+                              .DataValueField("Value")
+                              .OptionLabel("All")
+                              .Events(e => e.Change("onChangeOfClientType"))
+                              .BindTo(new List<SelectListItem>() {
+                                new SelectListItem() {
+                                Text = "Buyer",
+                                Value = "1"
+                                },
+                              new SelectListItem() {
+                                 Text = "Supplier",
+                                 Value = "2"
+                                },
+                              new SelectListItem() {
+                                Text = "Outsourcer",
+                                Value = "3"
+                                },
+                              new SelectListItem() {
+                                  Text = "Logistic",
+                                   Value = "4"
+                                }
+                              })
+                           .HtmlAttributes(new { style = "width: 100%" })
+                        )
+                    </span>
+                </td>
+            </tr>
+        </table>
+        <div id="DivForVendorList"><div class="win_loading_half"></div></div>
+        <div id="loading" style="display:none"></div>
+    </div>
+</div>
+
+<script id="temp_win_site_edit" type="text/x-kendo-template">
+    <div style="padding:1em;">
+        <p style="font-size: 14px; padding: 10px">Are you sure you want to delete this client ? </p>
+        <div style="text-align: right;">
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_editUnit_ok"><span class="k-icon k-update"></span>OK</button>
+            <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_editUnit_cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+        </div>
+    </div>
+</script>
+<script>
+    var showCount = 0, totalCount = 0, inCallback = false;
+    var page = 0;
+    var content = '';
+    var clientTypeId;
+    var clientid='';
+    $(document).ready(function () {
+        $("#liForCRM").addClass('active');
+        $("#liForVendorList").addClass('sublistActive');
+        $("#DivForVendorList").load('@Url.Action("_AllClientList", "CRMClient")');
+    });
+
+    function onChangeOfClientType() {
+        clientType = $("#ClientType").val();
+        $("#DivForVendorList").load('@Url.Action("_AllClientList", "CRMClient")?ClientType=' + clientType);
+    };
+
+    $(window).scroll(function () {
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page){
+        $.ajax({
+            type: 'GET',
+            url: '/CRMClient/GetVendorList',
+            data: { page: page },
+            success: function (data) {
+                var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        $("table#tbl_All_client_list> tbody").append('<tr id="tr_client_"' + data[i].ClientId + '">' +
+                          '<th scope="row" width="2%;">' + showCount + '.</th>' +
+                          '<td width="20%;">' +
+                           '<a href="/CRMClient/ClientDetails?q=' + getDataEncrypted("Id=" + data[i].ClientId + "?isDisplay=True") + '">' + data[i].Name + '</a>' +
+                           '</td>' +
+
+                           '<td width="5%;">' + data[i].ClientType + '</td>' +
+
+                            '<td width="20%;">' + ((data[i].CreatedBy > 0) ? '<img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].CreatedUserPic + '">' +
+                            '<a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].CreatedBy + "?isDisplay=true") + '">' + data[i].CreatedUserName + '</a>' : '<img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].CreatedUserPic + ' "><span>' + data[i].CreatedUserName + '</span>') + '</td>' +
+
+                            '<td width="10%;">' + data[i].CreatedDateName + '</td>' +
+
+                           '<td width="20%;">' + ((data[i].UpdatedBy != null) ? '<img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].UpdatedUserPic + '">' +
+                           '<a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId= " + data[i].UpdatedBy + "?isDisplay=true") + '">' + data[i].UpdatedUserName + '</a>' : 'Not Yet Updated') +
+
+                            '</td>' +
+
+                            '<td width="10%;">' + ((data[i].UpdatedDateName != null) ? ' ' + data[i].UpdatedDateName + ' ' : ' "Not Yet Updated" ') + '</td>' +
+                             '<td width="10%;">' +
+                             '<a class="btn green" data-toggle="tooltip" style="margin-right:2%;"  title="Edit User Info" ' +
+                              ' href="/CRMClient/ClientDetails?q=' + getDataEncrypted("Id=" + data[i].ClientId + "?isDisplay=false") + '"><i class="fa fa-pencil"></i></a>' +
+
+                               '<span class="btn red deleteClient" style="margin-right:2%;" data-clientid="' + data[i].ClientId + '" data-toggle="tooltip" title="Delete Client"><i class="fa fa-trash"></i></span>' +
+                               '<a class="btn blue showPckDetails" data-toggle="tooltip"style="margin-right:2%;" title="Show Client Details" ' +
+                               'href="/CRMClient/ClientDetails?q=' + getDataEncrypted("Id=" + data[i].ClientId + "?isDisplay=true") + '"><i class="fa fa-info-circle"></i></a>' +
+                               '</td>' +
+                           '</tr>');
+                    }
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+                $('[data-toggle="tooltip"]').tooltip();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+    
+    $(function () {
+        $("#autocomplete").autocomplete({
+            minLength: 0,
+            source: function (request, response) {
+                content = $.trim(request.term);
+                $.ajax({
+                    url: '@Url.Action("SearchVendorList", "CRMClient")',
+                    type: "POST",
+                    dataType: "json",
+                    data: { prefix: content },
+                    success: function (data) {
+                        response($.map(data, function (item) {
+                            return { label: item.Name, value: item.Name, id: item.ClientId };
+                        }))
+                    }
+                })
+            },
+            minLength: 1,
+            select: function (event, ui) {
+                isloadFirstTime = true;
+                var selectTextId = ui.item.id;
+                $("table.tableForVendorList > tbody").load('@Url.Action("_AllClientList", "CRMClient")?ClientId=' + selectTextId);
+            },
+        })
+    .keyup(function () {
+        if ($.trim($("#autocomplete").val()) == "") {
+            showCount = 20; page = 0;
+            $("table.tableForVendorList > tbody").load('@Url.Action("_AllClientList", "CRMClient")');
+        }
+    })
+    .autocomplete("instance")._renderItem = function (ul, item) {
+        var term = $.trim(this.term);
+        var re = new RegExp("(" + term + ")", "gi"),
+                   cls = "bold-text",
+                   template = "<span class='" + cls + "'>$1</span>",
+                   label = item.label.replace(re, template),
+                   $li = $("<li/>").appendTo(ul); $("<span>")
+                 .html(label)
+                 .appendTo($li);
+        return $li;
+    };
+    });
+    $("#DivForVendorList").on("click", ".deleteClient", function (e) {
+        e.preventDefault();
+        clientid = $(this).data('clientid');
+        var kendoWindow = $("<div/>").kendoWindow({
+            actions: ["Close"],
+            title: "Alert",
+            resizable: false,
+            width: "30%",
+            modal: true
+        });
+        var template = kendo.template($("#temp_win_site_edit").html());
+        kendoWindow.data("kendoWindow").content(template).center().open();
+
+        kendoWindow.find("#btn_editUnit_cancel").click(function () {
+            kendoWindow.data("kendoWindow").close();
+        }).end();
+        kendoWindow.find("#btn_editUnit_ok").click(function () {
+            kendoWindow.data("kendoWindow").close();
+            deleteClient();
+            location.reload();
+        }).end();
+    });
+    function deleteClient() {
+        var url = "/CRMClient/DeleteClient";
+        $.post(url, { Id: clientid }, function (data) {
+            notification.hide();
+            notification.setOptions({ autoHideAfter: 2000 });
+            if (data === "Success") {
+                notification.show({ message: "Client successfully deleted", showTime: startTime() }, "upload-success");                
+            }
+            else {
+                notification.show({ message: "Deletion unsuccessful", showTime: startTime() }, "upload-error");
+            }
+        })
+    };
+    
+</script>

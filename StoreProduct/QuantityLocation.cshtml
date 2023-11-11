@@ -1,0 +1,44 @@
+﻿         
+@{
+    int id = ViewBag.id;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    string unitname = db.View_All_InventoryList.Where(m => m.InventoryId == id).Select(m => m.UnitName).FirstOrDefault();
+    var locationList = (from m in db.Inventory_Item_Location
+                        where m.InventoryId == id
+                        group m by new
+                        {
+                            m.StoreId,
+                            m.WarehouseId
+                        } into i
+                        select new
+                        {
+                            InventoryId = i.FirstOrDefault().InventoryId,
+                            LocationId = i.FirstOrDefault().LocationId,
+                            StoreId = i.FirstOrDefault().StoreId,
+                            WareId = i.FirstOrDefault().WarehouseId,
+                            StoreName = (i.FirstOrDefault().StoreId > 0) ? db.StoreLists.Where(sm => sm.Id == i.FirstOrDefault().StoreId).Select(sm => sm.StoreName).FirstOrDefault() : "",
+                            WareName = (i.FirstOrDefault().WarehouseId > 0) ? db.WarehouseLists.Where(sm => sm.Id == i.FirstOrDefault().WarehouseId).Select(sm => sm.WarehouseName).FirstOrDefault() : "",
+                            Quantity = i.Sum(x => x.Quantity)
+                        }).ToList();
+    int count = 0;
+}
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;">
+    <div class="editor-label"><label></label></div>
+    <div class="editor-field">
+        @foreach (var multi in locationList)
+        {
+            count++;
+            string locname="";
+            if (multi.StoreId > 0)
+            {
+                locname=multi.StoreName;
+                <span></span>
+            }
+            else
+            {
+                locname = multi.WareName;
+            }
+            <p style="font-size:14px;color:#808080;">@count. @locname : Quantity - @multi.Quantity @unitname</p>
+        }
+    </div>
+ </div>

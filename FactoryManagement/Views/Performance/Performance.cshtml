@@ -1,0 +1,284 @@
+﻿@************************************** Created By Jerin Jahan (Date:12.11.2016)  ***************************************@
+@{
+    ViewBag.Title = "Performance";
+
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    long loginUserId = Convert.ToInt64(Request.Cookies["CookieAdminInfo"].Values["userid"].ToString());
+    string username = Request.Cookies["CookieAdminInfo"].Values["fulname"].ToString();
+    var loginUserPicture = db.UserInformations.Where(x => x.UserId == loginUserId).Select(x => x.Picture).FirstOrDefault();
+    if (loginUserId == 0)
+    {
+        username = "Super Admin";
+        loginUserPicture = "admin.jpg";
+    }
+}
+<script src="~/Scripts/jRate.js"></script>
+<script src="~/Scripts/jquery.signalR-2.2.1.min.js"></script>
+<script src="/signalr/hubs"></script>
+<script src="~/Scripts/jquery.shorten.js"></script>
+<h2>Performance</h2>
+<div class="row" style="margin-top:10px;margin-bottom:10px;" id="performacePage">
+    @*<div class="col-md-12 col-sm-12" id="Div_Selected_user_Info"><div class="loading_half"></div></div>*@
+    <div class="col-md-12 col-sm-12" style="cursor:pointer;">
+        <div id="divForUserRatingLoad"></div>
+    </div>
+    <div class="col-md-12 col-sm-12" id="Div_User_Review"><div class="loading_half"></div></div>
+</div>
+<script>
+    var selectedUserId,userType,currentlyOpenedMenu;
+    $(document).ready(function(){
+        $("#liForHR").addClass('active');
+        $("#liForPerformance").addClass('sublistActive');
+        $("#top_header_link").append('<span>Human Resource</span><span><i class="fa fa-angle-right fa-2x"></i></span>' +
+           '<span class="current"><a href="/Performance/Performance"> Performance</a></span>');
+        selectedUserId = '@(ViewBag.userId)';
+
+        userType = '@(ViewBag.userType)';
+        $("#Div_Selected_user_Info").load('@Url.Action("_SelectedUseInfo", "Performance")?userId=' +EmpId +'&userType='+usrtype);
+        $("#divForUserRatingLoad").load('@Url.Action("_PartialUserRatingLoad", "Performance")?&selectedUserId=' +EmpId +'&userId='+@loginUserId);
+        $("#Div_User_Review").load('@Url.Action("_SelectedUserReview", "Performance")?userId=' +EmpId +'&loginUserId='+@loginUserId);
+    });
+
+</script>
+<script>
+    $('body').click(function(){
+        if(currentlyOpenedMenu!=null || currentlyOpenedMenu!=""){
+            $("#showActionDiv-"+currentlyOpenedMenu).hide();
+        }
+    });
+    function ReviewPatternChange(){
+        var filterBy=parseInt($("#ReviewFilter").val());
+        if(filterBy==1){
+            $("#Div_User_Review").empty();
+            $("#Div_User_Review").append('<div class="loading_half"></div>');
+            $("#Div_User_Review").load('@Url.Action("_SelectedUserReview", "Performance")?userId=' +EmpId +'&loginUserId='+@loginUserId);
+        }else{
+
+            $("#Div_User_Review").empty();
+            $("#Div_User_Review").append('<div class="loading_half"></div>');
+            $("#Div_User_Review").load('@Url.Action("_SelectedUserReview", "Performance")?userId=' +EmpId +'&loginUserId='+@loginUserId+'&filtered=1');
+        }
+    };
+    ////////////////////////Show Edit,Delete/Repot button //////////////////////////
+    //$(document).on("click",".showActionDiv",function(e){
+    //    e.preventDefault();
+    //    var itemId=$(this).data('id');
+    //    $("#showActionDiv-"+itemId).toggle('show');
+    //    currentlyOpenedMenu=itemId;
+
+    //});
+    ////////////////////////Edit a comment //////////////////////////
+    $(document).on("click",".editComment",function(e){
+        e.preventDefault();
+        var itemId=$(this).data('id');
+        $("#divForCommntDetails"+itemId).hide();
+        $("#divForCommntEdit"+itemId).show();
+        $("#showActionDiv-"+itemId).toggle('show');
+    });
+    ////////////////////////Reply of a comment edit//////////////////////////
+    $(document).on("click",".editreplyComment",function(e){
+        e.preventDefault();
+        var itemId=$(this).data('id');
+        $("#replyofComment-"+itemId).hide();
+        $("#edit_reply_of_Comment-"+itemId).show();
+    });
+    ////////////////////////Comment Edit cancel //////////////////////////
+    $(document).on("click",".btnCmntEditCancel",function(e){
+        e.preventDefault();
+        var itemId=$(this).data('id');
+        $("#divForCommntDetails"+itemId).show();
+        $("#divForCommntEdit"+itemId).hide();
+
+    });
+    ////////////////////////Reply comment edit cancel//////////////////////////
+    $(document).on("click",".btnreplyCmntEditCancel",function(e){
+        e.preventDefault();
+        var itemId=$(this).data('id');
+        $("#replyofComment-"+itemId).show();
+        $("#edit_reply_of_Comment-"+itemId).hide();
+        $("#showActionDiv-"+itemId).toggle('show');
+    });
+
+    $(document).on("click",".reply",function(e){
+        var itemId=$(this).attr("id").split("-")[1];
+        var employeeId='@loginUserId';
+        if(employeeId!=EmpId){
+            $("#DivForReply-"+itemId).toggle('show');
+        }
+    });
+    ////////////////////////Reply click icon //////////////////////////
+    $(document).on("click",".viewmore",function(e){
+
+        var itemId=$(this).attr("id").split("-")[1];
+        //$("#DivForReply-"+itemId).toggle('show');
+        $("#replyComment-"+itemId).toggle('show');
+        if($("#replyangle-"+itemId).hasClass("fa-angle-down"))
+        {
+            $("#replyangle-"+itemId).removeClass("fa-angle-down").addClass("fa-angle-up");
+        }else if($("#replyangle-"+itemId).hasClass("fa-angle-up")){
+            $("#replyangle-"+itemId).removeClass("fa-angle-up").addClass("fa-angle-down");
+        }
+    });
+    ////////////////////////Reply of a comment  cancel//////////////////////////
+    $(document).on("click",".btnForReplyCancel",function(e){
+        var itemId=$(this).data("id");        
+        $("#DivForReply-"+itemId).hide();
+    });
+    ////////////////////////Unlike a comment //////////////////////////
+    $(document).on("click",".unlike_btn",function(e){
+        var unLikeId=$(this).data("id");
+        var islike=$(this).data("islike");
+
+        if(islike=="False"){
+            var sendData={
+                userReviewId:unLikeId,
+                userId:@loginUserId,
+                likeStatus:true,
+            };
+            changeUnLikeStatus(sendData);
+        }else{
+            var sendData={
+                userReviewId:unLikeId,
+                userId:@loginUserId,
+                likeStatus:false,
+            };
+            changeUnLikeStatus(sendData);
+        }
+    });
+    ////////////////////////Like a comment //////////////////////////
+    $(document).on("click",".like_btn",function(e){
+        var likeId=$(this).data("id");
+        var isunlike=$(this).data("isunlike");
+
+        if(isunlike=="False"){
+            var sendData={
+                userReviewId:likeId,
+                userId:@loginUserId,
+                likeStatus:true,
+            };
+            changeLikeStatus(sendData);
+        }else{
+            var sendData={
+                userReviewId:likeId,
+                userId:@loginUserId,
+                likeStatus:false,
+            };
+            changeLikeStatus(sendData);
+        }
+    });
+    ////////////////////////Take Back Unlike //////////////////////////
+    function changeUnLikeStatus(sendData){
+        var unLikeId=sendData.userReviewId;
+        $.ajax({
+            url: '@Url.Action("AddRemoveDislike", "Performance")',
+            data: sendData,
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                if(data=="UnLiked"){
+                    var previousLike=$("#cmmntUnLike-"+unLikeId).text();
+                    $("#cmmntUnLike-"+unLikeId).empty();
+                    previousLike=parseInt(previousLike);
+                    $("#cmmntUnLike-"+unLikeId).append(previousLike+1);
+                    $("#UnLike-"+unLikeId).data('islike','True');
+
+                    var isLiked=$("#Like-"+unLikeId).data('isunlike');
+                    if(isLiked=="True")
+                    {
+                        var previousLiked=$("#cmmntLike-"+unLikeId).text();
+                        previousLiked=parseInt(previousLiked);
+                        $("#cmmntLike-"+unLikeId).empty();
+                        $("#cmmntLike-"+unLikeId).append(previousLiked-1);
+                        $("#Like-"+unLikeId).data('isunlike','False');
+
+                        if($("#Like-"+unLikeId).hasClass("fa-thumbs-up")){
+                            $("#Like-"+unLikeId).removeClass("fa-thumbs-up").addClass("fa-thumbs-o-up");;
+                        }
+                    }
+
+                    if($("#UnLike-"+unLikeId).hasClass("fa-thumbs-o-down")){
+                        $("#UnLike-"+unLikeId).removeClass("fa-thumbs-o-down").addClass("fa-thumbs-down");
+                    }
+                }
+                else if(data=="UnLikeRemoved"){
+                    var previousLike=$("#cmmntUnLike-"+unLikeId).text();
+                    $("#cmmntUnLike-"+unLikeId).empty();
+                    previousLike=parseInt(previousLike);
+                    $("#cmmntUnLike-"+unLikeId).append(previousLike-1);
+                    $("#UnLike-"+unLikeId).data('islike','False');
+
+                    if($("#UnLike-"+unLikeId).hasClass("fa-thumbs-down")){
+                        $("#UnLike-"+unLikeId).removeClass("fa-thumbs-down").addClass("fa-thumbs-o-down");
+                    }
+                }
+
+            }
+        });
+    }
+    /////////////////////change the like status ////////////////////////////////////
+    function changeLikeStatus(sendData){
+        var likeId=sendData.userReviewId;
+        $.ajax({
+            url: '@Url.Action("IncreaseLike", "Performance")',
+            data: sendData,
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                if(data=="Liked"){
+                    var previousLike=$("#cmmntLike-"+likeId).text();
+                    $("#cmmntLike-"+likeId).empty();
+                    previousLike=parseInt(previousLike);
+                    $("#cmmntLike-"+likeId).append(previousLike+1);
+                    $("#Like-"+likeId).data('isunlike','True');
+
+                    if($("#Like-"+likeId).hasClass("fa-thumbs-o-up")){
+                        $("#Like-"+likeId).removeClass("fa-thumbs-o-up").addClass("fa-thumbs-up");;
+                        $("#Like-"+likeId).addClass("fa-thumbs-up");
+                    }
+                    var isUnliked=$("#UnLike-"+likeId).data("islike");
+                    if(isUnliked=="True"){
+                        var previousUnlike=$("#cmmntUnLike-"+likeId).text();
+                        previousUnlike=parseInt(previousUnlike);
+                        $("#cmmntUnLike-"+likeId).empty();
+                        $("#cmmntUnLike-"+likeId).append(previousUnlike-1);
+                        $("#UnLike-"+likeId).data("islike","False");
+                        if($("#UnLike-"+likeId).hasClass("fa-thumbs-down")){
+                            $("#UnLike-"+likeId).removeClass("fa-thumbs-down").addClass("fa-thumbs-o-down");
+                            $("#UnLike-"+likeId).addClass("fa-thumbs-o-down");
+                        }
+                    }
+                }
+                else if(data=="LikeRemoved"){
+                    var previousLike=$("#cmmntLike-"+likeId).text();
+                    $("#cmmntLike-"+likeId).empty();
+                    previousLike=parseInt(previousLike);
+                    $("#cmmntLike-"+likeId).append(previousLike-1);
+                    $("#Like-"+likeId).data('isunlike','False');
+
+                    if($("#Like-"+likeId).hasClass("fa-thumbs-up"))
+                    {
+                        $("#Like-"+likeId).removeClass("fa-thumbs-up").addClass("fa-thumbs-o-up");;
+                    }
+                }
+            }
+        });
+    }
+    $(document).on("keyup",".txtareaCmntEdit",function(e){
+        e.preventDefault();
+        var itemId=$(this).attr("id").split("-")[1];
+        $("#btnCmntEditSave-"+itemId).attr("disabled",false);
+    });
+    $("#CommentForResource").keyup(function () {
+        var commentForResource = $("#CommentForResource").val();
+        if (commentForResource.length > 0) {
+            $('#btnForComment').attr("disabled", false);
+            if(commentForResource.length>8000){
+                alert("maximum length is 8000");
+            }
+        }
+        else {
+            $('#btnForComment').attr("disabled", true);
+        }
+    });
+    $("#CommentForResource").click(function () {
+        $('#divForPostButton').show();
+    });
+</script>

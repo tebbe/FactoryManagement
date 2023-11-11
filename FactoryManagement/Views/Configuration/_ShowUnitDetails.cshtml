@@ -1,0 +1,41 @@
+﻿
+
+@model FactoryManagement.Models.Site_Unit_Lists
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+<dl class="dl-horizontal">
+    <dt>Unit Name</dt>
+    <dd>
+        <span>@Html.DisplayFor(model => model.UnitName)</span>
+        <span class="label label-success hover-pointer" id="btnForSiteUnitEdit" data-toggle="tooltip" title="Edit Unit" style="margin-left:2%;margin-top:-1em;"><i class="fa fa-pencil"></i></span>
+    </dd>
+    <dt>Unit Acryonm</dt>
+    <dd><span>@Html.DisplayFor(model=>model.UnitAcryonm)</span></dd>
+    <dt>Unit Status</dt>
+    <dd>
+        @if (Model.UnitStatus == 1)
+        {<span>Active</span> }
+        else
+        {<span>Inactive</span>}
+    </dd>
+    <dt>Created Date</dt>
+    <dd>@Convert.ToDateTime(Model.CreatedDate).ToString("MMM dd,yyyy")</dd>
+    <dt>No.of Dept</dt>
+    <dd>
+        @if (db.DepartmentLists.Where(m => m.UnitId == Model.UnitId).Any())
+        {
+            <span id="Span_Dept_Count">@db.DepartmentLists.Where(m => m.UnitId == Model.UnitId).Count()</span>
+        }
+        else
+        {
+            <span id="Span_Dept_Count">0</span>
+        }
+    </dd>
+</dl>
+<script>
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>
+

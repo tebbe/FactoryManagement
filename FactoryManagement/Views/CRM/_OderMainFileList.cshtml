@@ -1,0 +1,49 @@
+﻿@using FactoryManagement.Helpers
+@model IEnumerable<FactoryManagement.Models.View_BusinessOrder_File>
+@{
+    var count = 1;
+    bool? isPrint = ViewBag.IsPrint;
+}
+<table>
+    @{
+        foreach (var file in Model)
+        {
+            string s = file.FileOriginalName;
+            int idx = s.LastIndexOf('.');
+            string fileName = s.Substring(0, idx);
+            string extension = s.Substring(idx);
+            string FileType = (file.FileType == 1) ? "Specification" : (file.FileType == 2) ? "Negotiation" : "Finance";
+            <tr>
+                <td><span>@count . &nbsp;</span></td>
+                <td data-extension="@extension" class="main_File_img">
+                    <span><img style="float:left; width:25px;height:25px;" src="" /></span>
+                    @if (isPrint != true)
+                    {
+                        <span style="margin-left:5px;">
+                            <a href="@Html.EncodedParam("DownloadMaterial", "CRM", new { fileName = file.FileName, contentType = file.FileContentType, isPrint = true }, null)" target="_blank">
+                                <span>@fileName</span>
+                            </a>
+                        </span>
+                    }
+                    else
+                    {
+                        <span style="margin-left:5px;">
+                            <span>@file.FileOriginalName</span>
+                        </span>
+                    }
+                </td>
+            </tr>
+                    count++;
+        }
+    }
+</table>
+<script>
+    $(document).ready(function () {
+        $('.main_File_img').each(function () {
+            var extension = $(this).data("extension");
+            var t = addExtensionFormaterial(extension);
+            $(this).children('span').children('img').attr('src', t);
+        });
+    });
+</script>
+

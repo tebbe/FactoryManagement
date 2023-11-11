@@ -1,0 +1,14 @@
+﻿
+@model FactoryManagement.Models.TransactionsEditCount
+@Html.HiddenFor(m => m.RefTableColumnId)
+
+<div class="editor-label"><label for="ReasonId">Revert Reason</label></div>
+<div class="editor-field">
+    @(Html.Kendo().DropDownListFor(m => m.ReasonId)
+    .OptionLabel("--Select One--")
+    //.Events(e => e.Change("onChangedropdownlist"))             
+    .BindTo(ViewBag.ReasonId)
+    .HtmlAttributes(new { style = "width:100%" })
+    )
+    @Html.ValidationMessageFor(model => model.ReasonId, "", new { @class = "text-Danger" })
+</div>

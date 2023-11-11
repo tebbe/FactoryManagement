@@ -1,0 +1,281 @@
+﻿@*********************************************** Created By Jerin Jahan Date(13.05.2017) ************************@
+@model IEnumerable<FactoryManagement.Models.View_All_InventoryList>
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var now = DateTime.Now;
+    var todaysEntry = db.Inventory_Pro_Waste_List.Where(x => x.InsertedDate.Day == now.Day && x.InsertedDate.Month == now.Month && x.InsertedDate.Year == now.Year).ToList();
+    int count = 0;
+}
+<style>
+    .imgresize {
+        border: 2px solid #ddd;
+    }
+
+    #tbl_pro_list .btn {
+        font-size: 12px !important;
+    }
+
+    #tbl_pro_list p {
+        font-size: 13px !important;
+        margin-bottom: 0px !important;
+        color: #999;
+    }
+
+    .tr_pro:hover {
+        border: 1px solid #eaeaea;
+        -webkit-box-shadow: 0 0 10px rgba(0,0,0, .65);
+        -moz-box-shadow: 0 0 10px rgba(0,0,0, .65);
+        box-shadow: 0 0 10px rgba(0,0,0, .65);
+    }
+
+    .tr_pro .col-sm-8 .col-sm-7 {
+        width: 55%;
+        border-right: 1px dotted #ddd;
+        padding: 0px !important;
+        margin-right: 15px;
+    }
+</style>
+<p>
+    <span style="color:#2078a5;">
+        Balast 40W/36w
+        <span id="btn_close_search" style="cursor:pointer;"><i class="fa fa-times"></i></span>
+    </span>
+</p>
+<div class="col-sm-12" style="margin-bottom:1em;padding:0px!important;" id="div_for_tbl_pro_list">
+    <span class="autocomplete-wrapper">
+        <input class="text-field" id="pro_search" name="country" placeholder="Start typing item name" type="text" autocomplete="off">
+        <span class="k-icon k-i-search" style="margin-top:-25px;margin-right:10px;float:right;">&nbsp;</span>
+    </span>
+</div>
+<div id="div_for_tbl_pro_list">
+    <table class="table" id="tbl_pro_list">
+        @foreach (var item in Model)
+        {
+            count++;
+            string imgname = db.Inventory_Image_Lists.Where(m => m.InventoryId == item.InventoryId).Select(m => m.ImageName).FirstOrDefault();
+            int multiCount = 1;
+            int max_quan = Convert.ToInt32(item.Quantity);
+            <tr class="tr_pro" style="border:1px solid #ddd;">
+                <td class="col-md-1 col-sm-2" style="display:table-cell; vertical-align:middle; text-align:center;">
+                    @if (imgname != null)
+                    {<img class="imgresize" src="~/Images/Inventory/Store/Resize/@imgname" />}
+                    else
+                    {<img class="imgresize" src="~/Images/Inventory/Store/no_img.jpg" />}
+                </td>
+                <td class="col-sm-8">
+                    <div class="col-sm-7 col-xs-12">
+                        <a href="#">
+                            <label class="name" id="lbl_Proname_@item.InventoryId"
+                                   data-price="@item.Price"
+                                   data-quantity="@item.Quantity"
+                                   data-unitname="@item.UnitName"
+                                   data-unitid="@item.UnitId">
+                                @item.ProductName
+                            </label>
+                        </a>
+                        <p class="lblProDesc">Staple @Html.DisplayFor(modelItem => item.Description)</p>
+                        @if (item.Model != null)
+                        {
+                            <p>Model : @item.Model</p>
+                        }
+                        @if (item.BrandName != null)
+                        {
+                            <p>Brand : @item.BrandName</p>
+                        }
+                        @if (item.CountryName != null)
+                        {
+                            <p>From @item.CountryName</p>
+                        }
+                        <p>
+                            <span>Total Quantity : @item.Quantity @item.UnitName</span>
+                            @if (item.ReservedQuantity != null)
+                            {
+                                <span style="color:#ff0000;"> Reserved : @item.ReservedQuantity @item.UnitName</span>
+                            }
+                        </p>
+                        <p>
+                            @if (!todaysEntry.Where(x => x.InventoryId == item.InventoryId && x.Type == 1).Any())
+                            {
+                                <span><input type="button" value="MCS" class="btn btn-default btnMCS" id="btnMCS_@item.InventoryId" data-id="@item.InventoryId" data-name="@item.ProductName"></span>
+                            }
+                            @if (!todaysEntry.Where(x => x.InventoryId == item.InventoryId && x.Type == 2).Any())
+                            {
+                                <span><input type="button" value="MRR" class="btn btn-default btnMRR" id="btnMRR_@item.InventoryId" data-id="@item.InventoryId" data-name="@item.ProductName"></span>
+                            }
+                            @if (!todaysEntry.Where(x => x.InventoryId == item.InventoryId && x.Type == 3).Any())
+                            {
+                                <span><input type="button" value="Waste" class="btn btn-default btnWaste" id="btnWaste_@item.InventoryId" data-id="@item.InventoryId" data-name="@item.ProductName"></span>
+                            }
+                        </p>
+                    </div>
+                    <div class="col-sm-5" style="padding:0px!important;">
+                        @if (db.Inventory_Item_Location.Where(m => m.InventoryId == item.InventoryId).Count() > 0)
+                        {
+                            var multipleList = (from m in db.Inventory_Item_Location
+                                                where m.InventoryId == item.InventoryId
+                                                group m by new
+                                                {
+                                                    m.StoreId,
+                                                    m.WarehouseId
+                                                } into i
+                                                select new
+                                                {
+                                                    LocationId = i.FirstOrDefault().LocationId,
+                                                    StoreId = i.FirstOrDefault().StoreId,
+                                                    WareId = i.FirstOrDefault().WarehouseId,
+                                                    StoreName = (i.FirstOrDefault().StoreId > 0) ? db.StoreLists.Where(sm => sm.Id == i.FirstOrDefault().StoreId).Select(sm => sm.StoreName).FirstOrDefault() : "",
+                                                    WareName = (i.FirstOrDefault().WarehouseId > 0) ? db.WarehouseLists.Where(sm => sm.Id == i.FirstOrDefault().WarehouseId).Select(sm => sm.WarehouseName).FirstOrDefault() : "",
+                                                    Quantity = i.Sum(x => x.Quantity)
+                                                }).ToList();
+                            foreach (var multi in multipleList)
+                            {
+                                <div class="col-xs-12" style="padding:0px!important;">
+                                    <p>
+                                        <strong>@multiCount.</strong>
+                                        @if (multi.StoreId > 0)
+                                        {
+                                            <span>@multi.StoreName</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@multi.WareName</span>
+                                        }
+                                    </p>
+                                    <p>Quantity : <span id="spn_quan_@multi.LocationId">@multi.Quantity</span> @item.UnitName</p>
+                                </div>
+                                        multiCount++;
+                            }
+                        }
+                    </div>
+                </td>
+            </tr>
+        }
+    </table>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('.imgresize').nailthumb({ width: 150, height: 150 });
+    });
+    $("#tbl_pro_list").on("click", ".btnMCS", function () {
+        type = 1;
+        var id = $(this).data("id");
+        var name = $(this).data("name");
+        var unitid = $("#lbl_Proname_" + id).data("unitid");
+        $("#Win_MCS").empty();
+        $("#Win_MRR").empty();
+        $("#Win_Waste").empty();
+
+        $("#Win_MCS").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '30%',
+            title: 'Insert Daily Rejected pcs During the Time of Running in Mcs'
+        });
+        $("#Win_MCS").html('<div class="partial_loading_half"></div>');
+        var Win_MCS = $("#Win_MCS").data("kendoWindow");
+        Win_MCS.refresh({ url: "/StoreProduct/_middlePageOfEntryInsert?id=" + id + "&name=" + name + "&unitId=" + unitid +"&type=1"});
+        Win_MCS.center().open();
+    });
+    $("#tbl_pro_list").on("click", ".btnMRR", function () {
+        type = 2;
+        var id = $(this).data("id");
+        var name = $(this).data("name");
+        var unitid = $("#lbl_Proname_" + id).data("unitid");
+        $("#Win_MCS").empty();
+        $("#Win_MRR").empty();
+        $("#Win_Waste").empty();
+
+        $("#Win_MRR").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '30%',
+            title: 'Insert Daily Rejected pcs shown in MRR'
+        });
+        $("#Win_MRR").html('<div class="partial_loading_half"></div>');
+        var Win_MRR = $("#Win_MRR").data("kendoWindow");
+        Win_MRR.refresh({ url: "/StoreProduct/_middlePageOfEntryInsert?id=" + id + "&name=" + name + "&unitId=" + unitid + "&type=2" });
+        Win_MRR.center().open();
+    });
+    $("#tbl_pro_list").on("click", ".btnWaste", function () {
+        type = 3;
+        var id = $(this).data("id");
+        var name = $(this).data("name");
+        var unitid = $("#lbl_Proname_" + id).data("unitid");
+        $("#Win_MCS").empty();
+        $("#Win_MRR").empty();
+        $("#Win_Waste").empty();
+
+        $("#Win_Waste").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '60%',
+            height: '30%',
+            title: "Insert Today's Waste PC"
+        });
+        $("#Win_Waste").html('<div class="partial_loading_half"></div>');
+        var Win_Waste = $("#Win_Waste").data("kendoWindow");
+        Win_Waste.refresh({ url: "/StoreProduct/_middlePageOfEntryInsert?id=" + id + "&name=" + name + "&unitId=" + unitid + "&type=3" });
+        Win_Waste.center().open();
+    });
+
+
+    //*************** Search ***********************************
+    $("#pro_search").autocomplete({
+        minLength: 0,
+        source: function (request, response) {
+            content = $.trim(request.term);
+            $.ajax({
+                url: '@Url.Action("SearchProductAll", "StoreProduct")',
+                type: "POST",
+                dataType: "json",
+                data: { prefix: content, userId: userId, roleId: 2 },
+                success: function (data) {
+                    response($.map(data, function (item) {
+                        return { label: item.ProductName + ' (L/C : ' + item.LC + ')', value: item.ProductName, id: item.InventoryId };
+                    }))
+                }
+            })
+        },
+        minLength: 1,
+        select: function (event, ui) {
+            var selectTextId = ui.item.id;
+            var value = ui.item.value;
+            sendData = { id: selectTextId };
+            $("#div_for_tbl_pro_list").empty();
+            $("#div_for_tbl_pro_list").append('<div class="loading_half"></div>');
+            $("#div_for_tbl_pro_list").load('@Url.Action("_InvenProListForWaste", "StoreProduct")', sendData);
+        },
+    })
+   .keyup(function () {
+       if ($.trim($("#pro_search").val()) == "") {
+           $("#tab1ProList").empty();
+           $("#tab1ProList").append('<div class="loading_half"></div>');
+           $("#tab1ProList").load('@Url.Action("_InvenProListForWaste", "StoreProduct")');
+       }
+   })
+   .autocomplete("instance")._renderItem = function (ul, item) {
+       var term = $.trim(this.term);
+       var re = new RegExp("(" + term + ")", "gi"),
+                  cls = "bold-text",
+                  template = "<span class='" + cls + "'>$1</span>",
+                  label = item.label.replace(re, template),
+                  $li = $("<li/>").appendTo(ul);
+       $("<span>").html(label).appendTo($li);
+       return $li;
+   };
+
+    $("#btn_close_search").click(function () {
+        $("#tab1ProList").empty();
+        $("#tab1ProList").append('<div class="loading_half"></div>');
+        $("#tab1ProList").load('@Url.Action("_InvenProListForWaste", "StoreProduct")');
+    });
+</script>

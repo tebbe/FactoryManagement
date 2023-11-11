@@ -1,0 +1,130 @@
+﻿
+
+
+@************************************** Created By Jerin Jahan (Date:13.01.2017)  ***************************************@
+
+@model FactoryManagement.Models.Leave_Application_List
+@{
+    DateTime now = DateTime.Now;
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var emp_user_info = db.View_UserLists.Where(m => m.UserId == Model.ApplicationUserId).FirstOrDefault();
+    int days = 0;
+}
+<style>
+    .dl-horizontal dt {width:240px!important;}
+    .dl-horizontal dd {margin-left:260px!important;}
+    
+</style>
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;width:96%!important;">
+    <dl class="dl-horizontal col-md-11 col-sm-11">
+        <dt>Employee Name</dt>
+        <dd><span>@emp_user_info.UserName</span></dd>
+         
+        <dt>Employee Site Name</dt>
+        <dd><span>@emp_user_info.SiteName</span></dd>
+
+        <dt>Employee Dept. Name</dt>
+        <dd><span>@emp_user_info.DeptName</span></dd>
+
+        <dt>Employee Designation</dt>
+        <dd><span>@emp_user_info.DesignationName</span></dd>
+
+        <dt>Requested Leave Day/s</dt>
+        <dd>
+            @if (Model.PreStartDate != null)
+            {
+                if ((Model.StartDate == Model.PreStartDate && Model.EndDate == Model.PreEndDate))
+                {
+                    days = Convert.ToInt32((Convert.ToDateTime(Model.EndDate) - Convert.ToDateTime(Model.StartDate)).TotalDays);
+                    if (days > 1)
+                    {
+                        <span>@Convert.ToDateTime(Model.StartDate).ToString("MMM dd,yyyy") - @Convert.ToDateTime(Model.EndDate).ToString("MMM dd,yyyy")</span>
+                    }
+                    else
+                    {
+                        <span>@Convert.ToDateTime(Model.StartDate).ToString("MMM dd,yyyy")</span>
+                    }
+                }
+                else
+                {
+                    days = Convert.ToInt32((Convert.ToDateTime(Model.PreEndDate) - Convert.ToDateTime(Model.PreStartDate)).TotalDays);
+                    if (days > 1)
+                    {
+                        <span>@Convert.ToDateTime(Model.PreEndDate).ToString("MMM dd,yyyy") - @Convert.ToDateTime(Model.PreStartDate).ToString("MMM dd,yyyy")</span>
+                    }
+                    else
+                    {
+                        <span>@Convert.ToDateTime(Model.PreStartDate).ToString("MMM dd,yyyy")</span>
+                    }
+                }
+            }
+            else
+            {
+                days = Convert.ToInt32((Convert.ToDateTime(Model.EndDate) - Convert.ToDateTime(Model.StartDate)).TotalDays);
+                if (days > 1)
+                {
+                    <span>@Convert.ToDateTime(Model.StartDate).ToString("MMM dd,yyyy") - @Convert.ToDateTime(Model.EndDate).ToString("MMM dd,yyyy")</span>
+                }
+                else
+                {
+                    <span>@Convert.ToDateTime(Model.StartDate).ToString("MMM dd,yyyy")</span>
+                }
+            }
+            
+            
+        </dd>
+
+        @if (Model.AppliedDate != null)
+        {
+            <dt>Applied Date</dt>
+            <dd>@Convert.ToDateTime(Model.AppliedDate).ToString("MMM dd,yyyy")</dd>
+        }
+        
+        @if (Model.Reason != null)
+        {
+            <dt>Reason</dt>
+            <dd>@Model.Reason</dd>
+        }
+
+        <dt>Application Status</dt>
+        <dd>
+            @if (Model.ApproveStatus == 0)
+            {
+                <span>Not approved yet</span>
+            }
+            else if (Model.ApproveStatus == 1)
+            {
+                <span>Approved</span>
+            }
+            else
+            {
+                <span>Rejected</span>
+            }
+        </dd>
+
+        <dt>Approved Leave Day/s</dt>
+        <dd>
+            @{
+                days = Convert.ToInt32((Convert.ToDateTime(Model.EndDate) - Convert.ToDateTime(Model.StartDate)).TotalDays);
+            }
+            @if (days > 1)
+            {
+                <span>@Convert.ToDateTime(Model.StartDate).ToString("MMM dd,yyyy") - @Convert.ToDateTime(Model.EndDate).ToString("MMM dd,yyyy")</span>
+            }
+            else
+            {
+                <span>@Convert.ToDateTime(Model.StartDate).ToString("MMM dd,yyyy")</span>
+            }
+        </dd>
+
+        @if (Model.ApproveStatus == 1)
+        {
+            <dt>Approved By</dt>
+            <dd><span>@db.View_UserLists.Where(m => m.UserId == Model.ApprovedBy).Select(m => m.UserName).FirstOrDefault()</span></dd>
+
+            <dt>Approved Date</dt>
+            <dd><span>@Convert.ToDateTime(Model.ApprovedDate).ToString("MMM dd,yyyy")</span></dd>
+        }
+        
+    </dl>
+</div>

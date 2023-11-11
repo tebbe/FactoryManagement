@@ -1,0 +1,20 @@
+﻿
+@model FactoryManagement.ModelView.Accounting.AccountGroupModelView
+
+
+<div id="divforAddAccountGroup">
+    <div class="loading_partial"></div>
+</div>
+<script>
+    $(document).ready(function () {
+        $("#divforAddAccountGroup").load('@Url.Action("AddAccountGroup", "Accounting")?AccId=0');
+    });
+
+    $("#divforAddAccountGroup").on("click", "#btn_AccGrp_Refresh", function (e) {
+        e.preventDefault();
+        $("#divforAddAccountGroup").hide();
+        $("#divforAddAccountGroup").empty();
+        $("#divforAddAccountGroup").load('@Url.Action("AddAccountGroup", "Accounting")?AccId=0');
+        $("#divforAddAccountGroup").show();
+    });
+</script>

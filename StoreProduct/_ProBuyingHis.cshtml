@@ -1,0 +1,21 @@
+﻿
+
+@************************ Created By Jerin Jahan Date(24.11.2016) *******************************@
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    int id = ViewBag.id;
+}
+<div id="Div_Buy_His"></div>
+@if (db.BusinessOrderProductLists.Where(m => m.ProductId == id).Any())
+{
+    <script>
+    $("#Div_Buy_His").append('<div class="win_loading_half"></div>');
+    $("#Div_Buy_His").load('@Url.Action("_AllProBuyHis", "StoreProduct")?id=' + '@(ViewBag.id)');
+    </script>
+}
+else
+{
+    <script>
+        $("#Div_Buy_His").append('<center><label>There is no record.</label></center>');
+    </script>
+}

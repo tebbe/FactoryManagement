@@ -1,0 +1,58 @@
+﻿
+@model FactoryManagement.ModelView.HR.UserInformationModelView
+@Html.HiddenFor(m => m.UserId)
+@Html.HiddenFor(m => m.UserName)
+
+
+    <div class="editor-label"><label>Smart Card Id</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.SmartCardId, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+        @Html.ValidationMessageFor(model => model.SmartCardId, "", new { @class = "text-danger" })
+    </div>
+    <div class="editor-label"><label>Card Number</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.CardNumber, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+        @Html.ValidationMessageFor(model => model.CardNumber, "", new { @class = "text-danger" })
+    </div>
+<script>
+    var UserId;
+    var validation = $("#show_card_info").kendoValidator({
+    }).data("kendoValidator");
+    
+    $("#btn_CardInfoEdit").click(function () {
+        if (validation.validate()) {
+            notification.show({ message: "Card informatin updating...", showTime: startTime() }, "upload-progress");
+            var sendData = {
+                UserId: $("#UserId").val(),
+                SmartCardId: $("#SmartCardId").val(),
+                CardNumber: $("#CardNumber").val(),
+                UserName: $("#UserName").val(),
+                CreatedBy: userId
+            };
+            $.ajax({
+                url: '@Url.Action("CardInformationUpdate", "HumanResource")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide();
+                    notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === 'Error') {
+                        notification.show({ message: "Identification information of user '" + sendData.UserName + "' update unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                    else {
+                        notification.show({ message: "Identification information of user '" + sendData.UserName + "' has been successfully updated.", showTime: startTime() }, "upload-success");
+                    }
+                    $("#div_user_cardInfo_edit").data("kendoWindow").close();
+                    $("#div_ryt_panel").load('@Url.Action("_ShowEmpInfo", "HumanResource")?UserId=' + '@Model.UserId' + '&isDisplay=false');
+                },
+                error: function (err) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred.", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+    $("#btn_CancelCardInfo").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+</script>

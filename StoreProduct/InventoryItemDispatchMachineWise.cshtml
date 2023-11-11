@@ -1,0 +1,193 @@
+﻿ 
+
+@**************************** Tasnim Tuli (27.3.17)**********************************@
+@{
+    ViewBag.Title = "InventoryItemDispatchMachineWise";
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+}
+
+<div class="page-bar">
+    <ul class="page-breadcrumb">
+        <li>
+            <i class="icon-basket"></i>
+            <span>Inventory</span>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-building"></i>
+            <a href="/StoreProduct/InvenDisVoucherList">Item Dispatch History</a>
+            <i class="fa fa-angle-right"></i>
+        </li>
+        <li>
+            <i class="fa fa-th-list"></i>
+            <a href="/Inventory/InventoryItemDispatchMachineWise">Machine Wise</a>
+        </li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="portlet light portlet-fit bordered">
+            <div class="portlet-title">
+                <div class="caption">
+                    <i class="fa fa-list-ul font-green"></i>
+                    <span class="caption-subject font-green bold uppercase">Inventory Item Dispatch History <small> Machine Wise</small></span>
+                </div>
+                <div class="actions">
+                    <div class="btn-group btn-group-devided" data-toggle="buttons" id="Div_Upper_Portion" style="display:none;">
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm active" id="btn_All" data-toggle="tooltip" title="All History" data-container="body">
+                            <input type="radio" name="options" class="toggle">All
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_today" data-toggle="tooltip" title="Today History" data-container="body">
+                            <span><input type="radio" name="options" class="toggle">Today</span>
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_seven" data-toggle="tooltip" title="Last 7 days History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 7 Days
+                        </label>
+                        <label class="btn btn-transparent green btn-outline btn-circle btn-sm" id="btn_last_thirty" data-toggle="tooltip" title="Last 30 day History" data-container="body">
+                            <input type="radio" name="options" class="toggle">Last 30 Days
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="portlet-body">
+                <div id="Div_All_His_Machine_wise" style="display:none;"></div>
+                <div id="win_machine_history"></div>
+                @if (db.View_Dispacth_Item_Details.Any())
+                {
+                    <script>
+                        $("#Div_Upper_Portion").show();
+                        $("#Div_All_His_Machine_wise").append('<div class="loading_partial"></div>');
+                        $("#Div_All_His_Machine_wise").show();
+                        $("#Div_All_His_Machine_wise").load("_InventoryItemDispatchHisMachineWise", "StoreProduct");
+                    </script>
+                }
+                else
+                {
+                    <script>
+                        $("#Div_All_His_Machine_wise").append('<h3>There is no record to display...</h3>');
+                        $("#Div_All_His_Machine_wise").show();
+                    </script>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var showCount = 0, totalCount = 0, page = 0, inCallback = false;
+    var days = 0;
+    $(document).ready(function () {
+        $("#liForInventory").addClass('active');
+        $('#liForInvenDisHis').addClass('open');
+        $('#liForInvenDisHis .sub-menu').show();
+        $("#liForMachineDisHis").addClass('sublistActive');
+    
+    });
+    $(document).on("click", "#btn_page_back", function () {
+        window.history.back();
+    });
+    $(window).scroll(function () {
+        var countBytype, result;
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            if (parseInt(showCount) < parseInt(totalCount)) {
+                if (page > -1 && !inCallback) {
+                    inCallback = true;
+                    page++;
+                    $("div#loading").show();
+                    loadMoreData(page);
+                }
+            }
+        }
+    });
+    function loadMoreData(page) {
+        $.ajax({
+            type: 'GET',
+            url: '/StoreProduct/GetMachineDisHis',
+            data: { page: page },
+            success: function (data) {
+                var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                if (data != '') {
+                    for (var i = 0; i < data.length; i++) {
+                        showCount++;
+                        $("table#tbl_All_his_machine").append('<tr><th>' + showCount + '.</th>' +
+                        '<td><span style="color:#428bca;cursor:pointer;" class="machineDetails" data-id="' + data[i].machineid + '" >' + data[i].MachineName + '</span></td>' +
+                            '<td>' + ((data[i].DispatchedBy != null) ? ((data[i].DispatchedBy > 0) ? '<img class="img-circle" src="/Images/UserPicture/thumb/' + data[i].DispatchedUserPic + '">' +
+                            '<a href="/HumanResource/DisplayEmployeeDetails?q=' + getDataEncrypted("UserId=" + data[i].DispatchedBy +"?isDisplay=true")  + '">' + data[i].DispatchedUserName + '</a>' : '<img class="user-photo" src="/Images/UserPicture/thumb/' + data[i].DispatchedUserPic + '">' +
+                        '<span>' + data[i].DispatchedUserName + '</span>') : '<span>Not approved yet</span>') +
+                        '</td>' +
+                         '</td></tr>');
+                    }
+                }
+                else {
+                    page = -1;
+                }
+                inCallback = false;
+                $("#loading").hide();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(error);
+            }
+        });
+    }
+    $("#Div_All_His_Machine_wise").on("click", ".machineDetails", function (e) {
+        e.preventDefault();
+        var machineid = $(this).data("id");
+        $("#win_machine_history").empty();
+        $("#win_machine_history").kendoWindow({
+            actions: ["Close"],
+            draggable: false,
+            modal: true,
+            visible: false,
+            width: '70%',
+            height: '60%',
+            title: ' Machine Details'
+        });
+        $("#win_machine_history").html('<div class="win_loading_half"></div>');
+        var win_machine_history = $("#win_machine_history").data("kendoWindow");
+        win_machine_history.refresh({ url: "/StoreProduct/ShowInvenDispacthMachineDetails?machineid=" + machineid });
+        win_machine_history.center().open();
+    });
+    
+</script>
+<script>
+    $("#btn_today").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = { days: 1 };
+        $("#Div_All_His_Machine_wise").empty();
+        $("#Div_All_His_Machine_wise").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Today's Dispatched History (Machine Wise)");
+        $("#Div_All_His_Machine_wise").load('@Url.Action("_InventoryItemDispatchHisMachineWise", "StoreProduct")', passdata);
+        days = 1;
+    });
+
+    $("#btn_last_seven").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = { days: 7 };
+        $("#Div_All_His_Machine_wise").empty();
+        $("#Div_All_His_Machine_wise").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Last 7 Days Dispatched History");
+        $("#Div_All_His_Machine_wise").load('@Url.Action("_InventoryItemDispatchHisMachineWise", "StoreProduct")', passdata);
+        days = 7;
+    });
+    $("#btn_last_thirty").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        passdata = { days: 30 };
+        $("#Div_All_His_Machine_wise").empty();
+        $("#Div_All_His_Machine_wise").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing Last 30 Days Dispatched History (Machine Wise)");
+        $("#Div_All_His_Machine_wise").load('@Url.Action("_InventoryItemDispatchHisMachineWise", "StoreProduct")', passdata);
+        days = 30;
+    });
+    $("#btn_All").click(function () {
+        var passdata = '';
+        showCount = 0, totalCount = 0, page = 0;
+        $("#Div_All_His_Machine_wise").empty();
+        $("#Div_All_His_Machine_wise").append('<div class="loading_partial"></div>');
+        $("#h4title").text("Showing All History (Machine Wise)");
+        $("#Div_All_His_Machine_wise").load('@Url.Action("_InventoryItemDispatchHisMachineWise", "StoreProduct")');
+        days = 0;
+    });
+</script>

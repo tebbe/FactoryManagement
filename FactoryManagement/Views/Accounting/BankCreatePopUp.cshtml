@@ -1,0 +1,32 @@
+﻿
+
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-bottom:4%;margin-top:2%;" id="Div_For_Bank_Create">
+    <div id="create_bank">
+        @*<div class="tiny_loading"></div>*@
+        </div>
+    <div class="k-edit-buttons k-state-default">
+        @if (ViewBag.BankId > 0)
+        {
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnCreateBank"><span class="k-icon k-update"></span>Update</button>
+        }
+        else
+        {
+            <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btnCreateBank"><span class="k-icon k-update"></span>Create</button>
+        }
+        <button type="button" class="k-button k-button-icontext k-grid-update" id="btnBankListRefresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btnBankListCancel"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+
+
+    <script>
+        $(document).ready(function () {
+            $("#create_bank").load('@Url.Action("BankCreate", "Accounting")?BankId=' + '@ViewBag.BankId');
+        });
+        $("#btnBankListRefresh").click(function () {
+            $("#create_bank").empty();
+            $("#create_bank").append('<div class="tiny_loading"></div>');
+            $("#create_bank").show();
+            $("#create_bank").load('@Url.Action("BankCreate", "Accounting")?BankId=' + '@ViewBag.BankId');
+        });
+    </script>

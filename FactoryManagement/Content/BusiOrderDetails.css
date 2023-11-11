@@ -1,0 +1,107 @@
+﻿#AllFileLists .mainDiv_File_Lists {
+        /*min-height: 400px;*/
+        font-size: 14px !important;
+    }
+    .lblFileName {
+        white-space: nowrap;
+        overflow: hidden!important;
+        text-overflow: ellipsis;
+        padding-left: 0px !important;
+        padding-right: 0px !important;
+        width:80px!important;
+    }
+    .fontblack{
+        color:black!important;
+    }
+    .uploadFileName {
+        cursor: pointer;
+        font-size: .9em;
+        float: left;
+        width: 95%;
+        height: 35px;
+        -ms-text-overflow: ellipsis;
+        -o-text-overflow: ellipsis;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        margin-top: 20px;
+        font-weight: normal;
+        /*border:1px solid #ddd;*/
+    }
+    .uploadedfilechange {
+        cursor: pointer;
+        font-weight: normal;
+    }
+    .file-icon {
+        display: inline-block;
+        float: left;
+        width: 48px;
+        height: 48px;
+        /*margin-left: 10px;*/
+        margin-top: 13.5px;
+    }
+    .p-icon {
+        display: inline-block;
+        width: 36px;
+        height: 36px;
+        overflow: hidden;
+        background-repeat: no-repeat;
+        font-size: 0;
+        line-height: 0;
+        text-align: center;
+        -ms-high-contrast-adjust: none;
+    }
+    .k-filename {
+        position: relative;
+        display: inline-block;
+        min-width: 10em;
+        max-width: 80%;
+        vertical-align: middle;
+        margin-left: 1em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    li.k-file .file-wrapper .k-upload-action {
+        position: absolute;
+        top: 0;
+        right: 0;
+    }
+
+    li.k-file div.file-wrapper {
+        position: relative;
+        height: 75px;
+    }
+
+    .img-file {
+        background-image: url(/content/web/upload/jpg.png);
+    }
+
+    .png-file {
+        background-image: url(/content/web/upload/png_converted.png);
+    }
+
+    .doc-file {
+        background-image: url(/content/web/upload/doc.png);
+    }
+
+    .ppt-file {
+        background-image: url(/content/web/upload/ppt.png);
+    }
+
+    .pdf-file {
+        background-image: url(/content/web/upload/pdf.png);
+    }
+
+    .xls-file {
+        background-image: url(/content/web/upload/xls.png);
+    }
+
+    .zip-file {
+        background-image: url(/content/web/upload/zip.png);
+    }
+
+    .default-file {
+        background-image: url(/content/web/upload/default.png);
+    }

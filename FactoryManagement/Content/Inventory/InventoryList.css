@@ -1,0 +1,292 @@
+﻿
+/********************For Inventory List ********************************/
+
+   
+.textBreak{
+        white-space: nowrap;
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+.left-sidebar h2, .brands_products h2 {
+  color: #FE980F;
+  font-family: 'Roboto', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 auto 30px;
+  text-align: center;
+  text-transform: uppercase;
+  position: relative;
+  z-index:3;
+}
+
+.left-sidebar h2:after, h2.title:after{
+	content: " ";
+	position: absolute;
+	border: 1px solid #f5f5f5;
+	bottom:8px;
+	left: 0;
+	width: 100%;
+	height: 0;
+	z-index: -2;
+}
+
+.left-sidebar h2:before{
+	content: " ";
+	position: absolute;
+	background: #fff;
+	bottom: -6px;
+	width: 130px;
+	height: 30px;
+	z-index: -1;
+	left: 50%;
+	margin-left: -65px;
+}
+
+.product-image-wrapper{
+	border:1px solid #F7F7F5;
+	overflow: hidden;
+	margin-bottom:20px;
+}
+
+.single-products {
+  position: relative;
+}
+    
+.productinfo h2{
+	font-family: 'Roboto', sans-serif;
+	font-size: 14px;
+	font-weight: bold;
+    
+}
+.product-overlay h2{
+	font-family: 'Roboto', sans-serif;
+	font-size: 14px;
+	font-weight: bold;   
+}
+.productinfo p{
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  color: #696763;
+   
+}
+.productinfo img{ width: 100%;}
+.productinfo{position:relative;}
+.product-overlay {
+  background:rgba(80, 155, 40, 0.51);
+  top: 0;
+  color:#FFF;
+  display: none;
+  height: 0;
+  position: absolute;
+  transition: height 500ms ease 0s;
+  width: 100%;
+  display:inline;
+}
+.single-products:hover .product-overlay {
+  display:block;
+  height:100%;
+}
+.product-overlay .overlay-content {
+  position: absolute;
+  bottom: 2.5%;
+  text-align: center;
+  width: 100%;
+}
+.product-overlay .add-to-cart {
+  background:#fff;
+  border: 0 none;
+  border-radius: 0;
+  color: #FE980F;
+  font-family: 'Roboto', sans-serif;
+  font-size: 15px;
+  margin-bottom: 25px;
+}
+.product-overlay .add-to-cart:hover {
+  background:#fff;
+  color: #FE980F;
+}
+.product-overlay p{
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  color: #fff;
+}
+
+
+
+.add-to-cart {
+  background:#F5F5ED;
+  border: 0 none;
+  border-radius: 0;
+  color: #696763;
+  font-family: 'Roboto', sans-serif;
+  font-size: 15px;
+  margin-bottom: 25px;
+}
+.add-to-cart:hover {
+  background: #FE980F;
+  border: 0 none;
+  border-radius: 0;
+  color: #FFFFFF;
+}
+.add-to{
+  margin-bottom: 10px;
+}
+.add-to-cart i{
+	margin-right:5px;
+}
+.add-to-cart:hover {
+  background: #FE980F;
+  color: #FFFFFF;
+}
+.choose {
+  border-top: 1px solid #F7F7F0;
+}
+.choose ul li a {
+  color: #B3AFA8;
+  font-family: 'Roboto', sans-serif;
+  font-size: 13px;
+  padding-left: 0;
+  padding-right: 0;
+}
+.choose ul li a i{
+	margin-right:5px;
+}
+.choose ul li a:hover{
+	background:none;
+	color:#FE980F;
+}
+ .k-textbox > input {
+        height: 2.65em;
+        line-height: 1.65em;
+        padding: .177em 0;
+        text-indent: .33em;
+        border: 0;
+        margin: 0;
+    }
+  
+ .slider {
+        margin: 2em 0;
+        padding: 1em;
+        border: 1px solid #ccc;
+        border-radius: .5em;
+        overflow: hidden;
+    }
+ .k-in { width: 90%;}
+ .lblTreeView {
+        white-space: nowrap;
+        overflow: hidden !important;
+        text-overflow: ellipsis;
+    }
+ .k-item, .k-mid {
+        cursor: pointer;
+    }
+ .bold-text {
+        font-weight: bold;
+        color: #2a6496;
+    }
+ .imgRes {
+        cursor: pointer;
+        height: 198px;
+        width: 140px;
+        box-shadow: 0 0 6px 0 gray;
+    }
+ .icon-bar {
+        background-color: #fff !important;
+    } 
+ .navbar-header {
+        margin-top: 10px !important;
+        color: #fff;
+        height: 40px;
+        text-decoration: none;
+        background: #00d4e9;
+        position: relative;
+        cursor: pointer;
+    } 
+ #categories #tv_Ware_Pro_List {
+        margin-left: -1em;
+    }
+ #categories .treeView{
+     padding:10px 0px 10px 10px;border: 1px solid #e6e6e6;
+     background-color:#f5f5f5;border-radius: 3px;
+ }
+
+ #DivForCartList {height: 100%;}
+ #DivForCartList label {font-weight: normal;font-size: 11px;}
+ #divForAddtoCart {
+        display: none;
+        border: 1px solid #ddd;
+        position: fixed;
+        right: 0;
+        top:50px;
+        background: #fff;
+        cursor: pointer;
+        margin-left:0px!important;
+        padding-left:0px!important;
+    }
+ #divForAddtoCart .header {
+        text-align: center;
+        padding: 8px;
+        font-weight: bold;
+        background: #ebe9e9;
+        padding-left:0px!important;
+        padding-right:0px!important;
+        margin-bottom:5px;
+    }
+ .noPadding{
+     padding-left:0px!important;
+     padding-right:0px!important;
+ }
+ #tbl_Cart_Item td{border:none!important;}
+ #showCart {
+    position: fixed;
+    top: 50%;
+    right: -0.5%;
+    padding: 10px;
+    font-family: Arial;
+    background: #4ac4fa;
+    cursor:pointer;
+    z-index:1;
+    border-radius:3px;
+    color:#fff;
+}
+ #divForPartialView{
+        min-height:300px;
+        margin:0px!important; padding:0px!important;
+        /*border-left:1px solid #ddd;*/
+    }
+ #Div_without_Cart{border:0px solid green;} 
+#div_all_pro_list{border-radius: 3px;background: #ffffff;}
+.product-filter {color: #777777;padding: 5px 10px 0px 10px;}
+#div_all_pro_list .name{
+    font-size: 18px;
+    margin-bottom: 2px;
+    cursor:pointer;
+}
+
+
+
+#Div_without_Cart #div_header{
+    margin-top:20px;    
+}
+#Div_without_Cart #div_header .lbltitle{
+    width:100%;text-align:left;padding-top:10px;font-size:22px;color: #333;
+    font-weight: inherit;
+    line-height: 1em;
+    margin-bottom: 16px;
+    margin-left:10px;
+}
+#showItem{font-size: 16px;}
+.btnClass{
+        border:1px solid #ddd;
+        padding:.5em;
+        margin-right:20px;
+        cursor:pointer;
+        text-align:center;
+    }
+.btnClass:hover{background-color:#428bca;color:white;}
+
+.ProductInCart{
+    padding:5px;font-weight:bold;font-size:16px;
+    cursor:pointer;
+}

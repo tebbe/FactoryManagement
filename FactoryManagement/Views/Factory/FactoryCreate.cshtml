@@ -1,0 +1,428 @@
+﻿
+
+
+@************************************** Created By Mabia Mishu (Date:11.10.2016)  ***************************************@
+
+@model FactoryManagement.ModelView.Factory.FactoryInfoModelView
+
+@{
+    Layout = "~/Views/Shared/_LayoutForTemplate.cshtml";
+}
+<h2>@ViewBag.Title</h2>
+
+<link href="~/Content/MultipleImgUpload/css/component.css" rel="stylesheet" />
+<link href="~/Scripts/intl-tel-input-master/build/css/intlTelInput.css" rel="stylesheet" />
+<script src="~/Content/MultipleImgUpload/js/custom-file-input.js"></script>
+<script src="~/Scripts/intl-tel-input-master/build/js/intlTelInput.min.js"></script>
+
+<style>
+    .image-uploader {
+        width: 100%;
+        height: 260px;
+        display: block;
+        text-align: center;
+    }
+    .imgPreview {
+        background-color: #e8e4d0;
+        margin-bottom: 20px;
+        position: relative;
+        width: 100%;
+        height: 260px;
+        border: 1px solid #808080;
+        display: none;
+        overflow: hidden;
+    }
+    .imgPreview img {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+    .lblForPics {
+        text-align: center;
+        max-width: 100%;
+        width: 100%;
+        height: 260px;
+        vertical-align: middle;
+        border: 1px dashed blue;
+        cursor: pointer;
+    }
+    .lblForPics span {
+            color: #083bb5 !important;
+        }
+    .previewImgClose {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        float: right;
+        right: -1.8em;
+        bottom: -1.8em;
+        z-index: 9999;
+        margin-top: -3em;
+    }
+</style>
+<div class="form-horizontal col-md-12 col-sm-12 col-xs-12 row">
+    @using (Html.BeginForm("FactoryCreateSave", "Factory", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+        @Html.HiddenFor(m => m.Id)
+        if (Model.Id == 0)
+        {
+            <p><a id="btnForShowCreateFactory" style="cursor:pointer">Create New</a></p>
+        }
+        <div class="form-horizontal col-md-12 col-sm-12 col-xs-12" id="divForFactoryCreate" style="display:none">
+            <hr />
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            <div class="form-horizontal form-widgets col-sm-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                    <div class="col-md-6 col-sm-7 col-xs-8">
+                        @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                        @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Address, htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                    <div class="col-md-6 col-sm-7 col-xs-8">
+                        @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                        @Html.ValidationMessageFor(model => model.Address, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AddressLine1, htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                    <div class="col-md-6 col-sm-7 col-xs-8">
+                        @Html.EditorFor(model => model.AddressLine1, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                        @Html.ValidationMessageFor(model => model.AddressLine1, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Country, htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                    <div class="col-md-6 col-sm-7 col-xs-8">
+                        <input class="k-textbox form-control text-box single-line k-valid valid"
+                               data-val="true" data-val-length="Invalid"
+                               data-val-length-max="20"
+                               data-val-length-min="3"
+                               data-val-required="Please enter country name" id="Country" name="Country" type="text" value="Bangladesh" readonly>
+                        @Html.ValidationMessageFor(model => model.Country, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.DivisionId, htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                    <div class="col-md-6 col-sm-7 col-xs-8">
+                        @(Html.Kendo().DropDownListFor(model => model.DivisionId)
+                          .Name("DivisionId")
+                          .OptionLabel("--Select One Division--")
+                          .BindTo(ViewBag.DivisionList)
+                          .HtmlAttributes(new { style = "width:100%" })
+                        )
+                        @Html.ValidationMessageFor(model => model.DivisionId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.City, htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                    <div class="col-md-6 col-sm-7 col-xs-8">
+                        @Html.EditorFor(model => model.City, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                        @Html.ValidationMessageFor(model => model.City, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Area, htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                    <div class="col-md-6 col-sm-7 col-xs-8">
+                        @Html.EditorFor(model => model.Area, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                        @Html.ValidationMessageFor(model => model.Area, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.PostalCode, htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                    <div class="col-md-6 col-sm-7 col-xs-8">
+                        @Html.EditorFor(model => model.PostalCode, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                        @Html.ValidationMessageFor(model => model.PostalCode, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.PhoneNumber, "Phone Number", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                    <div class="col-md-6 col-sm-7 col-xs-8">
+                        @Html.EditorFor(model => model.PhoneNumber, new { htmlAttributes = new { @class = "k-textbox form-control", @type = "tel" } })
+                        @Html.ValidationMessageFor(model => model.PhoneNumber, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.MobileNumber, "Cell Phone Number", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                    <div class="col-md-6 col-sm-7 col-xs-8">
+                        @Html.EditorFor(model => model.MobileNumber, new { htmlAttributes = new { @class = "k-textbox form-control", @type = "tel" } })
+                        @Html.ValidationMessageFor(model => model.MobileNumber, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Email, htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                    <div class="col-md-6 col-sm-7 col-xs-8">
+                        @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                        @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Fax, htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                    <div class="col-md-6 col-sm-7 col-xs-8">
+                        @Html.EditorFor(model => model.Fax, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                        @Html.ValidationMessageFor(model => model.Fax, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CurrencyId, htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                    <div class="col-md-6 col-sm-7 col-xs-8">
+                        @(Html.Kendo().DropDownListFor(model => model.CurrencyId)
+                          .Name("CurrencyId")
+                          .OptionLabel("--Select One Currency--")
+                          .BindTo(ViewBag.CurrencyList)
+                          .HtmlAttributes(new { style = "width:100%" })
+                        )
+                        @Html.ValidationMessageFor(model => model.CurrencyId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.FactoryIcon, "Factory Icon", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4 col-xs-12" })
+                    <div class="col-md-6 col-sm-7 col-xs-8" id="divForIcon">
+                        <span id="IconImgClose-0" style="display:none;">
+                            <img src="/Content/Icon/modal_close.png" class="previewImgClose" id="IconImgClose-0" data-count="0" />
+                        </span>
+                        <div id="imgPreview-0" class="imgPreview"></div>
+                        <div id="imgUpload-0" class="image-uploader">
+                            <input type="file" name="files" id="file-0" class="inputfile inputfile-4" data-count="0" style="display:none;" />
+                            <label for="file-0" id="lbl-0" class="lblForPics">
+                                <span style="font-size: 26px;padding-top:3em;display:block;" id="lbl_Span_plus">+</span>
+                                <span style="font-size: 15px;font-weight:bold;">Add Photos</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-offset-4 col-md-8 col-sm-offset-4">
+                        <input type="button" value="Create" class="k-button k-state-default" id="btnForFactoryCreate" />
+                        <input type="reset" value="Refresh" class="k-button k-state-default" id="btnCreateRefresh" />
+                        <input type="button" value="Cancel" class="k-button k-state-default" id="fdgfh" />
+                    </div>
+                </div>
+            </div>
+            <div class="form-horizontal form-widgets col-sm-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OwnerName, htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                    <div class="col-md-6 col-sm-7 col-xs-8">
+                        @Html.EditorFor(model => model.OwnerName, new { htmlAttributes = new { @class = "k-textbox form-control" } })
+                        @Html.ValidationMessageFor(model => model.OwnerName, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.OwnerPicture, "Owner Photo", htmlAttributes: new { @class = "control-label col-md-4 col-sm-4 col-xs-12" })
+                    <div class="col-md-6 col-sm-7 col-xs-8" id="divForPic">
+                        <span id="UserImgClose-0" style="display:none;">
+                            <img src="/Content/Icon/modal_close.png" class="previewImgClose" id="UserImgClose-0" data-count="0" />
+                        </span>
+                        <div id="imgPreview-0" class="imgPreview"></div>
+                        <div id="imgUpload-0" class="image-uploader">
+                            <input type="file" name="files" id="file-0" class="inputfile inputfile-4" data-count="0" style="display:none;" />
+                            <label for="file-0" id="lbl-0" class="lblForPics">
+                                <span style="font-size: 26px;padding-top:3em;display:block;" id="lbl_Span_plus">+</span>
+                                <span style="font-size: 15px;font-weight:bold;">Add Photos</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        if (Model.Id > 0)
+        {
+            <div id="divForDisplayFactoryInfo">
+                <dl class="dl-horizontal col-md-12 col-sm-12">
+                    <dt>Factory Name</dt>
+                    <dd>
+                        <span>@Html.DisplayFor(model => model.Name)</span>
+                        <span id="btnForSiteEdit" style="padding-left:2%"><i class="k-icon k-i-pencil"></i></span>
+                    </dd>
+                    <dt>Owner Name</dt>
+                    <dd>@Html.DisplayFor(model => model.OwnerName)</dd>
+                    <dt>Address</dt>
+                    <dd>@Html.DisplayFor(model => model.FullAddress)</dd>
+                    <dt>Phone Number</dt>
+                    <dd>@Html.DisplayFor(model => model.PhoneNumber)</dd>
+                    @if (Model.MobileNumber != null)
+                    {
+                        <dt>Mobile Number</dt>
+                        <dd>@Html.DisplayFor(model => model.MobileNumber)</dd>
+                    }
+                    <dt>Fax</dt>
+                    <dd>@Html.DisplayFor(model => model.Fax)</dd>
+                    <dt>Email</dt>
+                    <dd>@Html.DisplayFor(model => model.Email)</dd>
+                    <dt>Currency</dt>
+                    <dd>@Html.DisplayFor(model => model.CurrencyName)</dd>
+
+                </dl>
+            </div>
+        }
+    }
+</div>
+<script>
+    var allMainFile = [];
+    var OwnerPicture, telInput, telInput2;
+    $(document).ready(function () {
+        telInput = $("#MobileNumber");
+        telInput.intlTelInput({
+            geoIpLookup: function (callback) {
+                $.get("http://ipinfo.io", function () { }, "jsonp").always(function (resp) {
+                    var countryCode = (resp && resp.country) ? resp.country : "";
+                    callback(countryCode);
+                });
+            },
+            initialCountry: "auto",
+            utilsScript: "../Scripts/intl-tel-input-master/build/js/utils.js"
+        });
+        var reset = function () {
+            telInput.removeClass("error");
+        };
+        telInput.on("keyup change", reset);
+
+        telInput2 = $("#PhoneNumber");
+        telInput2.intlTelInput({
+            geoIpLookup: function (callback) {
+                $.get("http://ipinfo.io", function () { }, "jsonp").always(function (resp) {
+                    var countryCode = (resp && resp.country) ? resp.country : "";
+                    callback(countryCode);
+                });
+            },
+            initialCountry: "auto",
+            utilsScript: "../Scripts/intl-tel-input-master/build/js/utils.js"
+        });
+    });
+    var validation = $("#divForFactoryCreate").kendoValidator({
+        rules: {
+            PhoneNumber: function (input) {
+                if (input.is("[name=PhoneNumber]")) {
+                    if (telInput.intlTelInput("isValidNumber")) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            //,
+            //MobileNo: function (input) {
+            //    if (input.is("[name=MobileNumber]")) {
+            //        if (telInput.intlTelInput("isValidNumber")) {
+            //            return true;
+            //        } else {
+            //            return false;
+            //        }
+            //    }
+            //    return true;
+            //}
+        },
+        messages: {
+            PhoneNumber: "Please enter valid contact number"
+            //,MobileNo: "Please enter valid contact number"
+        }
+    }).data("kendoValidator");
+
+
+    $("#divForPic").on('change', '.inputfile-4', function (e) {
+        var id = $(this).data("count");
+        var countFiles = $("#file-" + id)[0].files.length;
+        var imgPath = $("#file-" + id)[0].value;
+        var extn = imgPath.substring(imgPath.lastIndexOf('.') + 1).toLowerCase();
+        var image_holder = $("#imgPreview-" + id);
+        var files = e.target.files;
+        image_holder.empty();
+        if (extn == "gif" || extn == "png" || extn == "jpg" || extn == "jpeg") {
+            if (typeof (FileReader) != "undefined") {
+                allMainFile[0] = files[0];
+                for (var i = 0; i < countFiles; i++) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        $("<img />", { "src": e.target.result }).appendTo(image_holder);
+                    }
+                    $("#imgUpload-" + id).hide();
+                    $("#UserImgClose-" + id).show();
+                    image_holder.show();
+                    $("#file-" + id).hide();
+                    $("#lblfile-" + id).hide();
+                    $("#OwnerPicture").val($("#file-" + id)[0].files[i]);
+                    reader.readAsDataURL($("#file-" + id)[0].files[i]);
+                    $("#lbl_Span_plus").text("+");
+                }
+            } else {
+                alert("This browser does not support FileReader.");
+            }
+        } else {
+            alert("Pls select only images");
+        }
+    });
+    $("#divForPic").on('click', '.previewImgClose', function (e) {
+        var id = $(this).data("count");
+        $("#imgPreview-" + id).empty();
+        $("#imgPreview-" + id).hide();
+        $("#UserImgClose-" + id).hide();
+        $("#imgUpload-" + id).show();
+    });
+
+
+
+    $("#divForIcon").on('change', '.inputfile-4', function (e) {
+        var id = $(this).data("count");
+        var countFiles = $("#file-" + id)[0].files.length;
+        var imgPath = $("#file-" + id)[0].value;
+        var extn = imgPath.substring(imgPath.lastIndexOf('.') + 1).toLowerCase();
+        var image_holder = $("#imgPreview-" + id);
+        var files = e.target.files;
+        image_holder.empty();
+        if (extn == "gif" || extn == "png" || extn == "jpg" || extn == "jpeg") {
+            if (typeof (FileReader) != "undefined") {
+                allMainFile[0] = files[0];
+                for (var i = 0; i < countFiles; i++) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        $("<img />", { "src": e.target.result }).appendTo(image_holder);
+                    }
+                    $("#imgUpload-" + id).hide();
+                    $("#UserImgClose-" + id).show();
+                    image_holder.show();
+                    $("#file-" + id).hide();
+                    $("#lblfile-" + id).hide();
+                    $("#OwnerPicture").val($("#file-" + id)[0].files[i]);
+                    reader.readAsDataURL($("#file-" + id)[0].files[i]);
+                    $("#lbl_Span_plus").text("+");
+                }
+            } else {
+                alert("This browser does not support FileReader.");
+            }
+        } else {
+            alert("Pls select only images");
+        }
+    });
+    $("#divForIcon").on('click', '.previewImgClose', function (e) {
+        var id = $(this).data("count");
+        $("#imgPreview-" + id).empty();
+        $("#imgPreview-" + id).hide();
+        $("#UserImgClose-" + id).hide();
+        $("#imgUpload-" + id).show();
+    });
+
+
+    $("#btnForShowCreateFactory").click(function () {
+        $("#divForFactoryCreate").show();
+        $("#btnForShowCreateFactory").hide();
+    });
+    $("#btnForFactoryCreate").click(function () {
+        if (validation.validate()) {
+
+        }
+    });
+    $("#btnCreateRefresh").click(function () {
+        location.reload();
+    });
+
+</script>

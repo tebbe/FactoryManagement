@@ -1,0 +1,162 @@
+﻿
+@******************************** Created By Mabia Mishu (Date:21.09.2016) *********************************@
+
+@model FactoryManagement.ModelView.Configuration.DepartmentListModelView
+
+<div id="divForSiteUnitUpdate">
+    <div class="editor-label"><label for="UnitName">Unit Name</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.UnitName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        @Html.ValidationMessageFor(model => model.UnitName, "", new { @class = "text-danger" })
+     </div>
+    <div class="editor-label"><label for="UnitName">Unit Name</label></div>
+    <div class="editor-field">
+        @Html.EditorFor(model => model.UnitAcryonm, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+        @Html.ValidationMessageFor(model => model.UnitAcryonm, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="editor-label"><label for="Status">Status</label></div>
+    <div class="editor-field">
+       @(Html.Kendo().DropDownList()
+                       .Name("StatusValue")
+                       .DataTextField("Text")
+                       .DataValueField("Value")
+                       .OptionLabel("--Select One Type--")
+                       .HtmlAttributes(new { style = "width:100%" })
+                       .Events(e => e.Change("onUnitStatusChange"))
+                       .BindTo(new List<SelectListItem>() {
+                          new SelectListItem() {
+                              Text = "Active",
+                              Value = "1"
+                          },
+                          new SelectListItem() {
+                              Text = "Inactive",
+                              Value = "0"
+                          },
+                      })
+                  .Value(Model.Status.ToString())
+    )
+    @Html.ValidationMessageFor(model => model.Status, "", new { @class = "text-danger" })
+    </div>
+ </div>
+<script>
+    var siteId, unitId, siteName,unitName;
+    $(document).ready(function () {
+       siteId = '@Model.SiteId';
+       unitId = '@Model.UnitId';
+       siteName = '@Model.SiteName';
+        unitName = '@Model.UnitName';
+    });
+    $("#btnUnitEditCancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#btnUnitEditSave").click(function () {
+        var validation = $("#unit_edit_popup").kendoValidator({
+            rules:{
+                remote: function (input) {
+                    if (input.is("[name=UnitName]")) {
+                        var errormessage;
+                        var remoteAttr = input.attr("data-val-remote-url");
+                        if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                            return true;
+                        }
+                        var isInvalid;
+                        var data = {};
+                        var SiteId = siteId;
+                        var UnitId = unitId;
+                        var UnitName = $.trim($("#UnitName").val());
+                        $("#UnitName").val(UnitName);
+                        data = { UnitId: UnitId, UnitName: UnitName, SiteId: SiteId };
+                        $.ajax({
+                            url: remoteAttr,
+                            mode: "abort",
+                            port: "validate" + input.attr('name'),
+                            dataType: "json",
+                            type: input.attr("data-val-remote-type"),
+                            data: data,
+                            async: false,
+                            success: function (response) {
+                                isInvalid = response;
+                                if (isInvalid === true) {
+                                    isInvalid = true;
+                                }
+                                else {
+                                    isInvalid = false;
+                                }
+                            }
+                        });
+                        return isInvalid;
+                    } else {
+                        return true;
+                    }
+                },
+                remote_Acryonm:function(input) {
+                    if (input.is("[name=UnitAcryonm]")) {
+                        var errormessage;
+                        var remoteAttr = input.attr("data-val-remote-url");
+                        if (typeof remoteAttr === typeof undefined || remoteAttr === false) {
+                            return true;
+                        }
+                        var isInvalid;
+                        var data = {};
+                        var SiteId = siteId;
+                        var UnitId = unitId;
+                        var UnitAcryonm = $.trim($("#UnitAcryonm").val());
+
+                        data = { UnitId: UnitId, UnitAcryonm: UnitAcryonm, SiteId: SiteId };
+                        $.ajax({
+                            url: remoteAttr,
+                            mode: "abort",
+                            port: "validate" + input.attr('name'),
+                            dataType: "json",
+                            type: input.attr("data-val-remote-type"),
+                            data: data,
+                            async: false,
+                            success: function (response) {
+                                isInvalid = response;
+                                if (isInvalid === true) {
+                                    isInvalid = true;
+                                }
+                                else {
+                                    isInvalid = false;
+                                }
+                            }
+                        });
+                        return isInvalid;
+                    } else {
+                        return true;
+                    }
+                },
+                UnitName: function (input) {
+                    if (input.is("[name=UnitName]") && $("#UnitName").val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                },
+                Unit_Acryonm: function (input) {
+                    if (input.is("[name=UnitAcryonm]") && $("#UnitAcryonm").val() === "") {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            },
+            messages:{
+                remote: function (input) { return input.data('val-remote'); },
+                UnitName: "Please enter unit name",
+                Unit_Acryonm: "Please enter unit acryonm",
+                remote_Acryonm:"Acryonm already exists"
+            }
+        }).data("kendoValidator");
+        if(validation.validate()){
+            notification.show({ message: "Updating Information...", showTime: startTime() }, "upload-progress");
+            var senddata = {
+                UnitId: unitId, UnitName: $("#UnitName").val(), SiteName: siteName, Status: Unitstatus,
+                CreatedBy: userId, UnitAcryonm: $("#UnitAcryonm").val()
+            };
+            $("#unit_edit_popup").closest(".k-window-content").data("kendoWindow").close();
+            siteUnitUpdate(senddata);
+        }
+    });
+</script>

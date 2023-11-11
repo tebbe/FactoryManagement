@@ -1,0 +1,141 @@
+﻿
+@*********************************** CREATED BY JERIN JAHAN (14.06.2017) ********************************@
+@using FactoryManagement.Helpers
+@model FactoryManagement.Models.View_Import_History_Details
+@{
+    FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+    var importItems = db.View_Import_Item_Details.Where(m => m.ImportId == Model.ImportId || m.ParentId == Model.ImportId).OrderByDescending(m => m.InsertedDate).ToList();
+    var disItems = db.View_Dispacth_Item_Details.Where(m => m.ImportId == Model.ImportId).OrderByDescending(m => m.DispatchedDate).ToList();
+    int serial = 0;
+    int serial2 = 0;
+
+    double totalImp = importItems.Sum(m => m.Quantity);
+    double totaldis = disItems.Sum(m => m.Quantity);
+}
+<div class="k-edit-form-container col-lg-11 col-md-10 col-sm-11 col-xs-10" style="margin-top:2%;">
+    <dl class="dl-horizontal row">
+        <dt>Transaction Name :</dt>
+        <dd>
+            @Model.VoucherName
+            <a href="@Html.EncodedParam("ImportExportDetailsLCPrint", "StoreProduct", new { id = Model.ImportId }, null)" target="_blank" style="float:right;margin-right:5%;font-size:14px">
+                <i class="fa fa-print"></i>Print
+            </a>
+        </dd>
+
+        <dt>L/C :</dt>
+        <dd>@Model.L_C</dd>
+
+        <dt>Product Name :</dt>
+        <dd>@Model.ProductName</dd>
+
+        <dt>Total Quantity :</dt>
+        <dd>@Model.Quantity @Model.UnitName</dd>
+    </dl>
+
+    <h4>Import Item Lists</h4><hr />
+    @if (importItems.Count() > 0)
+    {
+        <table class="table table-bordered" id="tbl_all_item">
+            <tr>
+                <th>#</th>
+                <th>Quantity</th>
+                <th>Voucher Name</th>
+                <th>Assigned Location</th>
+                <th>Imported Date</th>
+                <th>Imported By</th>
+                <th></th>
+            </tr>
+            @foreach (var data in importItems)
+            {
+                serial++;
+                <tr>
+                    <td>@serial .</td>
+                    <td>@data.Quantity @Model.UnitName </td>
+                    <td><a href="@Html.EncodedParam("ImportHistoryDetailsPrint", "StoreProduct", new { id = data.ImportId }, null)" target="_blank" style="font-size:14px" data-toggle="tooltip" title="Print Indent Transaction">
+                        @data.TransactionName
+                    </a></td>
+                    <td>@data.AssignLocation</td>
+                    <td>@data.InsertedDateFormat</td>
+                    <td>@data.InsertedByUserName</td>
+                    <th>
+                        <a href="@Html.EncodedParam("ImportHistoryDetailsPrint", "StoreProduct", new { id = data.ImportId }, null)" target="_blank" style="font-size:14px" data-toggle="tooltip" title="Print Indent Transaction">
+                            <i class="fa fa-print"></i>Print
+                        </a>
+                    </th>
+                </tr>
+            }
+        </table>
+        <table class="table" style="border:none!important;margin-top:-20px!important;">
+            <tr style="border:none!important;">
+                <th style="text-align:right;border:none!important;">Total Quantity : @totalImp @Model.UnitName</th>
+            </tr>
+        </table>
+    }
+    else
+    {
+        <p>No item imported....</p>
+    }
+
+    <h4>Dispatch Item Lists</h4><hr />
+    @if (disItems.Count() > 0)
+    {
+        <table class="table table-bordered">
+            <tr>
+                <th>#</th>
+                <th>Quantity</th>
+                <th>Voucher Name</th>
+                <th>Dispatched With</th>
+                <th>Dispatched Date</th>
+                <th>Dispatched By</th>
+                <th></th>
+            </tr>
+            @foreach (var data in disItems)
+            {
+                serial2++;
+                <tr>
+                    <td>@serial2 .</td>
+                    <td>@data.Quantity @Model.UnitName </td>
+                    <td><a href="@Html.EncodedParam("DispatchHistoryDetails", "StoreProduct", new { id = data.DispatchedId }, null)" target="_blank" style="font-size:14px" data-toggle="tooltip" title="Dispatch Voucher Details">
+                            @data.VoucherName
+                        </a>
+                    </td>
+                    <td>
+                        @if (data.MachineId > 0)
+                        {
+                            <span>@data.MachineName</span>
+                        }
+                        else
+                        {
+                            <span>@data.DeptName_Unit</span>
+                        }
+                    </td>
+                    <td>@data.DispatchedDateName</td>
+                    <td>@data.DispatchedUserName</td>
+                    <th>
+                        <a href="@Html.EncodedParam("DispatchHistoryDetailsPrint", "StoreProduct", new { id = data.DispatchedId }, null)" target="_blank" style="font-size:14px" data-toggle="tooltip" title="Print Dispatch Voucher">
+                            <i class="fa fa-print"></i>Print
+                        </a>
+                    </th>
+                </tr>
+            }
+        </table>
+         <table class="table" style="border:none!important;margin-top:-20px!important;">
+            <tr style="border:none!important;">
+                <th style="text-align:right;border:none!important;">Total Quantity : @totaldis @Model.UnitName</th>
+            </tr>
+        </table>
+    }
+    else
+    {
+        <p>No item dispatch....</p>
+    }
+</div>
+<script>
+    $('[data-toggle="tooltip"]').tooltip();
+    $("#btn_imp_his_Cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+        document.documentElement.style.overflow = 'auto';  
+        document.body.scroll = "yes";
+    });
+</script>
+

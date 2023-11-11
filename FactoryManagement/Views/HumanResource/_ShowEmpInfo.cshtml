@@ -1,0 +1,363 @@
+﻿@********************************************************* Created By Jerin Jahan Date(30.11.2016) ****************************************************************************@
+
+@model FactoryManagement.ModelView.HR.UserInformationModelView
+<h3 style="margin-top:0px!important;">
+    Personal Information
+    <span class="btn_Dis" id="btn_EditPersonalInfo" data-toggle="tooltip" title="Edit Personal Information"><span><i class="fa fa-pencil"></i></span></span>
+</h3><hr />
+
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 row" style="margin-bottom:35px">
+    <div class="form-horizontal form-widgets col-sm-6">
+        <div class="form-group">
+            @Html.LabelFor(model => model.UserName, "User Name", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @if (Model.TitleName != null)
+                {
+                    @Html.DisplayFor(model => model.TitleName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                }
+                @Html.DisplayFor(model => model.UserName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.DateOfBirth, "Date of Birth", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @(((DateTime)Model.DateOfBirth).ToString("MMMM dd,yyyy"))
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.GenderName, "Gender", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.GenderName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+    </div>
+    <div class="form-horizontal form-widgets col-sm-6">
+        <div class="form-group">
+            @Html.LabelFor(model => model.Nationality, "National", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.NationalityName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.ReligionName, "Religion", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.ReligionName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        @if (Model.NationalId != null)
+        {
+            <div class="form-group">
+                @Html.LabelFor(model => model.NationalId, "National Id No", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                    @if (Model.NationalIdFontImg != null || Model.NationalIdBackImg != null)
+                    {
+                        <a href="javascript:;" id="ShowNationalId">@Html.DisplayFor(model => model.NationalId, new { htmlAttributes = new { @class = "form-control k-textbox" } })</a>
+                    }
+                    else
+                    {
+                        @Html.DisplayFor(model => model.NationalId, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<h3>
+    Company Information
+    <span class="btn_Dis" id="btn_EditCompanyInfo" data-toggle="tooltip" title="Edit Company Information"><span><i class="fa fa-pencil"></i></span></span>
+</h3><hr />
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 row" style="margin-bottom:35px">
+    <div class="form-horizontal form-widgets col-sm-6">
+        <div class="form-group">
+            @Html.LabelFor(model => model.UserTypeName, "User Type", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.UserTypeName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.EmpId, "Employee Id", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.EmpId, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.Designation, "Designation", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.Designation, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.JoinDate, "Joining Date", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @(((DateTime)Model.JoinDate).ToString("MMMM dd,yyyy"))
+            </div>
+        </div>
+    </div>
+    <div class="form-horizontal form-widgets col-sm-6">
+        <div class="form-group">
+            @Html.LabelFor(model => model.SiteIdName, "Site", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.SiteIdName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        @if (Model.UnitIdName != null)
+        {
+            <div class="form-group">
+                @Html.LabelFor(model => model.UnitIdName, "Unit", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                    @Html.DisplayFor(model => model.UnitIdName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+            </div>
+        }
+        <div class="form-group">
+            @Html.LabelFor(model => model.DeptIdName, "Department", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.DeptIdName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        @if (Model.UserType == 2 && Model.LineId != null)
+        {
+            <div class="form-group">
+                @Html.LabelFor(model => model.LineIdName, "Line", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                    @Html.DisplayFor(model => model.LineIdName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+            </div>
+        }
+        @if (Model.UserType == 2 && Model.MachineId != null)
+        {
+            <div class="form-group">
+                @Html.LabelFor(model => model.MachineIdName, "Machine", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                    @Html.DisplayFor(model => model.MachineIdName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<h3>
+    Identification Card
+    <span class="btn_Dis" id="btn_EditCardInfo"><span><i class="fa fa-pencil" data-toggle="tooltip" title="Edit Card Information"></i></span></span>
+</h3><hr />
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 row" style="margin-bottom:35px">
+    <div class="form-horizontal form-widgets col-sm-6">
+        <div class="form-group">
+            @Html.LabelFor(model => model.CardNumber, "Card Number", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.CardNumber, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+    </div>
+</div>
+<h3>
+    Contact Information
+    <span class="btn_Dis" id="btn_EditContactInfo"><span><i class="fa fa-pencil" data-toggle="tooltip" title="Edit Contact Information"></i></span></span>
+</h3><hr />
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 row" style="margin-bottom:35px">
+    <div class="form-horizontal form-widgets col-sm-6">
+        <div class="form-group">
+            @Html.LabelFor(model => model.EmailAddress, "E-mail", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.EmailAddress, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        @if (Model.MobileNo != null)
+        {
+            <div class="form-group">
+                @Html.LabelFor(model => model.MobileNo, "Mobile Number", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                    @Html.DisplayFor(model => model.MobileNo, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+            </div>
+        }
+    </div>
+    <div class="form-horizontal form-widgets col-sm-6">
+        <div class="form-group">
+            @Html.LabelFor(model => model.Phone, "Phone Number", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.Phone, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+    </div>
+</div>
+<h3>
+    Permanent Address
+    <span class="btn_Dis" id="btn_EditPermanentAddress" data-toggle="tooltip" title="Edit Permanent Address"><span><i class="fa fa-pencil"></i></span></span>
+</h3><hr />
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 row" style="margin-bottom:35px">
+    <div class="form-horizontal form-widgets col-sm-6">
+        <div class="form-group">
+            @Html.LabelFor(model => model.ParAddress, "Address", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.ParAddress, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        @if (Model.ParAddressLine1 != null)
+            {
+            <div class="form-group">
+                @Html.LabelFor(model => model.ParAddressLine1, "Address Line 1", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                    @Html.DisplayFor(model => model.ParAddressLine1, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+            </div>
+        }
+        <div class="form-group">
+            @Html.LabelFor(model => model.ParCountryName, "Country", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.ParCountryName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        @if (Model.ParState != null)
+            {
+            <div class="form-group">
+                @Html.LabelFor(model => model.ParState, "State", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                    @Html.DisplayFor(model => model.ParState, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+            </div>
+        }
+        @if (Model.ParDivisionId != null)
+            {
+            <div class="form-group">
+                @Html.LabelFor(model => model.PermanentDivisionName, "Division", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                    @Html.DisplayFor(model => model.PermanentDivisionName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+            </div>
+        }
+    </div>
+    <div class="form-horizontal form-widgets col-sm-6">
+        <div class="form-group">
+            @Html.LabelFor(model => model.ParCity, "City", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+            <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                @Html.DisplayFor(model => model.ParCity, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+            </div>
+        </div>
+        @if (Model.ParArea != null)
+            {
+            <div class="form-group">
+                @Html.LabelFor(model => model.ParArea, "Area", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                    @Html.DisplayFor(model => model.ParArea, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+            </div>
+        }
+        @if (Model.ParPotalCode != null)
+            {
+            <div class="form-group">
+                @Html.LabelFor(model => model.ParPotalCode, "Postal Code", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                    @Html.DisplayFor(model => model.ParPotalCode, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                </div>
+            </div>
+        }
+    </div>
+    @*@if (Model.SamePresentAddress == true)
+    {
+        <div class="form-horizontal form-widgets col-sm-6">
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-10 col-sm-offset-3 col-sm-9">
+                    <label class="control-label">Permanent address is also used as present address</label>
+                </div>
+            </div>
+        </div>
+    }*@
+</div>
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 row" style="margin-bottom:35px">
+    @if (Model.SamePresentAddress == true)
+    {
+        <div class="form-horizontal form-widgets col-sm-12">
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-10">
+                    <label class="control-label">Permanent address is also used as present address</label>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+@if (!Model.SamePresentAddress)
+{
+    <h3>
+        Present Address
+        <span class="btn_Dis" id="btn_EditPresentAddress" data-toggle="tooltip" title="Edit Present Address"><span><i class="fa fa-pencil"></i></span></span>
+    </h3><hr />
+       <div class="row">
+           <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="margin-bottom:35px">
+            <div class="form-horizontal form-widgets col-sm-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.PreAddress, "Address", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                    <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                        @Html.DisplayFor(model => model.PreAddress, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                    </div>
+                </div>
+                @if (Model.PreAddressLine1 != null)
+                {
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.PreAddressLine1, "Address Line 1", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                        <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                            @Html.DisplayFor(model => model.PreAddressLine1, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                        </div>
+                    </div>
+                }
+                <div class="form-group">
+                    @Html.LabelFor(model => model.PreCountryName, "Country", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                    <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                        @Html.DisplayFor(model => model.PreCountryName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                    </div>
+                </div>
+                @if (Model.PreState != null)
+                {
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.PreState, "State", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                        <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                            @Html.DisplayFor(model => model.PreState, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                        </div>
+                    </div>
+                }
+                @if (Model.PreDivisionId != null)
+                {
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.PresentDivisionName, "Division", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                        <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                            @Html.DisplayFor(model => model.PresentDivisionName, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="form-horizontal form-widgets col-sm-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.PreCity, "City", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                    <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                        @Html.DisplayFor(model => model.PreCity, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                    </div>
+                </div>
+                @if (Model.PreArea != null)
+                {
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.PreArea, "Area", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                        <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                            @Html.DisplayFor(model => model.PreArea, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                        </div>
+                    </div>
+                }
+                @if (Model.PrePostalCode != null)
+                {
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.PrePostalCode, "Postal Code", htmlAttributes: new { @class = "control-label col-md-4 col-sm-5 col-xs-12" })
+                        <div class="col-md-6 col-sm-7 col-xs-8 dis_info" style="padding-top:7px">
+                            @Html.DisplayFor(model => model.PrePostalCode, new { htmlAttributes = new { @class = "form-control k-textbox" } })
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+</div>
+}
+<script>
+        if ('@(Model.isDisplay)' === 'True') {
+            $('.btn_Dis').hide();
+        }
+       $(document).ready(function () {
+           $('[data-toggle="tooltip"]').tooltip();
+       })
+</script>

@@ -1,0 +1,55 @@
+﻿
+
+
+
+@*********************************** CREATED BY JERIN JAHAN DATE(18.09.2016) ***************************************@
+
+@{
+    var count = 1;
+}
+
+<table class="table table-bordered">
+    <tbody>
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Created By</th>
+            <th>Created Date</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in ViewBag.AcquisitionOrderList as IEnumerable<FactoryManagement.ModelView.Acquisition.AcquisitionViewModel>)
+        {
+            <tr>
+                <th scope="row">@count</th>
+                <td><a href="/Acquisition/AcquisitionOrderDetails?AcqOrderId=@item.AcquisitionOrderId">@item.Name</a></td>
+                <td>
+                    @if (item.CreatedBy == 1)
+                    {
+                        <img src="~/Images/UserPicture/thumb/admin.jpg" class="user-photo" /><span> Super Admin</span>
+                    }
+                    else
+                    {
+                        FactoryManagement.Models.FactoryManagementEntities db = new FactoryManagement.Models.FactoryManagementEntities();
+                        var user = db.View_UserLists.Where(m => m.UserType == 1 && m.UserId == item.CreatedBy).FirstOrDefault();
+                        <img src="~/Images/UserPicture/thumb/@user.Picture" class="user-photo" />
+                        <span><a href="/HumanResource/DisplayEmployeeDetails?UserId=@item.CreatedBy&userType=1">@user.UserName</a></span>
+                    }
+                </td>
+                <td>@Convert.ToDateTime(item.CreatedDate).ToString("MMM dd yyyy")</td>
+                <td>@Html.DisplayFor(modelItem => item.Status)</td>
+                <td>
+                    <input type="button" value="Approve"
+                           data-id="@item.AcquisitionOrderId"
+                           data-status="2" data-type="@item.AcquisitionType"
+                           class="k-button k-state-default btnapproveAcqOrder" />
+                    <a href="/Acquisition/AcquisitionOrderDetails?AcqOrderId=@item.AcquisitionOrderId">
+                        <input type="button" value="Order Details" data-id="@item.AcquisitionOrderId" class="k-button k-state-default btnDetailsAcqOrder" />
+                    </a>
+                </td>
+            </tr>  
+            count++;
+        }
+    </tbody>
+</table>

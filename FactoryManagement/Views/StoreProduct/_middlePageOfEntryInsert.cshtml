@@ -1,0 +1,95 @@
+﻿@{
+    var date = DateTime.Now;
+}
+<style>
+    .k-edit-field, .k-edit-form-container .editor-field {
+        width: 70% !important;
+    }
+</style>
+<div class="k-edit-form-container col-md-10 col-sm-10 col-xs-10" id="DivEntryAdd" style="margin-bottom:2%;">
+    <div id="div_For_insert_entry"></div>
+    <div class="k-edit-buttons k-state-default">
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_MCS_Save"><span class="k-icon k-update"></span>Save</button>
+        <button type="button" class="k-button k-button-icontext k-primary k-grid-update" id="btn_MCS_Refresh"><span class="k-icon k-i-refresh"></span>Refresh</button>
+        <button type="button" class="k-button k-button-icontext k-grid-cancel" id="btn_MCS_Cancel"><span class="k-icon k-cancel"></span>Cancel</button>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        refreshData = {id: '@ViewBag.id',name: '@ViewBag.name',unitid: '@ViewBag.unitId'};
+        $("#div_For_insert_entry").empty();
+        $("#div_For_insert_entry").append('<div class="partial_loading_half"></div>');
+        $("#div_For_insert_entry").load('@Url.Action("_InsertMCSNumber", "StoreProduct")', refreshData);
+    });
+    $("#btn_MCS_Refresh").click(function () {
+        refreshData = {id: '@ViewBag.id',name: '@ViewBag.name',unitid: '@ViewBag.unitId'};
+        $("#div_For_insert_entry").empty();
+        $("#div_For_insert_entry").append('<div class="partial_loading_half"></div>');
+        $("#div_For_insert_entry").load('@Url.Action("_InsertMCSNumber", "StoreProduct")', refreshData);
+    });
+    $("#btn_MCS_Cancel").click(function () {
+        $(this).closest(".k-window-content").data("kendoWindow").close();
+    });
+    $("#btn_MCS_Save").click(function () {
+        var validation = $("#div_For_insert_entry").kendoValidator({
+            rules: {
+                unit: function (input) {
+                    if (input.is("[name=UnitId]") && $("#UnitId").val() === "") {
+                        return false;
+                    }
+                    return true;
+                }
+            },
+            messages: { unit: "Please select one type" }
+        }).data("kendoValidator");
+        if (validation.validate()) {  
+            notification.show({ message: "Data is saving...", showTime: startTime() }, "upload-progress");
+            var allUnitQuan = [];
+            $(".txtUnitQuanI").each(function () {
+                var id = $(this).data("uid");
+                allUnitQuan.push(id + "|" + $("#txtU_" + id).val());
+            });
+            var sendData = {
+                Id: 0,
+                InventoryId: '@ViewBag.id',
+                LocationId: 0, Quantity: 0,
+                Type: '@ViewBag.type',
+                UnitId: $("#UnitId").val(),
+                Name: '@ViewBag.name',
+                allUnitQuan: allUnitQuan,
+                InsertedDate: '@date',
+                InsertedBy: userId
+            };
+            $.ajax({
+                url: '@Url.Action("SaveWaste", "StoreProduct")',
+                type: 'Post',
+                data: sendData,
+                success: function (data) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    if (data === "Success") {
+                        if (type == 1) {
+                            notification.show({ message: "Rejected pcs during the time of running in Mcs has been successfully saved.", showTime: startTime() }, "upload-success");
+                        }
+                        else if (type == 2) {
+                            notification.show({ message: "Rejected pcs shown int MRR has been successfully saved.", showTime: startTime() }, "upload-success");
+                        }
+                        else {
+                            notification.show({ message: "Inventory item " + sendData.Name + "'s waste has been successfully saved.", showTime: startTime() }, "upload-success");
+                        }
+                    }
+                    else {
+                        notification.show({ message: "Data save was unsuccessful.", showTime: startTime() }, "upload-error");
+                    }
+                    $("#btn_MCS_Save").closest(".k-window-content").data("kendoWindow").close();
+                    $("#tab1ProList").empty();
+                    $("#tab1ProList").append('<div class="loading_half"></div>');
+                    $("#tab1ProList").load('@Url.Action("_InvenProListForWaste", "StoreProduct")');
+                },
+                error: function (err) {
+                    notification.hide(); notification.setOptions({ autoHideAfter: 5000 });
+                    notification.show({ message: "Error occurred", showTime: startTime() }, "upload-warning");
+                }
+            });
+        }
+    });
+</script>
